@@ -77,22 +77,25 @@ bool GraphicDX12::Init(HWND hWnd)
 	// 랜더타겟이 될 리소스를 현재 클라이언트 사이즈에 맞게 생성하고 스왑체인에 묶어준다
 	OnResize();
 
+#pragma region RenderObjectsBuild
+
 	ThrowIfFailed(m_CommandList->Reset(m_DirectCmdListAlloc.Get(), nullptr));
 
 	BuildTextures();
-	BuildRootSignature();
-	BuildShadersAndInputLayout();
-	BuildPSOs();
-	BuildGeometry();
-	BuildMaterials();
-	BuildObjects();
-	BuildFrameResources();
+	BuildRootSignature();			// ****************** 제일 중요한거. 이부분 무조건 이해하고 넘어가야함
+	BuildShadersAndInputLayout();	// 다렉9 Vertex fvf 생각하면 쉽게 이해할 수 있음.
+	BuildPSOs();					// 렌더링 파이프 라인에 대한 설계도라고 생각하면 됨.
+	BuildGeometry();				//
+	BuildMaterials();				//
+	BuildObjects();					//
+	BuildFrameResources();			// FrameResource를 통해서 메모리의 데이터들(ViewMatrix같은)을 GPU에 업로드한다.
 
 	ThrowIfFailed(m_CommandList->Close());
 	ID3D12CommandList* cmdsLists[] = { m_CommandList.Get() };
 	m_CommandQueue->ExecuteCommandLists(_countof(cmdsLists), cmdsLists);
 
 	FlushCommandQueue();
+#pragma endregion 
 
 	return true;
 }
@@ -383,7 +386,6 @@ void GraphicDX12::BuildRootSignature()
 	slotRootParam[1].InitAsConstantBufferView(0);
 	slotRootParam[2].InitAsConstantBufferView(1);
 	slotRootParam[3].InitAsDescriptorTable(1, &texTable, D3D12_SHADER_VISIBILITY_PIXEL);
-
 
 	CD3DX12_ROOT_SIGNATURE_DESC rootDesc;
 	rootDesc.Init(4, slotRootParam, 0,

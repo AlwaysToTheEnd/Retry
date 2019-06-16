@@ -38,7 +38,7 @@ int D3DApp::Run()
 		}
 		else
         {	
-			if( !m_appPaused )
+			if( !m_AppPaused )
 			{
 				Update();	
 				m_GDevice->Draw();
@@ -72,20 +72,74 @@ LRESULT D3DApp::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	case WM_ACTIVATE:
 		if( LOWORD(wParam) == WA_INACTIVE )
 		{
-			m_appPaused = true;
+			m_AppPaused = true;
 		}
 		else
 		{
-			m_appPaused = false;
+			m_AppPaused = false;
 		}
 		return 0;
-	
+
+	case WM_SIZE:
+	{
+		int clientWidth = LOWORD(lParam);
+		int clientHeight = HIWORD(lParam);
+
+		if (m_GDevice.get())
+		{
+			if (wParam == SIZE_MINIMIZED)
+			{
+				m_AppPaused = true;
+				m_Minimized = true;
+				m_Maximized = false;
+			}
+			else if (wParam == SIZE_MAXIMIZED)
+			{
+				m_AppPaused = false;
+				m_Minimized = false;
+				m_Maximized = true;
+				m_GDevice->SetClientSize(clientWidth, clientHeight);
+				m_GDevice->OnResize();
+			}
+			else if (wParam == SIZE_RESTORED)
+			{
+				if (m_Minimized)
+				{
+					m_AppPaused = false;
+					m_Minimized = false;
+					m_GDevice->SetClientSize(clientWidth, clientHeight);
+					m_GDevice->OnResize();
+				}
+				else if (m_Maximized)
+				{
+					m_AppPaused = false;
+					m_Maximized = false;
+					m_GDevice->SetClientSize(clientWidth, clientHeight);
+					m_GDevice->OnResize();
+				}
+				else if (m_Resizing)
+				{
+
+				}
+				else
+				{
+					m_GDevice->SetClientSize(clientWidth, clientHeight);
+					m_GDevice->OnResize();
+				}
+			}
+		}
+
+		return 0;
+	}
 	case WM_ENTERSIZEMOVE:
-		m_appPaused = true;
+		m_AppPaused = true;
+		m_Resizing = true;
 		return 0;
 
 	case WM_EXITSIZEMOVE:
-		m_appPaused = false;
+		m_AppPaused = false;
+		m_Resizing = false;
+		m_GDevice->OnResize();
 		return 0;
  
 	case WM_DESTROY:

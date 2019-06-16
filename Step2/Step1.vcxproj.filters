@@ -21,9 +21,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\Common\Source\d3dApp.cpp">
-      <Filter>Common</Filter>
-    </ClCompile>
     <ClCompile Include="SceneSimulationEventCallBack.cpp">
       <Filter>SceneCallback</Filter>
     </ClCompile>
@@ -36,15 +33,17 @@
     <ClCompile Include="..\Common\Source\GraphicDX12.cpp">
       <Filter>Common</Filter>
     </ClCompile>
-    <ClCompile Include="..\Common\Source\cCamera.cpp" />
     <ClCompile Include="..\Common\Source\d3dUtil.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Source\d3dApp.cpp">
+      <Filter>Step2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Source\cCamera.cpp">
       <Filter>Common</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\Common\Source\d3dApp.h">
-      <Filter>Common</Filter>
-    </ClInclude>
     <ClInclude Include="..\Common\Source\d3dUtil.h">
       <Filter>Common</Filter>
     </ClInclude>
@@ -66,7 +65,12 @@
     <ClInclude Include="..\Common\Source\GraphicDX12.h">
       <Filter>Common</Filter>
     </ClInclude>
-    <ClInclude Include="..\Common\Source\cCamera.h" />
+    <ClInclude Include="..\Common\Source\d3dApp.h">
+      <Filter>Step2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\cCamera.h">
+      <Filter>Common</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="BaseShader.hlsl">

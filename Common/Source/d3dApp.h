@@ -34,9 +34,12 @@ protected:
 protected:
     static D3DApp* m_App;
 
-    HINSTANCE m_hAppInst = nullptr;
-    HWND      m_hMainWnd = nullptr;
-	bool      m_appPaused = false;  
+    HINSTANCE	m_hAppInst = nullptr;
+    HWND		m_hMainWnd = nullptr;
+	bool		m_AppPaused = false;  
+	bool		m_Resizing = false;
+	bool		m_Minimized = false;
+	bool		m_Maximized = false;
 
 	const int winWidth = 700;
 	const int winHeight = 700;

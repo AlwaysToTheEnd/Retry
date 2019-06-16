@@ -193,8 +193,6 @@ private:
 private:
 	static GraphicDevice* mApp;
 
-	HWND			m_MainWndHandle = nullptr;
-
 	bool			m_4xMsaaState = false;
 	UINT			m_4xmsaaQuality = 0;
 
@@ -207,8 +205,6 @@ private:
 	ComPtr<IDXGISwapChain>	m_SwapChain;
 	DXGI_FORMAT				m_BackBufferFormat = DXGI_FORMAT_R8G8B8A8_UNORM; // 0~1 
 	DXGI_FORMAT				m_DepthStencilFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
-	int						m_ClientWidth = 1000;
-	int						m_ClientHeight = 700;
 
 	ComPtr<ID3D12Device>	m_D3dDevice;
 
