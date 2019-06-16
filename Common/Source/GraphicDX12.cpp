@@ -294,8 +294,9 @@ void GraphicDX12::FlushCommandQueue()
 	}
 }
 
-void GraphicDX12::Update()
+void GraphicDX12::Update(cCamera& camera)
 {
+	m_ViewMatrix = *camera.GetViewMatrix();
 	UpdateMainPassCB();
 }
 

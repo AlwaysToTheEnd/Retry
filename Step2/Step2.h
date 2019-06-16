@@ -5,9 +5,6 @@
 #include "../Common/Source/Px1RefPtr.h"
 using namespace physx;
 
-#define APPMAIN static_cast<Step2*>(D3DApp::GetApp())
-
-
 inline MAT16 GetDXMatrixAtRigidActor(const PxRigidActor* rigidActor)
 {
 	MAT16 T;
@@ -43,11 +40,6 @@ public:
 	virtual bool Initialize() override;
 	virtual LRESULT MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) override;
 
-public:
-	GraphicDevice* GetGDDevice() { return m_GDevice.get(); }
-	PxPhysics* GetPXDevice() { return m_physics.Get(); }
-	const cCamera* GetCamera() { return &m_camera; }
-
 private:
 	virtual void Update() override;
 
@@ -58,7 +50,6 @@ private:
 private:
 
 	void PhysXBaseUpdate();
-	void MainPassUpdate();
 	static PxFilterFlags ScissorFilter(PxFilterObjectAttributes attributes0, PxFilterData filterData0,
 		PxFilterObjectAttributes attributes1, PxFilterData filterData1,
 		PxPairFlags& pairFlags, const void* constantBlock, PxU32 constantBlockSize);

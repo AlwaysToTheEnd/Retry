@@ -41,9 +41,6 @@ protected:
 	bool		m_Minimized = false;
 	bool		m_Maximized = false;
 
-	const int winWidth = 700;
-	const int winHeight = 700;
-
 	std::unique_ptr<GraphicDevice> m_GDevice;
 };
 

@@ -43,7 +43,9 @@ bool Step2::Initialize()
 
 void Step2::Update()
 {
-	MainPassUpdate();
+	m_camera.Update();
+	m_GDevice->Update(m_camera);
+
 	PhysXBaseUpdate();
 }
 
@@ -134,12 +136,6 @@ void Step2::PhysXBaseUpdate()
 {
 	m_scene->simulate(1.0f / 60.0f);
 	m_scene->fetchResults(true);
-}
-
-void Step2::MainPassUpdate()
-{
-	m_camera.Update();
-	m_GDevice->Update();
 }
 
 PxFilterFlags Step2::ScissorFilter(PxFilterObjectAttributes attributes0, PxFilterData filterData0, PxFilterObjectAttributes attributes1, PxFilterData filterData1, PxPairFlags & pairFlags, const void * constantBlock, PxU32 constantBlockSize)

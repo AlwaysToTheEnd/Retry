@@ -156,7 +156,7 @@ public:
 	GraphicDX12();
 	virtual ~GraphicDX12() override;
 
-	virtual void Update() override;
+	virtual void Update(cCamera& camera) override;
 	virtual void Draw() override;
 
 	virtual bool Init(HWND hWnd) override;
@@ -191,11 +191,6 @@ private:
 									const std::string& entrypoint,
 									const std::string& target);
 private:
-	static GraphicDevice* mApp;
-
-	bool			m_4xMsaaState = false;
-	UINT			m_4xmsaaQuality = 0;
-
 	D3D12_VIEWPORT	m_ScreenViewport;
 	D3D12_RECT		m_ScissorRect;
 	std::wstring	m_MainWndCaption = L"DX12";
@@ -226,13 +221,15 @@ private:
 	UINT							m_DSVDescriptorSize = 0;
 	UINT							m_CBV_SRV_UAV_DescriptorSize = 0;
 
+	bool							m_4xMsaaState = false;
+	UINT							m_4xmsaaQuality = 0;
+
 private:
 	std::unordered_map<std::string, ComPtr<ID3D12PipelineState>>	m_PSOs;
 	std::unordered_map<std::string, std::unique_ptr<Material>>		m_Materials;
 	std::vector<D3D12_INPUT_ELEMENT_DESC>							m_NTVertexInputLayout;
-	ComPtr<ID3D12RootSignature>										m_RootSignature = nullptr;
-
 	std::unordered_map<std::string, ComPtr<ID3DBlob>>				m_Shaders;
+	ComPtr<ID3D12RootSignature>										m_RootSignature = nullptr;
 
 	std::unique_ptr<FrameResource>	m_FrameResource;
 	PassConstants					m_MainPassCB;
