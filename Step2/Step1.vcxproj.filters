@@ -1,0 +1,76 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Common">
+      <UniqueIdentifier>{b91309b7-6ecb-4962-9b80-af21fe39d41d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Object">
+      <UniqueIdentifier>{101019ee-3020-4bd7-9c52-b82a980d7fbd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ShaderCollector">
+      <UniqueIdentifier>{67348260-40a2-4129-b80e-fab13ec1a6ee}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shader">
+      <UniqueIdentifier>{3c457f7f-7a52-4b0a-8079-ca10a5f8b00c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SceneCallback">
+      <UniqueIdentifier>{e650040a-cf58-4e68-b408-599da23aedc5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Step2">
+      <UniqueIdentifier>{cf1685e7-cd46-4a98-ad9f-1ababc9a7c30}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\Common\Source\d3dApp.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneSimulationEventCallBack.cpp">
+      <Filter>SceneCallback</Filter>
+    </ClCompile>
+    <ClCompile Include="Step2.cpp">
+      <Filter>Step2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Source\BaseClass.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Source\GraphicDX12.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Source\cCamera.cpp" />
+    <ClCompile Include="..\Common\Source\d3dUtil.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\Common\Source\d3dApp.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\d3dUtil.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\Px1RefPtr.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneSimulationEventCallBack.h">
+      <Filter>SceneCallback</Filter>
+    </ClInclude>
+    <ClInclude Include="Step2.h">
+      <Filter>Step2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\BaseClass.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\GraphicDevice.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\GraphicDX12.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\cCamera.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="BaseShader.hlsl">
+      <Filter>Shader</Filter>
+    </None>
+  </ItemGroup>
+</Project>
