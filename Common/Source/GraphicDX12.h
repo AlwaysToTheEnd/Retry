@@ -148,9 +148,10 @@ struct FrameResource
 
 	std::unique_ptr<UploadBuffer<PassConstants>> passCB = nullptr;
 	std::unique_ptr<UploadBuffer<MaterialConstants>> materialBuffer = nullptr;
+	//std::unique_ptr<UploadBuffer<ObjectConstants>> ObjectCB = nullptr;
 };
 
-class GraphicDX12 : public GraphicDevice
+class GraphicDX12 final : public GraphicDevice
 {
 public:
 	GraphicDX12();
@@ -180,10 +181,11 @@ private: // Object Base Builds
 	void BuildShadersAndInputLayout();
 	void BuildGeometry();
 	void BuildPSOs();
-	void BuildObjects();
+	void BuildRenderItem();
 
 private:
 	void UpdateMainPassCB();
+	void UpdateObjects();
 
 private:
 	ComPtr<ID3DBlob> CompileShader(	const std::wstring& filename,

@@ -19,18 +19,18 @@
     <Filter Include="Step2">
       <UniqueIdentifier>{cf1685e7-cd46-4a98-ad9f-1ababc9a7c30}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Common\DeviceInstance">
+      <UniqueIdentifier>{27127ed0-f67d-45d9-a30b-71b16763206b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Common\DeviceInstance\DeviceInterface">
+      <UniqueIdentifier>{d7c4ec32-78d5-4fcb-aec2-239f0062b96b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="SceneSimulationEventCallBack.cpp">
-      <Filter>SceneCallback</Filter>
-    </ClCompile>
     <ClCompile Include="Step2.cpp">
       <Filter>Step2</Filter>
     </ClCompile>
     <ClCompile Include="..\Common\Source\BaseClass.cpp">
-      <Filter>Common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Common\Source\GraphicDX12.cpp">
       <Filter>Common</Filter>
     </ClCompile>
     <ClCompile Include="..\Common\Source\d3dUtil.cpp">
@@ -42,6 +42,12 @@
     <ClCompile Include="..\Common\Source\cCamera.cpp">
       <Filter>Common</Filter>
     </ClCompile>
+    <ClCompile Include="..\Common\Source\PhysX4_0.cpp">
+      <Filter>Common\DeviceInstance</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Source\GraphicDX12.cpp">
+      <Filter>Common\DeviceInstance</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Common\Source\d3dUtil.h">
@@ -50,19 +56,10 @@
     <ClInclude Include="..\Common\Source\Px1RefPtr.h">
       <Filter>Common</Filter>
     </ClInclude>
-    <ClInclude Include="SceneSimulationEventCallBack.h">
-      <Filter>SceneCallback</Filter>
-    </ClInclude>
     <ClInclude Include="Step2.h">
       <Filter>Step2</Filter>
     </ClInclude>
     <ClInclude Include="..\Common\Source\BaseClass.h">
-      <Filter>Common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Common\Source\GraphicDevice.h">
-      <Filter>Common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Common\Source\GraphicDX12.h">
       <Filter>Common</Filter>
     </ClInclude>
     <ClInclude Include="..\Common\Source\d3dApp.h">
@@ -70,6 +67,18 @@
     </ClInclude>
     <ClInclude Include="..\Common\Source\cCamera.h">
       <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\PhysX4_0.h">
+      <Filter>Common\DeviceInstance</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\GraphicDX12.h">
+      <Filter>Common\DeviceInstance</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\GraphicDevice.h">
+      <Filter>Common\DeviceInstance\DeviceInterface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\PhysicsDevice.h">
+      <Filter>Common\DeviceInstance\DeviceInterface</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

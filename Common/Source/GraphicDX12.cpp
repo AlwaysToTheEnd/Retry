@@ -87,7 +87,7 @@ bool GraphicDX12::Init(HWND hWnd)
 	BuildPSOs();					// 렌더링 파이프 라인에 대한 설계도라고 생각하면 됨.
 	BuildGeometry();				//
 	BuildMaterials();				//
-	BuildObjects();					//
+	BuildRenderItem();				//
 	BuildFrameResources();			// FrameResource를 통해서 메모리의 데이터들(ViewMatrix같은)을 GPU에 업로드한다.
 
 	ThrowIfFailed(m_CommandList->Close());
@@ -315,7 +315,7 @@ void GraphicDX12::Draw()
 	m_CommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(),
 		D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
 
-	m_CommandList->ClearRenderTargetView(CurrentBackBufferView(), Colors::Gray, 0, nullptr);
+	m_CommandList->ClearRenderTargetView(CurrentBackBufferView(), Colors::Aqua, 0, nullptr);
 	m_CommandList->ClearDepthStencilView(DepthStencilView(), D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
 
 	m_CommandList->OMSetRenderTargets(1, &CurrentBackBufferView(), true, &DepthStencilView());
@@ -469,8 +469,9 @@ void GraphicDX12::BuildPSOs()
 	ThrowIfFailed(m_D3dDevice->CreateGraphicsPipelineState(&opaquePsoDesc, IID_PPV_ARGS(&m_PSOs["base"])));
 }
 
-void GraphicDX12::BuildObjects()
+void GraphicDX12::BuildRenderItem()
 {
+	
 }
 
 void GraphicDX12::UpdateMainPassCB()
@@ -499,6 +500,11 @@ void GraphicDX12::UpdateMainPassCB()
 	m_MainPassCB.Lights[1].strength = { 0.5f, 0.5f, 0.5f };
 	m_MainPassCB.Lights[2].direction = { 0.0f, -0.707f, -0.707f };
 	m_MainPassCB.Lights[2].strength = { 0.2f, 0.2f, 0.2f };
+}
+
+void GraphicDX12::UpdateObjects()
+{
+
 }
 
 ComPtr<ID3DBlob> GraphicDX12::CompileShader(

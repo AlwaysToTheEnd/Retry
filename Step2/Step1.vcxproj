@@ -24,7 +24,7 @@
     <ClCompile Include="..\Common\Source\d3dApp.cpp" />
     <ClCompile Include="..\Common\Source\d3dUtil.cpp" />
     <ClCompile Include="..\Common\Source\GraphicDX12.cpp" />
-    <ClCompile Include="SceneSimulationEventCallBack.cpp" />
+    <ClCompile Include="..\Common\Source\PhysX4_0.cpp" />
     <ClCompile Include="Step2.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -34,8 +34,9 @@
     <ClInclude Include="..\Common\Source\d3dUtil.h" />
     <ClInclude Include="..\Common\Source\GraphicDevice.h" />
     <ClInclude Include="..\Common\Source\GraphicDX12.h" />
+    <ClInclude Include="..\Common\Source\PhysicsDevice.h" />
+    <ClInclude Include="..\Common\Source\PhysX4_0.h" />
     <ClInclude Include="..\Common\Source\Px1RefPtr.h" />
-    <ClInclude Include="SceneSimulationEventCallBack.h" />
     <ClInclude Include="Step2.h" />
   </ItemGroup>
   <ItemGroup>

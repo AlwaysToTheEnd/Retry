@@ -1,12 +1,7 @@
 #pragma once
 #include "d3dUtil.h"
-
-#define CURRENT_DEVICE_DX12
-
-
-#ifdef CURRENT_DEVICE_DX12
-#include "GraphicDX12.h"
-#endif
+#include "GraphicDevice.h"
+#include "PhysicsDevice.h"
 
 
 class D3DApp
@@ -25,8 +20,9 @@ public:
 	int Run();
 
 protected:
-	virtual void Update()=0;
- 	bool InitDrawDevice();
+	virtual void Update() = 0;
+ 	virtual bool InitDrawDevice() = 0;
+	virtual bool InitPyhsicsDevice() = 0;
 
 protected:
 	bool InitMainWindow();
@@ -41,6 +37,7 @@ protected:
 	bool		m_Minimized = false;
 	bool		m_Maximized = false;
 
-	std::unique_ptr<GraphicDevice> m_GDevice;
+	std::unique_ptr<GraphicDevice>	m_GDevice;
+	std::unique_ptr<PhysicsDevice>	m_PXDevice;
 };
 

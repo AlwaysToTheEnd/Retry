@@ -61,6 +61,9 @@ bool D3DApp::Initialize()
 	if(!InitDrawDevice())
 		return false;
 
+	if (!InitPyhsicsDevice())
+		return false;
+
 	return true;
 }
  
@@ -166,16 +169,6 @@ LRESULT D3DApp::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	return DefWindowProc(hwnd, msg, wParam, lParam);
 }
 
-bool D3DApp::InitDrawDevice()
-{
-
-#ifdef CURRENT_DEVICE_DX12
-	m_GDevice = make_unique<GraphicDX12>();
-#endif
-
-	return m_GDevice->Init(m_hMainWnd);
-}
-
 bool D3DApp::InitMainWindow()
 {
 	WNDCLASS wc;
@@ -196,7 +189,7 @@ bool D3DApp::InitMainWindow()
 		return false;
 	}
 
-	RECT R = { 0, 0, winWidth, winHeight };
+	RECT R = { 0, 0, 700, 700 };
     AdjustWindowRect(&R, WS_OVERLAPPEDWINDOW, false);
 	int width  = R.right - R.left;
 	int height = R.bottom - R.top;
