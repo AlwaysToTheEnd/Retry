@@ -2,18 +2,8 @@
 #include "PhysicsDevice.h"
 #include "PxPhysicsAPI.h"
 #include "Px1RefPtr.h"
+class ID3D12Device;
 
-class MyGPULoadHook :public PxGpuLoadHook
-{
-public:
-	MyGPULoadHook() = default;
-	virtual ~MyGPULoadHook() = default;
-
-	virtual const char* getPhysXGpuDllName() const override
-	{
-		return "../Out/PhysXGpu_64.dll";
-	}
-};
 
 class PhysX4_0 final : public PhysicsDevice
 {
@@ -21,11 +11,11 @@ public:
 	PhysX4_0();
 	virtual ~PhysX4_0();
 
-	virtual bool Init();
+	virtual bool Init(void* graphicDevicePtr);
 	virtual void Update();
 
 private:
-	static physx::PxFilterFlags ScissorFilter(physx::PxFilterObjectAttributes attributes0, physx::PxFilterData filterData0,
+	physx::PxFilterFlags ScissorFilter(physx::PxFilterObjectAttributes attributes0, physx::PxFilterData filterData0,
 		physx::PxFilterObjectAttributes attributes1, physx::PxFilterData filterData1,
 		physx::PxPairFlags& pairFlags, const void* constantBlock, physx::PxU32 constantBlockSize);
 

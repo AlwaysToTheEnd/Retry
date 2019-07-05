@@ -24,7 +24,7 @@ PhysX4_0::~PhysX4_0()
 	m_foundation = nullptr;
 }
 
-bool PhysX4_0::Init()
+bool PhysX4_0::Init(void* graphicDevicePtr)
 {
 	// 가장 기초가 되는 Foundation 생성, 싱글톤 클래스임에 주의하자.
 	m_foundation = PxCreateFoundation(PX_PHYSICS_VERSION,
@@ -56,25 +56,27 @@ bool PhysX4_0::Init()
 	// 쓰레드의 수를 정한다.
 	m_dispatcher = PxDefaultCpuDispatcherCreate(info.dwNumberOfProcessors);
 
-	/*MyGPULoadHook loadHook;
-	PxSetPhysXGpuLoadHook(&loadHook);
-
-	PxCudaContextManagerDesc cudaDesc;
-	cudaDesc.graphicsDevice = m_device.Get();
-	cudaDesc.interopMode = PxCudaInteropMode::D3D10_INTEROP;
-	m_cudaManager = PxCreateCudaContextManager(*m_foundation, cudaDesc);
-	int isPhysXGPU = PxGetSuggestedCudaDeviceOrdinal(m_errorCallback);*/
-
 	// 오브젝트들이 시뮬레이션 될 공간을 생성한다.
 	// 씬 안에 시뮬레이션 될 액터 등 이 담기고 씬을 기준으로 시뮬레이션 한다.
 	// PxSceneDesc는 씬의 속성 정보를 담은 구조체이다.
 	PxSceneDesc sceneDesc(m_physics->getTolerancesScale());
 	sceneDesc.gravity = PxVec3(0.0f, -9.81f, 0.0f);
 	sceneDesc.cpuDispatcher = m_dispatcher.Get();
-	//sceneDesc.gpuDispatcher = m_cudaManager->getGpuDispatcher();
 	sceneDesc.broadPhaseType = PxBroadPhaseType::eABP;
 	sceneDesc.filterShader = PxDefaultSimulationFilterShader;
-	//sceneDesc.flags |= PxSceneFlag::eENABLE_GPU_DYNAMICS;
+
+	if (graphicDevicePtr != nullptr)
+	{
+		PxCudaContextManagerDesc cudaDesc;
+		cudaDesc.graphicsDevice = graphicDevicePtr;
+		m_cudaManager = PxCreateCudaContextManager(*m_foundation, cudaDesc);
+		sceneDesc.gpuDispatcher = m_cudaManager->getGpuDispatcher();
+		sceneDesc.flags |= PxSceneFlag::eENABLE_GPU_DYNAMICS;
+		sceneDesc.flags |= PxSceneFlag::eENABLE_PCM;
+		sceneDesc.flags |= PxSceneFlag::eENABLE_STABILIZATION;
+		sceneDesc.broadPhaseType = PxBroadPhaseType::eGPU;
+		sceneDesc.gpuMaxNumPartitions = 8;
+	}
 
 	// 씬에서의 시뮬레이션,위상 이벤트등을 콜백 인터페이스로 제어한다
 

@@ -2,6 +2,7 @@
 #include <Windows.h>
 #include <assert.h>
 
+
 CGH::MAT16::MAT16()
 {
 	Identity();

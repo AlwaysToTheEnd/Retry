@@ -6,6 +6,6 @@ public:
 	PhysicsDevice()=default;
 	virtual ~PhysicsDevice()=default;
 
-	virtual bool Init() = 0;
+	virtual bool Init(void* graphicDevicePtr) = 0;
 	virtual void Update() = 0;
 };

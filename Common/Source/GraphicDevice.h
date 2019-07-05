@@ -10,10 +10,11 @@ public:
 	GraphicDevice() = default;
 	virtual ~GraphicDevice() = default;
 	virtual bool Init(HWND hWnd) = 0;
-	virtual void Update(cCamera& camera) = 0;
+	virtual void Update(const cCamera& camera) = 0;
 	virtual void Draw() = 0;
 
 	virtual void OnResize()=0;
+	virtual void* GetDevicePtr() = 0;
 
 	void SetClientSize(UINT width, UINT height) { m_ClientWidth = width, m_ClientHeight = height; }
 

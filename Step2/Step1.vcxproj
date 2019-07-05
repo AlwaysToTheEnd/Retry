@@ -118,7 +118,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>./../Common/Include;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./../Common/packages/directxtk12_desktop_2015.2018.9.13.1/include;./../Common/Include</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>
@@ -128,7 +128,7 @@
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
-      <AdditionalLibraryDirectories>./../Common/Lib;</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>./../Common/packages/directxtk12_desktop_2015.2018.9.13.1/lib/x64/Debug;./../Common/Lib</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <AdditionalOptions>/LIBPATH:../../Common/Lib SimulationController_static_64.lib SceneQuery_static_64.lib PhysXVehicle_static_64.lib PhysXTask_static_64.lib PhysXPvdSDK_static_64.lib PhysXFoundation_64.lib PhysXExtensions_static_64.lib PhysXCooking_64.lib PhysXCommon_64.lib PhysXCharacterKinematic_static_64.lib PhysX_64.lib LowLevelDynamics_static_64.lib LowLevelAABB_static_64.lib FastXml_static_64.lib LowLevel_static_64.lib /DEBUG</AdditionalOptions>
@@ -170,6 +170,5 @@
     </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <ImportGroup Label="ExtensionTargets">
-  </ImportGroup>
+  <ImportGroup Label="ExtensionTargets" />
 </Project>

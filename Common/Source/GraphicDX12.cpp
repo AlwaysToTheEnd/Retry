@@ -1,5 +1,6 @@
 #include "GraphicDX12.h"
 
+
 using namespace DirectX;
 using namespace std;
 
@@ -23,7 +24,7 @@ bool GraphicDX12::Init(HWND hWnd)
 		debugController->EnableDebugLayer();
 	}
 #endif
-
+	
 	HRESULT hr = S_OK;
 	
 	//스왑 체인을 만들기 위해선 DXGI Factory가 필요함.
@@ -294,7 +295,7 @@ void GraphicDX12::FlushCommandQueue()
 	}
 }
 
-void GraphicDX12::Update(cCamera& camera)
+void GraphicDX12::Update(const cCamera& camera)
 {
 	m_ViewMatrix = *camera.GetViewMatrix();
 	UpdateMainPassCB();
@@ -323,7 +324,7 @@ void GraphicDX12::Draw()
 	m_CommandList->SetGraphicsRootSignature(m_RootSignature.Get());
 
 	auto matBuffer = m_FrameResource->materialBuffer->Resource();
-	m_CommandList->SetGraphicsRootShaderResourceView(1, matBuffer->GetGPUVirtualAddress());
+	m_CommandList->SetGraphicsRootShaderResourceView(0, matBuffer->GetGPUVirtualAddress());
 
 	m_CommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(),
 		D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));

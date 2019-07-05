@@ -124,7 +124,7 @@ struct PassConstants
 	float cbPerObjectPad1 = 0.0f;
 	XMFLOAT2 renderTargetSize = { 0.0f, 0.0f };
 	XMFLOAT2 invRenderTargetSize = { 0.0f, 0.0f };
-
+	
 	XMFLOAT4 ambientLight = { 0.0f, 0.0f, 0.0f, 1.0f };
 
 	Light Lights[16];
@@ -157,11 +157,12 @@ public:
 	GraphicDX12();
 	virtual ~GraphicDX12() override;
 
-	virtual void Update(cCamera& camera) override;
+	virtual void Update(const cCamera& camera) override;
 	virtual void Draw() override;
 
 	virtual bool Init(HWND hWnd) override;
 	virtual void OnResize() override;
+	virtual void* GetDevicePtr() override { return m_D3dDevice.Get(); }
 
 private: // Device Base Func
 	void CreateCommandObject();

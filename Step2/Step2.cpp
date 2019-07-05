@@ -45,7 +45,7 @@ bool Step2::InitPyhsicsDevice()
 {
 	m_PXDevice = make_unique<PhysX4_0>();
 	
-	return m_PXDevice->Init();
+	return m_PXDevice->Init(m_GDevice->GetDevicePtr());
 }
 
 void Step2::InitObjects()
