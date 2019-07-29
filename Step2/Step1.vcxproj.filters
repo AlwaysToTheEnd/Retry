@@ -60,6 +60,12 @@
     <ClCompile Include="..\Common\Source\cTextureHeap.cpp">
       <Filter>Common\DeviceInstance\DX12Supporters</Filter>
     </ClCompile>
+    <ClCompile Include="..\Common\Source\DirectXTK\Keyboard.cpp">
+      <Filter>Common\CodeResources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Source\DirectXTK\Mouse.cpp">
+      <Filter>Common\CodeResources</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Step2.h">

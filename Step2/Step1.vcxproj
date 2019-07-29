@@ -24,6 +24,8 @@
     <ClCompile Include="..\Common\Source\cTextureHeap.cpp" />
     <ClCompile Include="..\Common\Source\d3dApp.cpp" />
     <ClCompile Include="..\Common\Source\d3dUtil.cpp" />
+    <ClCompile Include="..\Common\Source\DirectXTK\Keyboard.cpp" />
+    <ClCompile Include="..\Common\Source\DirectXTK\Mouse.cpp" />
     <ClCompile Include="..\Common\Source\GraphicDX12.cpp" />
     <ClCompile Include="..\Common\Source\PhysX4_0.cpp" />
     <ClCompile Include="Step2.cpp" />
@@ -125,12 +127,12 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>./../Common/Include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./../Common/Source;./../Common/Include</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>
       </PrecompiledHeaderFile>
-      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>

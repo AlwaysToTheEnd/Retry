@@ -1,4 +1,5 @@
 #include "cTextureHeap.h"
+#include "d3dx12.h"
 
 using namespace DirectX;
 using namespace std;
@@ -27,28 +28,28 @@ void cTextureHeap::AddTexture(ID3D12CommandQueue* cmdqueue, const string& name, 
 	addTexture.num = (UINT)m_Textures.size();
 	addTexture.tex.name = name;
 
-	ResourceUploadBatch resourceUpload(m_device);
-	resourceUpload.Begin();
+	//ResourceUploadBatch resourceUpload(m_device);
+	//resourceUpload.Begin();
 
-	size_t index = filename.find('.') + 1;
-	wstring extension;
-	extension.assign(&filename[index], filename.size() - index);
+	//size_t index = filename.find('.') + 1;
+	//wstring extension;
+	//extension.assign(&filename[index], filename.size() - index);
 
-	if (extension == L"dds")
-	{
-		ThrowIfFailed(CreateDDSTextureFromFile(m_device,
-			resourceUpload, filename.c_str(), addTexture.tex.resource.GetAddressOf()));
-		m_Textures[name] = addTexture;
-	}
-	else
-	{
-		ThrowIfFailed(CreateWICTextureFromFile(m_device,
-			resourceUpload, filename.c_str(), addTexture.tex.resource.GetAddressOf()));
-		m_Textures[name] = addTexture;
-	}
+	//if (extension == L"dds")
+	//{
+	//	ThrowIfFailed(CreateDDSTextureFromFile(m_device,
+	//		resourceUpload, filename.c_str(), addTexture.tex.resource.GetAddressOf()));
+	//	m_Textures[name] = addTexture;
+	//}
+	//else
+	//{
+	//	ThrowIfFailed(CreateWICTextureFromFile(m_device,
+	//		resourceUpload, filename.c_str(), addTexture.tex.resource.GetAddressOf()));
+	//	m_Textures[name] = addTexture;
+	//}
 
-	auto uploadResourceFinished = resourceUpload.End(cmdqueue);
-	uploadResourceFinished.wait();
+	//auto uploadResourceFinished = resourceUpload.End(cmdqueue);
+	//uploadResourceFinished.wait();
 
 	auto srvHeapHandle = (CD3DX12_CPU_DESCRIPTOR_HANDLE)m_SrvHeap->GetCPUDescriptorHandleForHeapStart();
 	srvHeapHandle.Offset(addTexture.num, m_SrvDescriptorSize);

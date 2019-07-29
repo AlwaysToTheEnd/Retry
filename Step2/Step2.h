@@ -3,7 +3,6 @@
 #include "../Common/Source/GraphicDX12.h"
 #include "../Common/Source/d3dApp.h"
 #include "../Common/Source/cCamera.h"
-
 #include "DirectXTK/Mouse.h"
 #include "DirectXTK/Keyboard.h"
 

@@ -1,14 +1,7 @@
 #pragma once
 #include <wrl.h>
+#include <d3d12.h>
 #include "d3dUtil.h"
-#include "d3dx12.h"
-
-#pragma comment(lib,"DirectXTK12.lib")
-
-#include "DirectXTK/DirectXHelpers.h"
-#include "DirectXTK/DDSTextureLoader.h"
-#include "DirectXTK/WICTextureLoader.h"
-#include "DirectXTK/ResourceUploadBatch.h"
 
 using Microsoft::WRL::ComPtr;
 
