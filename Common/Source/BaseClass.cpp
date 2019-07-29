@@ -21,7 +21,7 @@ CGH::MAT16::MAT16(const MAT16& src)
 void CGH::MAT16::Identity()
 {
 	ZeroMemory(m, sizeof(MAT16));
-
+		
 	m[0][0] = 1;
 	m[1][1] = 1;
 	m[2][2] = 1;

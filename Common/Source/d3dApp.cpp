@@ -25,6 +25,14 @@ D3DApp::~D3DApp()
 {
 }
 
+void D3DApp::BaseUpdate()
+{
+	Update();
+
+	m_PXDevice->Update();
+	m_GDevice->Update();
+}
+
 int D3DApp::Run()
 {
 	MSG msg = {};
@@ -40,7 +48,7 @@ int D3DApp::Run()
         {	
 			if( !m_AppPaused )
 			{
-				Update();	
+				BaseUpdate();	
 				m_GDevice->Draw();
 			}
 			else
@@ -55,14 +63,12 @@ int D3DApp::Run()
 
 bool D3DApp::Initialize()
 {
-	if(!InitMainWindow())
-		return false;
+	if(!InitMainWindow()) return false;
 
-	if(!InitDrawDevice())
-		return false;
+	SelectDevices();
 
-	if (!InitPyhsicsDevice())
-		return false;
+	if (!m_GDevice->Init(m_hMainWnd)) return false;
+	if (!m_PXDevice->Init(m_GDevice->GetDevicePtr())) return false;
 
 	return true;
 }
@@ -188,7 +194,7 @@ bool D3DApp::InitMainWindow()
 		MessageBox(0, L"RegisterClass Failed.", 0, 0);
 		return false;
 	}
-
+	
 	RECT R = { 0, 0, 700, 700 };
     AdjustWindowRect(&R, WS_OVERLAPPEDWINDOW, false);
 	int width  = R.right - R.left;

@@ -15,49 +15,28 @@ Step2::~Step2()
 	
 }
 
-bool Step2::Initialize()
-{
-	if (!D3DApp::Initialize())
-	{
-		return false;
-	}
-
-	InitObjects();
-
-	return true;
-}
-
 void Step2::Update()
 {
-	m_camera.Update();
-	m_PXDevice->Update();
-	m_GDevice->Update(m_camera);
+	m_Camera.Update();
 }
 
-bool Step2::InitDrawDevice()
+void Step2::SelectDevices()
 {
-	m_GDevice = make_unique<GraphicDX12>();
-
-	return m_GDevice->Init(m_hMainWnd);
-}
-
-bool Step2::InitPyhsicsDevice()
-{
-	m_PXDevice = make_unique<PhysX4_0>();
-	
-	return m_PXDevice->Init(m_GDevice->GetDevicePtr());
+	SelectDeviceByTemplate<UsingGraphicDevice, UsingPhsicsDevice>();
 }
 
 void Step2::InitObjects()
 {
-	
+	m_GDevice->SetCamera(&m_Camera);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
 LRESULT Step2::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	m_camera.WndProc(hwnd, msg, wParam, lParam);
+	m_Camera.WndProc(hwnd, msg, wParam, lParam);
+	m_Mouse.ProcessMessage(msg, wParam, lParam);
+	m_Keyboard.ProcessMessage(msg, wParam, lParam);
 
 	return D3DApp::MsgProc(hwnd, msg, wParam, lParam);
 }
@@ -81,6 +60,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, PSTR, int)
 		std::string stringMessage(e.what());
 		std::wstring exceptionMessage(stringMessage.begin(), stringMessage.end());
 		MessageBox(nullptr, exceptionMessage.c_str(), L"HR Failed", MB_OK);
+		return 0;
+	}
+	catch (DxException e)
+	{
+		MessageBox(nullptr, e.ToString().c_str(), L"HR Failed", MB_OK);
 		return 0;
 	}
 }

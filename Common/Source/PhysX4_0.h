@@ -1,13 +1,15 @@
 #pragma once
-#include "PhysicsDevice.h"
+#include "IPhysicsDevice.h"
 #include "PxPhysicsAPI.h"
 #include "Px1RefPtr.h"
-class ID3D12Device;
 
+#define PDEVICE
 
-class PhysX4_0 final : public PhysicsDevice
+class PhysX4_0 final : public IPhysicsDevice
 {
-public:
+	friend class D3DApp;
+
+private:
 	PhysX4_0();
 	virtual ~PhysX4_0();
 

@@ -21,6 +21,7 @@
   <ItemGroup>
     <ClCompile Include="..\Common\Source\BaseClass.cpp" />
     <ClCompile Include="..\Common\Source\cCamera.cpp" />
+    <ClCompile Include="..\Common\Source\cTextureHeap.cpp" />
     <ClCompile Include="..\Common\Source\d3dApp.cpp" />
     <ClCompile Include="..\Common\Source\d3dUtil.cpp" />
     <ClCompile Include="..\Common\Source\GraphicDX12.cpp" />
@@ -30,17 +31,23 @@
   <ItemGroup>
     <ClInclude Include="..\Common\Source\BaseClass.h" />
     <ClInclude Include="..\Common\Source\cCamera.h" />
+    <ClInclude Include="..\Common\Source\cTextureHeap.h" />
     <ClInclude Include="..\Common\Source\d3dApp.h" />
     <ClInclude Include="..\Common\Source\d3dUtil.h" />
-    <ClInclude Include="..\Common\Source\GraphicDevice.h" />
+    <ClInclude Include="..\Common\Source\d3dx12Residency.h" />
+    <ClInclude Include="..\Common\Source\IGraphicDevice.h" />
     <ClInclude Include="..\Common\Source\GraphicDX12.h" />
-    <ClInclude Include="..\Common\Source\PhysicsDevice.h" />
+    <ClInclude Include="..\Common\Source\IPhysicsDevice.h" />
     <ClInclude Include="..\Common\Source\PhysX4_0.h" />
     <ClInclude Include="..\Common\Source\Px1RefPtr.h" />
     <ClInclude Include="Step2.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="BaseShader.hlsl" />
+    <None Include="..\Common\MainShaders\BaseShader.hlsl">
+      <FileType>Document</FileType>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.1</ShaderModel>
+    </None>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
@@ -118,20 +125,22 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>./../Common/packages/directxtk12_desktop_2015.2018.9.13.1/include;./../Common/Include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./../Common/Include</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>
       </PrecompiledHeaderFile>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
-      <AdditionalLibraryDirectories>./../Common/packages/directxtk12_desktop_2015.2018.9.13.1/lib/x64/Debug;./../Common/Lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>./../Common/Lib</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <AdditionalOptions>/LIBPATH:../../Common/Lib SimulationController_static_64.lib SceneQuery_static_64.lib PhysXVehicle_static_64.lib PhysXTask_static_64.lib PhysXPvdSDK_static_64.lib PhysXFoundation_64.lib PhysXExtensions_static_64.lib PhysXCooking_64.lib PhysXCommon_64.lib PhysXCharacterKinematic_static_64.lib PhysX_64.lib LowLevelDynamics_static_64.lib LowLevelAABB_static_64.lib FastXml_static_64.lib LowLevel_static_64.lib /DEBUG</AdditionalOptions>
+      <IgnoreSpecificDefaultLibraries>
+      </IgnoreSpecificDefaultLibraries>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">

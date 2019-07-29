@@ -22,7 +22,16 @@
     <Filter Include="Common\DeviceInstance">
       <UniqueIdentifier>{27127ed0-f67d-45d9-a30b-71b16763206b}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Common\DeviceInstance\DeviceInterface">
+    <Filter Include="Common\DeviceInstance\DX12Supporters">
+      <UniqueIdentifier>{a75df95d-8f89-4b38-b080-692fa9cb41c5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Common\DeviceInstance\PXSupporters">
+      <UniqueIdentifier>{651e4487-5881-41bc-abe0-9edc2286a6e2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Common\CodeResources">
+      <UniqueIdentifier>{06ee7465-67f2-45d5-aa98-2bdb29a4758e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Common\DeviceInstance\_Interface">
       <UniqueIdentifier>{d7c4ec32-78d5-4fcb-aec2-239f0062b96b}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -30,59 +39,68 @@
     <ClCompile Include="Step2.cpp">
       <Filter>Step2</Filter>
     </ClCompile>
-    <ClCompile Include="..\Common\Source\BaseClass.cpp">
-      <Filter>Common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Common\Source\d3dUtil.cpp">
-      <Filter>Common</Filter>
-    </ClCompile>
     <ClCompile Include="..\Common\Source\d3dApp.cpp">
       <Filter>Step2</Filter>
     </ClCompile>
-    <ClCompile Include="..\Common\Source\cCamera.cpp">
-      <Filter>Common</Filter>
+    <ClCompile Include="..\Common\Source\BaseClass.cpp">
+      <Filter>Common\CodeResources</Filter>
     </ClCompile>
-    <ClCompile Include="..\Common\Source\PhysX4_0.cpp">
-      <Filter>Common\DeviceInstance</Filter>
+    <ClCompile Include="..\Common\Source\cCamera.cpp">
+      <Filter>Common\CodeResources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Source\d3dUtil.cpp">
+      <Filter>Common\CodeResources</Filter>
     </ClCompile>
     <ClCompile Include="..\Common\Source\GraphicDX12.cpp">
-      <Filter>Common\DeviceInstance</Filter>
+      <Filter>Common\DeviceInstance\DX12Supporters</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Source\PhysX4_0.cpp">
+      <Filter>Common\DeviceInstance\PXSupporters</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Source\cTextureHeap.cpp">
+      <Filter>Common\DeviceInstance\DX12Supporters</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\Common\Source\d3dUtil.h">
-      <Filter>Common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Common\Source\Px1RefPtr.h">
-      <Filter>Common</Filter>
-    </ClInclude>
     <ClInclude Include="Step2.h">
       <Filter>Step2</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Common\Source\BaseClass.h">
-      <Filter>Common</Filter>
     </ClInclude>
     <ClInclude Include="..\Common\Source\d3dApp.h">
       <Filter>Step2</Filter>
     </ClInclude>
-    <ClInclude Include="..\Common\Source\cCamera.h">
-      <Filter>Common</Filter>
+    <ClInclude Include="..\Common\Source\BaseClass.h">
+      <Filter>Common\CodeResources</Filter>
     </ClInclude>
-    <ClInclude Include="..\Common\Source\PhysX4_0.h">
-      <Filter>Common\DeviceInstance</Filter>
+    <ClInclude Include="..\Common\Source\cCamera.h">
+      <Filter>Common\CodeResources</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\d3dUtil.h">
+      <Filter>Common\CodeResources</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\Px1RefPtr.h">
+      <Filter>Common\CodeResources</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\IPhysicsDevice.h">
+      <Filter>Common\DeviceInstance\_Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\IGraphicDevice.h">
+      <Filter>Common\DeviceInstance\_Interface</Filter>
     </ClInclude>
     <ClInclude Include="..\Common\Source\GraphicDX12.h">
-      <Filter>Common\DeviceInstance</Filter>
+      <Filter>Common\DeviceInstance\DX12Supporters</Filter>
     </ClInclude>
-    <ClInclude Include="..\Common\Source\GraphicDevice.h">
-      <Filter>Common\DeviceInstance\DeviceInterface</Filter>
+    <ClInclude Include="..\Common\Source\PhysX4_0.h">
+      <Filter>Common\DeviceInstance\PXSupporters</Filter>
     </ClInclude>
-    <ClInclude Include="..\Common\Source\PhysicsDevice.h">
-      <Filter>Common\DeviceInstance\DeviceInterface</Filter>
+    <ClInclude Include="..\Common\Source\d3dx12Residency.h">
+      <Filter>Common\CodeResources</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\cTextureHeap.h">
+      <Filter>Common\DeviceInstance\DX12Supporters</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="BaseShader.hlsl">
+    <None Include="..\Common\MainShaders\BaseShader.hlsl">
       <Filter>Shader</Filter>
     </None>
   </ItemGroup>

@@ -1,5 +1,5 @@
 #pragma once
-#include "GraphicDevice.h"
+#include "IGraphicDevice.h"
 
 #include <wrl.h>
 #include <dxgi1_4.h>
@@ -12,10 +12,12 @@
 #include <algorithm>
 #include "d3dUtil.h"
 #include "d3dx12.h"
+#include "d3dx12Residency.h"
 
 #pragma comment(lib,"d3dcompiler.lib")
 #pragma comment(lib, "D3D12.lib")
 #pragma comment(lib, "dxgi.lib")
+#pragma comment(lib,"DirectXTK12.lib")
 
 using Microsoft::WRL::ComPtr;
 using namespace DirectX;
@@ -33,7 +35,7 @@ public:
 		{
 			m_ElementByteSize = (sizeof(T) + 255) & ~255;
 		}
-
+		
 		ThrowIfFailed(device->CreateCommittedResource(
 			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
 			D3D12_HEAP_FLAG_NONE,
@@ -151,20 +153,25 @@ struct FrameResource
 	//std::unique_ptr<UploadBuffer<ObjectConstants>> ObjectCB = nullptr;
 };
 
-class GraphicDX12 final : public GraphicDevice
+class GraphicDX12 final : public IGraphicDevice
 {
-public:
+	friend class D3DApp;
+
+private:
 	GraphicDX12();
 	virtual ~GraphicDX12() override;
 
-	virtual void Update(const cCamera& camera) override;
+	virtual void Update() override;
 	virtual void Draw() override;
-
 	virtual bool Init(HWND hWnd) override;
 	virtual void OnResize() override;
 	virtual void* GetDevicePtr() override { return m_D3dDevice.Get(); }
 
-private: // Device Base Func
+public: // Used Functions
+	virtual void SetCamera(cCamera* camera) { m_currCamera = camera; }
+
+
+private: // Device Base Functions
 	void CreateCommandObject();
 	void CreateRtvAndDsvDescriptorHeaps();
 	void CreateSwapChain();
@@ -226,6 +233,8 @@ private:
 
 	bool							m_4xMsaaState = false;
 	UINT							m_4xmsaaQuality = 0;
+
+	cCamera*						m_currCamera = nullptr;
 
 private:
 	std::unordered_map<std::string, ComPtr<ID3D12PipelineState>>	m_PSOs;

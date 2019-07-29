@@ -1,5 +1,5 @@
 #include "GraphicDX12.h"
-
+#include "cCamera.h"
 
 using namespace DirectX;
 using namespace std;
@@ -90,7 +90,7 @@ bool GraphicDX12::Init(HWND hWnd)
 	BuildMaterials();				//
 	BuildRenderItem();				//
 	BuildFrameResources();			// FrameResource를 통해서 메모리의 데이터들(ViewMatrix같은)을 GPU에 업로드한다.
-
+	
 	ThrowIfFailed(m_CommandList->Close());
 	ID3D12CommandList* cmdsLists[] = { m_CommandList.Get() };
 	m_CommandQueue->ExecuteCommandLists(_countof(cmdsLists), cmdsLists);
@@ -182,7 +182,6 @@ void GraphicDX12::OnResize()
 	assert(m_D3dDevice);
 	assert(m_SwapChain);
 	assert(m_DirectCmdListAlloc);
-
 	// Command Queue를 비워준다
 	FlushCommandQueue();
 
@@ -295,9 +294,13 @@ void GraphicDX12::FlushCommandQueue()
 	}
 }
 
-void GraphicDX12::Update(const cCamera& camera)
+void GraphicDX12::Update()
 {
-	m_ViewMatrix = *camera.GetViewMatrix();
+	if (m_currCamera)
+	{
+		m_ViewMatrix = *m_currCamera->GetViewMatrix();
+	}
+
 	UpdateMainPassCB();
 }
 
@@ -329,7 +332,6 @@ void GraphicDX12::Draw()
 	m_CommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(),
 		D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
 	ThrowIfFailed(m_CommandList->Close());
-
 	ID3D12CommandList* cmdsLists[] = { m_CommandList.Get() };
 	m_CommandQueue->ExecuteCommandLists(_countof(cmdsLists), cmdsLists);
 
@@ -380,15 +382,16 @@ void GraphicDX12::BuildMaterials()
 
 void GraphicDX12::BuildRootSignature()
 {
-	CD3DX12_DESCRIPTOR_RANGE texTable;
-	texTable.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0);
+	CD3DX12_DESCRIPTOR_RANGE texTable[2];
+	texTable[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0);
+	texTable[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 0);
 
 	CD3DX12_ROOT_PARAMETER slotRootParam[4];
 	slotRootParam[0].InitAsShaderResourceView(0, 1);
 	slotRootParam[1].InitAsConstantBufferView(0);
 	slotRootParam[2].InitAsConstantBufferView(1);
-	slotRootParam[3].InitAsDescriptorTable(1, &texTable, D3D12_SHADER_VISIBILITY_PIXEL);
-
+	slotRootParam[3].InitAsDescriptorTable(2, texTable, D3D12_SHADER_VISIBILITY_PIXEL);
+	
 	CD3DX12_ROOT_SIGNATURE_DESC rootDesc;
 	rootDesc.Init(4, slotRootParam, 0,
 		nullptr, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
@@ -398,7 +401,7 @@ void GraphicDX12::BuildRootSignature()
 
 	HRESULT hr = D3D12SerializeRootSignature(&rootDesc, D3D_ROOT_SIGNATURE_VERSION_1,
 		serializedRootSig.GetAddressOf(), error.GetAddressOf());
-
+	
 	if (error != nullptr)
 	{
 		::OutputDebugStringA((char*)error->GetBufferPointer());
@@ -411,9 +414,9 @@ void GraphicDX12::BuildRootSignature()
 
 void GraphicDX12::BuildShadersAndInputLayout()
 {
-	m_Shaders["baseVS"] = CompileShader(L"BaseShader.hlsl", nullptr, "VS", "vs_5_1");
-	m_Shaders["basePS"] = CompileShader(L"BaseShader.hlsl", nullptr, "PS", "ps_5_1");
-
+	m_Shaders["baseVS"] = CompileShader(L"../Common/MainShaders/BaseShader.hlsl", nullptr, "VS", "vs_5_1");
+	m_Shaders["basePS"] = CompileShader(L"../Common/MainShaders/BaseShader.hlsl", nullptr, "PS", "ps_5_1");
+	
 	m_NTVertexInputLayout =
 	{
 		{ "POSITION" ,0,DXGI_FORMAT_R32G32B32_FLOAT,0,0,D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,0},
@@ -440,7 +443,7 @@ void GraphicDX12::BuildPSOs()
 	transparencyBlendDesc.BlendOpAlpha = D3D12_BLEND_OP_ADD;
 	transparencyBlendDesc.LogicOp = D3D12_LOGIC_OP_NOOP;
 	transparencyBlendDesc.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
-
+	
 	ZeroMemory(&opaquePsoDesc, sizeof(D3D12_GRAPHICS_PIPELINE_STATE_DESC));
 	opaquePsoDesc.InputLayout = { m_NTVertexInputLayout.data(), (UINT)m_NTVertexInputLayout.size() };
 	opaquePsoDesc.pRootSignature = m_RootSignature.Get();
