@@ -121,7 +121,7 @@ void GraphicDX12::CreateCommandObject()
 
 	ThrowIfFailed(m_D3dDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT,
 		m_DirectCmdListAlloc.Get(), nullptr, IID_PPV_ARGS(m_CommandList.GetAddressOf())));
-
+	
 	m_CommandList->Close();
 }
 
