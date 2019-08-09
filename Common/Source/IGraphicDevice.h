@@ -1,17 +1,16 @@
 #pragma once
 #include "d3dUtil.h"
+#include "IComponentProvider.h"
 
 class cCamera;
 using namespace CGH;
 
-class IGraphicDevice
+class IGraphicDevice : public ICompnentProvider
 {
-	friend class D3DApp;
 public:
 	IGraphicDevice() = default;
 	virtual ~IGraphicDevice() = default;
 
-protected:
 	virtual bool Init(HWND hWnd) = 0;
 	virtual void Update() = 0;
 	virtual void Draw() = 0;

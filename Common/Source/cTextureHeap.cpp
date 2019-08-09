@@ -855,27 +855,27 @@ HRESULT cTextureHeap::LoadWICTexture(ID3D12Device* device, const std::wstring& f
 		resFlags, loadflags,
 		texture, decodedData, initData);
 
-	if (SUCCEEDED(hr))
-	{
-		SetDebugTextureInfo(filename.c_str(), texture);
+	//if (SUCCEEDED(hr))
+	//{
+	//	SetDebugTextureInfo(filename.c_str(), texture);
 
-		resourceUpload.Upload(
-			*texture,
-			0,
-			&initData,
-			1);
+	//	resourceUpload.Upload(
+	//		*texture,
+	//		0,
+	//		&initData,
+	//		1);
 
-		resourceUpload.Transition(
-			*texture,
-			D3D12_RESOURCE_STATE_COPY_DEST,
-			D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+	//	resourceUpload.Transition(
+	//		*texture,
+	//		D3D12_RESOURCE_STATE_COPY_DEST,
+	//		D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 
-		// Generate mips?
-		if (loadflags & WIC_LOADER_MIP_AUTOGEN)
-		{
-			resourceUpload.GenerateMips(*texture);
-		}
-	}
+	//	// Generate mips?
+	//	if (loadflags & WIC_LOADER_MIP_AUTOGEN)
+	//	{
+	//		resourceUpload.GenerateMips(*texture);
+	//	}
+	//}
 
 	return hr;
 }

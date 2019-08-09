@@ -1,25 +1,26 @@
 #pragma once
-#include "IPhysicsDevice.h"
 #include "PxPhysicsAPI.h"
+#include "IPhysicsDevice.h"
 #include "Px1RefPtr.h"
+#include "IComponentProvider.h"
 
 #define PDEVICE
 
 class PhysX4_0 final : public IPhysicsDevice
 {
-	friend class D3DApp;
-
-private:
+public:
 	PhysX4_0();
 	virtual ~PhysX4_0();
 
 	virtual bool Init(void* graphicDevicePtr);
 	virtual void Update();
+	virtual std::shared_ptr<IComponent> CreateComponent(PxTransform& trans) override;
 
 private:
 	physx::PxFilterFlags ScissorFilter(physx::PxFilterObjectAttributes attributes0, physx::PxFilterData filterData0,
 		physx::PxFilterObjectAttributes attributes1, physx::PxFilterData filterData1,
 		physx::PxPairFlags& pairFlags, const void* constantBlock, physx::PxU32 constantBlockSize);
+
 
 private:
 	physx::PxDefaultAllocator					m_allocator;

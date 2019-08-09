@@ -112,6 +112,12 @@ void PhysX4_0::Update()
 	m_scene->fetchResults(true);
 }
 
+std::shared_ptr<IComponent> PhysX4_0::CreateComponent(PxTransform& trans)
+{
+
+	return nullptr;
+}
+
 PxFilterFlags PhysX4_0::ScissorFilter(PxFilterObjectAttributes attributes0, PxFilterData filterData0, PxFilterObjectAttributes attributes1, PxFilterData filterData1, PxPairFlags& pairFlags, const void* constantBlock, PxU32 constantBlockSize)
 {
 	return PxFilterFlags();

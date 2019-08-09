@@ -10,7 +10,6 @@
 #include <DirectXColors.h>
 #include <DirectXCollision.h>
 #include <algorithm>
-#include "d3dUtil.h"
 #include "d3dx12.h"
 #include "d3dx12Residency.h"
 
@@ -154,9 +153,7 @@ struct FrameResource
 
 class GraphicDX12 final : public IGraphicDevice
 {
-	friend class D3DApp;
-
-private:
+public:
 	GraphicDX12();
 	virtual ~GraphicDX12() override;
 
@@ -165,10 +162,10 @@ private:
 	virtual bool Init(HWND hWnd) override;
 	virtual void OnResize() override;
 	virtual void* GetDevicePtr() override { return m_D3dDevice.Get(); }
+	virtual std::shared_ptr<IComponent> CreateComponent(PxTransform& trans) override;
 
 public: // Used Functions
 	virtual void SetCamera(cCamera* camera) { m_currCamera = camera; }
-
 
 private: // Device Base Functions
 	void CreateCommandObject();

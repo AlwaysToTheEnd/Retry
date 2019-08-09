@@ -66,6 +66,9 @@
     <ClCompile Include="..\Common\Source\DirectXTK\Mouse.cpp">
       <Filter>Common\CodeResources</Filter>
     </ClCompile>
+    <ClCompile Include="..\Common\Source\GameObject.cpp">
+      <Filter>Common\CodeResources</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Step2.h">
@@ -103,6 +106,15 @@
     </ClInclude>
     <ClInclude Include="..\Common\Source\cTextureHeap.h">
       <Filter>Common\DeviceInstance\DX12Supporters</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\IComponent.h">
+      <Filter>Common\CodeResources</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\IComponentProvider.h">
+      <Filter>Common\CodeResources</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\GameObject.h">
+      <Filter>Common\CodeResources</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
