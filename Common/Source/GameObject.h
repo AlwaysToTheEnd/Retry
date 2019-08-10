@@ -7,9 +7,16 @@
 class GameObject
 {
 public:
+	GameObject() = default;
+	virtual ~GameObject() = default;
+
+	virtual void Init()=0;
+	virtual void Update()=0;
+
+protected:
 	void AddComponent(COMPONENTTYPE type);
 
-private:
+protected:
 	PxTransform m_transform;
 	std::vector<std::shared_ptr<IComponent>> m_components;
 };

@@ -116,6 +116,9 @@
     <ClInclude Include="..\Common\Source\GameObject.h">
       <Filter>Common\CodeResources</Filter>
     </ClInclude>
+    <ClInclude Include="..\Common\Source\DX12RenderClasses.h">
+      <Filter>Common\DeviceInstance\DX12Supporters</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Common\MainShaders\BaseShader.hlsl">

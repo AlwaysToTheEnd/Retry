@@ -12,13 +12,11 @@
 #include <algorithm>
 #include "d3dx12.h"
 #include "d3dx12Residency.h"
+#include "DX12RenderClasses.h"
 
 #pragma comment(lib,"d3dcompiler.lib")
 #pragma comment(lib, "D3D12.lib")
 #pragma comment(lib, "dxgi.lib")
-
-using Microsoft::WRL::ComPtr;
-using namespace DirectX;
 
 template <typename T>
 class UploadBuffer
@@ -75,61 +73,6 @@ private:
 	bool m_IsConstantBuffer = false;
 };
 
-struct Material
-{
-	std::string	name;
-	int			matCBIndex = -1;
-
-	XMFLOAT4	diffuseAlbedo = { 1,1,1,1 };
-	XMFLOAT3	fresnel0 = { 0.01f,0.01f,0.01f };
-	float		roughness = 0.25f;
-	CGH::MAT16	matTransform;
-	UINT		diffuseMapIndex = 0;
-};
-
-struct MaterialConstants
-{
-	XMFLOAT4	diffuseAlbedo = { 1,1,1,1 };
-	XMFLOAT3	fresnel0 = { 0.01f,0.01f,0.01f };
-	float		roughness = 0.25f;
-
-	CGH::MAT16	matTransform;
-	UINT		diffuseMapIndex = 0;
-	UINT		MaterialPad0;
-	UINT		MaterialPad1;
-	UINT		MaterialPad2;
-};
-
-struct Light
-{
-	XMFLOAT3 strength = { 0.5f,0.5f,0.5f };
-	float falloffStart = 1.0f;
-	XMFLOAT3 direction = { 0,-1.0f,0 };
-	float falloffEnd = 10.0f;
-	XMFLOAT3 position = { 0,0,0 };
-	float spotPower = 64.0f;
-};
-
-struct PassConstants
-{
-	CGH::MAT16 view;
-	CGH::MAT16 invView;
-	CGH::MAT16 proj;
-	CGH::MAT16 invProj;
-	CGH::MAT16 viewProj;
-	CGH::MAT16 invViewProj;
-	CGH::MAT16 rightViewProj;
-	CGH::MAT16 shadowMapMatrix;
-	XMFLOAT3 eyePosW = { 0.0f, 0.0f, 0.0f };
-	float cbPerObjectPad1 = 0.0f;
-	XMFLOAT2 renderTargetSize = { 0.0f, 0.0f };
-	XMFLOAT2 invRenderTargetSize = { 0.0f, 0.0f };
-	
-	XMFLOAT4 ambientLight = { 0.0f, 0.0f, 0.0f, 1.0f };
-
-	Light Lights[16];
-};
-
 struct FrameResource
 {
 	FrameResource(ID3D12Device* device, UINT passCount, UINT materialCount)
@@ -148,7 +91,7 @@ struct FrameResource
 
 	std::unique_ptr<UploadBuffer<PassConstants>> passCB = nullptr;
 	std::unique_ptr<UploadBuffer<MaterialConstants>> materialBuffer = nullptr;
-	//std::unique_ptr<UploadBuffer<ObjectConstants>> ObjectCB = nullptr;
+	std::unique_ptr<UploadBuffer<ObjectConstants>> ObjectCB = nullptr;
 };
 
 class GraphicDX12 final : public IGraphicDevice
