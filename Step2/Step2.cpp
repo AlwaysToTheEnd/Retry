@@ -32,6 +32,23 @@ void Step2::InitObjects()
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
+std::shared_ptr<IComponent> Step2::CreateComponent(COMPONENTTYPE type, PxTransform& tran)
+{
+	switch (type)
+	{
+	case COMPONENTTYPE::COM_PHYSICS:
+		return m_PXDevice->CreateComponent(tran);
+	case COMPONENTTYPE::COM_GRAPHIC:
+		return m_GDevice->CreateComponent(tran);
+	case COMPONENTTYPE::COM_NONE:
+	default:
+		break;
+	}
+
+	assert(false);
+	return nullptr;
+}
+
 LRESULT Step2::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	m_Camera.WndProc(hwnd, msg, wParam, lParam);

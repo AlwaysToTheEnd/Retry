@@ -2,6 +2,7 @@
 #include "d3dUtil.h"
 #include "IGraphicDevice.h"
 #include "IPhysicsDevice.h"
+#include "IComponent.h"
 
 class D3DApp
 {
@@ -17,6 +18,7 @@ public:
 	bool Initialize();
 	int Run();
 
+	virtual std::shared_ptr<IComponent> CreateComponent(COMPONENTTYPE type, PxTransform& tran) = 0;
 	virtual LRESULT MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 protected:

@@ -26,6 +26,7 @@
     <ClCompile Include="..\Common\Source\d3dUtil.cpp" />
     <ClCompile Include="..\Common\Source\DirectXTK\Keyboard.cpp" />
     <ClCompile Include="..\Common\Source\DirectXTK\Mouse.cpp" />
+    <ClCompile Include="..\Common\Source\GameObject.cpp" />
     <ClCompile Include="..\Common\Source\GraphicDX12.cpp" />
     <ClCompile Include="..\Common\Source\PhysX4_0.cpp" />
     <ClCompile Include="Step2.cpp" />
@@ -33,10 +34,14 @@
   <ItemGroup>
     <ClInclude Include="..\Common\Source\BaseClass.h" />
     <ClInclude Include="..\Common\Source\cCamera.h" />
+    <ClInclude Include="..\Common\Source\DX12RenderClasses.h" />
+    <ClInclude Include="..\Common\Source\GameObject.h" />
+    <ClInclude Include="..\Common\Source\IComponent.h" />
     <ClInclude Include="..\Common\Source\cTextureHeap.h" />
     <ClInclude Include="..\Common\Source\d3dApp.h" />
     <ClInclude Include="..\Common\Source\d3dUtil.h" />
     <ClInclude Include="..\Common\Source\d3dx12Residency.h" />
+    <ClInclude Include="..\Common\Source\IComponentProvider.h" />
     <ClInclude Include="..\Common\Source\IGraphicDevice.h" />
     <ClInclude Include="..\Common\Source\GraphicDX12.h" />
     <ClInclude Include="..\Common\Source\IPhysicsDevice.h" />

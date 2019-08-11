@@ -277,6 +277,12 @@ void GraphicDX12::OnResize()
 	XMStoreFloat4x4(m_ProjectionMat, P);
 }
 
+std::shared_ptr<IComponent> GraphicDX12::CreateComponent(PxTransform& trans)
+{
+
+	return std::shared_ptr<IComponent>();
+}
+
 void GraphicDX12::FlushCommandQueue()
 {
 	m_CurrentFence++;

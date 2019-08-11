@@ -28,6 +28,7 @@ public:
 	Step2& operator=(const Step2& rhs) = delete;
 	virtual ~Step2();
 
+	virtual std::shared_ptr<IComponent> CreateComponent(COMPONENTTYPE type, PxTransform& tran) override;
 	virtual LRESULT MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) override;
 
 private:
