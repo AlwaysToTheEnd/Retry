@@ -161,6 +161,16 @@ namespace   /*this namesapce code is what need for TextureLoad of DirectXTK_Desk
 		return DXGI_FORMAT_UNKNOWN;
 	}
 
+	BOOL WINAPI InitializeWICFactory(PINIT_ONCE, PVOID, PVOID* ifactory) noexcept
+	{
+		return SUCCEEDED(CoCreateInstance(
+			CLSID_WICImagingFactory2,
+			nullptr,
+			CLSCTX_INPROC_SERVER,
+			__uuidof(IWICImagingFactory2),
+			ifactory)) ? TRUE : FALSE;
+	}
+
 	//---------------------------------------------------------------------------------
 	IWICImagingFactory2* GetWIC()
 	{
@@ -168,15 +178,7 @@ namespace   /*this namesapce code is what need for TextureLoad of DirectXTK_Desk
 		IWICImagingFactory2* pWICFac = nullptr;
 		static INIT_ONCE initOnce = INIT_ONCE_STATIC_INIT;
 
-		InitOnceExecuteOnce(&initOnce,
-			reinterpret_cast<PINIT_ONCE_FN>(&[](PINIT_ONCE, PVOID, PVOID* ifactory)->bool
-				{
-					return SUCCEEDED(CoCreateInstance(CLSID_WICImagingFactory2,
-						nullptr, CLSCTX_INPROC_SERVER,
-						__uuidof(IWICImagingFactory2), ifactory)) ? TRUE : FALSE;
-
-				})
-			, nullptr, reinterpret_cast<LPVOID*>(&pWICFac));
+		InitOnceExecuteOnce(&initOnce, InitializeWICFactory, nullptr, reinterpret_cast<LPVOID*>(&pWICFac));
 
 		return pWICFac;
 	}
@@ -741,7 +743,9 @@ void cTextureHeap::AddTexture(ID3D12Device* device, ID3D12CommandQueue* cmdqueue
 	}
 	else
 	{
-
+		ThrowIfFailed(LoadWICTexture(device, filename, 10000, D3D12_RESOURCE_FLAG_NONE, WIC_LOADER_DEFAULT, 
+			addedTexture.tex.resource.GetAddressOf()));
+		m_Textures[name] = addedTexture;
 	}
 
 	auto srvHeapHandle = (CD3DX12_CPU_DESCRIPTOR_HANDLE)m_SrvHeap->GetCPUDescriptorHandleForHeapStart();
@@ -821,7 +825,7 @@ void cTextureHeap::AddNullTexture(ID3D12Device* device, const string& name, DXGI
 	device->CreateShaderResourceView(m_Textures[name].tex.resource.Get(), &srvDesc, srvHeapHandle);
 }
 
-void cTextureHeap::End(ID3D12CommandQueue* queue, void(*flushCommandQueueFunc)())
+void cTextureHeap::End(ID3D12CommandQueue* queue, function<void()> flushCommandQueueFunc)
 {
 	assert(m_isBeging && "TextureHeap already closed");
 
@@ -829,7 +833,6 @@ void cTextureHeap::End(ID3D12CommandQueue* queue, void(*flushCommandQueueFunc)()
 
 	ID3D12CommandList* commandLists[] = { m_commandList.Get() };
 	queue->ExecuteCommandLists(1, commandLists);
-
 	flushCommandQueueFunc();
 
 	m_commandList.Reset();
@@ -885,40 +888,46 @@ HRESULT cTextureHeap::LoadWICTexture(ID3D12Device* device, const std::wstring& f
 	hr = CreateTextureFromWIC(device, frame.Get(), maxsize,
 		resFlags, loadflags,
 		texture, decodedData, initData);
-
+	
 	if (SUCCEEDED(hr))
 	{
 		SetDebugTextureInfo(filename.c_str(), texture);
 
-		UINT64 uploadSize = GetRequiredIntermediateSize(*texture, 0, 1);
+		//UINT64 uploadSize = GetRequiredIntermediateSize(*texture, 0, 1);
 
-		CD3DX12_HEAP_PROPERTIES heapProps(D3D12_HEAP_TYPE_UPLOAD);
-		CD3DX12_RESOURCE_DESC resDesc = CD3DX12_RESOURCE_DESC::Buffer(uploadSize);
+		//CD3DX12_HEAP_PROPERTIES heapProps(D3D12_HEAP_TYPE_UPLOAD);
+		//CD3DX12_RESOURCE_DESC resDesc = CD3DX12_RESOURCE_DESC::Buffer(uploadSize);
 
-		// Create a temporary buffer
-		ComPtr<ID3D12Resource> scratchResource = nullptr;
-		ThrowIfFailed(device->CreateCommittedResource(
-			&heapProps,
-			D3D12_HEAP_FLAG_NONE,
-			&resDesc,
-			D3D12_RESOURCE_STATE_GENERIC_READ,
-			nullptr, // D3D12_CLEAR_VALUE* pOptimizedClearValue
-			IID_PPV_ARGS(scratchResource.GetAddressOf())));
+		//// Create a temporary buffer
+		//ComPtr<ID3D12Resource> scratchResource = nullptr;
+		//ThrowIfFailed(device->CreateCommittedResource(
+		//	&heapProps,
+		//	D3D12_HEAP_FLAG_NONE,
+		//	&resDesc,
+		//	D3D12_RESOURCE_STATE_GENERIC_READ,
+		//	nullptr, // D3D12_CLEAR_VALUE* pOptimizedClearValue
+		//	IID_PPV_ARGS(scratchResource.GetAddressOf())));
 
-		// Submit resource copy to command list
-		UpdateSubresources(mList.Get(), resource, scratchResource.Get(), 0, subresourceIndexStart, numSubresources, subRes);
+		//// Submit resource copy to command list
+		//
+		//UpdateSubresources(m_commandList.Get(), *texture, scratchResource.Get(), 0, 0, 1, &initData);
 
-		// Remember this upload object for delayed release
-		resourceUpload.Transition(
+		//// Remember this upload object for delayed release
+		//resourceUpload.Transition(
+		//	*texture,
+		//	D3D12_RESOURCE_STATE_COPY_DEST,
+		//	D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+
+		m_commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(
 			*texture,
 			D3D12_RESOURCE_STATE_COPY_DEST,
-			D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+			D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
 
-		// Generate mips?
-		if (loadflags & WIC_LOADER_MIP_AUTOGEN)
-		{
-			resourceUpload.GenerateMips(*texture);
-		}
+		//// Generate mips?
+		//if (loadflags & WIC_LOADER_MIP_AUTOGEN)
+		//{
+		//	resourceUpload.GenerateMips(*texture);
+		//}
 	}
 
 	return hr;

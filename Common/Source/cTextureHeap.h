@@ -2,6 +2,7 @@
 #include <wrl.h>
 #include <d3d12.h>
 #include "d3dUtil.h"
+#include <functional>
 
 using Microsoft::WRL::ComPtr;
 struct IWICBitmapFrameDecode;
@@ -29,7 +30,7 @@ public:
 	void AddCubeMapTexture(ID3D12Device* device, ID3D12CommandQueue* cmdqueue, const std::string& name, const std::wstring& filename);
 	void AddNullTexture(ID3D12Device* device, const std::string& name, DXGI_FORMAT srvFormat,
 		const D3D12_RESOURCE_DESC* resourceDesc,const D3D12_CLEAR_VALUE* optClear);
-	void End(ID3D12CommandQueue* queue, void(*flushCommandQueueFunc)());
+	void End(ID3D12CommandQueue* queue, std::function<void()> flushCommandQueueFunc);
 
 	ID3D12DescriptorHeap* GetHeap() { return m_SrvHeap.Get(); }
 	ComPtr<ID3D12Resource> GetTexture(const std::string& name);
@@ -70,4 +71,5 @@ private:
 
 	ComPtr<ID3D12DescriptorHeap>				m_SrvHeap;
 	std::unordered_map<std::string, TEXTURENUM> m_Textures;
+
 };

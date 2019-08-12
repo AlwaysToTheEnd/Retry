@@ -16,9 +16,17 @@ PhysX4_0::~PhysX4_0()
 	m_cudaManager = nullptr;
 	m_physics = nullptr;
 
-	PxPvdTransport* transport = m_PVD->getTransport();
-	m_PVD = nullptr;
-	transport->release();
+	if (m_PVD.Get())
+	{
+		PxPvdTransport* transport = m_PVD->getTransport();
+		m_PVD = nullptr;
+		transport->release();
+	}
+	else
+	{
+		m_PVD = nullptr;
+	}
+	
 
 	m_foundation = nullptr;
 	m_foundation = nullptr;

@@ -1,5 +1,7 @@
 #include "GraphicDX12.h"
 #include "cCamera.h"
+#include "cTextureHeap.h"
+#include <functional>
 
 using namespace DirectX;
 using namespace std;
@@ -371,6 +373,14 @@ void GraphicDX12::BuildFrameResources()
 
 void GraphicDX12::BuildTextures()
 {
+	m_TextureHeap = make_unique<cTextureHeap>(m_D3dDevice.Get(), 1);
+
+	m_TextureHeap->Begin(m_D3dDevice.Get());
+
+	m_TextureHeap->AddTexture(m_D3dDevice.Get(),
+		m_CommandQueue.Get(), "testTexture", L"./../Common/TextureData/ui.png");
+
+	m_TextureHeap->End(m_CommandQueue.Get(), bind(&GraphicDX12::FlushCommandQueue, this));
 }
 
 void GraphicDX12::BuildMaterials()
