@@ -7,7 +7,7 @@ using namespace DirectX;
 using namespace std;
 
 
-namespace   /*this namesapce code is what need for TextureLoad of DirectXTK_Desktop sln, 
+namespace   /*this namesapce code is what need for TextureLoad of DirectXTK_Desktop sln,
 			  and little bit revised for that will not use 'ResourceUploadBatch', by CGH*/
 {
 	//-------------------------------------------------------------------------------------
@@ -227,7 +227,7 @@ namespace   /*this namesapce code is what need for TextureLoad of DirectXTK_Desk
 	}
 
 	//---------------------------------------------------------------------------------
-	bool FormatIsUAVCompatible(_In_ ID3D12Device* device,bool typedUAVLoadAdditionalFormat, DXGI_FORMAT format)
+	bool FormatIsUAVCompatible(_In_ ID3D12Device* device, bool typedUAVLoadAdditionalFormat, DXGI_FORMAT format)
 	{
 		switch (format)
 		{
@@ -699,17 +699,31 @@ namespace   /*this namesapce code is what need for TextureLoad of DirectXTK_Desk
 
 cTextureHeap::cTextureHeap(ID3D12Device* device, UINT maxTexture)
 	: m_SrvDescriptorSize(0)
+	, m_isBeging(false)
 {
 	assert(device && maxTexture);
 
-	m_device = device;
 	m_SrvDescriptorSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+
 	D3D12_DESCRIPTOR_HEAP_DESC srvHeapDesc = {};
 	srvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 	srvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
 	srvHeapDesc.NumDescriptors = maxTexture;
 
 	ThrowIfFailed(device->CreateDescriptorHeap(&srvHeapDesc, IID_PPV_ARGS(m_SrvHeap.GetAddressOf())));
+}
+
+void cTextureHeap::Begin(ID3D12Device* device)
+{
+	assert(!m_isBeging && "TextureHeap aleady beging state");
+
+	ThrowIfFailed(device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT,
+		IID_PPV_ARGS(m_comAlloc.GetAddressOf())));
+
+	ThrowIfFailed(device->CreateCommandList(1, D3D12_COMMAND_LIST_TYPE_DIRECT, m_comAlloc.Get(),
+		nullptr, IID_PPV_ARGS(m_commandList.GetAddressOf())));
+
+	m_isBeging = true;
 }
 
 void cTextureHeap::AddTexture(ID3D12Device* device, ID3D12CommandQueue* cmdqueue, const string& name, const wstring& filename)
@@ -741,7 +755,7 @@ void cTextureHeap::AddTexture(ID3D12Device* device, ID3D12CommandQueue* cmdqueue
 	srvDesc.Texture2D.ResourceMinLODClamp = 0.0f;
 	srvDesc.Texture2D.MipLevels = addedTexture.tex.resource->GetDesc().MipLevels;
 
-	m_device->CreateShaderResourceView(addedTexture.tex.resource.Get(), &srvDesc, srvHeapHandle);
+	device->CreateShaderResourceView(addedTexture.tex.resource.Get(), &srvDesc, srvHeapHandle);
 }
 
 void cTextureHeap::AddCubeMapTexture(ID3D12Device* device, ID3D12CommandQueue* cmdqueue, const string& name, const wstring& filename)
@@ -773,7 +787,7 @@ void cTextureHeap::AddCubeMapTexture(ID3D12Device* device, ID3D12CommandQueue* c
 	srvDesc.Texture2D.ResourceMinLODClamp = 0.0f;
 	srvDesc.Texture2D.MipLevels = addedTexture.tex.resource->GetDesc().MipLevels;
 
-	m_device->CreateShaderResourceView(addedTexture.tex.resource.Get(), &srvDesc, srvHeapHandle);
+	device->CreateShaderResourceView(addedTexture.tex.resource.Get(), &srvDesc, srvHeapHandle);
 }
 
 void cTextureHeap::AddNullTexture(ID3D12Device* device, const string& name, DXGI_FORMAT srvFormat,
@@ -786,7 +800,7 @@ void cTextureHeap::AddNullTexture(ID3D12Device* device, const string& name, DXGI
 	addTexture.num = (UINT)m_Textures.size();
 	addTexture.tex.name = name;
 
-	m_device->CreateCommittedResource(&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+	device->CreateCommittedResource(&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
 		D3D12_HEAP_FLAG_NONE, resourceDesc, D3D12_RESOURCE_STATE_GENERIC_READ, optClear,
 		IID_PPV_ARGS(addTexture.tex.resource.GetAddressOf()));
 
@@ -804,7 +818,22 @@ void cTextureHeap::AddNullTexture(ID3D12Device* device, const string& name, DXGI
 	srvDesc.Texture2D.ResourceMinLODClamp = 0.0f;
 	srvDesc.Texture2D.PlaneSlice = 0;
 
-	m_device->CreateShaderResourceView(m_Textures[name].tex.resource.Get(), &srvDesc, srvHeapHandle);
+	device->CreateShaderResourceView(m_Textures[name].tex.resource.Get(), &srvDesc, srvHeapHandle);
+}
+
+void cTextureHeap::End(ID3D12CommandQueue* queue, void(*flushCommandQueueFunc)())
+{
+	assert(m_isBeging && "TextureHeap already closed");
+
+	ThrowIfFailed(m_commandList->Close());
+
+	ID3D12CommandList* commandLists[] = { m_commandList.Get() };
+	queue->ExecuteCommandLists(1, commandLists);
+
+	flushCommandQueueFunc();
+
+	m_commandList.Reset();
+	m_comAlloc.Reset();
 }
 
 ComPtr<ID3D12Resource> cTextureHeap::GetTexture(const string& name)
@@ -826,7 +855,9 @@ UINT cTextureHeap::GetTextureIndex(const string& name) const
 HRESULT cTextureHeap::LoadWICTexture(ID3D12Device* device, const std::wstring& filename, size_t maxsize,
 	D3D12_RESOURCE_FLAGS resFlags, WIC_LOADER_FLAGS loadflags, ID3D12Resource** texture)
 {
-	IWICImagingFactory2* pWICFac= GetWIC();
+	assert(m_isBeging && "can not call to create texture on a closed TextureHeap");
+
+	IWICImagingFactory2* pWICFac = GetWIC();
 
 	ComPtr<IWICBitmapDecoder> decoder;
 	HRESULT hr = pWICFac->CreateDecoderFromFilename(filename.c_str(), nullptr,
@@ -855,27 +886,40 @@ HRESULT cTextureHeap::LoadWICTexture(ID3D12Device* device, const std::wstring& f
 		resFlags, loadflags,
 		texture, decodedData, initData);
 
-	//if (SUCCEEDED(hr))
-	//{
-	//	SetDebugTextureInfo(filename.c_str(), texture);
+	if (SUCCEEDED(hr))
+	{
+		SetDebugTextureInfo(filename.c_str(), texture);
 
-	//	resourceUpload.Upload(
-	//		*texture,
-	//		0,
-	//		&initData,
-	//		1);
+		UINT64 uploadSize = GetRequiredIntermediateSize(*texture, 0, 1);
 
-	//	resourceUpload.Transition(
-	//		*texture,
-	//		D3D12_RESOURCE_STATE_COPY_DEST,
-	//		D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+		CD3DX12_HEAP_PROPERTIES heapProps(D3D12_HEAP_TYPE_UPLOAD);
+		CD3DX12_RESOURCE_DESC resDesc = CD3DX12_RESOURCE_DESC::Buffer(uploadSize);
 
-	//	// Generate mips?
-	//	if (loadflags & WIC_LOADER_MIP_AUTOGEN)
-	//	{
-	//		resourceUpload.GenerateMips(*texture);
-	//	}
-	//}
+		// Create a temporary buffer
+		ComPtr<ID3D12Resource> scratchResource = nullptr;
+		ThrowIfFailed(device->CreateCommittedResource(
+			&heapProps,
+			D3D12_HEAP_FLAG_NONE,
+			&resDesc,
+			D3D12_RESOURCE_STATE_GENERIC_READ,
+			nullptr, // D3D12_CLEAR_VALUE* pOptimizedClearValue
+			IID_PPV_ARGS(scratchResource.GetAddressOf())));
+
+		// Submit resource copy to command list
+		UpdateSubresources(mList.Get(), resource, scratchResource.Get(), 0, subresourceIndexStart, numSubresources, subRes);
+
+		// Remember this upload object for delayed release
+		resourceUpload.Transition(
+			*texture,
+			D3D12_RESOURCE_STATE_COPY_DEST,
+			D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+
+		// Generate mips?
+		if (loadflags & WIC_LOADER_MIP_AUTOGEN)
+		{
+			resourceUpload.GenerateMips(*texture);
+		}
+	}
 
 	return hr;
 }

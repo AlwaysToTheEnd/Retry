@@ -22,12 +22,14 @@ public:
 	cTextureHeap() = delete;
 	cTextureHeap(cTextureHeap& rhs) = delete;
 	cTextureHeap& operator=(const cTextureHeap& rhs) = delete;
-	cTextureHeap(ID3D12Device* device ,UINT maxTexture);
+	cTextureHeap(ID3D12Device* device, UINT maxTexture);
 	
+	void Begin(ID3D12Device* device);
 	void AddTexture(ID3D12Device* device, ID3D12CommandQueue* cmdqueue, const std::string& name, const std::wstring& filename);
 	void AddCubeMapTexture(ID3D12Device* device, ID3D12CommandQueue* cmdqueue, const std::string& name, const std::wstring& filename);
 	void AddNullTexture(ID3D12Device* device, const std::string& name, DXGI_FORMAT srvFormat,
 		const D3D12_RESOURCE_DESC* resourceDesc,const D3D12_CLEAR_VALUE* optClear);
+	void End(ID3D12CommandQueue* queue, void(*flushCommandQueueFunc)());
 
 	ID3D12DescriptorHeap* GetHeap() { return m_SrvHeap.Get(); }
 	ComPtr<ID3D12Resource> GetTexture(const std::string& name);
@@ -61,8 +63,11 @@ private:
 		NONE_TEXTURE,
 	};
 	
-	ID3D12Device* m_device;
-	UINT m_SrvDescriptorSize;
-	ComPtr<ID3D12DescriptorHeap> m_SrvHeap;
+	ComPtr<ID3D12GraphicsCommandList>			m_commandList;
+	ComPtr<ID3D12CommandAllocator>				m_comAlloc;
+	UINT										m_SrvDescriptorSize;
+	bool										m_isBeging;
+
+	ComPtr<ID3D12DescriptorHeap>				m_SrvHeap;
 	std::unordered_map<std::string, TEXTURENUM> m_Textures;
 };
