@@ -21,7 +21,7 @@
   <ItemGroup>
     <ClCompile Include="..\Common\Source\BaseClass.cpp" />
     <ClCompile Include="..\Common\Source\cCamera.cpp" />
-    <ClCompile Include="..\Common\Source\cTextureHeap.cpp" />
+    <ClCompile Include="..\Common\Source\cTextureBuffer.cpp" />
     <ClCompile Include="..\Common\Source\d3dApp.cpp" />
     <ClCompile Include="..\Common\Source\d3dUtil.cpp" />
     <ClCompile Include="..\Common\Source\DirectXTK\Keyboard.cpp" />
@@ -29,7 +29,9 @@
     <ClCompile Include="..\Common\Source\GameObject.cpp" />
     <ClCompile Include="..\Common\Source\GraphicDX12.cpp" />
     <ClCompile Include="..\Common\Source\PhysX4_0.cpp" />
+    <ClCompile Include="AnimationObject.cpp" />
     <ClCompile Include="Step2.cpp" />
+    <ClCompile Include="XFileParser.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Common\Source\BaseClass.h" />
@@ -37,7 +39,7 @@
     <ClInclude Include="..\Common\Source\DX12RenderClasses.h" />
     <ClInclude Include="..\Common\Source\GameObject.h" />
     <ClInclude Include="..\Common\Source\IComponent.h" />
-    <ClInclude Include="..\Common\Source\cTextureHeap.h" />
+    <ClInclude Include="..\Common\Source\cTextureBuffer.h" />
     <ClInclude Include="..\Common\Source\d3dApp.h" />
     <ClInclude Include="..\Common\Source\d3dUtil.h" />
     <ClInclude Include="..\Common\Source\d3dx12Residency.h" />
@@ -47,7 +49,9 @@
     <ClInclude Include="..\Common\Source\IPhysicsDevice.h" />
     <ClInclude Include="..\Common\Source\PhysX4_0.h" />
     <ClInclude Include="..\Common\Source\Px1RefPtr.h" />
+    <ClInclude Include="AnimationObject.h" />
     <ClInclude Include="Step2.h" />
+    <ClInclude Include="XFileParser.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Common\MainShaders\BaseShader.hlsl">

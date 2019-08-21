@@ -4,6 +4,8 @@
 #include <vector>
 #include <memory>
 
+class D3DApp;
+
 class GameObject
 {
 public:
@@ -14,7 +16,7 @@ public:
 	virtual void Update()=0;
 
 protected:
-	void AddComponent(COMPONENTTYPE type);
+	void AddComponent(D3DApp* app, COMPONENTTYPE type);
 
 protected:
 	PxTransform m_transform;

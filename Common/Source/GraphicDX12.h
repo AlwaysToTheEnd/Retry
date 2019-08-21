@@ -18,7 +18,7 @@
 #pragma comment(lib, "D3D12.lib")
 #pragma comment(lib, "dxgi.lib")
 
-class cTextureHeap;
+class cTextureBuffer;
 
 struct FrameResource
 {
@@ -128,9 +128,20 @@ private:
 	std::vector<D3D12_INPUT_ELEMENT_DESC>							m_NTVertexInputLayout;
 	std::unordered_map<std::string, ComPtr<ID3DBlob>>				m_Shaders;
 	ComPtr<ID3D12RootSignature>										m_RootSignature = nullptr;
-	std::unique_ptr<cTextureHeap>									m_TextureHeap;
+	std::unique_ptr<cTextureBuffer>									m_TextureHeap;
 
 	std::unique_ptr<FrameResource>	m_FrameResource;
 	PassConstants					m_MainPassCB;
+
+private: // Codes below are used only Testing.
+	struct Vertex
+	{
+		XMFLOAT3 position = { 0,0,0 };
+		XMFLOAT3 normal = { 0,0,-1 };
+		XMFLOAT2 uv = { 0,0 };
+	};
+
+	ComPtr<ID3D12Resource>			m_VertexBuffer;
+	ComPtr<ID3D12Resource>			m_VertexUploadBuffer;
 };
 

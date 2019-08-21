@@ -16,9 +16,6 @@
     <Filter Include="SceneCallback">
       <UniqueIdentifier>{e650040a-cf58-4e68-b408-599da23aedc5}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Step2">
-      <UniqueIdentifier>{cf1685e7-cd46-4a98-ad9f-1ababc9a7c30}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Common\DeviceInstance">
       <UniqueIdentifier>{27127ed0-f67d-45d9-a30b-71b16763206b}</UniqueIdentifier>
     </Filter>
@@ -33,6 +30,9 @@
     </Filter>
     <Filter Include="Common\DeviceInstance\_Interface">
       <UniqueIdentifier>{d7c4ec32-78d5-4fcb-aec2-239f0062b96b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Step2">
+      <UniqueIdentifier>{cf1685e7-cd46-4a98-ad9f-1ababc9a7c30}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -57,9 +57,6 @@
     <ClCompile Include="..\Common\Source\PhysX4_0.cpp">
       <Filter>Common\DeviceInstance\PXSupporters</Filter>
     </ClCompile>
-    <ClCompile Include="..\Common\Source\cTextureHeap.cpp">
-      <Filter>Common\DeviceInstance\DX12Supporters</Filter>
-    </ClCompile>
     <ClCompile Include="..\Common\Source\DirectXTK\Keyboard.cpp">
       <Filter>Common\CodeResources</Filter>
     </ClCompile>
@@ -68,6 +65,15 @@
     </ClCompile>
     <ClCompile Include="..\Common\Source\GameObject.cpp">
       <Filter>Common\CodeResources</Filter>
+    </ClCompile>
+    <ClCompile Include="AnimationObject.cpp">
+      <Filter>Object</Filter>
+    </ClCompile>
+    <ClCompile Include="XFileParser.cpp">
+      <Filter>Object</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Source\cTextureBuffer.cpp">
+      <Filter>Common\DeviceInstance\DX12Supporters</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -104,9 +110,6 @@
     <ClInclude Include="..\Common\Source\d3dx12Residency.h">
       <Filter>Common\CodeResources</Filter>
     </ClInclude>
-    <ClInclude Include="..\Common\Source\cTextureHeap.h">
-      <Filter>Common\DeviceInstance\DX12Supporters</Filter>
-    </ClInclude>
     <ClInclude Include="..\Common\Source\IComponent.h">
       <Filter>Common\CodeResources</Filter>
     </ClInclude>
@@ -117,6 +120,15 @@
       <Filter>Common\CodeResources</Filter>
     </ClInclude>
     <ClInclude Include="..\Common\Source\DX12RenderClasses.h">
+      <Filter>Common\DeviceInstance\DX12Supporters</Filter>
+    </ClInclude>
+    <ClInclude Include="AnimationObject.h">
+      <Filter>Object</Filter>
+    </ClInclude>
+    <ClInclude Include="XFileParser.h">
+      <Filter>Object</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\cTextureBuffer.h">
       <Filter>Common\DeviceInstance\DX12Supporters</Filter>
     </ClInclude>
   </ItemGroup>

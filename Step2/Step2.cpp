@@ -1,5 +1,6 @@
 #include "Step2.h"
 #include <random>
+#include "XFileParser.h"
 using namespace std;
 
 mt19937_64 g_random(710);
@@ -23,6 +24,8 @@ void Step2::Update()
 void Step2::SelectDevices()
 {
 	SelectDeviceByTemplate<UsingGraphicDevice, UsingPhsicsDevice>();
+
+	XFileParser test("./../Common/TeraResourse/Poalong.X");
 }
 
 void Step2::InitObjects()
