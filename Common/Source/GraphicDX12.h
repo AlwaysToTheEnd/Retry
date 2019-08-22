@@ -136,6 +136,13 @@ private:
 private: // Codes below are used only Testing.
 	struct Vertex
 	{
+		Vertex(XMFLOAT3 _pos, XMFLOAT3 _normal, XMFLOAT2 _uv)
+		{
+			position = _pos;
+			normal = normal;
+			uv = _uv;
+		}
+
 		XMFLOAT3 position = { 0,0,0 };
 		XMFLOAT3 normal = { 0,0,-1 };
 		XMFLOAT2 uv = { 0,0 };

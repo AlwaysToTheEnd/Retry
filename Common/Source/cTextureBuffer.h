@@ -40,21 +40,20 @@ public:
 
 private:
 	HRESULT LoadWICTexture(ID3D12Device* device, const std::wstring& filename,size_t maxsize,
-		D3D12_RESOURCE_FLAGS resFlags, WIC_LOADER_FLAGS loadflags, ID3D12Resource** texture);
+		D3D12_RESOURCE_FLAGS resFlags, WIC_LOADER_FLAGS loadflags, ID3D12Resource** texture, ID3D12Resource** uploadBuffer);
 	bool IsDDSTextureFile(const std::wstring& filename);
 
 private:
 	struct Texture
 	{
-		std::string name;
 		ComPtr<ID3D12Resource> resource = nullptr;
 		ComPtr<ID3D12Resource> uploadHeap = nullptr;
 	};
 
 	struct TEXTURENUM
 	{
-		UINT num=0;
-		Texture tex;
+		UINT num = 0;
+		cTextureBuffer::Texture tex;
 	};
 
 	enum TEXTURE_FILE_TYPE
@@ -71,5 +70,4 @@ private:
 
 	ComPtr<ID3D12DescriptorHeap>				m_SrvHeap;
 	std::unordered_map<std::string, TEXTURENUM> m_Textures;
-
 };

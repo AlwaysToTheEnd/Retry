@@ -20,16 +20,27 @@ SamplerComparisonState gsamShadow : register(s6);
 
 cbuffer cbPass : register(b0)
 {
+	float4x4 gView;
+	float4x4 gInvView;
+	float4x4 gProj;
+	float4x4 gInvProj;
 	float4x4 gViewProj;
+	float4x4 gInvViewProj;
+	float4x4 gRightViewProj;
+	float4x4 gShadowMapMatrix;
+	float3 gEyePosW;
+	float cbPerObjectPad1;
+	float2 gRenderTargetSize;
+	float2 gInvRenderTargetSize;
+	float4 gAmbientLight;
+
+	//Light gLights[MaxLights];
 };
 
 cbuffer objectData : register(b1)
 {
 	float4x4 World;
-	uint MaterialIndex;
-	uint InstPad0;
-	uint InstPad1;
-	uint InstPad2;
+	float4x4 TexTransform;
 };
 
 struct VertexIn
@@ -48,17 +59,19 @@ struct VertexOut
 VertexOut VS(VertexIn vin)
 {
 	VertexOut vout = (VertexOut)0.0f;
-	vout.PosH = mul(float4(vin.PosL, 1.0f), World);
+	vout.PosH = float4(vin.PosL,1.0f);
+	//vout.PosH = mul(float4(vin.PosL, 1.0f), World);
 	vout.PosH = mul(vout.PosH, gViewProj);
+	vout.TexC = vin.TexC;
 
-	vout.TexC = mul(float4(vin.TexC, 0.0f, 1.0f), gInstanceData[MaterialIndex].MatTransform).xy;
+	//vout.TexC = mul(float4(vin.TexC, 0.0f, 1.0f), gInstanceData[MaterialIndex].MatTransform).xy;
 
 	return vout;
 }
 
 float4 PS(VertexOut pin) : SV_Target
 {
-	float4 litColor = float4(0,0,0,0);
+	float4 litColor = float4(0,0,0,1);
 	litColor = gMainTexture.Sample(gsamPointWrap, pin.TexC);
 
 	return litColor;

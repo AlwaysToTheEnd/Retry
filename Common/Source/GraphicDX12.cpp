@@ -331,19 +331,26 @@ void GraphicDX12::Draw()
 	m_CommandList->ClearRenderTargetView(CurrentBackBufferView(), Colors::Aqua, 0, nullptr);
 	m_CommandList->ClearDepthStencilView(DepthStencilView(), D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
 
+	ID3D12DescriptorHeap* descriptorHeaps[] = { m_TextureHeap->GetHeap() };
+	m_CommandList->SetDescriptorHeaps(1, descriptorHeaps);
 	m_CommandList->OMSetRenderTargets(1, &CurrentBackBufferView(), true, &DepthStencilView());
 
 	m_CommandList->SetGraphicsRootSignature(m_RootSignature.Get());
-
+	
 	auto matBuffer = m_FrameResource->materialBuffer->Resource();
 	m_CommandList->SetGraphicsRootShaderResourceView(0, matBuffer->GetGPUVirtualAddress());
+	m_CommandList->SetGraphicsRootConstantBufferView(1, m_FrameResource->passCB->Resource()->GetGPUVirtualAddress());
+	m_CommandList->SetGraphicsRootConstantBufferView(2, m_FrameResource->ObjectCB->Resource()->GetGPUVirtualAddress());
+	m_CommandList->SetGraphicsRootDescriptorTable(3, m_TextureHeap->GetHeap()->GetGPUDescriptorHandleForHeapStart());
 
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView = {};
 	vertexBufferView.BufferLocation = m_VertexBuffer->GetGPUVirtualAddress();
-	vertexBufferView.SizeInBytes = 320;
+	vertexBufferView.SizeInBytes = sizeof(Vertex)*6;
 	vertexBufferView.StrideInBytes = sizeof(Vertex);
 	m_CommandList->IASetVertexBuffers(0, 1, &vertexBufferView);
 	m_CommandList->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+	m_CommandList->DrawInstanced(6, 2, 0, 0);
 
 	m_CommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(),
 		D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
@@ -377,13 +384,15 @@ void GraphicDX12::BuildFrameResources()
 {
 	m_FrameResource = make_unique<FrameResource>(m_D3dDevice.Get(),
 		2, (UINT)m_Materials.size());
+
+	m_FrameResource->ObjectCB = make_unique<UploadBuffer<ObjectConstants>>(m_D3dDevice.Get(), 1, true);
 }
 
 void GraphicDX12::BuildTextures()
 {
 	pair<string, wstring> texturePaths[] =
 	{
-		{"testTexture", L"./../Common/TextureData/ui.png"},
+		{"testTexture", L"./../Common/TextureData/plane.png"},
 	};
 
 	const UINT numTexturePath = _countof(texturePaths);
@@ -521,6 +530,8 @@ void GraphicDX12::BuildShadersAndInputLayout()
 
 void GraphicDX12::BuildGeometry()
 {
+#pragma region Vertex setting for test
+
 	XMFLOAT3 baseVertex[8];
 	XMFLOAT3 oneDirectionNormal = { 0,0,-1 };
 
@@ -533,9 +544,22 @@ void GraphicDX12::BuildGeometry()
 	baseVertex[6] = { 0.5f, 1.0f, 0.5f };
 	baseVertex[7] = { 0.5f, 0.0f, 0.5f };
 
+	//for (int i = 0; i < 8; i++)
+	//{
+	//	baseVertex[i].x *= 10;
+	//	baseVertex[i].y *= 10;
+	//}
+
 	vector<Vertex> vertexData;
 
-	vertexData.emplace_back(baseVertex[0], oneDirectionNormal, { 0.0f,1.0f });
+	vertexData.emplace_back(baseVertex[4], oneDirectionNormal, XMFLOAT2(0.0f, 1.0f));
+	vertexData.emplace_back(baseVertex[5], oneDirectionNormal, XMFLOAT2(0.0f, 0.0f));
+	vertexData.emplace_back(baseVertex[6], oneDirectionNormal, XMFLOAT2(1.0f, 0.0f));
+	vertexData.emplace_back(baseVertex[4], oneDirectionNormal, XMFLOAT2(0.0f, 1.0f));
+	vertexData.emplace_back(baseVertex[6], oneDirectionNormal, XMFLOAT2(1.0f, 0.0f));
+	vertexData.emplace_back(baseVertex[7], oneDirectionNormal, XMFLOAT2(1.0f, 1.0f));
+#pragma endregion
+
 	const UINT dataSize = vertexData.size()*sizeof(Vertex);
 
 	D3D12_HEAP_PROPERTIES uploadBufferPro = {};
@@ -553,17 +577,19 @@ void GraphicDX12::BuildGeometry()
 
 	D3D12_HEAP_PROPERTIES vertexBufferPro = {};
 	vertexBufferPro.Type = D3D12_HEAP_TYPE_DEFAULT;
-	
-	ThrowIfFailed(m_D3dDevice->CreateCommittedResource(&uploadBufferPro, D3D12_HEAP_FLAG_NONE,
+
+	TIF_AND_SETNAME(m_D3dDevice->CreateCommittedResource(&uploadBufferPro, D3D12_HEAP_FLAG_NONE,
 		&bufferDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr,
-		IID_PPV_ARGS(m_VertexUploadBuffer.GetAddressOf())));
-	ThrowIfFailed(m_D3dDevice->CreateCommittedResource(&vertexBufferPro, D3D12_HEAP_FLAG_NONE,
+		IID_PPV_ARGS(m_VertexUploadBuffer.GetAddressOf())), m_VertexUploadBuffer);
+
+	TIF_AND_SETNAME(m_D3dDevice->CreateCommittedResource(&vertexBufferPro, D3D12_HEAP_FLAG_NONE,
 		&bufferDesc, D3D12_RESOURCE_STATE_COPY_DEST, nullptr,
-		IID_PPV_ARGS(m_VertexBuffer.GetAddressOf())));
+		IID_PPV_ARGS(m_VertexBuffer.GetAddressOf())), m_VertexBuffer);
 	
 	D3D12_SUBRESOURCE_DATA subResourceData = {};
-	subResourceData.pData = vertexData.data;
-	subResourceData.RowPitch = subResourceData.SlicePitch = dataSize;
+	subResourceData.pData = vertexData.data();
+	subResourceData.RowPitch = dataSize;
+	subResourceData.SlicePitch = 1;
 
 	D3D12_PLACED_SUBRESOURCE_FOOTPRINT placedSubFoot;
 	UINT numRow = 0;
@@ -575,7 +601,7 @@ void GraphicDX12::BuildGeometry()
 
 	void* dataTemp = nullptr;
 	ThrowIfFailed(m_VertexUploadBuffer->Map(0, nullptr, &dataTemp));
-	memcpy(dataTemp, vertexData.data, dataSize);
+	memcpy(dataTemp, vertexData.data(), dataSize);
 	m_VertexUploadBuffer->Unmap(0, nullptr);
 
 	m_CommandList->CopyBufferRegion(m_VertexBuffer.Get(), 0,
@@ -633,7 +659,6 @@ void GraphicDX12::BuildPSOs()
 
 void GraphicDX12::BuildRenderItem()
 {
-
 }
 
 void GraphicDX12::UpdateMainPassCB()
@@ -656,12 +681,14 @@ void GraphicDX12::UpdateMainPassCB()
 	m_MainPassCB.invRenderTargetSize = XMFLOAT2(1.0f / m_ClientWidth, 1.0f / m_ClientHeight);
 
 	m_MainPassCB.ambientLight = { 0.25f, 0.25f, 0.35f, 1.0f };
-	m_MainPassCB.Lights[0].direction = { 0.57735f, -0.57735f, 0.57735f };
-	m_MainPassCB.Lights[0].strength = { 0.9f, 0.9f, 0.9f };
-	m_MainPassCB.Lights[1].direction = { -0.57735f, -0.57735f, 0.57735f };
-	m_MainPassCB.Lights[1].strength = { 0.5f, 0.5f, 0.5f };
-	m_MainPassCB.Lights[2].direction = { 0.0f, -0.707f, -0.707f };
-	m_MainPassCB.Lights[2].strength = { 0.2f, 0.2f, 0.2f };
+	//m_MainPassCB.Lights[0].direction = { 0.57735f, -0.57735f, 0.57735f };
+	//m_MainPassCB.Lights[0].strength = { 0.9f, 0.9f, 0.9f };
+	//m_MainPassCB.Lights[1].direction = { -0.57735f, -0.57735f, 0.57735f };
+	//m_MainPassCB.Lights[1].strength = { 0.5f, 0.5f, 0.5f };
+	//m_MainPassCB.Lights[2].direction = { 0.0f, -0.707f, -0.707f };
+	//m_MainPassCB.Lights[2].strength = { 0.2f, 0.2f, 0.2f };
+
+	m_FrameResource->passCB->CopyData(0, m_MainPassCB);
 }
 
 void GraphicDX12::UpdateObjects()

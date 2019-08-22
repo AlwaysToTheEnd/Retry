@@ -67,7 +67,7 @@ struct PassConstants
 
 	XMFLOAT4 ambientLight = { 0.0f, 0.0f, 0.0f, 1.0f };
 
-	Light Lights[16];
+	//Light Lights[16];
 };
 
 struct SubMeshGeometry

@@ -75,6 +75,9 @@
     <ClCompile Include="..\Common\Source\cTextureBuffer.cpp">
       <Filter>Common\DeviceInstance\DX12Supporters</Filter>
     </ClCompile>
+    <ClCompile Include="..\Common\Source\DDSTextureLoader.cpp">
+      <Filter>Common\CodeResources</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Step2.h">
@@ -130,6 +133,9 @@
     </ClInclude>
     <ClInclude Include="..\Common\Source\cTextureBuffer.h">
       <Filter>Common\DeviceInstance\DX12Supporters</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\DDSTextureLoader.h">
+      <Filter>Common\CodeResources</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

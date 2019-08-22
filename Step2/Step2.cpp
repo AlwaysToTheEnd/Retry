@@ -24,8 +24,7 @@ void Step2::Update()
 void Step2::SelectDevices()
 {
 	SelectDeviceByTemplate<UsingGraphicDevice, UsingPhsicsDevice>();
-
-	XFileParser test("./../Common/TeraResourse/Poalong.X");
+	m_GDevice->SetCamera(&m_Camera);
 }
 
 void Step2::InitObjects()
