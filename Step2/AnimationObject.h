@@ -3,7 +3,23 @@
 #include "BaseClass.h"
 #include <string>
 
-using std::unique_ptr;
+//Maximum number of indices per face (polygon). 
+#define AI_MAX_FACE_INDICES 0x7fff
+
+//Maximum number of indices per face (polygon).
+#define AI_MAX_BONE_WEIGHTS 0x7fffffff
+
+//Maximum number of vertices per mesh.
+#define AI_MAX_VERTICES 0x7fffffff
+
+//Maximum number of faces per mesh.
+#define AI_MAX_FACES 0x7fffffff
+
+//Supported number of vertex color sets per mesh.
+#define AI_MAX_NUMBER_OF_COLOR_SETS 0x8
+
+//Supported number of texture coord sets (UV(W) channels) per mesh
+#define AI_MAX_NUMBER_OF_TEXTURECOORDS 0x8
 
 namespace Ani
 {
@@ -47,7 +63,7 @@ namespace Ani
 	{
 		std::string mName;
 		std::vector<BoneWeight> mWeights;
-		CGH::MAT16 m_OffsetMatrix;
+		CGH::MAT16 mOffsetMatrix;
 	};
 
 	struct Mesh
@@ -101,7 +117,7 @@ namespace Ani
 	struct Animation
 	{
 		std::string mName;
-		std::vector<unique_ptr<AnimBone>> mAnims;
+		std::vector<std::unique_ptr<AnimBone>> mAnims;
 	};
 }
 
@@ -110,6 +126,9 @@ class AnimationObject :public GameObject
 public:
 	AnimationObject();
 	virtual ~AnimationObject();
+
+	virtual void Init() override;
+	virtual void Update() override;
 
 public:
 	Ani::Node* mRootNode;

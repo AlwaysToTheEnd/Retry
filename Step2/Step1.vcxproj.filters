@@ -34,6 +34,9 @@
     <Filter Include="Step2">
       <UniqueIdentifier>{cf1685e7-cd46-4a98-ad9f-1ababc9a7c30}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Common\CodeResources\Ziplib">
+      <UniqueIdentifier>{e41811dd-db95-4526-9acb-dce23a80858f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Step2.cpp">
@@ -77,6 +80,33 @@
     </ClCompile>
     <ClCompile Include="..\Common\Source\DDSTextureLoader.cpp">
       <Filter>Common\CodeResources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Source\zlib\inflate.c">
+      <Filter>Common\CodeResources\Ziplib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Source\zlib\adler32.c">
+      <Filter>Common\CodeResources\Ziplib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Source\zlib\compress.c">
+      <Filter>Common\CodeResources\Ziplib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Source\zlib\crc32.c">
+      <Filter>Common\CodeResources\Ziplib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Source\zlib\deflate.c">
+      <Filter>Common\CodeResources\Ziplib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Source\zlib\inffast.c">
+      <Filter>Common\CodeResources\Ziplib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Source\zlib\inftrees.c">
+      <Filter>Common\CodeResources\Ziplib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Source\zlib\trees.c">
+      <Filter>Common\CodeResources\Ziplib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Source\zlib\zutil.c">
+      <Filter>Common\CodeResources\Ziplib</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

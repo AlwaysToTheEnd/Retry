@@ -921,7 +921,7 @@ HRESULT cTextureBuffer::LoadWICTexture(ID3D12Device* device, const std::wstring&
 
 		// Submit resource copy to command list
 		
-		UpdateSubresources(m_commandList.Get(), *texture, *uploadBuffer, 0, 0, 1, &initData);
+		UpdateSubresources<1>(m_commandList.Get(), *texture, *uploadBuffer, 0, 0, 1, &initData);
 
 		m_commandList->ResourceBarrier(1,
 			&CD3DX12_RESOURCE_BARRIER::Transition(*texture, 

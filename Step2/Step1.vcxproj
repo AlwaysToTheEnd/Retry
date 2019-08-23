@@ -30,6 +30,15 @@
     <ClCompile Include="..\Common\Source\GameObject.cpp" />
     <ClCompile Include="..\Common\Source\GraphicDX12.cpp" />
     <ClCompile Include="..\Common\Source\PhysX4_0.cpp" />
+    <ClCompile Include="..\Common\Source\zlib\adler32.c" />
+    <ClCompile Include="..\Common\Source\zlib\compress.c" />
+    <ClCompile Include="..\Common\Source\zlib\crc32.c" />
+    <ClCompile Include="..\Common\Source\zlib\deflate.c" />
+    <ClCompile Include="..\Common\Source\zlib\inffast.c" />
+    <ClCompile Include="..\Common\Source\zlib\inflate.c" />
+    <ClCompile Include="..\Common\Source\zlib\inftrees.c" />
+    <ClCompile Include="..\Common\Source\zlib\trees.c" />
+    <ClCompile Include="..\Common\Source\zlib\zutil.c" />
     <ClCompile Include="AnimationObject.cpp" />
     <ClCompile Include="Step2.cpp" />
     <ClCompile Include="XFileParser.cpp" />

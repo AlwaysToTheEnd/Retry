@@ -331,7 +331,7 @@ void GraphicDX12::Draw()
 	m_CommandList->ClearRenderTargetView(CurrentBackBufferView(), Colors::Aqua, 0, nullptr);
 	m_CommandList->ClearDepthStencilView(DepthStencilView(), D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
 
-	ID3D12DescriptorHeap* descriptorHeaps[] = { m_TextureHeap->GetHeap() };
+	ID3D12DescriptorHeap* descriptorHeaps[] = { m_TextureBuffer->GetHeap() };
 	m_CommandList->SetDescriptorHeaps(1, descriptorHeaps);
 	m_CommandList->OMSetRenderTargets(1, &CurrentBackBufferView(), true, &DepthStencilView());
 
@@ -341,7 +341,7 @@ void GraphicDX12::Draw()
 	m_CommandList->SetGraphicsRootShaderResourceView(0, matBuffer->GetGPUVirtualAddress());
 	m_CommandList->SetGraphicsRootConstantBufferView(1, m_FrameResource->passCB->Resource()->GetGPUVirtualAddress());
 	m_CommandList->SetGraphicsRootConstantBufferView(2, m_FrameResource->ObjectCB->Resource()->GetGPUVirtualAddress());
-	m_CommandList->SetGraphicsRootDescriptorTable(3, m_TextureHeap->GetHeap()->GetGPUDescriptorHandleForHeapStart());
+	m_CommandList->SetGraphicsRootDescriptorTable(3, m_TextureBuffer->GetHeap()->GetGPUDescriptorHandleForHeapStart());
 
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView = {};
 	vertexBufferView.BufferLocation = m_VertexBuffer->GetGPUVirtualAddress();
@@ -396,17 +396,17 @@ void GraphicDX12::BuildTextures()
 	};
 
 	const UINT numTexturePath = _countof(texturePaths);
-	m_TextureHeap = make_unique<cTextureBuffer>(m_D3dDevice.Get(), numTexturePath);
+	m_TextureBuffer = make_unique<cTextureBuffer>(m_D3dDevice.Get(), numTexturePath);
 
-	m_TextureHeap->Begin(m_D3dDevice.Get());
+	m_TextureBuffer->Begin(m_D3dDevice.Get());
 
 	for (UINT i = 0; i < numTexturePath; i++)
 	{
-		m_TextureHeap->AddTexture(m_D3dDevice.Get(),
+		m_TextureBuffer->AddTexture(m_D3dDevice.Get(),
 			m_CommandQueue.Get(), texturePaths->first, texturePaths->second);
 	}
 
-	m_TextureHeap->End(m_CommandQueue.Get(), bind(&GraphicDX12::FlushCommandQueue, this));
+	m_TextureBuffer->End(m_CommandQueue.Get(), bind(&GraphicDX12::FlushCommandQueue, this));
 }
 
 void GraphicDX12::BuildMaterials()
@@ -485,15 +485,14 @@ void GraphicDX12::BuildRootSignature()
 		D3D12_STATIC_BORDER_COLOR_OPAQUE_BLACK);
 #pragma endregion
 
-	CD3DX12_DESCRIPTOR_RANGE texTable[2];
-	texTable[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0);
-	texTable[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 0);
+	CD3DX12_DESCRIPTOR_RANGE texTable;
+	texTable.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0);
 	
 	CD3DX12_ROOT_PARAMETER slotRootParam[4];
 	slotRootParam[0].InitAsShaderResourceView(0, 1);
 	slotRootParam[1].InitAsConstantBufferView(0);
 	slotRootParam[2].InitAsConstantBufferView(1);
-	slotRootParam[3].InitAsDescriptorTable(2, texTable, D3D12_SHADER_VISIBILITY_PIXEL);
+	slotRootParam[3].InitAsDescriptorTable(1, &texTable, D3D12_SHADER_VISIBILITY_PIXEL);
 
 	CD3DX12_ROOT_SIGNATURE_DESC rootDesc;
 	rootDesc.Init(4, slotRootParam, _countof(staticSamplers),
@@ -560,7 +559,7 @@ void GraphicDX12::BuildGeometry()
 	vertexData.emplace_back(baseVertex[7], oneDirectionNormal, XMFLOAT2(1.0f, 1.0f));
 #pragma endregion
 
-	const UINT dataSize = vertexData.size()*sizeof(Vertex);
+	const UINT dataSize = static_cast<UINT>(vertexData.size())*sizeof(Vertex);
 
 	D3D12_HEAP_PROPERTIES uploadBufferPro = {};
 	uploadBufferPro.Type = D3D12_HEAP_TYPE_UPLOAD;

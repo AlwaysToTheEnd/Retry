@@ -128,7 +128,7 @@ private:
 	std::vector<D3D12_INPUT_ELEMENT_DESC>							m_NTVertexInputLayout;
 	std::unordered_map<std::string, ComPtr<ID3DBlob>>				m_Shaders;
 	ComPtr<ID3D12RootSignature>										m_RootSignature = nullptr;
-	std::unique_ptr<cTextureBuffer>									m_TextureHeap;
+	std::unique_ptr<cTextureBuffer>									m_TextureBuffer;
 
 	std::unique_ptr<FrameResource>	m_FrameResource;
 	PassConstants					m_MainPassCB;

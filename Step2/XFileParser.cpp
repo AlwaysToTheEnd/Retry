@@ -1,22 +1,39 @@
 #include "XFileParser.h"
 #include "d3dUtil.h"
+#include "zlib/zlib.h"
+#include "fast_atof.h"
+#include "ByteSwap.h"
 
 using namespace Ani;
 using namespace DirectX;
 using namespace std;
 
-XFileParser::XFileParser(const std::string& filePath)
+// Magic identifier for MSZIP compressed data
+#define MSZIP_MAGIC 0x4B43
+#define MSZIP_BLOCK 32786
+
+static void* dummy_alloc(void* /*opaque*/, unsigned int items, unsigned int size) {
+	return ::operator new(items * size);
+}
+
+static void  dummy_free(void* /*opaque*/, void* address) {
+	return ::operator delete(address);
+}
+
+XFileParser::XFileParser(const string& filePath)
 	:m_MajorVersion(0)
-	,m_MinorVersion(0)
-	,m_IsBinaryFormat(false)
-	,m_BinaryNumCount(0)
-	,m_BinaryFloatSize(0)
-	,m_LineNumber(0)
-	,P(nullptr)
-	,End(nullptr)
+	, m_MinorVersion(0)
+	, m_IsBinaryFormat(false)
+	, m_BinaryNumCount(0)
+	, m_BinaryFloatSize(0)
+	, m_LineNumber(0)
+	, P(nullptr)
+	, End(nullptr)
 {
 	FILE* load = nullptr;
 	vector<char> fileData;
+	vector<char> uncompressed;
+	m_AniObject = make_unique<AnimationObject>();
 
 	fopen_s(&load, filePath.c_str(), "r");
 
@@ -35,7 +52,7 @@ XFileParser::XFileParser(const std::string& filePath)
 	}
 
 	////////////////////////////////////////////
-	P= &fileData.front();
+	P = &fileData.front();
 	End = &fileData.back();
 
 	if (strncmp(P, "xof ", 4) != 0)
@@ -81,117 +98,116 @@ XFileParser::XFileParser(const std::string& filePath)
 	P += 16;
 
 	// If this is a compressed X file, apply the inflate algorithm to it
-//	if (compressed)
-//	{
-//#ifdef ASSIMP_BUILD_NO_COMPRESSED_X
-//		throw DeadlyImportError("Assimp was built without compressed X support");
-//#else
-//		/* ///////////////////////////////////////////////////////////////////////
-//		 * COMPRESSED X FILE FORMAT
-//		 * ///////////////////////////////////////////////////////////////////////
-//		 *    [xhead]
-//		 *    2 major
-//		 *    2 minor
-//		 *    4 type    // bzip,tzip
-//		 *    [mszip_master_head]
-//		 *    4 unkn    // checksum?
-//		 *    2 unkn    // flags? (seems to be constant)
-//		 *    [mszip_head]
-//		 *    2 ofs     // offset to next section
-//		 *    2 magic   // 'CK'
-//		 *    ... ofs bytes of data
-//		 *    ... next mszip_head
-//		 *
-//		 *  http://www.kdedevelopers.org/node/3181 has been very helpful.
-//		 * ///////////////////////////////////////////////////////////////////////
-//		 */
-//
-//		 // build a zlib stream
-//		z_stream stream;
-//		stream.opaque = NULL;
-//		stream.zalloc = &dummy_alloc;
-//		stream.zfree = &dummy_free;
-//		stream.data_type = (m_IsBinaryFormat ? Z_BINARY : Z_ASCII);
-//
-//		// initialize the inflation algorithm
-//		::inflateInit2(&stream, -MAX_WBITS);
-//
-//		// skip unknown data (checksum, flags?)
-//		P += 6;
-//
-//		// First find out how much storage we'll need. Count sections.
-//		const char* P1 = P;
-//		unsigned int est_out = 0;
-//
-//		while (P1 + 3 < End)
-//		{
-//			// read next offset
-//			uint16_t ofs = *((uint16_t*)P1);
-//			AI_SWAP2(ofs); P1 += 2;
-//
-//			if (ofs >= MSZIP_BLOCK)
-//				throw DeadlyImportError("X: Invalid offset to next MSZIP compressed block");
-//
-//			// check magic word
-//			uint16_t magic = *((uint16_t*)P1);
-//			AI_SWAP2(magic); P1 += 2;
-//
-//			if (magic != MSZIP_MAGIC)
-//				throw DeadlyImportError("X: Unsupported compressed format, expected MSZIP header");
-//
-//			// and advance to the next offset
-//			P1 += ofs;
-//			est_out += MSZIP_BLOCK; // one decompressed block is 32786 in size
-//		}
-//
-//		// Allocate storage and terminating zero and do the actual uncompressing
-//		uncompressed.resize(est_out + 1);
-//		char* out = &uncompressed.front();
-//		while (P + 3 < End)
-//		{
-//			uint16_t ofs = *((uint16_t*)P);
-//			AI_SWAP2(ofs);
-//			P += 4;
-//
-//			// push data to the stream
-//			stream.next_in = (Bytef*)P;
-//			stream.avail_in = ofs;
-//			stream.next_out = (Bytef*)out;
-//			stream.avail_out = MSZIP_BLOCK;
-//
-//			// and decompress the data ....
-//			int ret = ::inflate(&stream, Z_SYNC_FLUSH);
-//			if (ret != Z_OK && ret != Z_STREAM_END)
-//				throw DeadlyImportError("X: Failed to decompress MSZIP-compressed data");
-//
-//			::inflateReset(&stream);
-//			::inflateSetDictionary(&stream, (const Bytef*)out, MSZIP_BLOCK - stream.avail_out);
-//
-//			// and advance to the next offset
-//			out += MSZIP_BLOCK - stream.avail_out;
-//			P += ofs;
-//		}
-//
-//		// terminate zlib
-//		::inflateEnd(&stream);
-//
-//		// ok, update pointers to point to the uncompressed file data
-//		P = &uncompressed[0];
-//		End = out;
-//
-//		// FIXME: we don't need the compressed data anymore, could release
-//		// it already for better memory usage. Consider breaking const-co.
-//		DefaultLogger::get()->info("Successfully decompressed MSZIP-compressed file");
-//#endif // !! ASSIMP_BUILD_NO_COMPRESSED_X
-//	}
-//	else
-//	{
-//		// start reading here
-//		ReadUntilEndOfLine();
-//	}
-//
-//	mScene = new Scene;
-//	ParseFile();
+	if (compressed)
+	{
+#ifdef ASSIMP_BUILD_NO_COMPRESSED_X
+		throw DeadlyImportError("Assimp was built without compressed X support");
+#else
+		/* ///////////////////////////////////////////////////////////////////////
+		 * COMPRESSED X FILE FORMAT
+		 * ///////////////////////////////////////////////////////////////////////
+		 *    [xhead]
+		 *    2 major
+		 *    2 minor
+		 *    4 type    // bzip,tzip
+		 *    [mszip_master_head]
+		 *    4 unkn    // checksum?
+		 *    2 unkn    // flags? (seems to be constant)
+		 *    [mszip_head]
+		 *    2 ofs     // offset to next section
+		 *    2 magic   // 'CK'
+		 *    ... ofs bytes of data
+		 *    ... next mszip_head
+		 *
+		 *  http://www.kdedevelopers.org/node/3181 has been very helpful.
+		 * ///////////////////////////////////////////////////////////////////////
+		 */
+
+		 // build a zlib stream
+		z_stream stream;
+		stream.opaque = NULL;
+		stream.zalloc = &dummy_alloc;
+		stream.zfree = &dummy_free;
+		stream.data_type = (m_IsBinaryFormat ? Z_BINARY : Z_ASCII);
+
+		// initialize the inflation algorithm
+		::inflateInit2(&stream, -MAX_WBITS);
+
+		// skip unknown data (checksum, flags?)
+		P += 6;
+
+		// First find out how much storage we'll need. Count sections.
+		const char* P1 = P;
+		unsigned int est_out = 0;
+
+		while (P1 + 3 < End)
+		{
+			// read next offset
+			uint16_t ofs = *((uint16_t*)P1);
+			AI_SWAP2(ofs); P1 += 2;
+
+			if (ofs >= MSZIP_BLOCK)
+				throw exception("X: Invalid offset to next MSZIP compressed block");
+
+			// check magic word
+			uint16_t magic = *((uint16_t*)P1);
+			AI_SWAP2(magic); P1 += 2;
+
+			if (magic != MSZIP_MAGIC)
+				throw exception("X: Unsupported compressed format, expected MSZIP header");
+
+			// and advance to the next offset
+			P1 += ofs;
+			est_out += MSZIP_BLOCK; // one decompressed block is 32786 in size
+		}
+
+		// Allocate storage and terminating zero and do the actual uncompressing
+		uncompressed.resize(static_cast<UINT64>(est_out + 1));
+		char* out = &uncompressed.front();
+		while (P + 3 < End)
+		{
+			uint16_t ofs = *((uint16_t*)P);
+			AI_SWAP2(ofs);
+			P += 4;
+
+			// push data to the stream
+			stream.next_in = (Bytef*)P;
+			stream.avail_in = ofs;
+			stream.next_out = (Bytef*)out;
+			stream.avail_out = MSZIP_BLOCK;
+
+			// and decompress the data ....
+			int ret = ::inflate(&stream, Z_SYNC_FLUSH);
+			if (ret != Z_OK && ret != Z_STREAM_END)
+				throw exception("X: Failed to decompress MSZIP-compressed data");
+
+			::inflateReset(&stream);
+			::inflateSetDictionary(&stream, (const Bytef*)out, MSZIP_BLOCK - stream.avail_out);
+
+			// and advance to the next offset
+			out += MSZIP_BLOCK - stream.avail_out;
+			P += ofs;
+		}
+
+		// terminate zlib
+		::inflateEnd(&stream);
+
+		// ok, update pointers to point to the uncompressed file data
+		P = &uncompressed[0];
+		End = out;
+
+		// FIXME: we don't need the compressed data anymore, could release
+		// it already for better memory usage. Consider breaking const-co.
+		OutputDebugStringA("Successfully decompressed MSZIP-compressed file");
+#endif // !! ASSIMP_BUILD_NO_COMPRESSED_X
+	}
+	else
+	{
+		// start reading here
+		ReadUntilEndOfLine();
+	}
+
+	ParseFile();
 
 	// filter the imported hierarchy for some degenerated cases
 	/*if (mScene->mRootNode) {
@@ -205,160 +221,1281 @@ XFileParser::~XFileParser()
 
 void XFileParser::ParseFile()
 {
+	bool running = true;
+	while (running)
+	{
+		// read name of next object
+		string objectName = GetNextToken();
+		if (objectName.length() == 0)
+		{
+			break;
+		}
 
+		// parse specific object
+		if (objectName == "template")
+		{
+			ParseDataObjectTemplate();
+		}
+		else if (objectName == "Frame")
+		{
+			ParseDataObjectFrame(NULL);
+		}
+		else if (objectName == "Mesh")
+		{
+			// some meshes have no frames at all
+			Mesh* mesh = new Mesh;
+			ParseDataObjectMesh(mesh);
+			m_AniObject->mGlobalMeshes.push_back(mesh);
+		}
+		else if (objectName == "AnimTicksPerSecond")
+		{
+			ParseDataObjectAnimTicksPerSecond();
+		}
+		else if (objectName == "AnimationSet")
+		{
+			ParseDataObjectAnimationSet();
+		}
+		else if (objectName == "Material")
+		{
+			// Material outside of a mesh or node
+			Material material;
+			ParseDataObjectMaterial(&material);
+			m_AniObject->mGlobalMaterials.push_back(material);
+		}
+		else if (objectName == "}")
+		{
+			OutputDebugStringA("} found in dataObject");
+			// whatever?
+			OutputDebugStringA("} found in dataObject");
+		}
+		else
+		{
+			// unknown format
+			OutputDebugStringA("Unknown data object in animation of .x file");
+			ParseUnknownDataObject();
+		}
+	}
 }
 
 void XFileParser::ParseDataObjectTemplate()
 {
+	// parse a template data object. Currently not stored.
+	string name;
+	readHeadOfDataObject(&name);
+
+	// read GUID
+	string guid = GetNextToken();
+
+	// read and ignore data members
+	bool running = true;
+	while (running)
+	{
+		string s = GetNextToken();
+
+		if (s == "}")
+			break;
+
+		if (s.length() == 0)
+			ThrowException("Unexpected end of file reached while parsing template definition");
+	}
 }
 
 void XFileParser::ParseDataObjectFrame(Ani::Node* pParent)
 {
+	// A coordinate frame, or "frame of reference." The Frame template
+	// is open and can contain any object. The Direct3D extensions (D3DX)
+	// mesh-loading functions recognize Mesh, FrameTransformMatrix, and
+	// Frame template instances as child objects when loading a Frame
+	// instance.
+	string name;
+	readHeadOfDataObject(&name);
+
+	// create a named node and place it at its parent, if given
+	Node* node = new Node(pParent);
+	node->mName = name;
+	if (pParent)
+	{
+		pParent->mChildren.push_back(node);
+	}
+	else
+	{
+		// there might be multiple root nodes
+		if (m_AniObject->mRootNode != NULL)
+		{
+			// place a dummy root if not there
+			if (m_AniObject->mRootNode->mName != "$dummy_root")
+			{
+				Node* exroot = m_AniObject->mRootNode;
+				m_AniObject->mRootNode = new Node(NULL);
+				m_AniObject->mRootNode->mName = "$dummy_root";
+				m_AniObject->mRootNode->mChildren.push_back(exroot);
+				exroot->mParent = m_AniObject->mRootNode;
+			}
+			// put the new node as its child instead
+			m_AniObject->mRootNode->mChildren.push_back(node);
+			node->mParent = m_AniObject->mRootNode;
+		}
+		else
+		{
+			// it's the first node imported. place it as root
+			m_AniObject->mRootNode = node;
+		}
+	}
+
+	// Now inside a frame.
+	// read tokens until closing brace is reached.
+	bool running = true;
+	while (running)
+	{
+		string objectName = GetNextToken();
+		if (objectName.size() == 0)
+		{
+			ThrowException("Unexpected end of file reached while parsing frame");
+		}
+
+		if (objectName == "}")
+		{
+			break; // frame finished
+		}
+		else if (objectName == "Frame")
+		{
+			ParseDataObjectFrame(node); // child frame
+		}
+		else if (objectName == "FrameTransformMatrix")
+		{
+			ParseDataObjectTransformationMatrix(node->mTrafoMatrix);
+		}
+		else if (objectName == "Mesh")
+		{
+			Mesh* mesh = new Mesh;
+			node->mMeshes.push_back(mesh);
+			ParseDataObjectMesh(mesh);
+		}
+		else
+		{
+			OutputDebugStringA("Unknown data object in frame in x file");
+			ParseUnknownDataObject();
+		}
+	}
 }
 
 void XFileParser::ParseDataObjectTransformationMatrix(CGH::MAT16& pMatrix)
 {
+	// read header, we're not interested if it has a name
+	readHeadOfDataObject();
+
+	// read its components
+	pMatrix.m[0][0] = ReadFloat(); pMatrix.m[1][0] = ReadFloat();
+	pMatrix.m[2][0] = ReadFloat(); pMatrix.m[3][0] = ReadFloat();
+	pMatrix.m[0][1] = ReadFloat(); pMatrix.m[1][1] = ReadFloat();
+	pMatrix.m[2][1] = ReadFloat(); pMatrix.m[3][1] = ReadFloat();
+	pMatrix.m[0][2] = ReadFloat(); pMatrix.m[1][2] = ReadFloat();
+	pMatrix.m[2][2] = ReadFloat(); pMatrix.m[3][2] = ReadFloat();
+	pMatrix.m[0][3] = ReadFloat(); pMatrix.m[1][3] = ReadFloat();
+	pMatrix.m[2][3] = ReadFloat(); pMatrix.m[3][3] = ReadFloat();
+
+	// trailing symbols
+	CheckForSemicolon();
+	CheckForClosingBrace();
 }
 
 void XFileParser::ParseDataObjectMesh(Ani::Mesh* pMesh)
 {
+	string name;
+	readHeadOfDataObject(&name);
+
+	// read vertex count
+	unsigned int numVertices = ReadInt();
+	pMesh->mPositions.resize(numVertices);
+
+	// read vertices
+	for (unsigned int a = 0; a < numVertices; a++)
+		pMesh->mPositions[a] = ReadVector3();
+
+	// read position faces
+	unsigned int numPosFaces = ReadInt();
+	pMesh->mPosFaces.resize(numPosFaces);
+	for (unsigned int a = 0; a < numPosFaces; a++)
+	{
+		unsigned int numIndices = ReadInt();
+		if (numIndices < 3)
+		{
+			ThrowException("Invalid index count " + to_string(numIndices) + " for face" + to_string(a));
+		}
+
+		// read indices
+		Face& face = pMesh->mPosFaces[a];
+		for (unsigned int b = 0; b < numIndices; b++)
+			face.mIndices.push_back(ReadInt());
+		CheckForSeparator();
+	}
+
+	// here, other data objects may follow
+	bool running = true;
+	while (running)
+	{
+		string objectName = GetNextToken();
+
+		if (objectName.size() == 0)
+		{
+			ThrowException("Unexpected end of file while parsing mesh structure");
+		}
+		else if (objectName == "}")
+		{
+			break; // mesh finished
+		}
+		else if (objectName == "MeshNormals")
+		{
+			ParseDataObjectMeshNormals(pMesh);
+		}
+		else if (objectName == "MeshTextureCoords")
+		{
+			ParseDataObjectMeshTextureCoords(pMesh);
+		}
+		else if (objectName == "MeshVertexColors")
+		{
+			ParseDataObjectMeshVertexColors(pMesh);
+		}
+		else if (objectName == "MeshMaterialList")
+		{
+			ParseDataObjectMeshMaterialList(pMesh);
+		}
+		else if (objectName == "VertexDuplicationIndices")
+		{
+			ParseUnknownDataObject(); // we'll ignore vertex duplication indices
+		}
+		else if (objectName == "XSkinMeshHeader")
+		{
+			ParseDataObjectSkinMeshHeader(pMesh);
+		}
+		else if (objectName == "SkinWeights")
+		{
+			ParseDataObjectSkinWeights(pMesh);
+		}
+		else
+		{
+			OutputDebugStringA("Unknown data object in mesh in x file");
+			ParseUnknownDataObject();
+		}
+	}
 }
 
 void XFileParser::ParseDataObjectSkinWeights(Ani::Mesh* pMesh)
 {
+	readHeadOfDataObject();
+
+	string transformNodeName;
+	GetNextTokenAsString(transformNodeName);
+
+	pMesh->mBones.push_back(Bone());
+	Bone& bone = pMesh->mBones.back();
+	bone.mName = transformNodeName;
+
+	// read vertex weights
+	unsigned int numWeights = ReadInt();
+	bone.mWeights.reserve(numWeights);
+
+	for (unsigned int a = 0; a < numWeights; a++)
+	{
+		BoneWeight weight;
+		weight.mVertex = ReadInt();
+		bone.mWeights.push_back(weight);
+	}
+
+	// read vertex weights
+	for (unsigned int a = 0; a < numWeights; a++)
+		bone.mWeights[a].mWeight = ReadFloat();
+
+	// read matrix offset
+	bone.mOffsetMatrix.m[0][0] = ReadFloat(); bone.mOffsetMatrix.m[1][0] = ReadFloat();
+	bone.mOffsetMatrix.m[2][0] = ReadFloat(); bone.mOffsetMatrix.m[3][0] = ReadFloat();
+
+	bone.mOffsetMatrix.m[0][1] = ReadFloat(); bone.mOffsetMatrix.m[1][1] = ReadFloat();
+	bone.mOffsetMatrix.m[2][1] = ReadFloat(); bone.mOffsetMatrix.m[3][1] = ReadFloat();
+
+	bone.mOffsetMatrix.m[0][2] = ReadFloat(); bone.mOffsetMatrix.m[1][2] = ReadFloat();
+	bone.mOffsetMatrix.m[2][2] = ReadFloat(); bone.mOffsetMatrix.m[3][2] = ReadFloat();
+
+	bone.mOffsetMatrix.m[0][3] = ReadFloat(); bone.mOffsetMatrix.m[1][3] = ReadFloat();
+	bone.mOffsetMatrix.m[2][3] = ReadFloat(); bone.mOffsetMatrix.m[3][3] = ReadFloat();
+
+	CheckForSemicolon();
+	CheckForClosingBrace();
 }
 
 void XFileParser::ParseDataObjectSkinMeshHeader(Ani::Mesh* pMesh)
 {
+	readHeadOfDataObject();
+
+	/*unsigned int maxSkinWeightsPerVertex =*/ ReadInt();
+	/*unsigned int maxSkinWeightsPerFace =*/ ReadInt();
+	/*unsigned int numBonesInMesh = */ReadInt();
+
+	CheckForClosingBrace();
 }
 
 void XFileParser::ParseDataObjectMeshNormals(Ani::Mesh* pMesh)
 {
+	readHeadOfDataObject();
+
+	// read count
+	unsigned int numNormals = ReadInt();
+	pMesh->mNormals.resize(numNormals);
+
+	// read normal vectors
+	for (unsigned int a = 0; a < numNormals; a++)
+		pMesh->mNormals[a] = ReadVector3();
+
+	// read normal indices
+	unsigned int numFaces = ReadInt();
+	if (numFaces != pMesh->mPosFaces.size())
+		ThrowException("Normal face count does not match vertex face count.");
+
+	for (unsigned int a = 0; a < numFaces; a++)
+	{
+		unsigned int numIndices = ReadInt();
+		pMesh->mNormFaces.push_back(Face());
+		Face& face = pMesh->mNormFaces.back();
+
+		for (unsigned int b = 0; b < numIndices; b++)
+			face.mIndices.push_back(ReadInt());
+
+		CheckForSeparator();
+	}
+
+	CheckForClosingBrace();
 }
 
 void XFileParser::ParseDataObjectMeshTextureCoords(Ani::Mesh* pMesh)
 {
+	readHeadOfDataObject();
+	if (pMesh->mNumTextures + 1 > AI_MAX_NUMBER_OF_TEXTURECOORDS)
+		ThrowException("Too many sets of texture coordinates");
+
+	vector<XMFLOAT2>& coords = pMesh->mTexCoords[pMesh->mNumTextures++];
+
+	unsigned int numCoords = ReadInt();
+	if (numCoords != pMesh->mPositions.size())
+		ThrowException("Texture coord count does not match vertex count");
+
+	coords.resize(numCoords);
+	for (unsigned int a = 0; a < numCoords; a++)
+		coords[a] = ReadVector2();
+
+	CheckForClosingBrace();
 }
 
 void XFileParser::ParseDataObjectMeshVertexColors(Ani::Mesh* pMesh)
 {
+	readHeadOfDataObject();
+	if (pMesh->mNumColorSets + 1 > AI_MAX_NUMBER_OF_COLOR_SETS)
+		ThrowException("Too many colorsets");
+	vector<XMFLOAT4>& colors = pMesh->mColors[pMesh->mNumColorSets++];
+
+	unsigned int numColors = ReadInt();
+	if (numColors != pMesh->mPositions.size())
+		ThrowException("Vertex color count does not match vertex count");
+
+	colors.resize(numColors, XMFLOAT4(0, 0, 0, 1));
+	for (unsigned int a = 0; a < numColors; a++)
+	{
+		unsigned int index = ReadInt();
+		if (index >= pMesh->mPositions.size())
+			ThrowException("Vertex color index out of bounds");
+
+		colors[index] = ReadRGBA();
+		// HACK: (thom) Maxon Cinema XPort plugin puts a third separator here, kwxPort puts a comma.
+		// Ignore gracefully.
+		if (!m_IsBinaryFormat)
+		{
+			FindNextNoneWhiteSpace();
+			if (*P == ';' || *P == ',')
+				P++;
+		}
+	}
+
+	CheckForClosingBrace();
 }
 
 void XFileParser::ParseDataObjectMeshMaterialList(Ani::Mesh* pMesh)
 {
+	readHeadOfDataObject();
+
+	// read material count
+	/*unsigned int numMaterials =*/ ReadInt();
+	// read non triangulated face material index count
+	unsigned int numMatIndices = ReadInt();
+
+	// some models have a material index count of 1... to be able to read them we
+	// replicate this single material index on every face
+	if (numMatIndices != pMesh->mPosFaces.size() && numMatIndices != 1)
+		ThrowException("Per-Face material index count does not match face count.");
+
+	// read per-face material indices
+	for (unsigned int a = 0; a < numMatIndices; a++)
+		pMesh->mFaceMaterials.push_back(ReadInt());
+
+	// in version 03.02, the face indices end with two semicolons.
+	// commented out version check, as version 03.03 exported from blender also has 2 semicolons
+	if (!m_IsBinaryFormat) // && MajorVersion == 3 && MinorVersion <= 2)
+	{
+		if (P < End && *P == ';')
+			++P;
+	}
+
+	// if there was only a single material index, replicate it on all faces
+	while (pMesh->mFaceMaterials.size() < pMesh->mPosFaces.size())
+		pMesh->mFaceMaterials.push_back(pMesh->mFaceMaterials.front());
+
+	// read following data objects
+	bool running = true;
+	while (running)
+	{
+		string objectName = GetNextToken();
+		if (objectName.size() == 0)
+		{
+			ThrowException("Unexpected end of file while parsing mesh material list.");
+		}
+		else if (objectName == "}")
+		{
+			break; // material list finished
+		}
+		else if (objectName == "{")
+		{
+			// template materials 
+			string matName = GetNextToken();
+			Material material;
+			material.mIsReference = true;
+			material.mName = matName;
+			pMesh->mMaterials.push_back(material);
+
+			CheckForClosingBrace(); // skip }
+		}
+		else if (objectName == "Material")
+		{
+			pMesh->mMaterials.push_back(Material());
+			ParseDataObjectMaterial(&pMesh->mMaterials.back());
+		}
+		else if (objectName == ";")
+		{
+			// ignore
+		}
+		else
+		{
+			OutputDebugStringA("Unknown data object in material list in x file");
+			ParseUnknownDataObject();
+		}
+	}
 }
 
 void XFileParser::ParseDataObjectMaterial(Ani::Material* pMaterial)
 {
+	string matName;
+	readHeadOfDataObject(&matName);
+	if (matName.empty())
+	{
+		matName = string("material") + to_string(m_LineNumber);
+	}
+
+	pMaterial->mName = matName;
+	pMaterial->mIsReference = false;
+
+	// read material values
+	pMaterial->mDiffuse = ReadRGBA();
+	pMaterial->mSpecularExponent = ReadFloat();
+	pMaterial->mSpecular = ReadRGB();
+	pMaterial->mEmissive = ReadRGB();
+
+	// read other data objects
+	bool running = true;
+	while (running)
+	{
+		string objectName = GetNextToken();
+		if (objectName.size() == 0)
+		{
+			ThrowException("Unexpected end of file while parsing mesh material");
+		}
+		else if (objectName == "}")
+		{
+			break; // material finished
+		}
+		else if (objectName == "TextureFilename" || objectName == "TextureFileName")
+		{
+			// some exporters write "TextureFileName" instead.
+			string texname;
+			ParseDataObjectTextureFilename(texname);
+			pMaterial->mTextures.push_back(TexEntry(texname));
+		}
+		else if (objectName == "NormalmapFilename" || objectName == "NormalmapFileName")
+		{
+			// one exporter writes out the normal map in a separate filename tag
+			string texname;
+			ParseDataObjectTextureFilename(texname);
+			pMaterial->mTextures.push_back(TexEntry(texname, true));
+		}
+		else
+		{
+			OutputDebugStringA("Unknown data object in material in x file");
+			ParseUnknownDataObject();
+		}
+	}
 }
 
 void XFileParser::ParseDataObjectAnimTicksPerSecond()
 {
+	readHeadOfDataObject();
+	m_AniObject->mAnimTicksPerSecond = ReadInt();
+	CheckForClosingBrace();
 }
 
 void XFileParser::ParseDataObjectAnimationSet()
 {
+	string animName;
+	readHeadOfDataObject(&animName);
+
+	Animation* anim = new Animation;
+	m_AniObject->mAnims.push_back(anim);
+	anim->mName = animName;
+
+	bool running = true;
+	while (running)
+	{
+		string objectName = GetNextToken();
+		if (objectName.length() == 0)
+		{
+			ThrowException("Unexpected end of file while parsing animation set.");
+		}
+		else if (objectName == "}")
+		{
+			break; // animation set finished
+		}
+		else if (objectName == "Animation")
+		{
+			ParseDataObjectAnimation(anim);
+		}
+		else
+		{
+			OutputDebugStringA("Unknown data object in animation set in x file");
+			ParseUnknownDataObject();
+		}
+	}
 }
 
 void XFileParser::ParseDataObjectAnimation(Ani::Animation* pAnim)
 {
+	readHeadOfDataObject();
+	AnimBone* banim = new AnimBone;
+	pAnim->mAnims.emplace_back(banim);
+
+	bool running = true;
+	while (running)
+	{
+		string objectName = GetNextToken();
+
+		if (objectName.length() == 0)
+		{
+			ThrowException("Unexpected end of file while parsing animation.");
+		}
+		else if (objectName == "}")
+		{
+			break; // animation finished
+		}
+		else if (objectName == "AnimationKey")
+		{
+			ParseDataObjectAnimationKey(banim);
+		}
+		else if (objectName == "AnimationOptions")
+		{
+			ParseUnknownDataObject(); // not interested
+		}
+		else if (objectName == "{")
+		{
+			// read frame name
+			banim->mBoneName = GetNextToken();
+			CheckForClosingBrace();
+		}
+		else
+		{
+			OutputDebugStringA("Unknown data object in animation in x file");
+			ParseUnknownDataObject();
+		}
+	}
 }
 
 void XFileParser::ParseDataObjectAnimationKey(Ani::AnimBone* pAnimBone)
 {
+	readHeadOfDataObject();
+
+	// read key type
+	unsigned int keyType = ReadInt();
+
+	// read number of keys
+	unsigned int numKeys = ReadInt();
+
+	for (unsigned int a = 0; a < numKeys; a++)
+	{
+		// read time
+		unsigned int time = ReadInt();
+
+		// read keys
+		switch (keyType)
+		{
+		case 0: // rotation quaternion
+		{
+			// read count
+			if (ReadInt() != 4)
+				ThrowException("Invalid number of arguments for quaternion key in animation");
+
+			TimeValue<XMFLOAT4> key;
+			key.m_Time = double(time);
+			key.m_Value.w = ReadFloat();
+			key.m_Value.x = ReadFloat();
+			key.m_Value.y = ReadFloat();
+			key.m_Value.z = ReadFloat();
+			pAnimBone->mRotKeys.push_back(key);
+
+			CheckForSemicolon();
+			break;
+		}
+
+		case 1: // scale vector
+		case 2: // position vector
+		{
+			// read count
+			if (ReadInt() != 3)
+				ThrowException("Invalid number of arguments for vector key in animation");
+
+			TimeValue<XMFLOAT3> key;
+			key.m_Time = double(time);
+			key.m_Value = ReadVector3();
+
+			if (keyType == 2)
+				pAnimBone->mPosKeys.push_back(key);
+			else
+				pAnimBone->mScaleKeys.push_back(key);
+
+			break;
+		}
+
+		case 3: // combined transformation matrix
+		case 4: // denoted both as 3 or as 4
+		{
+			// read count
+			if (ReadInt() != 16)
+				ThrowException("Invalid number of arguments for matrix key in animation");
+
+			// read matrix
+			TimeValue<CGH::MAT16> key;
+			key.m_Time = double(time);
+			key.m_Value.m[0][0] = ReadFloat(); key.m_Value.m[1][0] = ReadFloat();
+			key.m_Value.m[2][0] = ReadFloat(); key.m_Value.m[3][0] = ReadFloat();
+			key.m_Value.m[0][1] = ReadFloat(); key.m_Value.m[1][1] = ReadFloat();
+			key.m_Value.m[2][1] = ReadFloat(); key.m_Value.m[3][1] = ReadFloat();
+			key.m_Value.m[0][2] = ReadFloat(); key.m_Value.m[1][2] = ReadFloat();
+			key.m_Value.m[2][2] = ReadFloat(); key.m_Value.m[3][2] = ReadFloat();
+			key.m_Value.m[0][3] = ReadFloat(); key.m_Value.m[1][3] = ReadFloat();
+			key.m_Value.m[2][3] = ReadFloat(); key.m_Value.m[3][3] = ReadFloat();
+			pAnimBone->mTrafoKeys.push_back(key);
+
+			CheckForSemicolon();
+			break;
+		}
+
+		default:
+			ThrowException("Unknown key type " + to_string(keyType) + " in animation.");
+			break;
+		} // end switch
+
+		// key separator
+		CheckForSeparator();
+	}
+
+	CheckForClosingBrace();
 }
 
-void XFileParser::ParseDataObjectTextureFilename(std::string& pName)
+void XFileParser::ParseDataObjectTextureFilename(string& pName)
 {
+	readHeadOfDataObject();
+	GetNextTokenAsString(pName);
+	CheckForClosingBrace();
+
+	// FIX: some files (e.g. AnimationTest.x) have "" as texture file name
+	if (!pName.length())
+	{
+		OutputDebugStringA("Length of texture file name is zero. Skipping this texture.");
+	}
+
+	// some exporters write double backslash paths out. We simply replace them if we find them
+	while (pName.find("\\\\") != string::npos)
+	{
+		pName.replace(pName.find("\\\\"), 2, "\\");
+	}
 }
 
 void XFileParser::ParseUnknownDataObject()
 {
+	// find opening delimiter
+	bool running = true;
+	while (running)
+	{
+		string t = GetNextToken();
+		if (t.length() == 0)
+		{
+			ThrowException("Unexpected end of file while parsing unknown segment.");
+		}
+
+		if (t == "{")
+		{
+			break;
+		}
+	}
+
+	unsigned int counter = 1;
+
+	// parse until closing delimiter
+	while (counter > 0)
+	{
+		string t = GetNextToken();
+
+		if (t.length() == 0)
+		{
+			ThrowException("Unexpected end of file while parsing unknown segment.");
+		}
+
+		if (t == "{")
+		{
+			++counter;
+		}
+		else if (t == "}")
+		{
+			--counter;
+		}
+	}
 }
 
 void XFileParser::FindNextNoneWhiteSpace()
 {
+	if (m_IsBinaryFormat)
+		return;
+
+	bool running = true;
+	while (running)
+	{
+		while (P < End && isspace((unsigned char)* P))
+		{
+			if (*P == '\n')
+			{
+				m_LineNumber++;
+			}
+
+			++P;
+		}
+
+		if (P >= End) return;
+
+		// check if this is a comment
+		if ((P[0] == '/' && P[1] == '/') || P[0] == '#')
+		{
+			ReadUntilEndOfLine();
+		}
+		else
+		{
+			break;
+		}
+	}
 }
 
-std::string XFileParser::GetNextToken()
+string XFileParser::GetNextToken()
 {
-	return std::string();
+	string s;
+
+	// process binary-formatted file
+	if (m_IsBinaryFormat)
+	{
+		// in binary mode it will only return NAME and STRING token
+		// and (correctly) skip over other tokens.
+
+		if (End - P < 2) return s;
+		unsigned int tok = ReadBinWord();
+		unsigned int len;
+
+		// standalone tokens
+		switch (tok)
+		{
+		case 1:
+			// name token
+			if (End - P < 4) return s;
+			len = ReadBinDWord();
+			if (End - P < int(len)) return s;
+			s = string(P, len);
+			P += len;
+			return s;
+		case 2:
+			// string token
+			if (End - P < 4) return s;
+			len = ReadBinDWord();
+			if (End - P < int(len)) return s;
+			s = string(P, len);
+			P += (len + 2);
+			return s;
+		case 3:
+			// integer token
+			P += 4;
+			return "<integer>";
+		case 5:
+			// GUID token
+			P += 16;
+			return "<guid>";
+		case 6:
+			if (End - P < 4) return s;
+			len = ReadBinDWord();
+			P += (len * 4);
+			return "<int_list>";
+		case 7:
+			if (End - P < 4) return s;
+			len = ReadBinDWord();
+			P += (len * m_BinaryFloatSize);
+			return "<flt_list>";
+		case 0x0a:
+			return "{";
+		case 0x0b:
+			return "}";
+		case 0x0c:
+			return "(";
+		case 0x0d:
+			return ")";
+		case 0x0e:
+			return "[";
+		case 0x0f:
+			return "]";
+		case 0x10:
+			return "<";
+		case 0x11:
+			return ">";
+		case 0x12:
+			return ".";
+		case 0x13:
+			return ",";
+		case 0x14:
+			return ";";
+		case 0x1f:
+			return "template";
+		case 0x28:
+			return "WORD";
+		case 0x29:
+			return "DWORD";
+		case 0x2a:
+			return "FLOAT";
+		case 0x2b:
+			return "DOUBLE";
+		case 0x2c:
+			return "CHAR";
+		case 0x2d:
+			return "UCHAR";
+		case 0x2e:
+			return "SWORD";
+		case 0x2f:
+			return "SDWORD";
+		case 0x30:
+			return "void";
+		case 0x31:
+			return "string";
+		case 0x32:
+			return "unicode";
+		case 0x33:
+			return "cstring";
+		case 0x34:
+			return "array";
+		}
+	}
+	// process text-formatted file
+	else
+	{
+		FindNextNoneWhiteSpace();
+		if (P >= End)
+		{
+			return s;
+		}
+
+		while ((P < End) && !isspace((unsigned char)* P))
+		{
+			// either keep token delimiters when already holding a token, or return if first valid char
+			if (*P == ';' || *P == '}' || *P == '{' || *P == ',')
+			{
+				if (!s.size())
+				{
+					s.append(P++, 1);
+				}
+
+				break; // stop for delimiter
+			}
+			s.append(P++, 1);
+		}
+	}
+	return s;
 }
 
-void XFileParser::readHeadOfDataObject(std::string* poName)
+void XFileParser::readHeadOfDataObject(string* poName)
 {
+	string nameOrBrace = GetNextToken();
+	if (nameOrBrace != "{")
+	{
+		if (poName)
+		{
+			*poName = nameOrBrace;
+		}
+
+		if (GetNextToken() != "{")
+		{
+			ThrowException("Opening brace expected.");
+		}
+	}
 }
 
 void XFileParser::CheckForClosingBrace()
 {
+	if (GetNextToken() != "}")
+	{
+		ThrowException("Closing brace expected.");
+	}
 }
 
 void XFileParser::CheckForSemicolon()
 {
+	if (m_IsBinaryFormat) return;
+
+	if (GetNextToken() != ";")
+	{
+		ThrowException("Semicolon expected.");
+	}
 }
 
 void XFileParser::CheckForSeparator()
 {
+	if (m_IsBinaryFormat) return;
+
+	string token = GetNextToken();
+	if (token != "," && token != ";")
+	{
+		ThrowException("Separator character (';' or ',') expected.");
+	}
 }
 
 void XFileParser::TestForSeparator()
 {
+	if (m_IsBinaryFormat) return;
+
+	FindNextNoneWhiteSpace();
+	if (P >= End) return;
+
+	// test and skip
+	if (*P == ';' || *P == ',')
+	{
+		P++;
+	}
 }
 
-void XFileParser::GetNextTokenAsString(std::string& poString)
+void XFileParser::GetNextTokenAsString(string& poString)
 {
+	if (m_IsBinaryFormat)
+	{
+		poString = GetNextToken();
+		return;
+	}
+
+	FindNextNoneWhiteSpace();
+	if (P >= End)
+	{
+		ThrowException("Unexpected end of file while parsing string");
+	}
+
+	if (*P != '"')
+	{
+		ThrowException("Expected quotation mark.");
+	}
+
+	++P;
+
+	while (P < End && *P != '"')
+	{
+		poString.append(P++, 1);
+	}
+
+	if (P >= End - 1)
+	{
+		ThrowException("Unexpected end of file while parsing string");
+	}
+
+	if (P[1] != ';' || P[0] != '"')
+	{
+		ThrowException("Expected quotation mark and semicolon at the end of a string.");
+	}
+
+	P += 2;
 }
 
 void XFileParser::ReadUntilEndOfLine()
 {
+	if (m_IsBinaryFormat) return;
+
+	while (P < End)
+	{
+		if (*P == '\n' || *P == '\r')
+		{
+			++P; m_LineNumber++;
+			return;
+		}
+
+		++P;
+	}
 }
 
 unsigned short XFileParser::ReadBinWord()
 {
-	return 0;
+	assert(End - P >= 2);
+	const unsigned char* q = (const unsigned char*)P;
+	unsigned short tmp = q[0] | (q[1] << 8);
+	P += 2;
+
+	return tmp;
 }
 
 unsigned int XFileParser::ReadBinDWord()
 {
-	return 0;
+	assert(End - P >= 4);
+	const unsigned char* q = (const unsigned char*)P;
+	unsigned int tmp = q[0] | (q[1] << 8) | (q[2] << 16) | (q[3] << 24);
+	P += 4;
+
+	return tmp;
 }
 
 unsigned int XFileParser::ReadInt()
 {
-	return 0;
+	if (m_IsBinaryFormat)
+	{
+		if (m_BinaryNumCount == 0 && End - P >= 2)
+		{
+			unsigned short tmp = ReadBinWord(); // 0x06 or 0x03
+			if (tmp == 0x06 && End - P >= 4) // array of ints follows
+			{
+				m_BinaryNumCount = ReadBinDWord();
+			}
+			else // single int follows
+			{
+				m_BinaryNumCount = 1;
+			}
+		}
+
+		--m_BinaryNumCount;
+		if (End - P >= 4)
+		{
+			return ReadBinDWord();
+		}
+		else
+		{
+			P = End;
+			return 0;
+		}
+	}
+	else
+	{
+		FindNextNoneWhiteSpace();
+
+		// TODO: consider using strtol10 instead???
+
+		// check preceeding minus sign
+		bool isNegative = false;
+		if (*P == '-')
+		{
+			isNegative = true;
+			P++;
+		}
+
+		// at least one digit expected
+		if (!isdigit(*P))
+			ThrowException("Number expected.");
+
+		// read digits
+		unsigned int number = 0;
+		while (P < End)
+		{
+			if (!isdigit(*P))
+			{
+				break;
+			}
+
+			number = number * 10 + (*P - 48);
+			P++;
+		}
+
+		CheckForSeparator();
+		return isNegative ? ((unsigned int)-int(number)) : number;
+	}
 }
 
 float XFileParser::ReadFloat()
 {
-	return 0.0f;
+	if (m_IsBinaryFormat)
+	{
+		if (m_BinaryNumCount == 0 && End - P >= 2)
+		{
+			unsigned short tmp = ReadBinWord(); // 0x07 or 0x42
+			if (tmp == 0x07 && End - P >= 4) // array of floats following
+			{
+				m_BinaryNumCount = ReadBinDWord();
+			}
+			else // single float following
+			{
+				m_BinaryNumCount = 1;
+			}
+		}
+
+		--m_BinaryNumCount;
+		if (m_BinaryFloatSize == 8)
+		{
+			if (End - P >= 8)
+			{
+				float result = (float)(*(double*)P);
+				P += 8;
+				return result;
+			}
+			else
+			{
+				P = End;
+				return 0;
+			}
+		}
+		else
+		{
+			if (End - P >= 4)
+			{
+				float result = *(float*)P;
+				P += 4;
+				return result;
+			}
+			else
+			{
+				P = End;
+				return 0;
+			}
+		}
+	}
+
+	// text version
+	FindNextNoneWhiteSpace();
+	// check for various special strings to allow reading files from faulty exporters
+	// I mean you, Blender!
+	// Reading is safe because of the terminating zero
+	if (strncmp(P, "-1.#IND00", 9) == 0 || strncmp(P, "1.#IND00", 8) == 0)
+	{
+		P += 9;
+		CheckForSeparator();
+		return 0.0f;
+	}
+	else if (strncmp(P, "1.#QNAN0", 8) == 0)
+	{
+		P += 8;
+		CheckForSeparator();
+		return 0.0f;
+	}
+
+	float result = 0.0f;
+	P = Assimp::fast_atoreal_move<float>(P, result);
+
+	CheckForSeparator();
+
+	return result;
 }
 
 DirectX::XMFLOAT2 XFileParser::ReadVector2()
 {
-	return DirectX::XMFLOAT2();
+	XMFLOAT2 vector;
+	vector.x = ReadFloat();
+	vector.y = ReadFloat();
+	TestForSeparator();
+
+	return vector;
 }
 
 DirectX::XMFLOAT3 XFileParser::ReadVector3()
 {
-	return DirectX::XMFLOAT3();
+	XMFLOAT3 vector;
+	vector.x = ReadFloat();
+	vector.y = ReadFloat();
+	vector.z = ReadFloat();
+	TestForSeparator();
+
+	return vector;
 }
 
 DirectX::XMFLOAT3 XFileParser::ReadRGB()
 {
-	return DirectX::XMFLOAT3();
+	XMFLOAT3 color;
+	color.x = ReadFloat();
+	color.y = ReadFloat();
+	color.z = ReadFloat();
+	TestForSeparator();
+
+	return color;
 }
 
 DirectX::XMFLOAT4 XFileParser::ReadRGBA()
 {
-	return DirectX::XMFLOAT4();
+	XMFLOAT4 color;
+	color.x = ReadFloat();
+	color.y = ReadFloat();
+	color.z = ReadFloat();
+	color.w = ReadFloat();
+	TestForSeparator();
+
+	return color;
 }
 
-void XFileParser::ThrowException(const std::string& pText)
+void XFileParser::ThrowException(const string& pText)
 {
+	if (m_IsBinaryFormat)
+	{
+		throw exception(pText.c_str());
+	}
+	else
+	{
+		throw exception(("Line " + to_string(m_LineNumber) + " : " + pText).c_str());
+	}
 }
 
 void XFileParser::FilterHierarchy(Ani::Node* pNode)
 {
+	// if the node has just a single unnamed child containing a mesh, remove
+	// the anonymous node inbetween. The 3DSMax kwXport plugin seems to produce this
+	// mess in some cases
+	if (pNode->mChildren.size() == 1 && pNode->mMeshes.empty())
+	{
+		Node* child = pNode->mChildren.front();
+		if (child->mName.length() == 0 && child->mMeshes.size() > 0)
+		{
+			// transfer its meshes to us
+			for (unsigned int a = 0; a < child->mMeshes.size(); a++)
+			{
+				pNode->mMeshes.push_back(child->mMeshes[a]);
+			}
+
+			child->mMeshes.clear();
+
+			// transfer the transform as well
+			pNode->mTrafoMatrix = pNode->mTrafoMatrix * child->mTrafoMatrix;
+
+			// then kill it
+			delete child;
+			pNode->mChildren.clear();
+		}
+	}
+
+	// recurse
+	for (unsigned int a = 0; a < pNode->mChildren.size(); a++)
+	{
+		FilterHierarchy(pNode->mChildren[a]);
+	}
 }
 
 
