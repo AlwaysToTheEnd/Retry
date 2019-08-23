@@ -14,6 +14,8 @@ namespace Ani
 	struct Material;
 }
 
+// This Codes was referenced from HLSLCrossCompiler-master
+
 class XFileParser final
 {
 public:

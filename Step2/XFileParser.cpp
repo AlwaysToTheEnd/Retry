@@ -245,7 +245,7 @@ void XFileParser::ParseFile()
 			// some meshes have no frames at all
 			Mesh* mesh = new Mesh;
 			ParseDataObjectMesh(mesh);
-			m_AniObject->mGlobalMeshes.push_back(mesh);
+			m_AniObject->m_GlobalMeshes.push_back(mesh);
 		}
 		else if (objectName == "AnimTicksPerSecond")
 		{
@@ -260,7 +260,7 @@ void XFileParser::ParseFile()
 			// Material outside of a mesh or node
 			Material material;
 			ParseDataObjectMaterial(&material);
-			m_AniObject->mGlobalMaterials.push_back(material);
+			m_AniObject->m_GlobalMaterials.push_back(material);
 		}
 		else if (objectName == "}")
 		{
@@ -312,33 +312,33 @@ void XFileParser::ParseDataObjectFrame(Ani::Node* pParent)
 
 	// create a named node and place it at its parent, if given
 	Node* node = new Node(pParent);
-	node->mName = name;
+	node->m_Name = name;
 	if (pParent)
 	{
-		pParent->mChildren.push_back(node);
+		pParent->m_Children.push_back(node);
 	}
 	else
 	{
 		// there might be multiple root nodes
-		if (m_AniObject->mRootNode != NULL)
+		if (m_AniObject->m_RootNode != NULL)
 		{
 			// place a dummy root if not there
-			if (m_AniObject->mRootNode->mName != "$dummy_root")
+			if (m_AniObject->m_RootNode->m_Name != "$dummy_root")
 			{
-				Node* exroot = m_AniObject->mRootNode;
-				m_AniObject->mRootNode = new Node(NULL);
-				m_AniObject->mRootNode->mName = "$dummy_root";
-				m_AniObject->mRootNode->mChildren.push_back(exroot);
-				exroot->mParent = m_AniObject->mRootNode;
+				Node* exroot = m_AniObject->m_RootNode;
+				m_AniObject->m_RootNode = new Node(NULL);
+				m_AniObject->m_RootNode->m_Name = "$dummy_root";
+				m_AniObject->m_RootNode->m_Children.push_back(exroot);
+				exroot->m_Parent = m_AniObject->m_RootNode;
 			}
 			// put the new node as its child instead
-			m_AniObject->mRootNode->mChildren.push_back(node);
-			node->mParent = m_AniObject->mRootNode;
+			m_AniObject->m_RootNode->m_Children.push_back(node);
+			node->m_Parent = m_AniObject->m_RootNode;
 		}
 		else
 		{
 			// it's the first node imported. place it as root
-			m_AniObject->mRootNode = node;
+			m_AniObject->m_RootNode = node;
 		}
 	}
 
@@ -363,12 +363,12 @@ void XFileParser::ParseDataObjectFrame(Ani::Node* pParent)
 		}
 		else if (objectName == "FrameTransformMatrix")
 		{
-			ParseDataObjectTransformationMatrix(node->mTrafoMatrix);
+			ParseDataObjectTransformationMatrix(node->m_TrafoMatrix);
 		}
 		else if (objectName == "Mesh")
 		{
 			Mesh* mesh = new Mesh;
-			node->mMeshes.push_back(mesh);
+			node->m_Meshes.push_back(mesh);
 			ParseDataObjectMesh(mesh);
 		}
 		else
@@ -406,15 +406,15 @@ void XFileParser::ParseDataObjectMesh(Ani::Mesh* pMesh)
 
 	// read vertex count
 	unsigned int numVertices = ReadInt();
-	pMesh->mPositions.resize(numVertices);
+	pMesh->m_Positions.resize(numVertices);
 
 	// read vertices
 	for (unsigned int a = 0; a < numVertices; a++)
-		pMesh->mPositions[a] = ReadVector3();
+		pMesh->m_Positions[a] = ReadVector3();
 
 	// read position faces
 	unsigned int numPosFaces = ReadInt();
-	pMesh->mPosFaces.resize(numPosFaces);
+	pMesh->m_PosFaces.resize(numPosFaces);
 	for (unsigned int a = 0; a < numPosFaces; a++)
 	{
 		unsigned int numIndices = ReadInt();
@@ -424,9 +424,9 @@ void XFileParser::ParseDataObjectMesh(Ani::Mesh* pMesh)
 		}
 
 		// read indices
-		Face& face = pMesh->mPosFaces[a];
+		Face& face = pMesh->m_PosFaces[a];
 		for (unsigned int b = 0; b < numIndices; b++)
-			face.mIndices.push_back(ReadInt());
+			face.m_Indices.push_back(ReadInt());
 		CheckForSeparator();
 	}
 
@@ -487,37 +487,37 @@ void XFileParser::ParseDataObjectSkinWeights(Ani::Mesh* pMesh)
 	string transformNodeName;
 	GetNextTokenAsString(transformNodeName);
 
-	pMesh->mBones.push_back(Bone());
-	Bone& bone = pMesh->mBones.back();
-	bone.mName = transformNodeName;
+	pMesh->m_Bones.push_back(Bone());
+	Bone& bone = pMesh->m_Bones.back();
+	bone.m_Name = transformNodeName;
 
 	// read vertex weights
 	unsigned int numWeights = ReadInt();
-	bone.mWeights.reserve(numWeights);
+	bone.m_Weights.reserve(numWeights);
 
 	for (unsigned int a = 0; a < numWeights; a++)
 	{
 		BoneWeight weight;
-		weight.mVertex = ReadInt();
-		bone.mWeights.push_back(weight);
+		weight.m_Vertex = ReadInt();
+		bone.m_Weights.push_back(weight);
 	}
 
 	// read vertex weights
 	for (unsigned int a = 0; a < numWeights; a++)
-		bone.mWeights[a].mWeight = ReadFloat();
+		bone.m_Weights[a].m_Weight = ReadFloat();
 
 	// read matrix offset
-	bone.mOffsetMatrix.m[0][0] = ReadFloat(); bone.mOffsetMatrix.m[1][0] = ReadFloat();
-	bone.mOffsetMatrix.m[2][0] = ReadFloat(); bone.mOffsetMatrix.m[3][0] = ReadFloat();
+	bone.m_OffsetMatrix.m[0][0] = ReadFloat(); bone.m_OffsetMatrix.m[1][0] = ReadFloat();
+	bone.m_OffsetMatrix.m[2][0] = ReadFloat(); bone.m_OffsetMatrix.m[3][0] = ReadFloat();
 
-	bone.mOffsetMatrix.m[0][1] = ReadFloat(); bone.mOffsetMatrix.m[1][1] = ReadFloat();
-	bone.mOffsetMatrix.m[2][1] = ReadFloat(); bone.mOffsetMatrix.m[3][1] = ReadFloat();
+	bone.m_OffsetMatrix.m[0][1] = ReadFloat(); bone.m_OffsetMatrix.m[1][1] = ReadFloat();
+	bone.m_OffsetMatrix.m[2][1] = ReadFloat(); bone.m_OffsetMatrix.m[3][1] = ReadFloat();
 
-	bone.mOffsetMatrix.m[0][2] = ReadFloat(); bone.mOffsetMatrix.m[1][2] = ReadFloat();
-	bone.mOffsetMatrix.m[2][2] = ReadFloat(); bone.mOffsetMatrix.m[3][2] = ReadFloat();
+	bone.m_OffsetMatrix.m[0][2] = ReadFloat(); bone.m_OffsetMatrix.m[1][2] = ReadFloat();
+	bone.m_OffsetMatrix.m[2][2] = ReadFloat(); bone.m_OffsetMatrix.m[3][2] = ReadFloat();
 
-	bone.mOffsetMatrix.m[0][3] = ReadFloat(); bone.mOffsetMatrix.m[1][3] = ReadFloat();
-	bone.mOffsetMatrix.m[2][3] = ReadFloat(); bone.mOffsetMatrix.m[3][3] = ReadFloat();
+	bone.m_OffsetMatrix.m[0][3] = ReadFloat(); bone.m_OffsetMatrix.m[1][3] = ReadFloat();
+	bone.m_OffsetMatrix.m[2][3] = ReadFloat(); bone.m_OffsetMatrix.m[3][3] = ReadFloat();
 
 	CheckForSemicolon();
 	CheckForClosingBrace();
@@ -540,25 +540,25 @@ void XFileParser::ParseDataObjectMeshNormals(Ani::Mesh* pMesh)
 
 	// read count
 	unsigned int numNormals = ReadInt();
-	pMesh->mNormals.resize(numNormals);
+	pMesh->m_Normals.resize(numNormals);
 
 	// read normal vectors
 	for (unsigned int a = 0; a < numNormals; a++)
-		pMesh->mNormals[a] = ReadVector3();
+		pMesh->m_Normals[a] = ReadVector3();
 
 	// read normal indices
 	unsigned int numFaces = ReadInt();
-	if (numFaces != pMesh->mPosFaces.size())
+	if (numFaces != pMesh->m_PosFaces.size())
 		ThrowException("Normal face count does not match vertex face count.");
 
 	for (unsigned int a = 0; a < numFaces; a++)
 	{
 		unsigned int numIndices = ReadInt();
-		pMesh->mNormFaces.push_back(Face());
-		Face& face = pMesh->mNormFaces.back();
+		pMesh->m_NormFaces.push_back(Face());
+		Face& face = pMesh->m_NormFaces.back();
 
 		for (unsigned int b = 0; b < numIndices; b++)
-			face.mIndices.push_back(ReadInt());
+			face.m_Indices.push_back(ReadInt());
 
 		CheckForSeparator();
 	}
@@ -569,13 +569,13 @@ void XFileParser::ParseDataObjectMeshNormals(Ani::Mesh* pMesh)
 void XFileParser::ParseDataObjectMeshTextureCoords(Ani::Mesh* pMesh)
 {
 	readHeadOfDataObject();
-	if (pMesh->mNumTextures + 1 > AI_MAX_NUMBER_OF_TEXTURECOORDS)
+	if (pMesh->m_NumTextures + 1 > AI_MAX_NUMBER_OF_TEXTURECOORDS)
 		ThrowException("Too many sets of texture coordinates");
 
-	vector<XMFLOAT2>& coords = pMesh->mTexCoords[pMesh->mNumTextures++];
+	vector<XMFLOAT2>& coords = pMesh->m_TexCoords[pMesh->m_NumTextures++];
 
 	unsigned int numCoords = ReadInt();
-	if (numCoords != pMesh->mPositions.size())
+	if (numCoords != pMesh->m_Positions.size())
 		ThrowException("Texture coord count does not match vertex count");
 
 	coords.resize(numCoords);
@@ -588,19 +588,19 @@ void XFileParser::ParseDataObjectMeshTextureCoords(Ani::Mesh* pMesh)
 void XFileParser::ParseDataObjectMeshVertexColors(Ani::Mesh* pMesh)
 {
 	readHeadOfDataObject();
-	if (pMesh->mNumColorSets + 1 > AI_MAX_NUMBER_OF_COLOR_SETS)
+	if (pMesh->m_NumColorSets + 1 > AI_MAX_NUMBER_OF_COLOR_SETS)
 		ThrowException("Too many colorsets");
-	vector<XMFLOAT4>& colors = pMesh->mColors[pMesh->mNumColorSets++];
+	vector<XMFLOAT4>& colors = pMesh->m_Colors[pMesh->m_NumColorSets++];
 
 	unsigned int numColors = ReadInt();
-	if (numColors != pMesh->mPositions.size())
+	if (numColors != pMesh->m_Positions.size())
 		ThrowException("Vertex color count does not match vertex count");
 
 	colors.resize(numColors, XMFLOAT4(0, 0, 0, 1));
 	for (unsigned int a = 0; a < numColors; a++)
 	{
 		unsigned int index = ReadInt();
-		if (index >= pMesh->mPositions.size())
+		if (index >= pMesh->m_Positions.size())
 			ThrowException("Vertex color index out of bounds");
 
 		colors[index] = ReadRGBA();
@@ -628,12 +628,12 @@ void XFileParser::ParseDataObjectMeshMaterialList(Ani::Mesh* pMesh)
 
 	// some models have a material index count of 1... to be able to read them we
 	// replicate this single material index on every face
-	if (numMatIndices != pMesh->mPosFaces.size() && numMatIndices != 1)
+	if (numMatIndices != pMesh->m_PosFaces.size() && numMatIndices != 1)
 		ThrowException("Per-Face material index count does not match face count.");
 
 	// read per-face material indices
 	for (unsigned int a = 0; a < numMatIndices; a++)
-		pMesh->mFaceMaterials.push_back(ReadInt());
+		pMesh->m_FaceMaterials.push_back(ReadInt());
 
 	// in version 03.02, the face indices end with two semicolons.
 	// commented out version check, as version 03.03 exported from blender also has 2 semicolons
@@ -644,8 +644,8 @@ void XFileParser::ParseDataObjectMeshMaterialList(Ani::Mesh* pMesh)
 	}
 
 	// if there was only a single material index, replicate it on all faces
-	while (pMesh->mFaceMaterials.size() < pMesh->mPosFaces.size())
-		pMesh->mFaceMaterials.push_back(pMesh->mFaceMaterials.front());
+	while (pMesh->m_FaceMaterials.size() < pMesh->m_PosFaces.size())
+		pMesh->m_FaceMaterials.push_back(pMesh->m_FaceMaterials.front());
 
 	// read following data objects
 	bool running = true;
@@ -665,16 +665,16 @@ void XFileParser::ParseDataObjectMeshMaterialList(Ani::Mesh* pMesh)
 			// template materials 
 			string matName = GetNextToken();
 			Material material;
-			material.mIsReference = true;
-			material.mName = matName;
-			pMesh->mMaterials.push_back(material);
+			material.m_IsReference = true;
+			material.m_Name = matName;
+			pMesh->m_Materials.push_back(material);
 
 			CheckForClosingBrace(); // skip }
 		}
 		else if (objectName == "Material")
 		{
-			pMesh->mMaterials.push_back(Material());
-			ParseDataObjectMaterial(&pMesh->mMaterials.back());
+			pMesh->m_Materials.push_back(Material());
+			ParseDataObjectMaterial(&pMesh->m_Materials.back());
 		}
 		else if (objectName == ";")
 		{
@@ -697,14 +697,14 @@ void XFileParser::ParseDataObjectMaterial(Ani::Material* pMaterial)
 		matName = string("material") + to_string(m_LineNumber);
 	}
 
-	pMaterial->mName = matName;
-	pMaterial->mIsReference = false;
+	pMaterial->m_Name = matName;
+	pMaterial->m_IsReference = false;
 
 	// read material values
-	pMaterial->mDiffuse = ReadRGBA();
-	pMaterial->mSpecularExponent = ReadFloat();
-	pMaterial->mSpecular = ReadRGB();
-	pMaterial->mEmissive = ReadRGB();
+	pMaterial->m_Diffuse = ReadRGBA();
+	pMaterial->m_SpecularExponent = ReadFloat();
+	pMaterial->m_Specular = ReadRGB();
+	pMaterial->m_Emissive = ReadRGB();
 
 	// read other data objects
 	bool running = true;
@@ -724,14 +724,14 @@ void XFileParser::ParseDataObjectMaterial(Ani::Material* pMaterial)
 			// some exporters write "TextureFileName" instead.
 			string texname;
 			ParseDataObjectTextureFilename(texname);
-			pMaterial->mTextures.push_back(TexEntry(texname));
+			pMaterial->m_Textures.push_back(TexEntry(texname));
 		}
 		else if (objectName == "NormalmapFilename" || objectName == "NormalmapFileName")
 		{
 			// one exporter writes out the normal map in a separate filename tag
 			string texname;
 			ParseDataObjectTextureFilename(texname);
-			pMaterial->mTextures.push_back(TexEntry(texname, true));
+			pMaterial->m_Textures.push_back(TexEntry(texname, true));
 		}
 		else
 		{
@@ -744,7 +744,7 @@ void XFileParser::ParseDataObjectMaterial(Ani::Material* pMaterial)
 void XFileParser::ParseDataObjectAnimTicksPerSecond()
 {
 	readHeadOfDataObject();
-	m_AniObject->mAnimTicksPerSecond = ReadInt();
+	m_AniObject->m_AnimTicksPerSecond = ReadInt();
 	CheckForClosingBrace();
 }
 
@@ -754,8 +754,8 @@ void XFileParser::ParseDataObjectAnimationSet()
 	readHeadOfDataObject(&animName);
 
 	Animation* anim = new Animation;
-	m_AniObject->mAnims.push_back(anim);
-	anim->mName = animName;
+	m_AniObject->m_Anims.push_back(anim);
+	anim->m_Name = animName;
 
 	bool running = true;
 	while (running)
@@ -785,7 +785,7 @@ void XFileParser::ParseDataObjectAnimation(Ani::Animation* pAnim)
 {
 	readHeadOfDataObject();
 	AnimBone* banim = new AnimBone;
-	pAnim->mAnims.emplace_back(banim);
+	pAnim->m_Anims.emplace_back(banim);
 
 	bool running = true;
 	while (running)
@@ -811,7 +811,7 @@ void XFileParser::ParseDataObjectAnimation(Ani::Animation* pAnim)
 		else if (objectName == "{")
 		{
 			// read frame name
-			banim->mBoneName = GetNextToken();
+			banim->m_BoneName = GetNextToken();
 			CheckForClosingBrace();
 		}
 		else
@@ -852,7 +852,7 @@ void XFileParser::ParseDataObjectAnimationKey(Ani::AnimBone* pAnimBone)
 			key.m_Value.x = ReadFloat();
 			key.m_Value.y = ReadFloat();
 			key.m_Value.z = ReadFloat();
-			pAnimBone->mRotKeys.push_back(key);
+			pAnimBone->m_RotKeys.push_back(key);
 
 			CheckForSemicolon();
 			break;
@@ -870,9 +870,9 @@ void XFileParser::ParseDataObjectAnimationKey(Ani::AnimBone* pAnimBone)
 			key.m_Value = ReadVector3();
 
 			if (keyType == 2)
-				pAnimBone->mPosKeys.push_back(key);
+				pAnimBone->m_PosKeys.push_back(key);
 			else
-				pAnimBone->mScaleKeys.push_back(key);
+				pAnimBone->m_ScaleKeys.push_back(key);
 
 			break;
 		}
@@ -895,7 +895,7 @@ void XFileParser::ParseDataObjectAnimationKey(Ani::AnimBone* pAnimBone)
 			key.m_Value.m[2][2] = ReadFloat(); key.m_Value.m[3][2] = ReadFloat();
 			key.m_Value.m[0][3] = ReadFloat(); key.m_Value.m[1][3] = ReadFloat();
 			key.m_Value.m[2][3] = ReadFloat(); key.m_Value.m[3][3] = ReadFloat();
-			pAnimBone->mTrafoKeys.push_back(key);
+			pAnimBone->m_TrafoKeys.push_back(key);
 
 			CheckForSemicolon();
 			break;
@@ -1469,32 +1469,32 @@ void XFileParser::FilterHierarchy(Ani::Node* pNode)
 	// if the node has just a single unnamed child containing a mesh, remove
 	// the anonymous node inbetween. The 3DSMax kwXport plugin seems to produce this
 	// mess in some cases
-	if (pNode->mChildren.size() == 1 && pNode->mMeshes.empty())
+	if (pNode->m_Children.size() == 1 && pNode->m_Meshes.empty())
 	{
-		Node* child = pNode->mChildren.front();
-		if (child->mName.length() == 0 && child->mMeshes.size() > 0)
+		Node* child = pNode->m_Children.front();
+		if (child->m_Name.length() == 0 && child->m_Meshes.size() > 0)
 		{
 			// transfer its meshes to us
-			for (unsigned int a = 0; a < child->mMeshes.size(); a++)
+			for (unsigned int a = 0; a < child->m_Meshes.size(); a++)
 			{
-				pNode->mMeshes.push_back(child->mMeshes[a]);
+				pNode->m_Meshes.push_back(child->m_Meshes[a]);
 			}
 
-			child->mMeshes.clear();
+			child->m_Meshes.clear();
 
 			// transfer the transform as well
-			pNode->mTrafoMatrix = pNode->mTrafoMatrix * child->mTrafoMatrix;
+			pNode->m_TrafoMatrix = pNode->m_TrafoMatrix * child->m_TrafoMatrix;
 
 			// then kill it
 			delete child;
-			pNode->mChildren.clear();
+			pNode->m_Children.clear();
 		}
 	}
 
 	// recurse
-	for (unsigned int a = 0; a < pNode->mChildren.size(); a++)
+	for (unsigned int a = 0; a < pNode->m_Children.size(); a++)
 	{
-		FilterHierarchy(pNode->mChildren[a]);
+		FilterHierarchy(pNode->m_Children[a]);
 	}
 }
 
