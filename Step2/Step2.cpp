@@ -24,12 +24,12 @@ void Step2::Update()
 void Step2::SelectDevices()
 {
 	SelectDeviceByTemplate<UsingGraphicDevice, UsingPhsicsDevice>();
-	m_GDevice->SetCamera(&m_Camera);
 }
 
 void Step2::InitObjects()
 {
 	m_GDevice->SetCamera(&m_Camera);
+
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////

@@ -24,6 +24,7 @@ public:
 protected:
 	virtual void Update() = 0;
 	virtual void SelectDevices() = 0;
+	virtual void InitObjects() = 0;
 	virtual bool InitMainWindow();
 
 	template<typename GraphicDeviceClass, typename PhysicsDeviceClass>

@@ -116,7 +116,7 @@ namespace Ani
 	struct Animation
 	{
 		std::string m_Name;
-		std::vector<std::unique_ptr<AnimBone>> m_Anims;
+		std::vector<AnimBone> m_Anims;
 	};
 }
 
@@ -132,10 +132,10 @@ public:
 public:
 	Ani::Node* m_RootNode;
 
-	std::vector<Ani::Mesh*> m_GlobalMeshes;
+	std::vector<Ani::Mesh> m_GlobalMeshes;
 	std::vector<Ani::Material> m_GlobalMaterials;
 
-	std::vector<Ani::Animation*> m_Anims;
+	std::vector<Ani::Animation> m_Anims;
 	unsigned int m_AnimTicksPerSecond;
 };
 

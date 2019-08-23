@@ -33,9 +33,8 @@ XFileParser::XFileParser(const string& filePath)
 	FILE* load = nullptr;
 	vector<char> fileData;
 	vector<char> uncompressed;
-	m_AniObject = make_unique<AnimationObject>();
 
-	fopen_s(&load, filePath.c_str(), "r");
+	fopen_s(&load, filePath.c_str(), "rb");
 
 	if (!load)
 	{
@@ -43,11 +42,12 @@ XFileParser::XFileParser(const string& filePath)
 	}
 	else
 	{
-		fseek(load, 0, SEEK_END);
-		fileData.resize(ftell(load));
-		fseek(load, 0, SEEK_SET);
+		_fseeki64(load, 0, SEEK_END);
+		UINT64 dataSize = _ftelli64(load)+1;
+		fileData.resize(dataSize);
+		_fseeki64(load, 0, SEEK_SET);
 
-		fread_s(fileData.data(), fileData.size(), fileData.size(), 1, load);
+		fread_s(fileData.data(), dataSize, dataSize, 1, load);
 		fclose(load);
 	}
 
@@ -207,12 +207,15 @@ XFileParser::XFileParser(const string& filePath)
 		ReadUntilEndOfLine();
 	}
 
+	m_AniObject = make_unique<AnimationObject>();
+
 	ParseFile();
 
 	// filter the imported hierarchy for some degenerated cases
-	/*if (mScene->mRootNode) {
-		FilterHierarchy(mScene->mRootNode);
-	}*/
+	if (m_AniObject->m_RootNode) 
+	{
+		FilterHierarchy(m_AniObject->m_RootNode);
+	}
 }
 
 XFileParser::~XFileParser()
@@ -243,9 +246,8 @@ void XFileParser::ParseFile()
 		else if (objectName == "Mesh")
 		{
 			// some meshes have no frames at all
-			Mesh* mesh = new Mesh;
-			ParseDataObjectMesh(mesh);
-			m_AniObject->m_GlobalMeshes.push_back(mesh);
+			m_AniObject->m_GlobalMeshes.push_back(Mesh());
+			ParseDataObjectMesh(&m_AniObject->m_GlobalMeshes.back());
 		}
 		else if (objectName == "AnimTicksPerSecond")
 		{
@@ -258,9 +260,8 @@ void XFileParser::ParseFile()
 		else if (objectName == "Material")
 		{
 			// Material outside of a mesh or node
-			Material material;
-			ParseDataObjectMaterial(&material);
-			m_AniObject->m_GlobalMaterials.push_back(material);
+			m_AniObject->m_GlobalMaterials.push_back(Material());
+			ParseDataObjectMaterial(&m_AniObject->m_GlobalMaterials.back());
 		}
 		else if (objectName == "}")
 		{
@@ -367,7 +368,8 @@ void XFileParser::ParseDataObjectFrame(Ani::Node* pParent)
 		}
 		else if (objectName == "Mesh")
 		{
-			Mesh* mesh = new Mesh;
+			m_AniObject->m_GlobalMeshes.push_back(Mesh());
+			Mesh* mesh = &m_AniObject->m_GlobalMeshes.back();
 			node->m_Meshes.push_back(mesh);
 			ParseDataObjectMesh(mesh);
 		}
@@ -753,9 +755,8 @@ void XFileParser::ParseDataObjectAnimationSet()
 	string animName;
 	readHeadOfDataObject(&animName);
 
-	Animation* anim = new Animation;
-	m_AniObject->m_Anims.push_back(anim);
-	anim->m_Name = animName;
+	m_AniObject->m_Anims.push_back(Animation());
+	m_AniObject->m_Anims.back().m_Name = animName;
 
 	bool running = true;
 	while (running)
@@ -771,7 +772,7 @@ void XFileParser::ParseDataObjectAnimationSet()
 		}
 		else if (objectName == "Animation")
 		{
-			ParseDataObjectAnimation(anim);
+			ParseDataObjectAnimation(&m_AniObject->m_Anims.back());
 		}
 		else
 		{
@@ -784,8 +785,8 @@ void XFileParser::ParseDataObjectAnimationSet()
 void XFileParser::ParseDataObjectAnimation(Ani::Animation* pAnim)
 {
 	readHeadOfDataObject();
-	AnimBone* banim = new AnimBone;
-	pAnim->m_Anims.emplace_back(banim);
+	pAnim->m_Anims.push_back(AnimBone());
+	AnimBone* banim = &pAnim->m_Anims.back();
 
 	bool running = true;
 	while (running)
@@ -843,8 +844,11 @@ void XFileParser::ParseDataObjectAnimationKey(Ani::AnimBone* pAnimBone)
 		case 0: // rotation quaternion
 		{
 			// read count
-			if (ReadInt() != 4)
+			int readCount = ReadInt();
+			if (readCount != 4)
+			{
 				ThrowException("Invalid number of arguments for quaternion key in animation");
+			}
 
 			TimeValue<XMFLOAT4> key;
 			key.m_Time = double(time);
@@ -857,7 +861,6 @@ void XFileParser::ParseDataObjectAnimationKey(Ani::AnimBone* pAnimBone)
 			CheckForSemicolon();
 			break;
 		}
-
 		case 1: // scale vector
 		case 2: // position vector
 		{
@@ -874,9 +877,9 @@ void XFileParser::ParseDataObjectAnimationKey(Ani::AnimBone* pAnimBone)
 			else
 				pAnimBone->m_ScaleKeys.push_back(key);
 
+			CheckForSemicolon();
 			break;
 		}
-
 		case 3: // combined transformation matrix
 		case 4: // denoted both as 3 or as 4
 		{
@@ -1278,22 +1281,16 @@ unsigned int XFileParser::ReadInt()
 		{
 			unsigned short tmp = ReadBinWord(); // 0x06 or 0x03
 			if (tmp == 0x06 && End - P >= 4) // array of ints follows
-			{
 				m_BinaryNumCount = ReadBinDWord();
-			}
 			else // single int follows
-			{
 				m_BinaryNumCount = 1;
-			}
 		}
 
 		--m_BinaryNumCount;
-		if (End - P >= 4)
-		{
+		if (End - P >= 4) {
 			return ReadBinDWord();
 		}
-		else
-		{
+		else {
 			P = End;
 			return 0;
 		}
@@ -1321,10 +1318,7 @@ unsigned int XFileParser::ReadInt()
 		while (P < End)
 		{
 			if (!isdigit(*P))
-			{
 				break;
-			}
-
 			number = number * 10 + (*P - 48);
 			P++;
 		}

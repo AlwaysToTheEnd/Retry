@@ -36,7 +36,7 @@ private:
 	virtual void SelectDevices() override;
 
 private:
-	void InitObjects();
+	virtual void InitObjects() override;
 
 private:
 	cCamera		m_Camera;
