@@ -1,7 +1,9 @@
 #include "GameObject.h"
 #include "d3dApp.h"
 
-void GameObject::AddComponent(D3DApp* app, COMPONENTTYPE type)
+IComponent* GameObject::AddComponent(COMPONENTTYPE type)
 {
-	m_components.push_back(app->CreateComponent(type, m_transform));
+	m_components.push_back(GETAPP->CreateComponent(type, m_transform));
+
+	return m_components.back().get();
 }

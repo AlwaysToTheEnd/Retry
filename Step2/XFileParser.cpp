@@ -43,7 +43,7 @@ XFileParser::XFileParser(const string& filePath)
 	else
 	{
 		_fseeki64(load, 0, SEEK_END);
-		UINT64 dataSize = _ftelli64(load)+1;
+		UINT64 dataSize = _ftelli64(load) + 1;
 		fileData.resize(dataSize);
 		_fseeki64(load, 0, SEEK_SET);
 
@@ -212,7 +212,7 @@ XFileParser::XFileParser(const string& filePath)
 	ParseFile();
 
 	// filter the imported hierarchy for some degenerated cases
-	if (m_AniObject->m_RootNode) 
+	if (m_AniObject->m_RootNode)
 	{
 		FilterHierarchy(m_AniObject->m_RootNode);
 	}
@@ -368,8 +368,7 @@ void XFileParser::ParseDataObjectFrame(Ani::Node* pParent)
 		}
 		else if (objectName == "Mesh")
 		{
-			m_AniObject->m_GlobalMeshes.push_back(Mesh());
-			Mesh* mesh = &m_AniObject->m_GlobalMeshes.back();
+			Mesh* mesh = new Mesh;
 			node->m_Meshes.push_back(mesh);
 			ParseDataObjectMesh(mesh);
 		}
@@ -506,7 +505,9 @@ void XFileParser::ParseDataObjectSkinWeights(Ani::Mesh* pMesh)
 
 	// read vertex weights
 	for (unsigned int a = 0; a < numWeights; a++)
+	{
 		bone.m_Weights[a].m_Weight = ReadFloat();
+	}
 
 	// read matrix offset
 	bone.m_OffsetMatrix.m[0][0] = ReadFloat(); bone.m_OffsetMatrix.m[1][0] = ReadFloat();

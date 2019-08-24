@@ -6,6 +6,6 @@
 class ICompnentProvider
 {
 public:
-	virtual std::shared_ptr<IComponent> CreateComponent(PxTransform& trnas)=0;
+	virtual std::unique_ptr<IComponent> CreateComponent(PxTransform& trnas)=0;
 
 };

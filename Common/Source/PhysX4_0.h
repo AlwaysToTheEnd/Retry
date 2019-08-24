@@ -4,7 +4,6 @@
 #include "Px1RefPtr.h"
 #include "IComponentProvider.h"
 
-#define PDEVICE
 
 class PhysX4_0 final : public IPhysicsDevice
 {
@@ -14,7 +13,7 @@ public:
 
 	virtual bool Init(void* graphicDevicePtr);
 	virtual void Update();
-	virtual std::shared_ptr<IComponent> CreateComponent(PxTransform& trans) override;
+	virtual std::unique_ptr<IComponent> CreateComponent(PxTransform& trans) override;
 
 private:
 	physx::PxFilterFlags ScissorFilter(physx::PxFilterObjectAttributes attributes0, physx::PxFilterData filterData0,

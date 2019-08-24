@@ -14,11 +14,11 @@ public:
 
 	virtual void Init()=0;
 	virtual void Update()=0;
-
+	
 protected:
-	void AddComponent(D3DApp* app, COMPONENTTYPE type);
-
+	IComponent* AddComponent(COMPONENTTYPE type);
+	
 protected:
 	PxTransform m_transform;
-	std::vector<std::shared_ptr<IComponent>> m_components;
+	std::vector<std::unique_ptr<IComponent>> m_components;
 };

@@ -1,15 +1,12 @@
 #include "AnimationObject.h"
+#include "d3dApp.h"
 
-AnimationObject::AnimationObject()
-{
-}
-
-AnimationObject::~AnimationObject()
-{
-}
+using namespace std;
 
 void AnimationObject::Init()
 {
+	AddComponent(COMPONENTTYPE::COM_GRAPHIC);
+
 }
 
 void AnimationObject::Update()

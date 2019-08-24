@@ -30,11 +30,15 @@ void Step2::InitObjects()
 {
 	m_GDevice->SetCamera(&m_Camera);
 
+	///Test Codes..
+	XFileParser test("../Common/TeraResourse/Character/poporiClass03/poporiClass03_2.X");
+
+	auto testObject = test.GetAniObject();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-std::shared_ptr<IComponent> Step2::CreateComponent(COMPONENTTYPE type, PxTransform& tran)
+std::unique_ptr<IComponent> Step2::CreateComponent(COMPONENTTYPE type, PxTransform& tran)
 {
 	switch (type)
 	{
@@ -42,7 +46,6 @@ std::shared_ptr<IComponent> Step2::CreateComponent(COMPONENTTYPE type, PxTransfo
 		return m_PXDevice->CreateComponent(tran);
 	case COMPONENTTYPE::COM_GRAPHIC:
 		return m_GDevice->CreateComponent(tran);
-	case COMPONENTTYPE::COM_NONE:
 	default:
 		break;
 	}

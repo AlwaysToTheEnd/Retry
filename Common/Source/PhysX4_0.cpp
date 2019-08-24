@@ -120,7 +120,7 @@ void PhysX4_0::Update()
 	m_scene->fetchResults(true);
 }
 
-std::shared_ptr<IComponent> PhysX4_0::CreateComponent(PxTransform& trans)
+std::unique_ptr<IComponent> PhysX4_0::CreateComponent(PxTransform& trans)
 {
 
 	return nullptr;

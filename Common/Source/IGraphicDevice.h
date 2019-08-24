@@ -17,6 +17,8 @@ public:
 	virtual void* GetDevicePtr() = 0;
 	virtual void OnResize() = 0;
 
+	//virtual void AddMesh() = 0;
+
 public:
 	virtual void SetCamera(cCamera* camera) = 0;
 

@@ -44,7 +44,7 @@ namespace Ani
 	struct Material
 	{
 		std::string m_Name;
-		bool m_IsReference=false; // if true, mName holds a name by which the actual material can be found in the material list
+		bool m_IsReference = false; // if true, mName holds a name by which the actual material can be found in the material list
 		DirectX::XMFLOAT4 m_Diffuse;
 		float m_SpecularExponent;
 		DirectX::XMFLOAT3 m_Specular;
@@ -72,29 +72,103 @@ namespace Ani
 		std::vector<Face> m_PosFaces;
 		std::vector<DirectX::XMFLOAT3> m_Normals;
 		std::vector<Face> m_NormFaces;
-		unsigned int m_NumTextures;
-		std::vector<DirectX::XMFLOAT2> m_TexCoords[8];
-		unsigned int m_NumColorSets;
-		std::vector<DirectX::XMFLOAT4> m_Colors[8];
+		unsigned int m_NumTextures = 0;
+		std::vector<DirectX::XMFLOAT2> m_TexCoords[AI_MAX_NUMBER_OF_TEXTURECOORDS];
+		unsigned int m_NumColorSets = 0;
+		std::vector<DirectX::XMFLOAT4> m_Colors[AI_MAX_NUMBER_OF_TEXTURECOORDS];
 
 		std::vector<unsigned int> m_FaceMaterials;
 		std::vector<Material> m_Materials;
 
 		std::vector<Bone> m_Bones;
-
-		Mesh() { m_NumTextures = 0; m_NumColorSets = 0; }
 	};
 
 	struct Node
 	{
 		std::string m_Name;
 		CGH::MAT16 m_TrafoMatrix;
-		Node* m_Parent;
+		Node* m_Parent = nullptr;
 		std::vector<Node*> m_Children;
 		std::vector<Mesh*> m_Meshes;
+		int	m_sameNameBoneCount = 0;
+
+		/*void GetNodeNames(std::vector<std::string>& nameList)
+		{
+			nameList.push_back(m_Name);
+			for (auto& it : m_Children)
+			{
+				it->GetNodeNames(nameList);
+			}
+		}
+
+		void GetBoneNames(std::vector<std::string>& nameList)
+		{
+			for (auto& it : m_Meshes)
+			{
+				for (auto& it2 : it->m_Bones)
+				{
+					nameList.push_back(it2.m_Name);
+				}
+			}
+
+			for (auto& it : m_Children)
+			{
+				it->GetBoneNames(nameList);
+			}
+		}
+
+		int GetChildNodeCount()
+		{
+			int numCount = 1;
+			for (auto& it : m_Children)
+			{
+				if (it != nullptr)
+				{
+					numCount += it->GetChildNodeCount();
+				}
+				else
+				{
+					numCount++;
+				}
+			}
+
+			return numCount;
+		}
+
+		size_t GetBoneCount()
+		{
+			size_t boneCount = 0;
+
+			for (auto& it : m_Meshes)
+			{
+				boneCount += it->m_Bones.size();
+			}
+
+			for (auto& it : m_Children)
+			{
+				if (it != nullptr)
+				{
+					boneCount += it->GetBoneCount();
+				}
+			}
+
+			return boneCount;
+		}*/
 
 		Node() { m_Parent = NULL; }
 		Node(Node* pParent) { m_Parent = pParent; }
+		~Node()
+		{
+			for (auto& it : m_Children)
+			{
+				delete it;
+			}
+
+			for (auto& it : m_Meshes)
+			{
+				delete it;
+			}
+		}
 	};
 
 	template <typename T>
@@ -123,9 +197,21 @@ namespace Ani
 class AnimationObject :public GameObject
 {
 public:
-	AnimationObject();
-	virtual ~AnimationObject();
+	AnimationObject()
+		: m_RootNode(nullptr)
+		, m_AnimTicksPerSecond(0)
+	{
 
+	}
+
+	virtual ~AnimationObject()
+	{
+		if (m_RootNode)
+		{
+			delete m_RootNode;
+		}
+	}
+	
 	virtual void Init() override;
 	virtual void Update() override;
 

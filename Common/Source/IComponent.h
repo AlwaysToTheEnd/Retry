@@ -9,19 +9,22 @@ enum class COMPONENTTYPE
 {
 	COM_PHYSICS,
 	COM_GRAPHIC,
-	COM_NONE
 };
 
 class IComponent
 {
 public:
-	IComponent(PxTransform& transform) :pTargetTransform(&transform) {};
+	IComponent(PxTransform& transform, COMPONENTTYPE type)
+		: pTargetTransform(&transform)
+		, m_type(type)
+	{
+	};
 	virtual ~IComponent() = default;
 
-	virtual void Init() {};
-	virtual void Update() {};
+	virtual void Update() = 0;
+	COMPONENTTYPE GetType() { return m_type; }
 
 private:
-	COMPONENTTYPE m_type = COMPONENTTYPE::COM_NONE;
+	COMPONENTTYPE m_type;
 	PxTransform* pTargetTransform = nullptr;
 };

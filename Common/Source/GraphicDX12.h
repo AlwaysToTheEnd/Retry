@@ -1,6 +1,4 @@
 #pragma once
-#include "IGraphicDevice.h"
-
 #include <wrl.h>
 #include <dxgi1_4.h>
 #include <d3d12.h>
@@ -13,6 +11,8 @@
 #include "d3dx12.h"
 #include "d3dx12Residency.h"
 #include "DX12RenderClasses.h"
+#include "IGraphicDevice.h"
+#include "Vertex.h"
 
 #pragma comment(lib,"d3dcompiler.lib")
 #pragma comment(lib, "D3D12.lib")
@@ -52,7 +52,7 @@ public:
 	virtual bool Init(HWND hWnd) override;
 	virtual void OnResize() override;
 	virtual void* GetDevicePtr() override { return m_D3dDevice.Get(); }
-	virtual std::shared_ptr<IComponent> CreateComponent(PxTransform& trans) override;
+	virtual std::unique_ptr<IComponent> CreateComponent(PxTransform& trans) override;
 
 public: // Used Functions
 	virtual void SetCamera(cCamera* camera) { m_currCamera = camera; }
@@ -134,20 +134,6 @@ private:
 	PassConstants					m_MainPassCB;
 
 private: // Codes below are used only Testing.
-	struct Vertex
-	{
-		Vertex(XMFLOAT3 _pos, XMFLOAT3 _normal, XMFLOAT2 _uv)
-		{
-			position = _pos;
-			normal = normal;
-			uv = _uv;
-		}
-
-		XMFLOAT3 position = { 0,0,0 };
-		XMFLOAT3 normal = { 0,0,-1 };
-		XMFLOAT2 uv = { 0,0 };
-	};
-
 	ComPtr<ID3D12Resource>			m_VertexBuffer;
 	ComPtr<ID3D12Resource>			m_VertexUploadBuffer;
 };

@@ -2,6 +2,7 @@
 #include "cCamera.h"
 #include "cTextureBuffer.h"
 #include <functional>
+#include "GraphicComponent.h"
 
 using namespace DirectX;
 using namespace std;
@@ -280,10 +281,11 @@ void GraphicDX12::OnResize()
 	XMStoreFloat4x4(m_ProjectionMat, P);
 }
 
-std::shared_ptr<IComponent> GraphicDX12::CreateComponent(PxTransform& trans)
+std::unique_ptr<IComponent> GraphicDX12::CreateComponent(PxTransform& trans)
 {
+	GraphicComponent* newComponent = new GraphicComponent(trans, this);
 
-	return std::shared_ptr<IComponent>();
+	return std::unique_ptr<IComponent>(static_cast<IComponent*>(newComponent));
 }
 
 void GraphicDX12::FlushCommandQueue()

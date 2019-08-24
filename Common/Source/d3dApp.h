@@ -4,6 +4,8 @@
 #include "IPhysicsDevice.h"
 #include "IComponent.h"
 
+#define GETAPP D3DApp::GetApp()
+
 class D3DApp
 {
 protected:
@@ -18,7 +20,7 @@ public:
 	bool Initialize();
 	int Run();
 
-	virtual std::shared_ptr<IComponent> CreateComponent(COMPONENTTYPE type, PxTransform& tran) = 0;
+	virtual std::unique_ptr<IComponent> CreateComponent(COMPONENTTYPE type, PxTransform& tran) = 0;
 	virtual LRESULT MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 protected:
