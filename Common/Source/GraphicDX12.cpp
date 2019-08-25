@@ -105,6 +105,11 @@ bool GraphicDX12::Init(HWND hWnd)
 	return true;
 }
 
+void GraphicDX12::AddMesh(UINT numSubResource, SubmeshData subResources[])
+{
+	
+}
+
 void GraphicDX12::CreateCommandObject()
 {
 	/*	1. 커맨드 리스트를 Allocator, Pipeline State Obejct와 연결

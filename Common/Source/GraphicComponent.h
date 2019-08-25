@@ -10,6 +10,7 @@ public:
 	virtual ~GraphicComponent();
 
 	virtual void Update() override;
+	void AttachMesh();
 
 private:
 	IGraphicDevice* m_GDevice;

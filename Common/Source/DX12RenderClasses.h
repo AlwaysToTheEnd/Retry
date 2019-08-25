@@ -77,7 +77,7 @@ struct SubMeshGeometry
 	UINT baseVertexLocation = 0;
 };
 
-struct cMeshGeometry
+struct MeshGeometry
 {
 	std::string name;
 
@@ -180,32 +180,29 @@ private:
 };
 
 
-//class RenderComponent :public IComponent
-//{
-//public:
-//	void SetPrimitiveType(D3D12_PRIMITIVE_TOPOLOGY type) { m_primitiveType = type; }
-//	void SetGeometry(const MeshGeometry* geometry, string submeshName);
-//	void SetRenderOK(bool value) { m_isRenderOK = value; }
-//	void ThisInstanceIsEndRender(shared_ptr<RenderInstance> instance);
-//
-//	shared_ptr<RenderInstance> GetRenderIsntance();
-//
-//private:
-//	void Update();
-//	void Render(ID3D12GraphicsCommandList* cmdList);
-//	void SetUploadBufferSize(UINT numInstance);
-//
-//private:
-//	UINT m_currFrameCBIndex = 0;
-//	UINT m_currBufferSize = 4;
-//	int m_numFrameDirty = 1;
-//
-//	bool m_isRenderOK = true;
-//	UINT m_renderInstanceCount = 0;
-//
-//	const cMeshGeometry* m_geo = nullptr;
-//	D3D12_PRIMITIVE_TOPOLOGY m_primitiveType = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
-//	UINT m_indexCount = 0;
-//	UINT m_startIndexLocation = 0;
-//	UINT m_baseVertexLocation = 0;
-//};
+class RenderComponent :public IComponent
+{
+public:
+	void SetPrimitiveType(D3D12_PRIMITIVE_TOPOLOGY type) { m_primitiveType = type; }
+	void SetGeometry(const MeshGeometry* geometry, string submeshName);
+	void SetRenderOK(bool value) { m_isRenderOK = value; }
+
+private:
+	void Update();
+	void Render(ID3D12GraphicsCommandList* cmdList);
+	void SetUploadBufferSize(UINT numInstance);
+
+private:
+	UINT m_currFrameCBIndex = 0;
+	UINT m_currBufferSize = 4;
+	int m_numFrameDirty = 1;
+
+	bool m_isRenderOK = true;
+	UINT m_renderInstanceCount = 0;
+
+	const MeshGeometry* m_geo = nullptr;
+	D3D12_PRIMITIVE_TOPOLOGY m_primitiveType = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+	UINT m_indexCount = 0;
+	UINT m_startIndexLocation = 0;
+	UINT m_baseVertexLocation = 0;
+};

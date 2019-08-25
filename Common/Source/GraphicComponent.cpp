@@ -6,6 +6,7 @@ GraphicComponent::GraphicComponent(PxTransform& transform, IGraphicDevice* devic
 	: IComponent(transform, COMPONENTTYPE::COM_GRAPHIC)
 	, m_GDevice(device)
 {
+	
 }
 
 GraphicComponent::~GraphicComponent()

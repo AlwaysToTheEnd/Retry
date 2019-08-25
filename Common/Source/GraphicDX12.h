@@ -56,6 +56,7 @@ public:
 
 public: // Used Functions
 	virtual void SetCamera(cCamera* camera) { m_currCamera = camera; }
+	virtual void AddMesh(UINT numSubResource, SubmeshData subResources[]) override;
 
 private: // Device Base Functions
 	void CreateCommandObject();

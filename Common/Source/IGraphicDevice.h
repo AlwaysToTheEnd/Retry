@@ -1,9 +1,18 @@
 #pragma once
 #include "d3dUtil.h"
 #include "IComponentProvider.h"
+#include "MeshObjects.h"
 
 class cCamera;
 using namespace CGH;
+
+struct SubmeshData
+{
+	void*	data = nullptr;
+	UINT	byteSize = 0;
+	UINT	strideSize = 0;
+	std::string subMeshName;
+};
 
 class IGraphicDevice : public ICompnentProvider
 {
@@ -17,10 +26,9 @@ public:
 	virtual void* GetDevicePtr() = 0;
 	virtual void OnResize() = 0;
 
-	//virtual void AddMesh() = 0;
-
 public:
 	virtual void SetCamera(cCamera* camera) = 0;
+	virtual void AddMesh(UINT numSubResource, SubmeshData subResources[]) = 0;
 
 public:
 	void SetClientSize(UINT width, UINT height) { m_ClientWidth = width, m_ClientHeight = height; }
