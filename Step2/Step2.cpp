@@ -29,11 +29,6 @@ void Step2::SelectDevices()
 void Step2::InitObjects()
 {
 	m_GDevice->SetCamera(&m_Camera);
-
-	///Test Codes..
-	XFileParser test("../Common/TeraResourse/Character/poporiClass03/poporiClass03_2.X");
-
-	auto testObject = test.GetAniObject();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////

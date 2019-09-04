@@ -246,8 +246,8 @@ void XFileParser::ParseFile()
 		else if (objectName == "Mesh")
 		{
 			// some meshes have no frames at all
-			m_AniObject->m_GlobalMeshes.push_back(Mesh());
-			ParseDataObjectMesh(&m_AniObject->m_GlobalMeshes.back());
+			m_AniObject->m_GlobalMeshes.emplace_back(new Mesh);
+			ParseDataObjectMesh(m_AniObject->m_GlobalMeshes.back().get());
 		}
 		else if (objectName == "AnimTicksPerSecond")
 		{
@@ -260,8 +260,8 @@ void XFileParser::ParseFile()
 		else if (objectName == "Material")
 		{
 			// Material outside of a mesh or node
-			m_AniObject->m_GlobalMaterials.push_back(Material());
-			ParseDataObjectMaterial(&m_AniObject->m_GlobalMaterials.back());
+			m_AniObject->m_GlobalMaterials.emplace_back(new Material);
+			ParseDataObjectMaterial(m_AniObject->m_GlobalMaterials.back().get());
 		}
 		else if (objectName == "}")
 		{
@@ -370,6 +370,7 @@ void XFileParser::ParseDataObjectFrame(Ani::Node* pParent)
 		{
 			Mesh* mesh = new Mesh;
 			node->m_Meshes.push_back(mesh);
+			m_AniObject->m_GlobalMeshes.push_back(unique_ptr<Mesh>(mesh));
 			ParseDataObjectMesh(mesh);
 		}
 		else

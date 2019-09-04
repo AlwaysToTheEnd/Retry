@@ -18,6 +18,8 @@
 #pragma comment(lib, "D3D12.lib")
 #pragma comment(lib, "dxgi.lib")
 
+#include "XFileParser.h"
+
 class cTextureBuffer;
 
 struct FrameResource
@@ -135,7 +137,13 @@ private:
 	PassConstants					m_MainPassCB;
 
 private: // Codes below are used only Testing.
-	ComPtr<ID3D12Resource>			m_VertexBuffer;
-	ComPtr<ID3D12Resource>			m_VertexUploadBuffer;
+	ComPtr<ID3D12Resource>				m_VertexBuffer;
+	ComPtr<ID3D12Resource>				m_VertexUploadBuffer;
+	ComPtr<ID3D12Resource>				m_IndexBuffer;
+	ComPtr<ID3D12Resource>				m_IndexUploadBuffer;
+	std::unique_ptr<AnimationObject>	m_XfileObject;
+
+	UINT m_VertexBufferSize=0;
+	UINT m_IndexBufferSize=0;
 };
 

@@ -184,7 +184,7 @@ class RenderComponent :public IComponent
 {
 public:
 	void SetPrimitiveType(D3D12_PRIMITIVE_TOPOLOGY type) { m_primitiveType = type; }
-	void SetGeometry(const MeshGeometry* geometry, string submeshName);
+	void SetGeometry(const MeshGeometry* geometry, std::string submeshName);
 	void SetRenderOK(bool value) { m_isRenderOK = value; }
 
 private:

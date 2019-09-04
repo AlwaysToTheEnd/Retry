@@ -74,5 +74,6 @@ float4 PS(VertexOut pin) : SV_Target
 	float4 litColor = float4(0,0,0,1);
 	litColor = gMainTexture.Sample(gsamPointWrap, pin.TexC);
 
+	litColor.a = 1.0f;
 	return litColor;
 }

@@ -37,6 +37,9 @@
     <Filter Include="Common\CodeResources\Ziplib">
       <UniqueIdentifier>{e41811dd-db95-4526-9acb-dce23a80858f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Common\CodeResources\Parser">
+      <UniqueIdentifier>{50d9665b-1fd6-4595-a761-3be464ecf4d8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Step2.cpp">
@@ -68,12 +71,6 @@
     </ClCompile>
     <ClCompile Include="..\Common\Source\GameObject.cpp">
       <Filter>Common\CodeResources</Filter>
-    </ClCompile>
-    <ClCompile Include="AnimationObject.cpp">
-      <Filter>Object</Filter>
-    </ClCompile>
-    <ClCompile Include="XFileParser.cpp">
-      <Filter>Object</Filter>
     </ClCompile>
     <ClCompile Include="..\Common\Source\cTextureBuffer.cpp">
       <Filter>Common\DeviceInstance\DX12Supporters</Filter>
@@ -110,6 +107,12 @@
     </ClCompile>
     <ClCompile Include="..\Common\Source\GraphicComponent.cpp">
       <Filter>Common\DeviceInstance\DX12Supporters</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Source\AnimationObject.cpp">
+      <Filter>Common\CodeResources\Parser</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Source\XFileParser.cpp">
+      <Filter>Common\CodeResources\Parser</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -152,12 +155,6 @@
     <ClInclude Include="..\Common\Source\DX12RenderClasses.h">
       <Filter>Common\DeviceInstance\DX12Supporters</Filter>
     </ClInclude>
-    <ClInclude Include="AnimationObject.h">
-      <Filter>Object</Filter>
-    </ClInclude>
-    <ClInclude Include="XFileParser.h">
-      <Filter>Object</Filter>
-    </ClInclude>
     <ClInclude Include="..\Common\Source\cTextureBuffer.h">
       <Filter>Common\DeviceInstance\DX12Supporters</Filter>
     </ClInclude>
@@ -175,6 +172,12 @@
     </ClInclude>
     <ClInclude Include="..\Common\Source\Vertex.h">
       <Filter>Common\CodeResources</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\AnimationObject.h">
+      <Filter>Common\CodeResources\Parser</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\XFileParser.h">
+      <Filter>Common\CodeResources\Parser</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -1,7 +1,6 @@
 #pragma once
 #include "d3dUtil.h"
 #include "IComponentProvider.h"
-#include "MeshObjects.h"
 
 class cCamera;
 using namespace CGH;

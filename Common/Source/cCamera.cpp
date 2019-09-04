@@ -5,6 +5,7 @@ cCamera::cCamera()
 	: m_rotX(0)
 	, m_rotY(0)
 	, m_distance(5)
+	, m_eyePos(0,0,0)
 {
 	m_viewMat.Identity();
 }
@@ -16,7 +17,7 @@ cCamera::~cCamera()
 
 void cCamera::Update()
 {
-	XMVECTOR target= XMVectorZero();
+	XMVECTOR target = XMLoadFloat3(&m_eyePos);
 	
 	XMMATRIX rotationMat = XMMatrixRotationRollPitchYaw(0, m_rotX, m_rotY);
 
@@ -43,6 +44,21 @@ void cCamera::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	case WM_RBUTTONUP:
 	{
 		m_isRButtonDown = false;
+	}
+	break;
+	case WM_KEYDOWN:
+	{
+		switch (wParam)
+		{
+		case VK_UP:
+			m_eyePos.y += 0.1f;
+			break;
+		case VK_DOWN:
+			m_eyePos.y -= 0.1f;
+			break;
+		default:
+			break;
+		}
 	}
 	break;
 	case WM_MOUSEMOVE:

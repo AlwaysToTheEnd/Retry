@@ -24,7 +24,12 @@ public:
 
 	~XFileParser();
 
-	std::unique_ptr<AnimationObject> GetAniObject() { return move(m_AniObject); }
+	std::unique_ptr<AnimationObject> GetAniObject() 
+	{
+		assert(m_AniObject.get() != nullptr);
+
+		return move(m_AniObject); 
+	}
 
 private:
 	void ParseFile();

@@ -90,8 +90,7 @@ namespace Ani
 		Node* m_Parent = nullptr;
 		std::vector<Node*> m_Children;
 		std::vector<Mesh*> m_Meshes;
-		int	m_sameNameBoneCount = 0;
-
+		
 		/*void GetNodeNames(std::vector<std::string>& nameList)
 		{
 			nameList.push_back(m_Name);
@@ -164,10 +163,10 @@ namespace Ani
 				delete it;
 			}
 
-			for (auto& it : m_Meshes)
+		/*	for (auto& it : m_Meshes)
 			{
 				delete it;
-			}
+			}*/
 		}
 	};
 
@@ -218,8 +217,8 @@ public:
 public:
 	Ani::Node* m_RootNode;
 
-	std::vector<Ani::Mesh> m_GlobalMeshes;
-	std::vector<Ani::Material> m_GlobalMaterials;
+	std::vector<std::unique_ptr<Ani::Mesh>>		m_GlobalMeshes;
+	std::vector<std::unique_ptr<Ani::Material>> m_GlobalMaterials;
 
 	std::vector<Ani::Animation> m_Anims;
 	unsigned int m_AnimTicksPerSecond;
