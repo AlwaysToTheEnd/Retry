@@ -351,24 +351,9 @@ void GraphicDX12::Draw()
 	auto matBuffer = m_FrameResource->materialBuffer->Resource();
 	m_CommandList->SetGraphicsRootShaderResourceView(0, matBuffer->GetGPUVirtualAddress());
 	m_CommandList->SetGraphicsRootConstantBufferView(1, m_FrameResource->passCB->Resource()->GetGPUVirtualAddress());
-	m_CommandList->SetGraphicsRootConstantBufferView(2, m_FrameResource->ObjectCB->Resource()->GetGPUVirtualAddress());
 	m_CommandList->SetGraphicsRootDescriptorTable(3, m_TextureBuffer->GetHeap()->GetGPUDescriptorHandleForHeapStart());
 
-	D3D12_VERTEX_BUFFER_VIEW vertexBufferView = {};
-	vertexBufferView.BufferLocation = m_VertexBuffer->GetGPUVirtualAddress();
-	vertexBufferView.SizeInBytes = m_VertexBufferSize;
-	vertexBufferView.StrideInBytes =  sizeof(Vertex);
-	
-	D3D12_INDEX_BUFFER_VIEW indexBufferView = {};
-	indexBufferView.BufferLocation = m_IndexBuffer->GetGPUVirtualAddress();
-	indexBufferView.Format = DXGI_FORMAT_R32_UINT;
-	indexBufferView.SizeInBytes = m_IndexBufferSize;
-
-	m_CommandList->IASetVertexBuffers(0, 1, &vertexBufferView);
-	m_CommandList->IASetIndexBuffer(&indexBufferView);
-	m_CommandList->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-	m_CommandList->DrawIndexedInstanced(m_IndexBufferSize/sizeof(UINT), 1, 0, 0, 0);
+	DrawMesh(1, &m_MeshObject);
 
 	m_CommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(),
 		D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
@@ -403,41 +388,51 @@ void GraphicDX12::BuildFrameResources()
 	m_FrameResource = make_unique<FrameResource>(m_D3dDevice.Get(),
 		2, (UINT)m_Materials.size());
 
+	m_FrameResource->materialBuffer->CopyData(m_Materials.size(),0, m_Materials.front());
+
 	m_FrameResource->ObjectCB = make_unique<UploadBuffer<ObjectConstants>>(m_D3dDevice.Get(), 1, true);
 }
 
 void GraphicDX12::BuildTextures()
 {
-	pair<string, wstring> texturePaths[] =
-	{
-		{"testTexture", L"./../Common/TextureData/plane.png"},
-	};
+	m_TexturePaths.insert({ "testTexture", L"./../Common/TextureData/plane.png" });
 
-	const UINT numTexturePath = _countof(texturePaths);
+	const UINT numTexturePath = m_TexturePaths.size();
 	m_TextureBuffer = make_unique<cTextureBuffer>(m_D3dDevice.Get(), numTexturePath);
 
 	m_TextureBuffer->Begin(m_D3dDevice.Get());
 
-	for (UINT i = 0; i < numTexturePath; i++)
+	for (auto& it: m_TexturePaths)
 	{
 		m_TextureBuffer->AddTexture(m_D3dDevice.Get(),
-			m_CommandQueue.Get(), texturePaths->first, texturePaths->second);
+			m_CommandQueue.Get(), it.first, it.second);
 	}
-
+	
 	m_TextureBuffer->End(m_CommandQueue.Get(), bind(&GraphicDX12::FlushCommandQueue, this));
 }
 
 void GraphicDX12::BuildMaterials()
 {
-	auto material = make_unique<Material>();
-	material->name = "baseMaterial";
-	material->matCBIndex = 1;
-	material->diffuseMapIndex = 0;
-	material->diffuseAlbedo = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
-	material->fresnel0 = XMFLOAT3(0.1f, 0.1f, 0.1f);
-	material->roughness = 0.25f;
+	vector<string> materialLists =
+	{
+		"baseMaterial",
+		"Test"
+	};
 
-	m_Materials[material->name] = move(material);
+	Material material;
+
+	for (size_t i = 0; i < materialLists.size(); i++)
+	{
+		m_MaterialIndex.insert({ materialLists[i], i });
+
+		material.diffuseAlbedo = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+		material.fresnel0 = XMFLOAT3(0.1f, 0.1f, 0.1f);
+		material.roughness = 0.25f;
+		material.diffuseMapIndex = i;
+		material.normalMapIndex = -1;
+
+		m_Materials.push_back(material);
+	}
 }
 
 void GraphicDX12::BuildRootSignature()
@@ -553,31 +548,33 @@ void GraphicDX12::BuildGeometry()
 	vector<Vertex> vertexData;
 	vector<UINT> indexData;
 	vector<UINT> vertexOffsets = { 0 };
-	UINT numIndexs = 0;
+	UINT indexOffset = 0;
 
 	for (auto& it : m_XfileObject->m_GlobalMeshes)
 	{
-		UINT currIndexOffset = vertexOffsets.back();
-		vertexOffsets.push_back(vertexOffsets.back() + it->m_Positions.size());
+		SubmeshData submesh;
+		submesh.vertexOffset = vertexOffsets.back();
+		submesh.numVertex = it->m_Positions.size();
+		vertexOffsets.push_back(submesh.vertexOffset + submesh.numVertex);
 
-	/*	offsetVertex.clear();
-		offsetVertex.resize(it->m_Positions.size());
-		memset(&offsetVertex[0], 0, offsetVertex.size() * sizeof(XMFLOAT3));
-		vector<float> weights(it->m_Positions.size());
+		/*	offsetVertex.clear();
+			offsetVertex.resize(it->m_Positions.size());
+			memset(&offsetVertex[0], 0, offsetVertex.size() * sizeof(XMFLOAT3));
+			vector<float> weights(it->m_Positions.size());
 
-		for (auto& it2 : it->m_Bones)
-		{
-			for (auto& it3 : it2.m_Weights)
+			for (auto& it2 : it->m_Bones)
 			{
-				weights[it3.m_Vertex] += it3.m_Weight;
-				XMVECTOR pos =XMLoadFloat3(&it->m_Positions[it3.m_Vertex]);
-				XMMATRIX mat = XMLoadFloat4x4(it2.m_OffsetMatrix);
+				for (auto& it3 : it2.m_Weights)
+				{
+					weights[it3.m_Vertex] += it3.m_Weight;
+					XMVECTOR pos =XMLoadFloat3(&it->m_Positions[it3.m_Vertex]);
+					XMMATRIX mat = XMLoadFloat4x4(it2.m_OffsetMatrix);
 
-				pos = (XMVector3TransformCoord(pos, mat)*it3.m_Weight) + XMLoadFloat3(&offsetVertex[it3.m_Vertex]);
+					pos = (XMVector3TransformCoord(pos, mat)*it3.m_Weight) + XMLoadFloat3(&offsetVertex[it3.m_Vertex]);
 
-				XMStoreFloat3(&offsetVertex[it3.m_Vertex], pos);
-			}
-		}*/
+					XMStoreFloat3(&offsetVertex[it3.m_Vertex], pos);
+				}
+			}*/
 
 		for (int i = 0; i < it->m_Positions.size(); i++)
 		{
@@ -588,7 +585,8 @@ void GraphicDX12::BuildGeometry()
 		{
 			for (auto& it3 : it2.m_Indices)
 			{
-				indexData.push_back(currIndexOffset + it3);
+				indexData.push_back(submesh.vertexOffset + it3);
+				submesh.numIndex++;
 
 				if (indexData.back() >= vertexData.size())
 				{
@@ -596,12 +594,18 @@ void GraphicDX12::BuildGeometry()
 				}
 			}
 		}
+
+		submesh.indexOffset = indexOffset;
+		indexOffset += submesh.numIndex;
+		m_MeshObject.m_Subs.insert({ "test" + to_string(submesh.indexOffset),submesh });
 	}
 
 #pragma endregion
 
-	m_VertexBufferSize = static_cast<UINT>(vertexData.size()) * sizeof(Vertex);
-	m_IndexBufferSize = static_cast<UINT>(indexData.size()) * sizeof(UINT);
+	m_MeshObject.m_VertexDataSize = static_cast<UINT>(vertexData.size()) * sizeof(Vertex);
+	m_MeshObject.m_IndexDataSize = static_cast<UINT>(indexData.size()) * sizeof(UINT);
+	m_MeshObject.m_VertexByteSize = sizeof(Vertex);
+	m_MeshObject.m_IndexByteSize = sizeof(UINT);
 
 	D3D12_HEAP_PROPERTIES uploadBufferPro = {};
 	uploadBufferPro.Type = D3D12_HEAP_TYPE_UPLOAD;
@@ -609,7 +613,7 @@ void GraphicDX12::BuildGeometry()
 	D3D12_RESOURCE_DESC bufferDesc = {};
 	bufferDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
 	bufferDesc.DepthOrArraySize = 1;
-	bufferDesc.Width = m_VertexBufferSize;
+	bufferDesc.Width = m_MeshObject.m_VertexDataSize;
 	bufferDesc.Height = 1;
 	bufferDesc.MipLevels = 1;
 	bufferDesc.SampleDesc.Count = 1;
@@ -627,7 +631,7 @@ void GraphicDX12::BuildGeometry()
 		&bufferDesc, D3D12_RESOURCE_STATE_COPY_DEST, nullptr,
 		IID_PPV_ARGS(m_VertexBuffer.GetAddressOf())), m_VertexBuffer);
 
-	bufferDesc.Width = m_IndexBufferSize;
+	bufferDesc.Width = m_MeshObject.m_IndexDataSize;
 
 	TIF_AND_SETNAME(m_D3dDevice->CreateCommittedResource(&uploadBufferPro, D3D12_HEAP_FLAG_NONE,
 		&bufferDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr,
@@ -642,16 +646,16 @@ void GraphicDX12::BuildGeometry()
 	ThrowIfFailed(m_VertexUploadBuffer->Map(0, nullptr, &dataTemp));
 	ThrowIfFailed(m_IndexUploadBuffer->Map(0, nullptr, &indexTemp));
 
-	::memcpy(dataTemp, vertexData.data(), m_VertexBufferSize);
-	::memcpy(indexTemp, indexData.data(), m_IndexBufferSize);
-	
+	::memcpy(dataTemp, vertexData.data(), m_MeshObject.m_VertexDataSize);
+	::memcpy(indexTemp, indexData.data(), m_MeshObject.m_IndexDataSize);
+
 	m_VertexUploadBuffer->Unmap(0, nullptr);
 	m_IndexUploadBuffer->Unmap(0, nullptr);
 
 	m_CommandList->CopyBufferRegion(m_VertexBuffer.Get(), 0,
-		m_VertexUploadBuffer.Get(), 0, m_VertexBufferSize);
+		m_VertexUploadBuffer.Get(), 0, m_MeshObject.m_VertexDataSize);
 	m_CommandList->CopyBufferRegion(m_IndexBuffer.Get(), 0,
-		m_IndexUploadBuffer.Get(), 0, m_IndexBufferSize);
+		m_IndexUploadBuffer.Get(), 0, m_MeshObject.m_IndexDataSize);
 
 	m_CommandList->ResourceBarrier(1,
 		&CD3DX12_RESOURCE_BARRIER::Transition(m_VertexBuffer.Get(),
@@ -662,6 +666,9 @@ void GraphicDX12::BuildGeometry()
 		&CD3DX12_RESOURCE_BARRIER::Transition(m_IndexBuffer.Get(),
 			D3D12_RESOURCE_STATE_COPY_DEST,
 			D3D12_RESOURCE_STATE_INDEX_BUFFER));
+
+	m_MeshObject.m_VertexData = reinterpret_cast<void*>(m_VertexBuffer->GetGPUVirtualAddress());
+	m_MeshObject.m_IndexData = reinterpret_cast<void*>(m_IndexBuffer->GetGPUVirtualAddress());
 }
 
 void GraphicDX12::BuildPSOs()
@@ -745,6 +752,42 @@ void GraphicDX12::UpdateMainPassCB()
 void GraphicDX12::UpdateObjects()
 {
 
+}
+
+void GraphicDX12::DrawMesh(UINT numMeshs, MeshObject* meshs)
+{
+	for (UINT i = 0; i < numMeshs; i++)
+	{
+		D3D12_VERTEX_BUFFER_VIEW vertexBufferView = {};
+		vertexBufferView.BufferLocation = reinterpret_cast<D3D12_GPU_VIRTUAL_ADDRESS>(meshs[i].m_VertexData);
+		vertexBufferView.SizeInBytes = meshs[i].m_VertexDataSize;
+		vertexBufferView.StrideInBytes = meshs[i].m_VertexByteSize;
+
+		D3D12_INDEX_BUFFER_VIEW indexBufferView = {};
+		indexBufferView.BufferLocation = reinterpret_cast<D3D12_GPU_VIRTUAL_ADDRESS>(meshs[i].m_IndexData);
+
+		if (meshs[i].m_IndexByteSize == 2)
+		{
+			indexBufferView.Format = DXGI_FORMAT_R16_UINT;
+		}
+		else
+		{
+			indexBufferView.Format = DXGI_FORMAT_R32_UINT;
+		}
+
+		indexBufferView.SizeInBytes = meshs[i].m_IndexDataSize;
+
+		m_CommandList->IASetVertexBuffers(0, 1, &vertexBufferView);
+		m_CommandList->IASetIndexBuffer(&indexBufferView);
+		m_CommandList->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		m_CommandList->SetGraphicsRootConstantBufferView(2, m_FrameResource->ObjectCB->Resource()->GetGPUVirtualAddress());
+
+		for (auto& it : meshs->m_Subs)
+		{
+
+			m_CommandList->DrawIndexedInstanced(it.second.numIndex, 1, it.second.indexOffset, 0, 0);
+		}
+	}
 }
 
 ComPtr<ID3DBlob> GraphicDX12::CompileShader(

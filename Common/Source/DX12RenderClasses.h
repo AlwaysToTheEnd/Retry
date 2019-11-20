@@ -8,36 +8,29 @@
 
 using Microsoft::WRL::ComPtr;
 using namespace DirectX;
+class MeshObject;
 
 struct ObjectConstants
 {
-	CGH::MAT16 world;
-	CGH::MAT16 TexTransform;
+	CGH::MAT16	world;
+	CGH::MAT16	texTransform;
+	UINT		materialIndex = 0;
+	UINT		pad1;
+	UINT		pad2;
+	UINT		pad3;
 };
 
 struct Material
 {
-	std::string	name;
-	int			matCBIndex = -1;
-
-	XMFLOAT4	diffuseAlbedo = { 1,1,1,1 };
-	XMFLOAT3	fresnel0 = { 0.01f,0.01f,0.01f };
-	float		roughness = 0.25f;
-	CGH::MAT16	matTransform;
-	UINT		diffuseMapIndex = 0;
-};
-
-struct MaterialConstants
-{
 	XMFLOAT4	diffuseAlbedo = { 1,1,1,1 };
 	XMFLOAT3	fresnel0 = { 0.01f,0.01f,0.01f };
 	float		roughness = 0.25f;
 
 	CGH::MAT16	matTransform;
 	UINT		diffuseMapIndex = 0;
-	UINT		MaterialPad0;
-	UINT		MaterialPad1;
-	UINT		MaterialPad2;
+	int			normalMapIndex= 0;
+	UINT		materialPad1;
+	UINT		materialPad2;
 };
 
 struct Light
@@ -68,60 +61,6 @@ struct PassConstants
 	XMFLOAT4 ambientLight = { 0.0f, 0.0f, 0.0f, 1.0f };
 
 	//Light Lights[16];
-};
-
-struct SubMeshGeometry
-{
-	UINT indexCount = 0;
-	UINT startIndexLocation = 0;
-	UINT baseVertexLocation = 0;
-};
-
-struct MeshGeometry
-{
-	std::string name;
-
-	ComPtr<ID3DBlob> vertexBufferCPU = nullptr;
-	ComPtr<ID3DBlob> indexBufferCPU = nullptr;
-
-	ComPtr<ID3D12Resource> vertexBufferGPU = nullptr;
-	ComPtr<ID3D12Resource> indexBufferGPU = nullptr;
-
-	ComPtr<ID3D12Resource> vertexUploadBuffer = nullptr;
-	ComPtr<ID3D12Resource> indexUploadBuffer = nullptr;
-
-	UINT vertexByteStride = 0;
-	UINT vertexBufferByteSize = 0;
-	DXGI_FORMAT indexFormat = DXGI_FORMAT_R16_UINT;
-	UINT indexBufferByteSize = 0;
-
-	std::unordered_map<std::string, SubMeshGeometry> DrawArgs;
-
-	D3D12_VERTEX_BUFFER_VIEW GetVertexBufferView() const
-	{
-		D3D12_VERTEX_BUFFER_VIEW vbv;
-		vbv.BufferLocation = vertexBufferGPU->GetGPUVirtualAddress();
-		vbv.StrideInBytes = vertexByteStride;
-		vbv.SizeInBytes = vertexBufferByteSize;
-
-		return vbv;
-	}
-
-	D3D12_INDEX_BUFFER_VIEW GetIndexBufferView() const
-	{
-		D3D12_INDEX_BUFFER_VIEW ibv;
-		ibv.BufferLocation = indexBufferGPU->GetGPUVirtualAddress();
-		ibv.Format = indexFormat;
-		ibv.SizeInBytes = indexBufferByteSize;
-
-		return ibv;
-	}
-
-	void DisPosUploaders()
-	{
-		vertexUploadBuffer = nullptr;
-		indexUploadBuffer = nullptr;
-	}
 };
 
 template <typename T>
@@ -171,6 +110,11 @@ public:
 		memcpy(&m_MappedData[elementIndex * m_ElementByteSize], &data, sizeof(T));
 	}
 
+	void CopyData(int numElement,int offsetIndex, const T& data)
+	{
+		memcpy(&m_MappedData[offsetIndex * m_ElementByteSize], &data, sizeof(T)* numElement);
+	}
+
 private:
 	ComPtr<ID3D12Resource> m_UploadBuffer;
 	BYTE* m_MappedData = nullptr;
@@ -184,7 +128,7 @@ class RenderComponent :public IComponent
 {
 public:
 	void SetPrimitiveType(D3D12_PRIMITIVE_TOPOLOGY type) { m_primitiveType = type; }
-	void SetGeometry(const MeshGeometry* geometry, std::string submeshName);
+	void SetGeometry(const MeshObject* geometry, std::string submeshName);
 	void SetRenderOK(bool value) { m_isRenderOK = value; }
 
 private:
@@ -200,7 +144,7 @@ private:
 	bool m_isRenderOK = true;
 	UINT m_renderInstanceCount = 0;
 
-	const MeshGeometry* m_geo = nullptr;
+	const MeshObject* m_geo = nullptr;
 	D3D12_PRIMITIVE_TOPOLOGY m_primitiveType = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 	UINT m_indexCount = 0;
 	UINT m_startIndexLocation = 0;

@@ -30,7 +30,7 @@ struct FrameResource
 			D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(cmdListAlloc.GetAddressOf())));
 
 		passCB = std::make_unique<UploadBuffer<PassConstants>>(device, passCount, true);
-		materialBuffer = std::make_unique<UploadBuffer<MaterialConstants>>(device, materialCount, false);
+		materialBuffer = std::make_unique<UploadBuffer<Material>>(device, materialCount, false);
 	}
 
 	FrameResource(const FrameResource& rhs) = delete;
@@ -39,7 +39,7 @@ struct FrameResource
 	ComPtr<ID3D12CommandAllocator> cmdListAlloc;
 
 	std::unique_ptr<UploadBuffer<PassConstants>> passCB = nullptr;
-	std::unique_ptr<UploadBuffer<MaterialConstants>> materialBuffer = nullptr;
+	std::unique_ptr<UploadBuffer<Material>> materialBuffer = nullptr;
 	std::unique_ptr<UploadBuffer<ObjectConstants>> ObjectCB = nullptr;
 };
 
@@ -83,6 +83,7 @@ private: // Object Base Builds
 private:
 	void UpdateMainPassCB();
 	void UpdateObjects();
+	void DrawMesh(UINT numMeshs, MeshObject* meshs);
 
 private:
 	ComPtr<ID3DBlob> CompileShader(	const std::wstring& filename,
@@ -127,7 +128,8 @@ private:
 
 private:
 	std::unordered_map<std::string, ComPtr<ID3D12PipelineState>>	m_PSOs;
-	std::unordered_map<std::string, std::unique_ptr<Material>>		m_Materials;
+	std::unordered_map<std::string, UINT>							m_MaterialIndex;
+	std::vector<Material>											m_Materials;
 	std::vector<D3D12_INPUT_ELEMENT_DESC>							m_NTVertexInputLayout;
 	std::unordered_map<std::string, ComPtr<ID3DBlob>>				m_Shaders;
 	ComPtr<ID3D12RootSignature>										m_RootSignature = nullptr;
@@ -136,14 +138,15 @@ private:
 	std::unique_ptr<FrameResource>	m_FrameResource;
 	PassConstants					m_MainPassCB;
 
-private: // Codes below are used only Testing.
+private: // Below codes are used only Testing.
 	ComPtr<ID3D12Resource>				m_VertexBuffer;
 	ComPtr<ID3D12Resource>				m_VertexUploadBuffer;
 	ComPtr<ID3D12Resource>				m_IndexBuffer;
 	ComPtr<ID3D12Resource>				m_IndexUploadBuffer;
-	std::unique_ptr<AnimationObject>	m_XfileObject;
 
-	UINT m_VertexBufferSize=0;
-	UINT m_IndexBufferSize=0;
+	std::unordered_map<std::string, std::wstring>						m_TexturePaths;
+	std::unordered_map<std::string, std::pair<std::string,Material>>	m_MaterialList;
+	std::unique_ptr<AnimationObject>	m_XfileObject;
+	MeshObject							m_MeshObject;
 };
 

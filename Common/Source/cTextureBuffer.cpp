@@ -332,8 +332,8 @@ namespace   /*this namesapce code is what need for TextureLoad of DirectXTK_Desk
 	{
 		D3D12_FEATURE_DATA_D3D12_OPTIONS option = {};
 
-		if (SUCCEEDED(device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS,
-			&option, sizeof(D3D12_FEATURE_DATA_D3D12_OPTIONS))));
+		ThrowIfFailed(device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS,
+			&option, sizeof(D3D12_FEATURE_DATA_D3D12_OPTIONS)));
 
 		if (FormatIsUAVCompatible(device, option.TypedUAVLoadAdditionalFormats, format))
 			return true;

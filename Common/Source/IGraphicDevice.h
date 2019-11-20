@@ -7,10 +7,27 @@ using namespace CGH;
 
 struct SubmeshData
 {
-	void*	data = nullptr;
-	UINT	byteSize = 0;
-	UINT	strideSize = 0;
-	std::string subMeshName;
+	UINT	numVertex = 0;
+	UINT	vertexOffset = 0;
+	UINT	numIndex = 0;
+	UINT	indexOffset = 0;
+	MAT16	submeshMatrix;
+};
+
+class MeshObject
+{
+public:
+	std::string	m_Name;
+
+	void*		m_VertexData = nullptr;
+	UINT		m_VertexByteSize = 0;
+	UINT		m_VertexDataSize = 0;
+
+	void*		m_IndexData = nullptr;
+	UINT		m_IndexDataSize = 0;
+	UINT		m_IndexByteSize = 0;
+
+	std::unordered_map<std::string, SubmeshData> m_Subs;
 };
 
 class IGraphicDevice : public ICompnentProvider
