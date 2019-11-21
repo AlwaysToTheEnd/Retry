@@ -41,7 +41,7 @@ namespace Ani
 		}
 	};
 
-	struct Material
+	struct AniMaterial
 	{
 		std::string m_Name;
 		bool m_IsReference = false; // if true, mName holds a name by which the actual material can be found in the material list
@@ -78,7 +78,7 @@ namespace Ani
 		std::vector<DirectX::XMFLOAT4> m_Colors[AI_MAX_NUMBER_OF_TEXTURECOORDS];
 
 		std::vector<unsigned int> m_FaceMaterials;
-		std::vector<Material> m_Materials;
+		std::vector<AniMaterial> m_Materials;
 
 		std::vector<Bone> m_Bones;
 	};
@@ -213,12 +213,15 @@ public:
 	
 	virtual void Init() override;
 	virtual void Update() override;
+	
+public:
+	void GetAllTexturesName(std::vector<std::string>& textureNamesOut);
 
 public:
 	Ani::Node* m_RootNode;
 
-	std::vector<std::unique_ptr<Ani::Mesh>>		m_GlobalMeshes;
-	std::vector<std::unique_ptr<Ani::Material>> m_GlobalMaterials;
+	std::vector<std::unique_ptr<Ani::Mesh>>			m_GlobalMeshes;
+	std::vector<std::unique_ptr<Ani::AniMaterial>>	m_GlobalMaterials;
 
 	std::vector<Ani::Animation> m_Anims;
 	unsigned int m_AnimTicksPerSecond;

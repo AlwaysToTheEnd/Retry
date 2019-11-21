@@ -260,7 +260,7 @@ void XFileParser::ParseFile()
 		else if (objectName == "Material")
 		{
 			// Material outside of a mesh or node
-			m_AniObject->m_GlobalMaterials.emplace_back(new Material);
+			m_AniObject->m_GlobalMaterials.emplace_back(new AniMaterial);
 			ParseDataObjectMaterial(m_AniObject->m_GlobalMaterials.back().get());
 		}
 		else if (objectName == "}")
@@ -668,7 +668,7 @@ void XFileParser::ParseDataObjectMeshMaterialList(Ani::Mesh* pMesh)
 		{
 			// template materials 
 			string matName = GetNextToken();
-			Material material;
+			AniMaterial material;
 			material.m_IsReference = true;
 			material.m_Name = matName;
 			pMesh->m_Materials.push_back(material);
@@ -677,7 +677,7 @@ void XFileParser::ParseDataObjectMeshMaterialList(Ani::Mesh* pMesh)
 		}
 		else if (objectName == "Material")
 		{
-			pMesh->m_Materials.push_back(Material());
+			pMesh->m_Materials.push_back(AniMaterial());
 			ParseDataObjectMaterial(&pMesh->m_Materials.back());
 		}
 		else if (objectName == ";")
@@ -692,7 +692,7 @@ void XFileParser::ParseDataObjectMeshMaterialList(Ani::Mesh* pMesh)
 	}
 }
 
-void XFileParser::ParseDataObjectMaterial(Ani::Material* pMaterial)
+void XFileParser::ParseDataObjectMaterial(Ani::AniMaterial* pMaterial)
 {
 	string matName;
 	readHeadOfDataObject(&matName);

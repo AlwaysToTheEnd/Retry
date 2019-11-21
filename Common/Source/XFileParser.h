@@ -11,7 +11,7 @@ namespace Ani
 	struct Node;
 	struct AnimBone;
 	struct Animation;
-	struct Material;
+	struct AniMaterial;
 }
 
 // This Codes was referenced from HLSLCrossCompiler-master
@@ -43,7 +43,7 @@ private:
 	void ParseDataObjectMeshTextureCoords(Ani::Mesh* pMesh);
 	void ParseDataObjectMeshVertexColors(Ani::Mesh* pMesh);
 	void ParseDataObjectMeshMaterialList(Ani::Mesh* pMesh);
-	void ParseDataObjectMaterial(Ani::Material* pMaterial);
+	void ParseDataObjectMaterial(Ani::AniMaterial* pMaterial);
 	void ParseDataObjectAnimTicksPerSecond();
 	void ParseDataObjectAnimationSet();
 	void ParseDataObjectAnimation(Ani::Animation* pAnim);
