@@ -364,7 +364,7 @@ void XFileParser::ParseDataObjectFrame(Ani::Node* pParent)
 		}
 		else if (objectName == "FrameTransformMatrix")
 		{
-			ParseDataObjectTransformationMatrix(node->m_TrafoMatrix);
+			ParseDataObjectTransformationMatrix(node->m_TransformMat);
 		}
 		else if (objectName == "Mesh")
 		{
@@ -387,14 +387,14 @@ void XFileParser::ParseDataObjectTransformationMatrix(CGH::MAT16& pMatrix)
 	readHeadOfDataObject();
 
 	// read its components
-	pMatrix.m[0][0] = ReadFloat(); pMatrix.m[1][0] = ReadFloat();
-	pMatrix.m[2][0] = ReadFloat(); pMatrix.m[3][0] = ReadFloat();
-	pMatrix.m[0][1] = ReadFloat(); pMatrix.m[1][1] = ReadFloat();
-	pMatrix.m[2][1] = ReadFloat(); pMatrix.m[3][1] = ReadFloat();
-	pMatrix.m[0][2] = ReadFloat(); pMatrix.m[1][2] = ReadFloat();
-	pMatrix.m[2][2] = ReadFloat(); pMatrix.m[3][2] = ReadFloat();
-	pMatrix.m[0][3] = ReadFloat(); pMatrix.m[1][3] = ReadFloat();
-	pMatrix.m[2][3] = ReadFloat(); pMatrix.m[3][3] = ReadFloat();
+	pMatrix.m[0][0] = ReadFloat(); pMatrix.m[0][1] = ReadFloat();
+	pMatrix.m[0][2] = ReadFloat(); pMatrix.m[0][3] = ReadFloat();
+	pMatrix.m[1][0] = ReadFloat(); pMatrix.m[1][1] = ReadFloat();
+	pMatrix.m[1][2] = ReadFloat(); pMatrix.m[1][3] = ReadFloat();
+	pMatrix.m[2][0] = ReadFloat(); pMatrix.m[2][1] = ReadFloat();
+	pMatrix.m[2][2] = ReadFloat(); pMatrix.m[2][3] = ReadFloat();
+	pMatrix.m[3][0] = ReadFloat(); pMatrix.m[3][1] = ReadFloat();
+	pMatrix.m[3][2] = ReadFloat(); pMatrix.m[3][3] = ReadFloat();
 
 	// trailing symbols
 	CheckForSemicolon();
@@ -486,12 +486,10 @@ void XFileParser::ParseDataObjectSkinWeights(Ani::Mesh* pMesh)
 {
 	readHeadOfDataObject();
 
-	string transformNodeName;
-	GetNextTokenAsString(transformNodeName);
-
 	pMesh->m_Bones.push_back(Bone());
 	Bone& bone = pMesh->m_Bones.back();
-	bone.m_Name = transformNodeName;
+
+	GetNextTokenAsString(bone.m_Name);
 
 	// read vertex weights
 	unsigned int numWeights = ReadInt();
@@ -511,17 +509,17 @@ void XFileParser::ParseDataObjectSkinWeights(Ani::Mesh* pMesh)
 	}
 
 	// read matrix offset
-	bone.m_OffsetMatrix.m[0][0] = ReadFloat(); bone.m_OffsetMatrix.m[1][0] = ReadFloat();
-	bone.m_OffsetMatrix.m[2][0] = ReadFloat(); bone.m_OffsetMatrix.m[3][0] = ReadFloat();
+	bone.m_OffsetMatrix.m[0][0] = ReadFloat(); bone.m_OffsetMatrix.m[0][1] = ReadFloat();
+	bone.m_OffsetMatrix.m[0][2] = ReadFloat(); bone.m_OffsetMatrix.m[0][3] = ReadFloat();
 
-	bone.m_OffsetMatrix.m[0][1] = ReadFloat(); bone.m_OffsetMatrix.m[1][1] = ReadFloat();
-	bone.m_OffsetMatrix.m[2][1] = ReadFloat(); bone.m_OffsetMatrix.m[3][1] = ReadFloat();
+	bone.m_OffsetMatrix.m[1][0] = ReadFloat(); bone.m_OffsetMatrix.m[1][1] = ReadFloat();
+	bone.m_OffsetMatrix.m[1][2] = ReadFloat(); bone.m_OffsetMatrix.m[1][3] = ReadFloat();
 
-	bone.m_OffsetMatrix.m[0][2] = ReadFloat(); bone.m_OffsetMatrix.m[1][2] = ReadFloat();
-	bone.m_OffsetMatrix.m[2][2] = ReadFloat(); bone.m_OffsetMatrix.m[3][2] = ReadFloat();
+	bone.m_OffsetMatrix.m[2][0] = ReadFloat(); bone.m_OffsetMatrix.m[2][1] = ReadFloat();
+	bone.m_OffsetMatrix.m[2][2] = ReadFloat(); bone.m_OffsetMatrix.m[2][3] = ReadFloat();
 
-	bone.m_OffsetMatrix.m[0][3] = ReadFloat(); bone.m_OffsetMatrix.m[1][3] = ReadFloat();
-	bone.m_OffsetMatrix.m[2][3] = ReadFloat(); bone.m_OffsetMatrix.m[3][3] = ReadFloat();
+	bone.m_OffsetMatrix.m[3][0] = ReadFloat(); bone.m_OffsetMatrix.m[3][1] = ReadFloat();
+	bone.m_OffsetMatrix.m[3][2] = ReadFloat(); bone.m_OffsetMatrix.m[3][3] = ReadFloat();
 
 	CheckForSemicolon();
 	CheckForClosingBrace();
@@ -548,7 +546,9 @@ void XFileParser::ParseDataObjectMeshNormals(Ani::Mesh* pMesh)
 
 	// read normal vectors
 	for (unsigned int a = 0; a < numNormals; a++)
+	{
 		pMesh->m_Normals[a] = ReadVector3();
+	}
 
 	// read normal indices
 	unsigned int numFaces = ReadInt();
@@ -558,11 +558,11 @@ void XFileParser::ParseDataObjectMeshNormals(Ani::Mesh* pMesh)
 	for (unsigned int a = 0; a < numFaces; a++)
 	{
 		unsigned int numIndices = ReadInt();
-		pMesh->m_NormFaces.push_back(Face());
-		Face& face = pMesh->m_NormFaces.back();
 
 		for (unsigned int b = 0; b < numIndices; b++)
-			face.m_Indices.push_back(ReadInt());
+		{
+			ReadInt();
+		}
 
 		CheckForSeparator();
 	}
@@ -757,9 +757,8 @@ void XFileParser::ParseDataObjectAnimationSet()
 	string animName;
 	readHeadOfDataObject(&animName);
 
-	m_AniObject->m_Anims.push_back(Animation());
-	m_AniObject->m_Anims.back().m_Name = animName;
-
+	m_AniObject->m_Anims.insert({ animName,make_unique<Animation>() });
+	
 	bool running = true;
 	while (running)
 	{
@@ -774,7 +773,7 @@ void XFileParser::ParseDataObjectAnimationSet()
 		}
 		else if (objectName == "Animation")
 		{
-			ParseDataObjectAnimation(&m_AniObject->m_Anims.back());
+			ParseDataObjectAnimation(m_AniObject->m_Anims[animName].get());
 		}
 		else
 		{
@@ -787,8 +786,7 @@ void XFileParser::ParseDataObjectAnimationSet()
 void XFileParser::ParseDataObjectAnimation(Ani::Animation* pAnim)
 {
 	readHeadOfDataObject();
-	pAnim->m_Anims.push_back(AnimBone());
-	AnimBone* banim = &pAnim->m_Anims.back();
+	AnimBone banim;
 
 	bool running = true;
 	while (running)
@@ -805,7 +803,7 @@ void XFileParser::ParseDataObjectAnimation(Ani::Animation* pAnim)
 		}
 		else if (objectName == "AnimationKey")
 		{
-			ParseDataObjectAnimationKey(banim);
+			ParseDataObjectAnimationKey(&banim);
 		}
 		else if (objectName == "AnimationOptions")
 		{
@@ -814,7 +812,7 @@ void XFileParser::ParseDataObjectAnimation(Ani::Animation* pAnim)
 		else if (objectName == "{")
 		{
 			// read frame name
-			banim->m_BoneName = GetNextToken();
+			banim.m_BoneName = GetNextToken();
 			CheckForClosingBrace();
 		}
 		else
@@ -823,6 +821,8 @@ void XFileParser::ParseDataObjectAnimation(Ani::Animation* pAnim)
 			ParseUnknownDataObject();
 		}
 	}
+
+	pAnim->m_AnimBones.push_back(banim);
 }
 
 void XFileParser::ParseDataObjectAnimationKey(Ani::AnimBone* pAnimBone)
@@ -853,8 +853,8 @@ void XFileParser::ParseDataObjectAnimationKey(Ani::AnimBone* pAnimBone)
 			}
 
 			TimeValue<XMFLOAT4> key;
-			key.m_Time = double(time);
-			key.m_Value.w = ReadFloat();
+			key.m_Time = time;
+			key.m_Value.w = -ReadFloat();
 			key.m_Value.x = ReadFloat();
 			key.m_Value.y = ReadFloat();
 			key.m_Value.z = ReadFloat();
@@ -871,7 +871,7 @@ void XFileParser::ParseDataObjectAnimationKey(Ani::AnimBone* pAnimBone)
 				ThrowException("Invalid number of arguments for vector key in animation");
 
 			TimeValue<XMFLOAT3> key;
-			key.m_Time = double(time);
+			key.m_Time = time;
 			key.m_Value = ReadVector3();
 
 			if (keyType == 2)
@@ -891,15 +891,15 @@ void XFileParser::ParseDataObjectAnimationKey(Ani::AnimBone* pAnimBone)
 
 			// read matrix
 			TimeValue<CGH::MAT16> key;
-			key.m_Time = double(time);
-			key.m_Value.m[0][0] = ReadFloat(); key.m_Value.m[1][0] = ReadFloat();
-			key.m_Value.m[2][0] = ReadFloat(); key.m_Value.m[3][0] = ReadFloat();
-			key.m_Value.m[0][1] = ReadFloat(); key.m_Value.m[1][1] = ReadFloat();
-			key.m_Value.m[2][1] = ReadFloat(); key.m_Value.m[3][1] = ReadFloat();
-			key.m_Value.m[0][2] = ReadFloat(); key.m_Value.m[1][2] = ReadFloat();
-			key.m_Value.m[2][2] = ReadFloat(); key.m_Value.m[3][2] = ReadFloat();
-			key.m_Value.m[0][3] = ReadFloat(); key.m_Value.m[1][3] = ReadFloat();
-			key.m_Value.m[2][3] = ReadFloat(); key.m_Value.m[3][3] = ReadFloat();
+			key.m_Time = time;
+			key.m_Value.m[0][0] = ReadFloat(); key.m_Value.m[0][1] = ReadFloat();
+			key.m_Value.m[0][2] = ReadFloat(); key.m_Value.m[0][3] = ReadFloat();
+			key.m_Value.m[1][0] = ReadFloat(); key.m_Value.m[1][1] = ReadFloat();
+			key.m_Value.m[1][2] = ReadFloat(); key.m_Value.m[1][3] = ReadFloat();
+			key.m_Value.m[2][0] = ReadFloat(); key.m_Value.m[2][1] = ReadFloat();
+			key.m_Value.m[2][2] = ReadFloat(); key.m_Value.m[2][3] = ReadFloat();
+			key.m_Value.m[3][0] = ReadFloat(); key.m_Value.m[3][1] = ReadFloat();
+			key.m_Value.m[3][2] = ReadFloat(); key.m_Value.m[3][3] = ReadFloat();
 			pAnimBone->m_TrafoKeys.push_back(key);
 
 			CheckForSemicolon();
@@ -1479,7 +1479,7 @@ void XFileParser::FilterHierarchy(Ani::Node* pNode)
 			child->m_Meshes.clear();
 
 			// transfer the transform as well
-			pNode->m_TrafoMatrix = pNode->m_TrafoMatrix * child->m_TrafoMatrix;
+			pNode->m_TransformMat = pNode->m_TransformMat * child->m_TransformMat;
 
 			// then kill it
 			delete child;
