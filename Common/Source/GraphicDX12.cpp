@@ -82,6 +82,7 @@ bool GraphicDX12::Init(HWND hWnd)
 	OnResize();
 
 	XFileParser xParser("../Common/TeraResourse/Character/poporiClass03/poporiClass03_2.X");
+	//XFileParser xParser("../Common/Zealot/Zealot.X");
 	m_XfileObject = xParser.GetAniObject();
 
 #pragma region RenderObjectsBuild
@@ -388,7 +389,7 @@ void GraphicDX12::BuildFrameResources()
 	m_FrameResource = make_unique<FrameResource>(m_D3dDevice.Get(),
 		2, (UINT)m_Materials.size());
 
-	m_FrameResource->materialBuffer->CopyData(m_Materials.size(),0, m_Materials.front());
+	m_FrameResource->materialBuffer->CopyData(m_Materials.size(), 0, m_Materials.front());
 
 	m_FrameResource->ObjectCB = make_unique<UploadBuffer<ObjectConstants>>(m_D3dDevice.Get(), 1, true);
 }
@@ -402,12 +403,12 @@ void GraphicDX12::BuildTextures()
 
 	m_TextureBuffer->Begin(m_D3dDevice.Get());
 
-	for (auto& it: m_TexturePaths)
+	for (auto& it : m_TexturePaths)
 	{
 		m_TextureBuffer->AddTexture(m_D3dDevice.Get(),
 			m_CommandQueue.Get(), it.first, it.second);
 	}
-	
+
 	m_TextureBuffer->End(m_CommandQueue.Get(), bind(&GraphicDX12::FlushCommandQueue, this));
 }
 
@@ -501,11 +502,12 @@ void GraphicDX12::BuildRootSignature()
 	CD3DX12_DESCRIPTOR_RANGE texTable;
 	texTable.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0);
 
-	CD3DX12_ROOT_PARAMETER slotRootParam[4];
+	CD3DX12_ROOT_PARAMETER slotRootParam[5];
 	slotRootParam[0].InitAsShaderResourceView(0, 1);
 	slotRootParam[1].InitAsConstantBufferView(0);
 	slotRootParam[2].InitAsConstantBufferView(1);
 	slotRootParam[3].InitAsDescriptorTable(1, &texTable, D3D12_SHADER_VISIBILITY_PIXEL);
+	slotRootParam[4].InitAsShaderResourceView(1, 1);
 
 	CD3DX12_ROOT_SIGNATURE_DESC rootDesc;
 	rootDesc.Init(4, slotRootParam, _countof(staticSamplers),
@@ -550,54 +552,87 @@ void GraphicDX12::BuildGeometry()
 	vector<UINT> vertexOffsets = { 0 };
 	UINT indexOffset = 0;
 
+	MAT16 initMat;
+	vector<string> aniNames;
+	m_XfileObject->Init();
+	m_XfileObject->GetAnimationNames(aniNames);
+	m_XfileObject->SetAnimation(aniNames[10]);
+	m_XfileObject->Update();
+
 	for (auto& it : m_XfileObject->m_GlobalMeshes)
 	{
-		SubmeshData submesh;
-		submesh.vertexOffset = vertexOffsets.back();
-		submesh.numVertex = it->m_Positions.size();
-		vertexOffsets.push_back(submesh.vertexOffset + submesh.numVertex);
+		UINT vertexOffset = vertexOffsets.back();
+		vertexOffsets.push_back(vertexOffset + it->m_Positions.size());
 
-		/*	offsetVertex.clear();
-			offsetVertex.resize(it->m_Positions.size());
-			memset(&offsetVertex[0], 0, offsetVertex.size() * sizeof(XMFLOAT3));
-			vector<float> weights(it->m_Positions.size());
+		Ani::Node* currNode = m_XfileObject->m_RootNode->SearchNodeByMesh(it.get());
+		string meshNodeName = currNode->m_Name;
+		offsetVertex.clear();
+		offsetVertex.resize(it->m_Positions.size());
+		memset(&offsetVertex[0], 0, offsetVertex.size() * sizeof(XMFLOAT3));
 
-			for (auto& it2 : it->m_Bones)
-			{
-				for (auto& it3 : it2.m_Weights)
-				{
-					weights[it3.m_Vertex] += it3.m_Weight;
-					XMVECTOR pos =XMLoadFloat3(&it->m_Positions[it3.m_Vertex]);
-					XMMATRIX mat = XMLoadFloat4x4(it2.m_OffsetMatrix);
-
-					pos = (XMVector3TransformCoord(pos, mat)*it3.m_Weight) + XMLoadFloat3(&offsetVertex[it3.m_Vertex]);
-
-					XMStoreFloat3(&offsetVertex[it3.m_Vertex], pos);
-				}
-			}*/
-
-		for (int i = 0; i < it->m_Positions.size(); i++)
+		size_t i = 0;
+		for (auto& it2 : it->m_Bones)
 		{
-			vertexData.push_back(Vertex(it->m_Positions[i], XMFLOAT3(0, 0, 0), XMFLOAT2(0, 0)));
-		}
+			XMMATRIX testMat = XMLoadFloat4x4(it->m_CurrentBoneMatrices[i++]);
 
-		for (auto& it2 : it->m_PosFaces)
-		{
-			for (auto& it3 : it2.m_Indices)
+			for (auto& it3 : it2.m_Weights)
 			{
-				indexData.push_back(submesh.vertexOffset + it3);
-				submesh.numIndex++;
+				XMVECTOR pos = XMLoadFloat3(&it->m_Positions[it3.m_Vertex]);
 
-				if (indexData.back() >= vertexData.size())
-				{
-					assert(false);
-				}
+				pos = it3.m_Weight * XMVector3Transform(pos, testMat);
+
+				offsetVertex[it3.m_Vertex].x += pos.m128_f32[0];
+				offsetVertex[it3.m_Vertex].y += pos.m128_f32[1];
+				offsetVertex[it3.m_Vertex].z += pos.m128_f32[2];
 			}
 		}
 
+		//XMMATRIX tranMat = XMLoadFloat4x4(currNode->m_TransformMat);
+		for (int i = 0; i < offsetVertex.size(); i++)
+		{
+			XMFLOAT2 textureUV(0, 0);
+			if (it->m_TexCoords->size())
+			{
+				textureUV = it->m_TexCoords[0][i];
+			}
+
+			vertexData.push_back(Vertex(offsetVertex[i], it->m_Normals[i], textureUV));
+		}
+
+		const size_t numFaces = it->m_PosFaces.size();
+
+		UINT numAddedIndex = 0;
+		SubmeshData submesh;
+		UINT currBaseMaterialIndex = 0;
+		UINT indexValue = 0;
+
+		for (size_t i = 0; i < numFaces; i++)
+		{
+			for (auto& it2 : it->m_PosFaces[i].m_Indices)
+			{
+				indexValue = vertexOffset + it2;
+				indexData.push_back(indexValue);
+				numAddedIndex++;
+
+				assert(indexValue < vertexData.size());
+			}
+
+			if (currBaseMaterialIndex > it->m_FaceMaterials[i])
+			{
+				submesh.numIndex = numAddedIndex;
+				submesh.indexOffset = indexOffset;
+				indexOffset += numAddedIndex;
+				numAddedIndex = 0;
+				m_MeshObject.m_Subs.insert({ it->m_Materials[currBaseMaterialIndex].m_Name, submesh });
+				currBaseMaterialIndex++;
+			}
+		}
+
+		submesh.numIndex = numAddedIndex;
 		submesh.indexOffset = indexOffset;
-		indexOffset += submesh.numIndex;
-		m_MeshObject.m_Subs.insert({ "test" + to_string(submesh.indexOffset),submesh });
+		indexOffset += numAddedIndex;
+		numAddedIndex = 0;
+		m_MeshObject.m_Subs.insert({ it->m_Materials[currBaseMaterialIndex].m_Name, submesh });
 	}
 
 #pragma endregion

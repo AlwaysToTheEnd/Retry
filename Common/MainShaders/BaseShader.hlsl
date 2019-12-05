@@ -7,6 +7,7 @@ struct MaterialData
 };
 
 StructuredBuffer<MaterialData> gInstanceData : register(t0, space1);
+StructuredBuffer<float4x4> gAniBoneMat : register(t1, space1);
 texture2D gMainTexture : register(t0);
 RasterizerOrderedTexture2D<float> gTest : register(u0);
 

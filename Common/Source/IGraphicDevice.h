@@ -11,7 +11,6 @@ struct SubmeshData
 	UINT	vertexOffset = 0;
 	UINT	numIndex = 0;
 	UINT	indexOffset = 0;
-	MAT16	submeshMatrix;
 };
 
 class MeshObject

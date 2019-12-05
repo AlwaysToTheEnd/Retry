@@ -2,6 +2,7 @@
 #include "GameObject.h"
 #include "BaseClass.h"
 #include <string>
+#include <unordered_map>
 
 //Maximum number of indices per face (polygon). 
 #define AI_MAX_FACE_INDICES 0x7fff
@@ -71,7 +72,6 @@ namespace Ani
 		std::vector<DirectX::XMFLOAT3> m_Positions;
 		std::vector<Face> m_PosFaces;
 		std::vector<DirectX::XMFLOAT3> m_Normals;
-		std::vector<Face> m_NormFaces;
 		unsigned int m_NumTextures = 0;
 		std::vector<DirectX::XMFLOAT2> m_TexCoords[AI_MAX_NUMBER_OF_TEXTURECOORDS];
 		unsigned int m_NumColorSets = 0;
@@ -80,79 +80,19 @@ namespace Ani
 		std::vector<unsigned int> m_FaceMaterials;
 		std::vector<AniMaterial> m_Materials;
 
-		std::vector<Bone> m_Bones;
+		std::vector<Bone>			m_Bones;
+		std::vector<CGH::MAT16*>	m_BoneMatrixPtrs;
+		std::vector<CGH::MAT16>		m_CurrentBoneMatrices;
 	};
 
 	struct Node
 	{
 		std::string m_Name;
-		CGH::MAT16 m_TrafoMatrix;
+		CGH::MAT16 m_CombinedTransformationMatrix;
+		CGH::MAT16 m_TransformMat;
 		Node* m_Parent = nullptr;
 		std::vector<Node*> m_Children;
 		std::vector<Mesh*> m_Meshes;
-		
-		/*void GetNodeNames(std::vector<std::string>& nameList)
-		{
-			nameList.push_back(m_Name);
-			for (auto& it : m_Children)
-			{
-				it->GetNodeNames(nameList);
-			}
-		}
-
-		void GetBoneNames(std::vector<std::string>& nameList)
-		{
-			for (auto& it : m_Meshes)
-			{
-				for (auto& it2 : it->m_Bones)
-				{
-					nameList.push_back(it2.m_Name);
-				}
-			}
-
-			for (auto& it : m_Children)
-			{
-				it->GetBoneNames(nameList);
-			}
-		}
-
-		int GetChildNodeCount()
-		{
-			int numCount = 1;
-			for (auto& it : m_Children)
-			{
-				if (it != nullptr)
-				{
-					numCount += it->GetChildNodeCount();
-				}
-				else
-				{
-					numCount++;
-				}
-			}
-
-			return numCount;
-		}
-
-		size_t GetBoneCount()
-		{
-			size_t boneCount = 0;
-
-			for (auto& it : m_Meshes)
-			{
-				boneCount += it->m_Bones.size();
-			}
-
-			for (auto& it : m_Children)
-			{
-				if (it != nullptr)
-				{
-					boneCount += it->GetBoneCount();
-				}
-			}
-
-			return boneCount;
-		}*/
 
 		Node() { m_Parent = NULL; }
 		Node(Node* pParent) { m_Parent = pParent; }
@@ -162,34 +102,101 @@ namespace Ani
 			{
 				delete it;
 			}
+		}
 
-		/*	for (auto& it : m_Meshes)
+		void GetTransformMats(std::vector<CGH::MAT16>& out)
+		{
+			out.push_back(m_TransformMat);
+
+			for (auto& it : m_Children)
 			{
-				delete it;
-			}*/
+				it->GetTransformMats(out);
+			}
+		}
+
+		Node* SearchNodeByName(const std::string& name)
+		{
+			Node* result = nullptr;
+
+			for (auto& it : m_Children)
+			{
+				result = it->SearchNodeByName(name);
+
+				if (result)
+				{
+					return result;
+				}
+			}
+
+			if (m_Name == name)
+			{
+				result = this;
+			}
+
+			return result;
+		}
+
+		Node* SearchNodeByMesh(const Mesh* const meshPtr)
+		{
+			Node* result = nullptr;
+
+			for (auto& it : m_Children)
+			{
+				result = it->SearchNodeByMesh(meshPtr);
+
+				if (result)
+				{
+					break;
+				}
+			}
+
+			for (auto& it : m_Meshes)
+			{
+				if (it == meshPtr)
+				{
+					result = this;
+					break;
+				}
+			}
+
+			return result;
 		}
 	};
 
 	template <typename T>
 	struct TimeValue
 	{
-		double m_Time = 0;
+		unsigned int m_Time = 0;
 		T m_Value;
 	};
 
 	struct AnimBone
 	{
-		std::string m_BoneName;
+		std::string	m_BoneName;
 		std::vector<TimeValue<DirectX::XMFLOAT3>> m_PosKeys;
 		std::vector<TimeValue<DirectX::XMFLOAT4>> m_RotKeys;
 		std::vector<TimeValue<DirectX::XMFLOAT3>> m_ScaleKeys;
 		std::vector<TimeValue<CGH::MAT16>> m_TrafoKeys;
+
+		bool IsMatrixDataType()
+		{
+			if (m_PosKeys.size())
+			{
+				return false;
+			}
+			else if (m_TrafoKeys.size())
+			{
+				return true;
+			}
+
+			assert(false);
+			return true;
+		}
 	};
 
 	struct Animation
 	{
-		std::string m_Name;
-		std::vector<AnimBone> m_Anims;
+		std::vector<AnimBone> m_AnimBones;
 	};
 }
 
@@ -200,7 +207,7 @@ public:
 		: m_RootNode(nullptr)
 		, m_AnimTicksPerSecond(0)
 	{
-
+		m_CurrAnimation = m_Anims.end();
 	}
 
 	virtual ~AnimationObject()
@@ -210,12 +217,25 @@ public:
 			delete m_RootNode;
 		}
 	}
-	
+
 	virtual void Init() override;
 	virtual void Update() override;
-	
+
 public:
-	void GetAllTexturesName(std::vector<std::string>& textureNamesOut);
+	bool SetAnimation(std::string name);
+	void SetAnimationTime(unsigned int tickTime) { m_AnimTicksPerSecond = tickTime; }
+
+	void GetAnimationNames(std::vector<std::string>& out);
+	std::string GetCurrAniName();
+
+private:
+	void SetupBoneMatrixPtrs(Ani::Node* node);
+	void Update(Ani::Node* node);
+	void UpdateSkinnedMesh(Ani::Node* node);
+	void CalFinalTransform();
+
+	template<typename T>
+	DirectX::XMVECTOR GetAnimationKeyOnTick(const std::vector<Ani::TimeValue<T>>& values);
 
 public:
 	Ani::Node* m_RootNode;
@@ -223,7 +243,83 @@ public:
 	std::vector<std::unique_ptr<Ani::Mesh>>			m_GlobalMeshes;
 	std::vector<std::unique_ptr<Ani::AniMaterial>>	m_GlobalMaterials;
 
-	std::vector<Ani::Animation> m_Anims;
-	unsigned int m_AnimTicksPerSecond;
+	/////////
+	std::unordered_map<std::string, std::unique_ptr<Ani::Animation>>			m_Anims;
+	std::unordered_map<std::string, std::unique_ptr<Ani::Animation>>::iterator	m_CurrAnimation;
+
+	std::unordered_map<std::string, DirectX::XMFLOAT4X4*>						m_TransformationMatPtrs;
+	unsigned int																m_AnimTicksPerSecond;
 };
+
+template<typename T>
+inline DirectX::XMVECTOR AnimationObject::GetAnimationKeyOnTick(const std::vector<Ani::TimeValue<T>>& values)
+{
+	DirectX::XMVECTOR result = DirectX::XMVectorSet(0, 0, 0, 1);
+
+	if (m_AnimTicksPerSecond <= values.front().m_Time)
+	{
+		result = DirectX::XMLoadFloat3(&values.front().m_Value);
+	}
+	else if (m_AnimTicksPerSecond >= values.back().m_Time)
+	{
+		result = DirectX::XMLoadFloat3(&values.back().m_Value);
+	}
+	else
+	{
+		for (size_t i = 0; i < values.size() - 1; i++)
+		{
+			if (m_AnimTicksPerSecond >= values[i].m_Time && m_AnimTicksPerSecond <= values[i + 1].m_Time)
+			{
+				float lerpPercent =
+					(m_AnimTicksPerSecond - values[i].m_Time) /
+					(values[i + 1].m_Time - values[i].m_Time);
+
+				DirectX::XMVECTOR prev = DirectX::XMLoadFloat3(&values[i].m_Value);
+				DirectX::XMVECTOR next = DirectX::XMLoadFloat3(&values[i+1].m_Value);
+			
+				result = DirectX::XMVectorLerp(prev, next, lerpPercent);
+
+				break;
+			}
+		}
+	}
+
+	return result;
+}
+
+template<>
+inline DirectX::XMVECTOR AnimationObject::GetAnimationKeyOnTick(const std::vector<Ani::TimeValue<DirectX::XMFLOAT4>>& values)
+{
+	DirectX::XMVECTOR result = DirectX::XMVectorSet(0, 0, 0, 1);
+
+	if (m_AnimTicksPerSecond <= values.front().m_Time)
+	{
+		result = DirectX::XMLoadFloat4(&values.front().m_Value);
+	}
+	else if (m_AnimTicksPerSecond >= values.back().m_Time)
+	{
+		result = DirectX::XMLoadFloat4(&values.back().m_Value);
+	}
+	else
+	{
+		for (size_t i = 0; i < values.size() - 1; i++)
+		{
+			if (m_AnimTicksPerSecond >= values[i].m_Time && m_AnimTicksPerSecond <= values[i + 1].m_Time)
+			{
+				float lerpPercent =
+					(m_AnimTicksPerSecond - values[i].m_Time) /
+					(values[i + 1].m_Time - values[i].m_Time);
+
+				DirectX::XMVECTOR prev = DirectX::XMLoadFloat4(&values[i].m_Value);
+				DirectX::XMVECTOR next = DirectX::XMLoadFloat4(&values[i + 1].m_Value);
+
+				result = DirectX::XMQuaternionSlerp(prev, next, lerpPercent);
+
+				break;
+			}
+		}
+	}
+
+	return result;
+}
 
