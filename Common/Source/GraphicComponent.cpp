@@ -2,19 +2,18 @@
 #include <comip.h>
 #include "IGraphicDevice.h"
 
-GraphicComponent::GraphicComponent(PxTransform& transform, IGraphicDevice* device) 
+RendererComponent::RendererComponent(PxTransform& transform) 
 	: IComponent(transform, COMPONENTTYPE::COM_GRAPHIC)
-	, m_GDevice(device)
 {
 	
 }
 
-GraphicComponent::~GraphicComponent()
+RendererComponent::~RendererComponent()
 {
 
 }
 
-void GraphicComponent::Update()
+void RendererComponent::Update()
 {
 
 }

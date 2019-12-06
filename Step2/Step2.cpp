@@ -13,7 +13,7 @@ Step2::Step2(HINSTANCE hInstance)
 
 Step2::~Step2()
 {
-	
+
 }
 
 void Step2::Update()
@@ -35,17 +35,21 @@ void Step2::InitObjects()
 
 std::unique_ptr<IComponent> Step2::CreateComponent(COMPONENTTYPE type, PxTransform& tran)
 {
-	switch (type)
+	if (type == COMPONENTTYPE::COM_PHYSICS || type == COMPONENTTYPE::COM_GRAPHIC || type == COMPONENTTYPE::COM_END)
 	{
-	case COMPONENTTYPE::COM_PHYSICS:
-		return m_PXDevice->CreateComponent(tran);
-	case COMPONENTTYPE::COM_GRAPHIC:
-		return m_GDevice->CreateComponent(tran);
-	default:
-		break;
+		assert(false && "THIS COMPONENT IS NONE USED TYPE");
+		return nullptr;
 	}
 
-	assert(false);
+	if (type < COMPONENTTYPE::COM_GRAPHIC)
+	{
+		return m_PXDevice->CreateComponent(type, tran);
+	}
+	else
+	{
+		return m_GDevice->CreateComponent(type, tran);
+	}
+
 	return nullptr;
 }
 

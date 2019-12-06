@@ -104,16 +104,6 @@ namespace Ani
 			}
 		}
 
-		void GetTransformMats(std::vector<CGH::MAT16>& out)
-		{
-			out.push_back(m_TransformMat);
-
-			for (auto& it : m_Children)
-			{
-				it->GetTransformMats(out);
-			}
-		}
-
 		Node* SearchNodeByName(const std::string& name)
 		{
 			Node* result = nullptr;
@@ -200,7 +190,7 @@ namespace Ani
 	};
 }
 
-class AnimationObject :public GameObject
+class AnimationObject
 {
 public:
 	AnimationObject()
@@ -218,8 +208,8 @@ public:
 		}
 	}
 
-	virtual void Init() override;
-	virtual void Update() override;
+	void Init();
+	void Update();
 
 public:
 	bool SetAnimation(std::string name);
@@ -234,8 +224,8 @@ private:
 	void UpdateSkinnedMesh(Ani::Node* node);
 	void CalFinalTransform();
 
-	template<typename T>
-	DirectX::XMVECTOR GetAnimationKeyOnTick(const std::vector<Ani::TimeValue<T>>& values);
+	DirectX::XMVECTOR XM_CALLCONV GetAnimationKeyOnTick(const std::vector<Ani::TimeValue<DirectX::XMFLOAT3>>& values);
+	DirectX::XMVECTOR XM_CALLCONV GetAnimationKeyOnTick(const std::vector<Ani::TimeValue<DirectX::XMFLOAT4>>& values);
 
 public:
 	Ani::Node* m_RootNode;
@@ -250,76 +240,3 @@ public:
 	std::unordered_map<std::string, DirectX::XMFLOAT4X4*>						m_TransformationMatPtrs;
 	unsigned int																m_AnimTicksPerSecond;
 };
-
-template<typename T>
-inline DirectX::XMVECTOR AnimationObject::GetAnimationKeyOnTick(const std::vector<Ani::TimeValue<T>>& values)
-{
-	DirectX::XMVECTOR result = DirectX::XMVectorSet(0, 0, 0, 1);
-
-	if (m_AnimTicksPerSecond <= values.front().m_Time)
-	{
-		result = DirectX::XMLoadFloat3(&values.front().m_Value);
-	}
-	else if (m_AnimTicksPerSecond >= values.back().m_Time)
-	{
-		result = DirectX::XMLoadFloat3(&values.back().m_Value);
-	}
-	else
-	{
-		for (size_t i = 0; i < values.size() - 1; i++)
-		{
-			if (m_AnimTicksPerSecond >= values[i].m_Time && m_AnimTicksPerSecond <= values[i + 1].m_Time)
-			{
-				float lerpPercent =
-					(m_AnimTicksPerSecond - values[i].m_Time) /
-					(values[i + 1].m_Time - values[i].m_Time);
-
-				DirectX::XMVECTOR prev = DirectX::XMLoadFloat3(&values[i].m_Value);
-				DirectX::XMVECTOR next = DirectX::XMLoadFloat3(&values[i+1].m_Value);
-			
-				result = DirectX::XMVectorLerp(prev, next, lerpPercent);
-
-				break;
-			}
-		}
-	}
-
-	return result;
-}
-
-template<>
-inline DirectX::XMVECTOR AnimationObject::GetAnimationKeyOnTick(const std::vector<Ani::TimeValue<DirectX::XMFLOAT4>>& values)
-{
-	DirectX::XMVECTOR result = DirectX::XMVectorSet(0, 0, 0, 1);
-
-	if (m_AnimTicksPerSecond <= values.front().m_Time)
-	{
-		result = DirectX::XMLoadFloat4(&values.front().m_Value);
-	}
-	else if (m_AnimTicksPerSecond >= values.back().m_Time)
-	{
-		result = DirectX::XMLoadFloat4(&values.back().m_Value);
-	}
-	else
-	{
-		for (size_t i = 0; i < values.size() - 1; i++)
-		{
-			if (m_AnimTicksPerSecond >= values[i].m_Time && m_AnimTicksPerSecond <= values[i + 1].m_Time)
-			{
-				float lerpPercent =
-					(m_AnimTicksPerSecond - values[i].m_Time) /
-					(values[i + 1].m_Time - values[i].m_Time);
-
-				DirectX::XMVECTOR prev = DirectX::XMLoadFloat4(&values[i].m_Value);
-				DirectX::XMVECTOR next = DirectX::XMLoadFloat4(&values[i + 1].m_Value);
-
-				result = DirectX::XMQuaternionSlerp(prev, next, lerpPercent);
-
-				break;
-			}
-		}
-	}
-
-	return result;
-}
-

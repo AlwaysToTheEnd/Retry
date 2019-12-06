@@ -2,17 +2,33 @@
 #include "IComponent.h"
 class IGraphicDevice;
 
-class GraphicComponent: public IComponent
+#include "AnimationObject.h"
+
+class RendererComponent: public IComponent
 {
 public:
-	GraphicComponent(PxTransform& transform, IGraphicDevice* device);
+	RendererComponent(PxTransform& transform);
 	
-	virtual ~GraphicComponent();
+	virtual ~RendererComponent();
+
+	virtual void Update() override;
+
+private:
+	
+};
+
+
+class AniRendererComponent : public IComponent
+{
+public:
+	AniRendererComponent(PxTransform& transform);
+
+	virtual ~AniRendererComponent();
 
 	virtual void Update() override;
 	void AttachMesh();
 
 private:
-	IGraphicDevice* m_GDevice;
+	Ani::Animation* m_CurrAnimation;
+	UINT64			m_Tick;
 };
-

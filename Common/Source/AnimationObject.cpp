@@ -113,6 +113,77 @@ void AnimationObject::CalFinalTransform()
 	}
 }
 
+DirectX::XMVECTOR XM_CALLCONV AnimationObject::GetAnimationKeyOnTick(const std::vector<Ani::TimeValue<DirectX::XMFLOAT3>>& values)
+{
+	DirectX::XMVECTOR result = DirectX::XMVectorSet(0, 0, 0, 1);
+
+	if (m_AnimTicksPerSecond <= values.front().m_Time)
+	{
+		result = DirectX::XMLoadFloat3(&values.front().m_Value);
+	}
+	else if (m_AnimTicksPerSecond >= values.back().m_Time)
+	{
+		result = DirectX::XMLoadFloat3(&values.back().m_Value);
+	}
+	else
+	{
+		for (size_t i = 0; i < values.size() - 1; i++)
+		{
+			if (m_AnimTicksPerSecond >= values[i].m_Time && m_AnimTicksPerSecond <= values[i + 1].m_Time)
+			{
+				float lerpPercent =
+					(m_AnimTicksPerSecond - values[i].m_Time) /
+					(values[i + 1].m_Time - values[i].m_Time);
+
+				DirectX::XMVECTOR prev = DirectX::XMLoadFloat3(&values[i].m_Value);
+				DirectX::XMVECTOR next = DirectX::XMLoadFloat3(&values[i + 1].m_Value);
+
+				result = DirectX::XMVectorLerp(prev, next, lerpPercent);
+
+				break;
+			}
+		}
+	}
+
+	return result;
+}
+
+DirectX::XMVECTOR XM_CALLCONV AnimationObject::GetAnimationKeyOnTick(const std::vector<Ani::TimeValue<DirectX::XMFLOAT4>>& values)
+{
+	DirectX::XMVECTOR result = DirectX::XMVectorSet(0, 0, 0, 1);
+
+	if (m_AnimTicksPerSecond <= values.front().m_Time)
+	{
+		result = DirectX::XMLoadFloat4(&values.front().m_Value);
+	}
+	else if (m_AnimTicksPerSecond >= values.back().m_Time)
+	{
+		result = DirectX::XMLoadFloat4(&values.back().m_Value);
+	}
+	else
+	{
+		for (size_t i = 0; i < values.size() - 1; i++)
+		{
+			if (m_AnimTicksPerSecond >= values[i].m_Time && m_AnimTicksPerSecond <= values[i + 1].m_Time)
+			{
+				float lerpPercent =
+					(m_AnimTicksPerSecond - values[i].m_Time) /
+					(values[i + 1].m_Time - values[i].m_Time);
+
+				DirectX::XMVECTOR prev = DirectX::XMLoadFloat4(&values[i].m_Value);
+				DirectX::XMVECTOR next = DirectX::XMLoadFloat4(&values[i + 1].m_Value);
+
+				result = DirectX::XMQuaternionSlerp(prev, next, lerpPercent);
+
+				break;
+			}
+		}
+	}
+
+	return result;
+}
+
+
 void AnimationObject::Update(Ani::Node* node)
 {
 	assert(node);

@@ -124,7 +124,7 @@ private:
 };
 
 
-class RenderComponent :public IComponent
+class RendererComponent :public IComponent
 {
 public:
 	void SetPrimitiveType(D3D12_PRIMITIVE_TOPOLOGY type) { m_primitiveType = type; }

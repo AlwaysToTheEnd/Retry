@@ -120,10 +120,9 @@ void PhysX4_0::Update()
 	m_scene->fetchResults(true);
 }
 
-std::unique_ptr<IComponent> PhysX4_0::CreateComponent(PxTransform& trans)
+std::unique_ptr<IComponent> PhysX4_0::CreateComponent(COMPONENTTYPE type, PxTransform& trans)
 {
-
-	return nullptr;
+	return std::unique_ptr<IComponent>();
 }
 
 PxFilterFlags PhysX4_0::ScissorFilter(PxFilterObjectAttributes attributes0, PxFilterData filterData0, PxFilterObjectAttributes attributes1, PxFilterData filterData1, PxPairFlags& pairFlags, const void* constantBlock, PxU32 constantBlockSize)

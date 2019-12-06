@@ -82,21 +82,16 @@ bool GraphicDX12::Init(HWND hWnd)
 	OnResize();
 
 	XFileParser xParser("../Common/TeraResourse/Character/poporiClass03/poporiClass03_2.X");
-	//XFileParser xParser("../Common/Zealot/Zealot.X");
 	m_XfileObject = xParser.GetAniObject();
 
 #pragma region RenderObjectsBuild
 
 	ThrowIfFailed(m_CommandList->Reset(m_DirectCmdListAlloc.Get(), nullptr));
 
-	BuildTextures();
-	BuildRootSignature();			// ****************** 제일 중요한거. 이부분 무조건 이해하고 넘어가야함
-	BuildShadersAndInputLayout();	// 다렉9 Vertex fvf 생각하면 쉽게 이해할 수 있음.
-	BuildPSOs();					// 렌더링 파이프 라인에 대한 설계도라고 생각하면 됨.
-	BuildGeometry();				//
-	BuildMaterials();				//
-	BuildRenderItem();				//
-	BuildFrameResources();			// FrameResource를 통해서 메모리의 데이터들(ViewMatrix같은)을 GPU에 업로드한다.
+	BuildRootSignature();			
+	BuildShadersAndInputLayout();	
+	BuildPSOs();					
+	BuildFrameResources();			
 
 	ThrowIfFailed(m_CommandList->Close());
 	ID3D12CommandList* cmdsLists[] = { m_CommandList.Get() };
@@ -105,14 +100,7 @@ bool GraphicDX12::Init(HWND hWnd)
 	FlushCommandQueue();
 #pragma endregion 
 
-	m_VertexUploadBuffer = nullptr;
-	m_IndexUploadBuffer = nullptr;
 	return true;
-}
-
-void GraphicDX12::AddMesh(UINT numSubResource, SubmeshData subResources[])
-{
-
 }
 
 void GraphicDX12::CreateCommandObject()
@@ -196,13 +184,11 @@ void GraphicDX12::OnResize()
 	assert(m_D3dDevice);
 	assert(m_SwapChain);
 	assert(m_DirectCmdListAlloc);
-	// Command Queue를 비워준다
+
 	FlushCommandQueue();
 
-	// CommandList 초기화
 	ThrowIfFailed(m_CommandList->Reset(m_DirectCmdListAlloc.Get(), nullptr));
 
-	// 스왑체인에 사용될 리소스들 전부 릴리즈
 	for (int i = 0; i < SwapChainBufferCount; i++)
 	{
 		m_SwapChainBuffer[i] = nullptr;
@@ -210,7 +196,6 @@ void GraphicDX12::OnResize()
 
 	m_DepthStencilBuffer = nullptr;
 
-	// 스왑체인 오브젝트의 크기 변경
 	ThrowIfFailed(m_SwapChain->ResizeBuffers(SwapChainBufferCount,
 		m_ClientWidth, m_ClientHeight, m_BackBufferFormat, DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH));
 	m_CurrBackBuffer = 0;
@@ -219,20 +204,15 @@ void GraphicDX12::OnResize()
 
 	for (int i = 0; i < SwapChainBufferCount; i++)
 	{
-		// 스왑체인 오브젝트로 부터 리소스를 받아온다
 		ThrowIfFailed(m_SwapChain->GetBuffer(i, IID_PPV_ARGS(m_SwapChainBuffer[i].GetAddressOf())));
 
-		// 새로 받아온 리소스에 대한 서술자를 생성 및, rtvHandle(힙의 포인터) 위치에 담아준다
 		m_D3dDevice->CreateRenderTargetView(m_SwapChainBuffer[i].Get(), nullptr, rtvHandle);
 
-		//rtvHandle(힙의 포인터) 위치를 변경한다
 		rtvHandle.Offset(1, m_RTVDescriptorSize);
 	}
 
-	// 깊이, 스탠실 버퍼를 생성한다.
-
 	D3D12_RESOURCE_DESC dsvDesc;
-	dsvDesc.Alignment = 0; //조정
+	dsvDesc.Alignment = 0;
 	dsvDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
 	dsvDesc.Format = DXGI_FORMAT_R24G8_TYPELESS;
 	dsvDesc.DepthOrArraySize = 1;
@@ -259,23 +239,18 @@ void GraphicDX12::OnResize()
 	dsvViewDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
 	dsvViewDesc.Texture2D.MipSlice = 0;
 
-	//생성된 깊이, 스탠실 버퍼의 서술자를 생성 및 서술자힙에 담아준다.
 	m_D3dDevice->CreateDepthStencilView(m_DepthStencilBuffer.Get(), &dsvViewDesc,
 		m_DSVHeap->GetCPUDescriptorHandleForHeapStart());
 
-	//생성된 깊이, 스탠실버퍼의 상태를 데이터 기록 가능한 상태로 변경한다.
 	m_CommandList->ResourceBarrier(1,
 		&CD3DX12_RESOURCE_BARRIER::Transition(m_DepthStencilBuffer.Get(),
 			D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_DEPTH_WRITE));
 
-	// CommandList에 모든 명령들을 기록했다면 Close()
 	ThrowIfFailed(m_CommandList->Close());
 
-	// CommandQueue에 CommandList의 배열의 포인터를 넘긴다(실행된다)
 	ID3D12CommandList* cmdLists[] = { m_CommandList.Get() };
 	m_CommandQueue->ExecuteCommandLists(_countof(cmdLists), cmdLists);
 
-	// 모든 실행이 될때까지 기다린다.
 	FlushCommandQueue();
 
 	m_ScreenViewport.TopLeftX = 0;
@@ -291,11 +266,47 @@ void GraphicDX12::OnResize()
 	XMStoreFloat4x4(m_ProjectionMat, P);
 }
 
-std::unique_ptr<IComponent> GraphicDX12::CreateComponent(PxTransform& trans)
+std::unique_ptr<IComponent> GraphicDX12::CreateComponent(COMPONENTTYPE type, PxTransform& trans)
 {
-	GraphicComponent* newComponent = new GraphicComponent(trans, this);
+	IComponent* newComponent=nullptr;
 
-	return std::unique_ptr<IComponent>(static_cast<IComponent*>(newComponent));
+	switch (type)
+	{
+	case COMPONENTTYPE::COM_RENDERER:
+		newComponent = new RendererComponent(trans);
+		break;
+	case COMPONENTTYPE::COM_ANIRENDERER:
+		newComponent = new AniRendererComponent(trans);
+		break;
+	default:
+		assert(false);
+		break;
+	}
+
+	return std::unique_ptr<IComponent>(newComponent);
+}
+
+void GraphicDX12::LoadMeshAndMaterialFromFolder()
+{
+
+}
+
+void GraphicDX12::LoadTextureFromFolder()
+{
+	m_TexturePaths.insert({ "testTexture", L"./../Common/TextureData/plane.png" });
+
+	const UINT numTexturePath = m_TexturePaths.size();
+	m_TextureBuffer = make_unique<cTextureBuffer>(m_D3dDevice.Get(), numTexturePath);
+
+	m_TextureBuffer->Begin(m_D3dDevice.Get());
+
+	for (auto& it : m_TexturePaths)
+	{
+		m_TextureBuffer->AddTexture(m_D3dDevice.Get(),
+			m_CommandQueue.Get(), it.first, it.second);
+	}
+
+	m_TextureBuffer->End(m_CommandQueue.Get(), bind(&GraphicDX12::FlushCommandQueue, this));
 }
 
 void GraphicDX12::FlushCommandQueue()
@@ -387,53 +398,9 @@ D3D12_CPU_DESCRIPTOR_HANDLE GraphicDX12::DepthStencilView() const
 void GraphicDX12::BuildFrameResources()
 {
 	m_FrameResource = make_unique<FrameResource>(m_D3dDevice.Get(),
-		2, (UINT)m_Materials.size());
-
-	m_FrameResource->materialBuffer->CopyData(m_Materials.size(), 0, m_Materials.front());
+		2);
 
 	m_FrameResource->ObjectCB = make_unique<UploadBuffer<ObjectConstants>>(m_D3dDevice.Get(), 1, true);
-}
-
-void GraphicDX12::BuildTextures()
-{
-	m_TexturePaths.insert({ "testTexture", L"./../Common/TextureData/plane.png" });
-
-	const UINT numTexturePath = m_TexturePaths.size();
-	m_TextureBuffer = make_unique<cTextureBuffer>(m_D3dDevice.Get(), numTexturePath);
-
-	m_TextureBuffer->Begin(m_D3dDevice.Get());
-
-	for (auto& it : m_TexturePaths)
-	{
-		m_TextureBuffer->AddTexture(m_D3dDevice.Get(),
-			m_CommandQueue.Get(), it.first, it.second);
-	}
-
-	m_TextureBuffer->End(m_CommandQueue.Get(), bind(&GraphicDX12::FlushCommandQueue, this));
-}
-
-void GraphicDX12::BuildMaterials()
-{
-	vector<string> materialLists =
-	{
-		"baseMaterial",
-		"Test"
-	};
-
-	Material material;
-
-	for (size_t i = 0; i < materialLists.size(); i++)
-	{
-		m_MaterialIndex.insert({ materialLists[i], i });
-
-		material.diffuseAlbedo = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
-		material.fresnel0 = XMFLOAT3(0.1f, 0.1f, 0.1f);
-		material.roughness = 0.25f;
-		material.diffuseMapIndex = i;
-		material.normalMapIndex = -1;
-
-		m_Materials.push_back(material);
-	}
 }
 
 void GraphicDX12::BuildRootSignature()
@@ -542,170 +509,6 @@ void GraphicDX12::BuildShadersAndInputLayout()
 	};
 }
 
-void GraphicDX12::BuildGeometry()
-{
-#pragma region Vertex setting for test
-
-	vector<XMFLOAT3> offsetVertex;
-	vector<Vertex> vertexData;
-	vector<UINT> indexData;
-	vector<UINT> vertexOffsets = { 0 };
-	UINT indexOffset = 0;
-
-	MAT16 initMat;
-	vector<string> aniNames;
-	m_XfileObject->Init();
-	m_XfileObject->GetAnimationNames(aniNames);
-	m_XfileObject->SetAnimation(aniNames[10]);
-	m_XfileObject->Update();
-
-	for (auto& it : m_XfileObject->m_GlobalMeshes)
-	{
-		UINT vertexOffset = vertexOffsets.back();
-		vertexOffsets.push_back(vertexOffset + it->m_Positions.size());
-
-		Ani::Node* currNode = m_XfileObject->m_RootNode->SearchNodeByMesh(it.get());
-		string meshNodeName = currNode->m_Name;
-		offsetVertex.clear();
-		offsetVertex.resize(it->m_Positions.size());
-		memset(&offsetVertex[0], 0, offsetVertex.size() * sizeof(XMFLOAT3));
-
-		size_t i = 0;
-		for (auto& it2 : it->m_Bones)
-		{
-			XMMATRIX testMat = XMLoadFloat4x4(it->m_CurrentBoneMatrices[i++]);
-
-			for (auto& it3 : it2.m_Weights)
-			{
-				XMVECTOR pos = XMLoadFloat3(&it->m_Positions[it3.m_Vertex]);
-
-				pos = it3.m_Weight * XMVector3Transform(pos, testMat);
-
-				offsetVertex[it3.m_Vertex].x += pos.m128_f32[0];
-				offsetVertex[it3.m_Vertex].y += pos.m128_f32[1];
-				offsetVertex[it3.m_Vertex].z += pos.m128_f32[2];
-			}
-		}
-
-		//XMMATRIX tranMat = XMLoadFloat4x4(currNode->m_TransformMat);
-		for (int i = 0; i < offsetVertex.size(); i++)
-		{
-			XMFLOAT2 textureUV(0, 0);
-			if (it->m_TexCoords->size())
-			{
-				textureUV = it->m_TexCoords[0][i];
-			}
-
-			vertexData.push_back(Vertex(offsetVertex[i], it->m_Normals[i], textureUV));
-		}
-
-		const size_t numFaces = it->m_PosFaces.size();
-
-		UINT numAddedIndex = 0;
-		SubmeshData submesh;
-		UINT currBaseMaterialIndex = 0;
-		UINT indexValue = 0;
-
-		for (size_t i = 0; i < numFaces; i++)
-		{
-			for (auto& it2 : it->m_PosFaces[i].m_Indices)
-			{
-				indexValue = vertexOffset + it2;
-				indexData.push_back(indexValue);
-				numAddedIndex++;
-
-				assert(indexValue < vertexData.size());
-			}
-
-			if (currBaseMaterialIndex > it->m_FaceMaterials[i])
-			{
-				submesh.numIndex = numAddedIndex;
-				submesh.indexOffset = indexOffset;
-				indexOffset += numAddedIndex;
-				numAddedIndex = 0;
-				m_MeshObject.m_Subs.insert({ it->m_Materials[currBaseMaterialIndex].m_Name, submesh });
-				currBaseMaterialIndex++;
-			}
-		}
-
-		submesh.numIndex = numAddedIndex;
-		submesh.indexOffset = indexOffset;
-		indexOffset += numAddedIndex;
-		numAddedIndex = 0;
-		m_MeshObject.m_Subs.insert({ it->m_Materials[currBaseMaterialIndex].m_Name, submesh });
-	}
-
-#pragma endregion
-
-	m_MeshObject.m_VertexDataSize = static_cast<UINT>(vertexData.size()) * sizeof(Vertex);
-	m_MeshObject.m_IndexDataSize = static_cast<UINT>(indexData.size()) * sizeof(UINT);
-	m_MeshObject.m_VertexByteSize = sizeof(Vertex);
-	m_MeshObject.m_IndexByteSize = sizeof(UINT);
-
-	D3D12_HEAP_PROPERTIES uploadBufferPro = {};
-	uploadBufferPro.Type = D3D12_HEAP_TYPE_UPLOAD;
-
-	D3D12_RESOURCE_DESC bufferDesc = {};
-	bufferDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
-	bufferDesc.DepthOrArraySize = 1;
-	bufferDesc.Width = m_MeshObject.m_VertexDataSize;
-	bufferDesc.Height = 1;
-	bufferDesc.MipLevels = 1;
-	bufferDesc.SampleDesc.Count = 1;
-	bufferDesc.SampleDesc.Quality = 0;
-	bufferDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
-
-	D3D12_HEAP_PROPERTIES vertexBufferPro = {};
-	vertexBufferPro.Type = D3D12_HEAP_TYPE_DEFAULT;
-
-	TIF_AND_SETNAME(m_D3dDevice->CreateCommittedResource(&uploadBufferPro, D3D12_HEAP_FLAG_NONE,
-		&bufferDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr,
-		IID_PPV_ARGS(m_VertexUploadBuffer.GetAddressOf())), m_VertexUploadBuffer);
-
-	TIF_AND_SETNAME(m_D3dDevice->CreateCommittedResource(&vertexBufferPro, D3D12_HEAP_FLAG_NONE,
-		&bufferDesc, D3D12_RESOURCE_STATE_COPY_DEST, nullptr,
-		IID_PPV_ARGS(m_VertexBuffer.GetAddressOf())), m_VertexBuffer);
-
-	bufferDesc.Width = m_MeshObject.m_IndexDataSize;
-
-	TIF_AND_SETNAME(m_D3dDevice->CreateCommittedResource(&uploadBufferPro, D3D12_HEAP_FLAG_NONE,
-		&bufferDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr,
-		IID_PPV_ARGS(m_IndexUploadBuffer.GetAddressOf())), m_IndexUploadBuffer);
-
-	TIF_AND_SETNAME(m_D3dDevice->CreateCommittedResource(&vertexBufferPro, D3D12_HEAP_FLAG_NONE,
-		&bufferDesc, D3D12_RESOURCE_STATE_COPY_DEST, nullptr,
-		IID_PPV_ARGS(m_IndexBuffer.GetAddressOf())), m_IndexBuffer);
-
-	void* dataTemp = nullptr;
-	void* indexTemp = nullptr;
-	ThrowIfFailed(m_VertexUploadBuffer->Map(0, nullptr, &dataTemp));
-	ThrowIfFailed(m_IndexUploadBuffer->Map(0, nullptr, &indexTemp));
-
-	::memcpy(dataTemp, vertexData.data(), m_MeshObject.m_VertexDataSize);
-	::memcpy(indexTemp, indexData.data(), m_MeshObject.m_IndexDataSize);
-
-	m_VertexUploadBuffer->Unmap(0, nullptr);
-	m_IndexUploadBuffer->Unmap(0, nullptr);
-
-	m_CommandList->CopyBufferRegion(m_VertexBuffer.Get(), 0,
-		m_VertexUploadBuffer.Get(), 0, m_MeshObject.m_VertexDataSize);
-	m_CommandList->CopyBufferRegion(m_IndexBuffer.Get(), 0,
-		m_IndexUploadBuffer.Get(), 0, m_MeshObject.m_IndexDataSize);
-
-	m_CommandList->ResourceBarrier(1,
-		&CD3DX12_RESOURCE_BARRIER::Transition(m_VertexBuffer.Get(),
-			D3D12_RESOURCE_STATE_COPY_DEST,
-			D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER));
-
-	m_CommandList->ResourceBarrier(1,
-		&CD3DX12_RESOURCE_BARRIER::Transition(m_IndexBuffer.Get(),
-			D3D12_RESOURCE_STATE_COPY_DEST,
-			D3D12_RESOURCE_STATE_INDEX_BUFFER));
-
-	m_MeshObject.m_VertexData = reinterpret_cast<void*>(m_VertexBuffer->GetGPUVirtualAddress());
-	m_MeshObject.m_IndexData = reinterpret_cast<void*>(m_IndexBuffer->GetGPUVirtualAddress());
-}
-
 void GraphicDX12::BuildPSOs()
 {
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC opaquePsoDesc;
@@ -748,10 +551,6 @@ void GraphicDX12::BuildPSOs()
 	opaquePsoDesc.SampleDesc.Quality = m_4xMsaaState ? (m_4xmsaaQuality - 1) : 0;
 	opaquePsoDesc.DSVFormat = m_DepthStencilFormat;
 	ThrowIfFailed(m_D3dDevice->CreateGraphicsPipelineState(&opaquePsoDesc, IID_PPV_ARGS(&m_PSOs["base"])));
-}
-
-void GraphicDX12::BuildRenderItem()
-{
 }
 
 void GraphicDX12::UpdateMainPassCB()

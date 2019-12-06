@@ -20,8 +20,8 @@ static void  dummy_free(void* /*opaque*/, void* address) {
 	return ::operator delete(address);
 }
 
-XFileParser::XFileParser(const string& filePath)
-	:m_MajorVersion(0)
+XFileParser::XFileParser()
+	: m_MajorVersion(0)
 	, m_MinorVersion(0)
 	, m_IsBinaryFormat(false)
 	, m_BinaryNumCount(0)
@@ -29,6 +29,21 @@ XFileParser::XFileParser(const string& filePath)
 	, m_LineNumber(0)
 	, P(nullptr)
 	, End(nullptr)
+{
+	
+}
+
+XFileParser::~XFileParser()
+{
+}
+
+void XFileParser::GetVertexData(std::vector<SkinnedVertex>& vertexes, std::vector<unsigned int>& indices)
+{
+	vertexes = m_Vertexes;
+	indices = m_Indices;
+}
+
+void XFileParser::Parsing(const std::string& filePath)
 {
 	FILE* load = nullptr;
 	vector<char> fileData;
@@ -216,10 +231,6 @@ XFileParser::XFileParser(const string& filePath)
 	{
 		FilterHierarchy(m_AniObject->m_RootNode);
 	}
-}
-
-XFileParser::~XFileParser()
-{
 }
 
 void XFileParser::ParseFile()

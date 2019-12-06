@@ -12,7 +12,6 @@
 #include "d3dx12Residency.h"
 #include "DX12RenderClasses.h"
 #include "IGraphicDevice.h"
-#include "Vertex.h"
 
 #pragma comment(lib,"d3dcompiler.lib")
 #pragma comment(lib, "D3D12.lib")
@@ -22,24 +21,44 @@
 
 class cTextureBuffer;
 
+struct SubmeshData
+{
+	UINT	numVertex = 0;
+	UINT	vertexOffset = 0;
+	UINT	numIndex = 0;
+	UINT	indexOffset = 0;
+};
+
+struct MeshObject
+{
+	MESH_TYPE	m_Type = MESH_NORMAL;
+	void*		m_VertexData = nullptr;
+	UINT		m_VertexByteSize = 0;
+	UINT		m_VertexDataSize = 0;
+
+	void*		m_IndexData = nullptr;
+	UINT		m_IndexDataSize = 0;
+	UINT		m_IndexByteSize = 0;
+
+	std::unordered_map<std::string, SubmeshData> m_Subs;
+};
+
 struct FrameResource
 {
-	FrameResource(ID3D12Device* device, UINT passCount, UINT materialCount)
+	FrameResource(ID3D12Device* device, UINT passCount)
 	{
 		ThrowIfFailed(device->CreateCommandAllocator(
 			D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(cmdListAlloc.GetAddressOf())));
 
 		passCB = std::make_unique<UploadBuffer<PassConstants>>(device, passCount, true);
-		materialBuffer = std::make_unique<UploadBuffer<Material>>(device, materialCount, false);
 	}
 
 	FrameResource(const FrameResource& rhs) = delete;
 	FrameResource& operator=(const FrameResource& rhs) = delete;
 
 	ComPtr<ID3D12CommandAllocator> cmdListAlloc;
-
+	
 	std::unique_ptr<UploadBuffer<PassConstants>> passCB = nullptr;
-	std::unique_ptr<UploadBuffer<Material>> materialBuffer = nullptr;
 	std::unique_ptr<UploadBuffer<ObjectConstants>> ObjectCB = nullptr;
 };
 
@@ -54,11 +73,14 @@ public:
 	virtual bool Init(HWND hWnd) override;
 	virtual void OnResize() override;
 	virtual void* GetDevicePtr() override { return m_D3dDevice.Get(); }
-	virtual std::unique_ptr<IComponent> CreateComponent(PxTransform& trans) override;
+	virtual std::unique_ptr<IComponent> CreateComponent(COMPONENTTYPE type, PxTransform& trans) override;
+
+private: // Used Function by ReadyWorks 
+	virtual void LoadMeshAndMaterialFromFolder() override;
+	virtual void LoadTextureFromFolder() override;
 
 public: // Used Functions
 	virtual void SetCamera(cCamera* camera) { m_currCamera = camera; }
-	virtual void AddMesh(UINT numSubResource, SubmeshData subResources[]) override;
 
 private: // Device Base Functions
 	void CreateCommandObject();
@@ -72,13 +94,9 @@ private: // Device Base Functions
 
 private: // Object Base Builds
 	void BuildFrameResources();
-	void BuildTextures();
-	void BuildMaterials();
 	void BuildRootSignature();
 	void BuildShadersAndInputLayout();
-	void BuildGeometry();
 	void BuildPSOs();
-	void BuildRenderItem();
 
 private:
 	void UpdateMainPassCB();
@@ -134,19 +152,15 @@ private:
 	std::unordered_map<std::string, ComPtr<ID3DBlob>>				m_Shaders;
 	ComPtr<ID3D12RootSignature>										m_RootSignature = nullptr;
 	std::unique_ptr<cTextureBuffer>									m_TextureBuffer;
+	std::vector<MeshObject>											m_Meshs;
 
-	std::unique_ptr<FrameResource>	m_FrameResource;
-	PassConstants					m_MainPassCB;
+	std::unique_ptr<FrameResource>									m_FrameResource;
+	PassConstants													m_MainPassCB;
 
 private: // Below codes are used only Testing.
-	ComPtr<ID3D12Resource>				m_VertexBuffer;
-	ComPtr<ID3D12Resource>				m_VertexUploadBuffer;
-	ComPtr<ID3D12Resource>				m_IndexBuffer;
-	ComPtr<ID3D12Resource>				m_IndexUploadBuffer;
+	std::vector< ComPtr<ID3D12Resource>>							m_DataUploadBuffers;
 
-	std::unordered_map<std::string, std::wstring>						m_TexturePaths;
-	std::unordered_map<std::string, std::pair<std::string,Material>>	m_MaterialList;
-	std::unique_ptr<AnimationObject>	m_XfileObject;
-	MeshObject							m_MeshObject;
+	std::unordered_map<std::string, std::wstring>					m_TexturePaths;
+	std::unordered_map<std::string, Material>						m_MaterialList;
+	std::unique_ptr<AnimationObject>								m_XfileObject;
 };
-

@@ -3,6 +3,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include "Vertex.h"
 #include "AnimationObject.h"
 
 namespace Ani
@@ -19,11 +20,10 @@ namespace Ani
 class XFileParser final
 {
 public:
-	XFileParser() = delete;
-	XFileParser(const std::string& filePath);
+	XFileParser();
+	virtual ~XFileParser();
 
-	~XFileParser();
-
+	void GetVertexData(std::vector<SkinnedVertex>& vertexes, std::vector<unsigned int>& indices);
 	std::unique_ptr<AnimationObject> GetAniObject() 
 	{
 		assert(m_AniObject.get() != nullptr);
@@ -32,6 +32,7 @@ public:
 	}
 
 private:
+	void Parsing(const std::string& filePath);
 	void ParseFile();
 	void ParseDataObjectTemplate();
 	void ParseDataObjectFrame(Ani::Node* pParent);
@@ -108,6 +109,11 @@ protected:
 	unsigned int m_LineNumber;
 
 private:
-	std::unique_ptr<AnimationObject> m_AniObject;
+	std::vector<Ani::Node>				m_Nodes;
+	std::vector<int>					m_ParentIndex;
+	std::vector<Ani::Animation>			m_AnimationClips;
+	std::vector<SkinnedVertex>			m_Vertexes;
+	std::vector<unsigned int>			m_Indices;
+	std::unique_ptr<AnimationObject>	m_AniObject;
 };
 

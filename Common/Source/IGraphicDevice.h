@@ -1,33 +1,19 @@
 #pragma once
 #include "d3dUtil.h"
 #include "IComponentProvider.h"
+#include "Vertex.h"
 
 class cCamera;
 using namespace CGH;
 
-struct SubmeshData
+namespace CGH
 {
-	UINT	numVertex = 0;
-	UINT	vertexOffset = 0;
-	UINT	numIndex = 0;
-	UINT	indexOffset = 0;
-};
-
-class MeshObject
-{
-public:
-	std::string	m_Name;
-
-	void*		m_VertexData = nullptr;
-	UINT		m_VertexByteSize = 0;
-	UINT		m_VertexDataSize = 0;
-
-	void*		m_IndexData = nullptr;
-	UINT		m_IndexDataSize = 0;
-	UINT		m_IndexByteSize = 0;
-
-	std::unordered_map<std::string, SubmeshData> m_Subs;
-};
+	enum MESH_TYPE
+	{
+		MESH_NORMAL,
+		MESH_SKINED
+	};
+}
 
 class IGraphicDevice : public ICompnentProvider
 {
@@ -41,12 +27,21 @@ public:
 	virtual void* GetDevicePtr() = 0;
 	virtual void OnResize() = 0;
 
+	void ReadyWorks()
+	{
+		LoadMeshAndMaterialFromFolder();
+		LoadTextureFromFolder();
+	}
+
 public:
 	virtual void SetCamera(cCamera* camera) = 0;
-	virtual void AddMesh(UINT numSubResource, SubmeshData subResources[]) = 0;
 
 public:
 	void SetClientSize(UINT width, UINT height) { m_ClientWidth = width, m_ClientHeight = height; }
+
+protected:
+	virtual void LoadMeshAndMaterialFromFolder() = 0;
+	virtual void LoadTextureFromFolder() = 0;
 
 protected:
 	MAT16			m_ViewMatrix;

@@ -9,6 +9,9 @@ enum class COMPONENTTYPE
 {
 	COM_PHYSICS,
 	COM_GRAPHIC,
+	COM_RENDERER,
+	COM_ANIRENDERER,
+	COM_END,
 };
 
 class IComponent
