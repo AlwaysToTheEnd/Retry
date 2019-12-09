@@ -120,7 +120,9 @@
     <ClCompile Include="..\Common\Source\GraphicComponent.cpp">
       <Filter>Common\CodeResources\Components</Filter>
     </ClCompile>
-    <ClCompile Include="..\Common\Source\BaseComponent.cpp" />
+    <ClCompile Include="..\Common\Source\BaseComponent.cpp">
+      <Filter>Common\CodeResources\Components</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Common\Source\d3dApp.h">

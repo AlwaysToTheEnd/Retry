@@ -62,6 +62,11 @@ CGH::MAT16::operator const DirectX::XMFLOAT4X4* () const
 	return reinterpret_cast<const DirectX::XMFLOAT4X4*>(this);
 }
 
+void CGH::MAT16::operator=(const MAT16& rhs)
+{
+	memcpy(m, rhs.m, sizeof(MAT16));
+}
+
 CGH::MAT16& CGH::MAT16::operator*=(const MAT16& rhs)
 {
 	MAT16 result;

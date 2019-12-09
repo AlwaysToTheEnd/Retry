@@ -22,5 +22,5 @@ struct SkinnedVertex
 	DirectX::XMFLOAT3	normal;
 	DirectX::XMFLOAT2	uv;
 	DirectX::XMFLOAT3	boneWeights;
-	BYTE				boneIndices[4];
+	unsigned char		boneIndices[4];
 };

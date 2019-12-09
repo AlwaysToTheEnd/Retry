@@ -1,7 +1,7 @@
 #pragma once
+#include <vector>
 #include <string>
 #include <unordered_map>
-#include <vector>
 #include "BaseClass.h"
 #include "Vertex.h"
 
@@ -82,21 +82,6 @@ namespace Ani
 		std::vector<TimeValue<DirectX::XMFLOAT4>> rotKeys;
 		std::vector<TimeValue<DirectX::XMFLOAT3>> scaleKeys;
 		std::vector<TimeValue<CGH::MAT16>> trafoKeys;
-
-		bool IsMatrixDataType()
-		{
-			if (posKeys.size())
-			{
-				return false;
-			}
-			else if (trafoKeys.size())
-			{
-				return true;
-			}
-
-			assert(false);
-			return true;
-		}
 	};
 
 	struct Animation
@@ -114,9 +99,15 @@ namespace Ani
 		float GetClipStartTime(const std::string& clipName)const;
 		float GetClipEndTime(const std::string& clipName)const;
 		void GetFinalTransforms(const std::string& clipName, float timePos,
-			std::vector<CGH::MAT16>& finalTransforms)const;
-
+			std::vector<CGH::MAT16>& finalTransforms);
 		unsigned int GetAnimationNum() { return static_cast<unsigned int>(m_Animations.size()); }
+
+	private:
+		void CalLocalTransformFromAnimation(const std::string& clipName, float timePos);
+
+		DirectX::XMVECTOR XM_CALLCONV GetAnimationKeyOnTick(const std::vector<TimeValue<DirectX::XMFLOAT3>>& values, float timePos);
+		DirectX::XMVECTOR XM_CALLCONV GetAnimationKeyOnTick(const std::vector<TimeValue<DirectX::XMFLOAT4>>& values, float timePos);
+
 	private:
 		std::vector<int>							m_BoneHierarchy;
 		std::vector<CGH::MAT16>						m_BoneOffsets;

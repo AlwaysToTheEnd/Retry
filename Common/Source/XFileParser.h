@@ -1,9 +1,16 @@
 #pragma once
-#include "AnimationStructs.h"
 #include <memory>
 #include <utility>
 
 // This Codes was referenced from HLSLCrossCompiler-master (xfileparser.cpp)
+
+namespace Ani
+{
+	class SkinnedData;
+	struct AnimBone;
+	struct Subset;
+	struct AniMaterial;
+}
 
 class XFileParser final
 {

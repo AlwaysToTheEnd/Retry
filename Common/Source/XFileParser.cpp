@@ -3,6 +3,7 @@
 #include "zlib/zlib.h"
 #include "fast_atof.h"
 #include "ByteSwap.h"
+#include "AnimationStructs.h"
 
 using namespace Ani;
 using namespace DirectX;

@@ -20,6 +20,8 @@ namespace CGH
 		operator DirectX::XMFLOAT4X4* ();
 		operator const DirectX::XMFLOAT4X4* () const;
 
+		void operator =(const MAT16& rhs);
+
 		MAT16& operator *= (const MAT16&);
 		MAT16& operator += (const MAT16&);
 		MAT16& operator -= (const MAT16&);

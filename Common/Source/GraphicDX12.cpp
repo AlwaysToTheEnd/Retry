@@ -269,14 +269,23 @@ void GraphicDX12::OnResize()
 std::unique_ptr<IComponent> GraphicDX12::CreateComponent(COMPONENTTYPE type, GameObject& gameObject)
 {
 	IComponent* newComponent=nullptr;
-
+	
 	switch (type)
 	{
 	case COMPONENTTYPE::COM_RENDERER:
+	{
 		newComponent = new ComRenderer(gameObject);
+	}
+		break;
+	case COMPONENTTYPE::COM_MESH:
+	{
+
+	}
 		break;
 	case COMPONENTTYPE::COM_ANIMATER:
-		newComponent = new AniRendererComponent(gameObject);
+	{
+
+	}
 		break;
 	default:
 		assert(false);
