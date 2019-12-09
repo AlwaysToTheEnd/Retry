@@ -11,6 +11,7 @@
 #include "d3dx12.h"
 #include "d3dx12Residency.h"
 #include "DX12RenderClasses.h"
+#include "cIndexManagementBuffer.h"
 #include "IGraphicDevice.h"
 
 #pragma comment(lib,"d3dcompiler.lib")
@@ -21,26 +22,64 @@
 
 class cTextureBuffer;
 
-struct SubmeshData
+template <typename T>
+class UploadBuffer
 {
-	UINT	numVertex = 0;
-	UINT	vertexOffset = 0;
-	UINT	numIndex = 0;
-	UINT	indexOffset = 0;
-};
+public:
+	UploadBuffer(ID3D12Device* device, UINT elementCount, bool isConstantBuffer)
+	{
+		m_ElementByteSize = sizeof(T);
+		m_IsConstantBuffer = isConstantBuffer;
 
-struct MeshObject
-{
-	MESH_TYPE	m_Type = MESH_NORMAL;
-	void*		m_VertexData = nullptr;
-	UINT		m_VertexByteSize = 0;
-	UINT		m_VertexDataSize = 0;
+		if (isConstantBuffer)
+		{
+			m_ElementByteSize = (sizeof(T) + 255) & ~255;
+		}
 
-	void*		m_IndexData = nullptr;
-	UINT		m_IndexDataSize = 0;
-	UINT		m_IndexByteSize = 0;
+		ThrowIfFailed(device->CreateCommittedResource(
+			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
+			D3D12_HEAP_FLAG_NONE,
+			&CD3DX12_RESOURCE_DESC::Buffer(m_ElementByteSize * elementCount),
+			D3D12_RESOURCE_STATE_GENERIC_READ, nullptr,
+			IID_PPV_ARGS(m_UploadBuffer.GetAddressOf())));
 
-	std::unordered_map<std::string, SubmeshData> m_Subs;
+		ThrowIfFailed(m_UploadBuffer->Map(0, nullptr, reinterpret_cast<void**>(&m_MappedData)));
+	}
+
+	UploadBuffer(const UploadBuffer& rhs) = delete;
+	UploadBuffer& operator=(const UploadBuffer& rhs) = delete;
+
+	~UploadBuffer()
+	{
+		if (m_UploadBuffer)
+		{
+			m_UploadBuffer->Unmap(0, nullptr);
+		}
+
+		m_MappedData = nullptr;
+	}
+
+	ID3D12Resource* Resource()const
+	{
+		return m_UploadBuffer.Get();
+	}
+
+	void CopyData(int elementIndex, const T& data)
+	{
+		std::memcpy(&m_MappedData[elementIndex * m_ElementByteSize], &data, sizeof(T));
+	}
+
+	void CopyData(int numElement, int offsetIndex, const T& data)
+	{
+		std::memcpy(&m_MappedData[offsetIndex * m_ElementByteSize], &data, sizeof(T) * numElement);
+	}
+
+private:
+	ComPtr<ID3D12Resource> m_UploadBuffer;
+	BYTE* m_MappedData = nullptr;
+
+	UINT m_ElementByteSize = 0;
+	bool m_IsConstantBuffer = false;
 };
 
 struct FrameResource
@@ -73,16 +112,20 @@ public:
 	virtual bool Init(HWND hWnd) override;
 	virtual void OnResize() override;
 	virtual void* GetDevicePtr() override { return m_D3dDevice.Get(); }
-	virtual std::unique_ptr<IComponent> CreateComponent(COMPONENTTYPE type, PxTransform& trans) override;
+	virtual std::unique_ptr<IComponent> CreateComponent(COMPONENTTYPE type, GameObject& gameObject) override;
 
 private: // Used Function by ReadyWorks 
-	virtual void LoadMeshAndMaterialFromFolder() override;
-	virtual void LoadTextureFromFolder() override;
+	virtual void LoadTextureFromFolder(const std::vector<std::string>& targetTextureFolders) override;
+	virtual void LoadMeshAndMaterialFromFolder(const std::vector<std::string>& targetMeshFolders) override;
+	virtual void ReadyWorksEnd() override;
+
+	void BuildFrameResources();
 
 public: // Used Functions
 	virtual void SetCamera(cCamera* camera) { m_currCamera = camera; }
 
 private: // Device Base Functions
+	void FlushCommandQueue();
 	void CreateCommandObject();
 	void CreateRtvAndDsvDescriptorHeaps();
 	void CreateSwapChain();
@@ -90,10 +133,8 @@ private: // Device Base Functions
 	ID3D12Resource* CurrentBackBuffer() const;
 	D3D12_CPU_DESCRIPTOR_HANDLE CurrentBackBufferView() const;
 	D3D12_CPU_DESCRIPTOR_HANDLE DepthStencilView() const;
-	void FlushCommandQueue();
 
 private: // Object Base Builds
-	void BuildFrameResources();
 	void BuildRootSignature();
 	void BuildShadersAndInputLayout();
 	void BuildPSOs();
@@ -101,7 +142,7 @@ private: // Object Base Builds
 private:
 	void UpdateMainPassCB();
 	void UpdateObjects();
-	void DrawMesh(UINT numMeshs, MeshObject* meshs);
+	void DrawObjects();
 
 private:
 	ComPtr<ID3DBlob> CompileShader(	const std::wstring& filename,
@@ -146,21 +187,21 @@ private:
 
 private:
 	std::unordered_map<std::string, ComPtr<ID3D12PipelineState>>	m_PSOs;
-	std::unordered_map<std::string, UINT>							m_MaterialIndex;
-	std::vector<Material>											m_Materials;
 	std::vector<D3D12_INPUT_ELEMENT_DESC>							m_NTVertexInputLayout;
 	std::unordered_map<std::string, ComPtr<ID3DBlob>>				m_Shaders;
 	ComPtr<ID3D12RootSignature>										m_RootSignature = nullptr;
-	std::unique_ptr<cTextureBuffer>									m_TextureBuffer;
-	std::vector<MeshObject>											m_Meshs;
-
-	std::unique_ptr<FrameResource>									m_FrameResource;
+	
 	PassConstants													m_MainPassCB;
-
-private: // Below codes are used only Testing.
-	std::vector< ComPtr<ID3D12Resource>>							m_DataUploadBuffers;
-
 	std::unordered_map<std::string, std::wstring>					m_TexturePaths;
-	std::unordered_map<std::string, Material>						m_MaterialList;
-	std::unique_ptr<AnimationObject>								m_XfileObject;
+	std::unique_ptr<cTextureBuffer>									m_TextureBuffer;
+	std::unique_ptr<cIndexManagementBuffer<Material>>				m_Materials;
+	std::unordered_map<std::string, MeshObject>						m_Meshs;
+	std::unordered_map<std::string, Ani::SkinnedData>				m_SkinnedDatas;
+	std::unique_ptr<FrameResource>									m_FrameResource;
+
+private:
+	std::unique_ptr<cDefaultBuffer<Vertex>>			m_VertexBuffer;
+	std::unique_ptr<cDefaultBuffer<UINT>>			m_IndexBuffer;
+	std::unique_ptr<cDefaultBuffer<SkinnedVertex>>	m_SkinnedVertexBuffer;
+	std::unique_ptr<cDefaultBuffer<UINT>>			m_SkinnedIndexBuffer;
 };

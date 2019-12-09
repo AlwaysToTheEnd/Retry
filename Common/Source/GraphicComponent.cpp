@@ -1,19 +1,13 @@
 #include "GraphicComponent.h"
-#include <comip.h>
-#include "IGraphicDevice.h"
+#include "GameObject.h"
 
-RendererComponent::RendererComponent(PxTransform& transform) 
-	: IComponent(transform, COMPONENTTYPE::COM_GRAPHIC)
-{
-	
-}
-
-RendererComponent::~RendererComponent()
+ComRenderer::ComRenderer(GameObject& gameObject)
+	:IComponent(gameObject,COMPONENTTYPE::COM_RENDERER)
 {
 
 }
 
-void RendererComponent::Update()
+void ComRenderer::Update()
 {
 
 }

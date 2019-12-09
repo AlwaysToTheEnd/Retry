@@ -1,6 +1,6 @@
 #include "Step2.h"
 #include <random>
-#include "XFileParser.h"
+#include "BaseComponent.h"
 using namespace std;
 
 mt19937_64 g_random(710);
@@ -18,7 +18,6 @@ Step2::~Step2()
 
 void Step2::Update()
 {
-	m_Camera.Update();
 }
 
 void Step2::SelectDevices()
@@ -33,21 +32,28 @@ void Step2::InitObjects()
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-std::unique_ptr<IComponent> Step2::CreateComponent(COMPONENTTYPE type, PxTransform& tran)
+std::unique_ptr<IComponent> Step2::CreateComponent(COMPONENTTYPE type, GameObject& gameObject)
 {
-	if (type == COMPONENTTYPE::COM_PHYSICS || type == COMPONENTTYPE::COM_GRAPHIC || type == COMPONENTTYPE::COM_END)
+	if (type == COMPONENTTYPE::COM_END)
 	{
 		assert(false && "THIS COMPONENT IS NONE USED TYPE");
 		return nullptr;
 	}
 
-	if (type < COMPONENTTYPE::COM_GRAPHIC)
+	if (type == COMPONENTTYPE::COM_TRANSFORM)
 	{
-		return m_PXDevice->CreateComponent(type, tran);
+		return make_unique<ComTransform>(gameObject, 
+			static_cast<unsigned int>(m_ObjectsMat.size()), &m_ObjectsMat);
+
+		m_ObjectsMat.emplace_back();
+	}
+	if (type < COMPONENTTYPE::COM_TRANSFORM)
+	{
+		return m_PXDevice->CreateComponent(type, gameObject);
 	}
 	else
 	{
-		return m_GDevice->CreateComponent(type, tran);
+		return m_GDevice->CreateComponent(type, gameObject);
 	}
 
 	return nullptr;
@@ -56,9 +62,6 @@ std::unique_ptr<IComponent> Step2::CreateComponent(COMPONENTTYPE type, PxTransfo
 LRESULT Step2::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	m_Camera.WndProc(hwnd, msg, wParam, lParam);
-	m_Mouse.ProcessMessage(msg, wParam, lParam);
-	m_Keyboard.ProcessMessage(msg, wParam, lParam);
-
 	return D3DApp::MsgProc(hwnd, msg, wParam, lParam);
 }
 

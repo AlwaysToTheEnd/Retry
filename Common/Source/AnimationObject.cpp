@@ -92,16 +92,16 @@ void AnimationObject::SetupBoneMatrixPtrs(Ani::Node* node)
 
 void AnimationObject::CalFinalTransform()
 {
-	for (auto& it : m_CurrAnimation->second->m_AnimBones)
+	for (auto& it : m_CurrAnimation->second->animBones)
 	{
-		auto finalMatPtrIter = m_TransformationMatPtrs.find(it.m_BoneName);
+		auto finalMatPtrIter = m_TransformationMatPtrs.find(it.boneName);
 
 		if (finalMatPtrIter != m_TransformationMatPtrs.end())
 		{
 			bool isCurrAniBoneDataStoredMatrixData = it.IsMatrixDataType();
-			XMVECTOR S = GetAnimationKeyOnTick(it.m_ScaleKeys);
-			XMVECTOR P = GetAnimationKeyOnTick(it.m_PosKeys);
-			XMVECTOR Q = GetAnimationKeyOnTick(it.m_RotKeys);
+			XMVECTOR S = GetAnimationKeyOnTick(it.scaleKeys);
+			XMVECTOR P = GetAnimationKeyOnTick(it.posKeys);
+			XMVECTOR Q = GetAnimationKeyOnTick(it.rotKeys);
 			XMVECTOR zero = XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f);
 			XMMATRIX mat = XMMatrixAffineTransformation(S, zero, Q, P);
 			XMStoreFloat4x4(finalMatPtrIter->second, mat);

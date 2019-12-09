@@ -3,7 +3,7 @@
 
 IComponent* GameObject::AddComponent(COMPONENTTYPE type)
 {
-	m_components.push_back(GETAPP->CreateComponent(type, m_transform));
+	m_components[type].push_back(GETAPP->CreateComponent(type, *this));
 
-	return m_components.back().get();
+	return m_components[type].back().get();
 }

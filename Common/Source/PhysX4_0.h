@@ -13,7 +13,7 @@ public:
 
 	virtual bool Init(void* graphicDevicePtr);
 	virtual void Update();
-	virtual std::unique_ptr<IComponent> CreateComponent(COMPONENTTYPE type,PxTransform& trans) override;
+	virtual std::unique_ptr<IComponent> CreateComponent(COMPONENTTYPE type, GameObject& gameObject) override;
 
 private:
 	physx::PxFilterFlags ScissorFilter(physx::PxFilterObjectAttributes attributes0, physx::PxFilterData filterData0,

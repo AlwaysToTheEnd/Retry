@@ -40,6 +40,9 @@
     <Filter Include="Common\CodeResources\Parser">
       <UniqueIdentifier>{50d9665b-1fd6-4595-a761-3be464ecf4d8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Common\CodeResources\Components">
+      <UniqueIdentifier>{cebfb674-268f-4769-8844-0419a7c46bea}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Step2.cpp">
@@ -105,15 +108,19 @@
     <ClCompile Include="..\Common\Source\zlib\zutil.c">
       <Filter>Common\CodeResources\Ziplib</Filter>
     </ClCompile>
-    <ClCompile Include="..\Common\Source\GraphicComponent.cpp">
-      <Filter>Common\DeviceInstance\DX12Supporters</Filter>
-    </ClCompile>
     <ClCompile Include="..\Common\Source\AnimationObject.cpp">
       <Filter>Common\CodeResources\Parser</Filter>
     </ClCompile>
     <ClCompile Include="..\Common\Source\XFileParser.cpp">
       <Filter>Common\CodeResources\Parser</Filter>
     </ClCompile>
+    <ClCompile Include="..\Common\Source\AnimationStructs.cpp">
+      <Filter>Common\CodeResources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Source\GraphicComponent.cpp">
+      <Filter>Common\CodeResources\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Source\BaseComponent.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Common\Source\d3dApp.h">
@@ -161,14 +168,8 @@
     <ClInclude Include="..\Common\Source\DDSTextureLoader.h">
       <Filter>Common\CodeResources</Filter>
     </ClInclude>
-    <ClInclude Include="..\Common\Source\IComponent.h">
-      <Filter>Common\CodeResources</Filter>
-    </ClInclude>
     <ClInclude Include="Step2.h">
       <Filter>Step2</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Common\Source\GraphicComponent.h">
-      <Filter>Common\DeviceInstance\DX12Supporters</Filter>
     </ClInclude>
     <ClInclude Include="..\Common\Source\Vertex.h">
       <Filter>Common\CodeResources</Filter>
@@ -178,6 +179,24 @@
     </ClInclude>
     <ClInclude Include="..\Common\Source\XFileParser.h">
       <Filter>Common\CodeResources\Parser</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\AnimationStructs.h">
+      <Filter>Common\CodeResources</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\cIndexManagementBuffer.h">
+      <Filter>Common\DeviceInstance\DX12Supporters</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\cDefaultBuffer.h">
+      <Filter>Common\DeviceInstance\DX12Supporters</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\IComponent.h">
+      <Filter>Common\CodeResources\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\BaseComponent.h">
+      <Filter>Common\CodeResources\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\GraphicComponent.h">
+      <Filter>Common\CodeResources\Components</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

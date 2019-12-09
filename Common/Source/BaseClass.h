@@ -44,4 +44,10 @@ namespace CGH
 	public:
 		float m[4][4] = {};
 	};
+
+	enum MESH_TYPE
+	{
+		MESH_NORMAL,
+		MESH_SKINED
+	};
 }

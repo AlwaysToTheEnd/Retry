@@ -1,33 +1,36 @@
 #pragma once
-
-#include "foundation/PxTransform.h"
-
 class ComTransform;
-using physx::PxTransform;
+class GameObject;
 
 enum class COMPONENTTYPE
 {
 	COM_PHYSICS,
-	COM_GRAPHIC,
+
+	COM_TRANSFORM,
+
 	COM_RENDERER,
-	COM_ANIRENDERER,
-	COM_END,
+	COM_MESH,
+	COM_ANIMATER,
+	COM_END
 };
+
+static const int NUMCOMPONENTTYPE = static_cast<int>(COMPONENTTYPE::COM_END);
 
 class IComponent
 {
 public:
-	IComponent(PxTransform& transform, COMPONENTTYPE type)
-		: pTargetTransform(&transform)
-		, m_type(type)
+	IComponent(GameObject& gameObject, COMPONENTTYPE type)
+		: m_TargetGameObject(&gameObject)
+		, m_Type(type)
 	{
 	};
 	virtual ~IComponent() = default;
 
 	virtual void Update() = 0;
-	COMPONENTTYPE GetType() { return m_type; }
+	COMPONENTTYPE GetType() { return m_Type; }
 
-private:
-	COMPONENTTYPE m_type;
-	PxTransform* pTargetTransform = nullptr;
+protected:
+	COMPONENTTYPE	m_Type;
+	bool			m_IsActive = true;
+	GameObject*		m_TargetGameObject = nullptr;
 };

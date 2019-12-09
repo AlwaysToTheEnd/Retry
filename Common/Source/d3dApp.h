@@ -3,11 +3,28 @@
 #include "IGraphicDevice.h"
 #include "IPhysicsDevice.h"
 #include "IComponent.h"
+#include "DirectXTK/Mouse.h"
+#include "DirectXTK/Keyboard.h"
 
 #define GETAPP D3DApp::GetApp()
+#define GKEYBOARD D3DApp::GetApp()->GetKeyBoard()
+#define GMOUSE D3DApp::GetApp()->GetMouse()
+extern const std::string gMainFolderFath = "./../Common/";
+
+struct MeshObject;
 
 class D3DApp
 {
+public:
+	std::vector<std::string>		m_TargetMeshFolders =
+	{
+		gMainFolderFath + "MeshData"
+	};
+	std::vector<std::string>		m_TargetTextureFolders =
+	{
+		gMainFolderFath + "TextureData"
+	};
+
 protected:
 	D3DApp(HINSTANCE hInstance);
 	D3DApp(const D3DApp& rhs) = delete;
@@ -16,11 +33,14 @@ protected:
 
 public:
 	static D3DApp* GetApp();
+	Mouse* GetMouse() { return &m_Mouse; }
+	Keyboard* GetKeyBoard() { return &m_Keyboard; }
 
 	bool Initialize();
 	int Run();
 
-	virtual std::unique_ptr<IComponent> CreateComponent(COMPONENTTYPE type, PxTransform& tran) = 0;
+public:
+	virtual std::unique_ptr<IComponent> CreateComponent(COMPONENTTYPE type, GameObject& gameObject) = 0;
 	virtual LRESULT MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 protected:
@@ -37,6 +57,9 @@ private:
 
 protected:
 	static D3DApp* m_App;
+
+	Mouse		m_Mouse;
+	Keyboard	m_Keyboard;
 
 	HINSTANCE	m_hAppInst = nullptr;
 	HWND		m_hMainWnd = nullptr;

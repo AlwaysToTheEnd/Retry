@@ -1,8 +1,9 @@
 #pragma once
+#include <vector>
+#include <array>
+#include <memory>
 
 #include "IComponent.h"
-#include <vector>
-#include <memory>
 
 class D3DApp;
 
@@ -18,7 +19,6 @@ public:
 protected:
 	IComponent* AddComponent(COMPONENTTYPE type);
 	
-protected:
-	PxTransform m_transform;
-	std::vector<std::unique_ptr<IComponent>> m_components;
+private:
+	std::vector<std::unique_ptr<IComponent>> m_components[NUMCOMPONENTTYPE];
 };

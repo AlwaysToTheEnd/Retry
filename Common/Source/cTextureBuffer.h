@@ -19,6 +19,26 @@ enum WIC_LOADER_FLAGS : uint32_t
 
 class cTextureBuffer
 {
+private:
+	struct Texture
+	{
+		ComPtr<ID3D12Resource> resource = nullptr;
+		ComPtr<ID3D12Resource> uploadHeap = nullptr;
+	};
+
+	struct TEXTURENUM
+	{
+		UINT num = 0;
+		cTextureBuffer::Texture tex;
+	};
+
+	enum TEXTURE_FILE_TYPE
+	{
+		DDS_TEXTURE,
+		WIC_TEXTURE,
+		NONE_TEXTURE,
+	};
+
 public:
 	cTextureBuffer() = delete;
 	cTextureBuffer(cTextureBuffer& rhs) = delete;
@@ -44,25 +64,6 @@ private:
 	bool IsDDSTextureFile(const std::wstring& filename);
 
 private:
-	struct Texture
-	{
-		ComPtr<ID3D12Resource> resource = nullptr;
-		ComPtr<ID3D12Resource> uploadHeap = nullptr;
-	};
-
-	struct TEXTURENUM
-	{
-		UINT num = 0;
-		cTextureBuffer::Texture tex;
-	};
-
-	enum TEXTURE_FILE_TYPE
-	{
-		DDS_TEXTURE,
-		WIC_TEXTURE,
-		NONE_TEXTURE,
-	};
-	
 	ComPtr<ID3D12GraphicsCommandList>			m_commandList;
 	ComPtr<ID3D12CommandAllocator>				m_comAlloc;
 	UINT										m_SrvDescriptorSize;

@@ -120,7 +120,7 @@ void PhysX4_0::Update()
 	m_scene->fetchResults(true);
 }
 
-std::unique_ptr<IComponent> PhysX4_0::CreateComponent(COMPONENTTYPE type, PxTransform& trans)
+std::unique_ptr<IComponent> PhysX4_0::CreateComponent(COMPONENTTYPE type, GameObject& gameObject)
 {
 	return std::unique_ptr<IComponent>();
 }

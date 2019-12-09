@@ -20,7 +20,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Common\Source\AnimationObject.cpp" />
+    <ClCompile Include="..\Common\Source\AnimationStructs.cpp" />
     <ClCompile Include="..\Common\Source\BaseClass.cpp" />
+    <ClCompile Include="..\Common\Source\BaseComponent.cpp" />
     <ClCompile Include="..\Common\Source\cCamera.cpp" />
     <ClCompile Include="..\Common\Source\cTextureBuffer.cpp" />
     <ClCompile Include="..\Common\Source\d3dApp.cpp" />
@@ -46,8 +48,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Common\Source\AnimationObject.h" />
+    <ClInclude Include="..\Common\Source\AnimationStructs.h" />
     <ClInclude Include="..\Common\Source\BaseClass.h" />
+    <ClInclude Include="..\Common\Source\BaseComponent.h" />
     <ClInclude Include="..\Common\Source\cCamera.h" />
+    <ClInclude Include="..\Common\Source\cDefaultBuffer.h" />
     <ClInclude Include="..\Common\Source\DDSTextureLoader.h" />
     <ClInclude Include="..\Common\Source\DX12RenderClasses.h" />
     <ClInclude Include="..\Common\Source\GameObject.h" />
@@ -60,6 +65,7 @@
     <ClInclude Include="..\Common\Source\IComponentProvider.h" />
     <ClInclude Include="..\Common\Source\IGraphicDevice.h" />
     <ClInclude Include="..\Common\Source\GraphicDX12.h" />
+    <ClInclude Include="..\Common\Source\cIndexManagementBuffer.h" />
     <ClInclude Include="..\Common\Source\IPhysicsDevice.h" />
     <ClInclude Include="..\Common\Source\PhysX4_0.h" />
     <ClInclude Include="..\Common\Source\Px1RefPtr.h" />

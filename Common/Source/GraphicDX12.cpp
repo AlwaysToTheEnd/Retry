@@ -3,6 +3,7 @@
 #include "cTextureBuffer.h"
 #include <functional>
 #include "GraphicComponent.h"
+#include "BaseClass.h"
 
 using namespace DirectX;
 using namespace std;
@@ -81,23 +82,22 @@ bool GraphicDX12::Init(HWND hWnd)
 	// 랜더타겟이 될 리소스를 현재 클라이언트 사이즈에 맞게 생성하고 스왑체인에 묶어준다
 	OnResize();
 
-	XFileParser xParser("../Common/TeraResourse/Character/poporiClass03/poporiClass03_2.X");
-	m_XfileObject = xParser.GetAniObject();
 
 #pragma region RenderObjectsBuild
-
 	ThrowIfFailed(m_CommandList->Reset(m_DirectCmdListAlloc.Get(), nullptr));
 
 	BuildRootSignature();			
 	BuildShadersAndInputLayout();	
 	BuildPSOs();					
-	BuildFrameResources();			
 
 	ThrowIfFailed(m_CommandList->Close());
 	ID3D12CommandList* cmdsLists[] = { m_CommandList.Get() };
 	m_CommandQueue->ExecuteCommandLists(_countof(cmdsLists), cmdsLists);
 
 	FlushCommandQueue();
+
+	ThrowIfFailed(m_DirectCmdListAlloc->Reset());
+	ThrowIfFailed(m_CommandList->Reset(m_DirectCmdListAlloc.Get(), nullptr));
 #pragma endregion 
 
 	return true;
@@ -266,17 +266,17 @@ void GraphicDX12::OnResize()
 	XMStoreFloat4x4(m_ProjectionMat, P);
 }
 
-std::unique_ptr<IComponent> GraphicDX12::CreateComponent(COMPONENTTYPE type, PxTransform& trans)
+std::unique_ptr<IComponent> GraphicDX12::CreateComponent(COMPONENTTYPE type, GameObject& gameObject)
 {
 	IComponent* newComponent=nullptr;
 
 	switch (type)
 	{
 	case COMPONENTTYPE::COM_RENDERER:
-		newComponent = new RendererComponent(trans);
+		newComponent = new ComRenderer(gameObject);
 		break;
-	case COMPONENTTYPE::COM_ANIRENDERER:
-		newComponent = new AniRendererComponent(trans);
+	case COMPONENTTYPE::COM_ANIMATER:
+		newComponent = new AniRendererComponent(gameObject);
 		break;
 	default:
 		assert(false);
@@ -286,14 +286,25 @@ std::unique_ptr<IComponent> GraphicDX12::CreateComponent(COMPONENTTYPE type, PxT
 	return std::unique_ptr<IComponent>(newComponent);
 }
 
-void GraphicDX12::LoadMeshAndMaterialFromFolder()
+void GraphicDX12::LoadTextureFromFolder(const std::vector<std::string>& targetTextureFolders)
 {
+	vector<string> files;
+	for (auto& it : targetTextureFolders)
+	{
+		SearchAllFileFromFolder(it, true, files);
+	}
 
-}
+	for (auto& it : files)
+	{
+		string extension;
+		string fileName = GetFileNameFromPath(it, extension);
+		wstring temp(it.begin(), it.end());
 
-void GraphicDX12::LoadTextureFromFolder()
-{
-	m_TexturePaths.insert({ "testTexture", L"./../Common/TextureData/plane.png" });
+		if (CheckFileExtension(extension) == EXTENSIONTYPE::EXE_TEXTURE)
+		{
+			m_TexturePaths.insert({ fileName, temp });
+		}
+	}
 
 	const UINT numTexturePath = m_TexturePaths.size();
 	m_TextureBuffer = make_unique<cTextureBuffer>(m_D3dDevice.Get(), numTexturePath);
@@ -307,6 +318,165 @@ void GraphicDX12::LoadTextureFromFolder()
 	}
 
 	m_TextureBuffer->End(m_CommandQueue.Get(), bind(&GraphicDX12::FlushCommandQueue, this));
+}
+
+void GraphicDX12::LoadMeshAndMaterialFromFolder(const std::vector<std::string>& targetMeshFolders)
+{
+	vector<string> files;
+
+	for (auto& it : targetMeshFolders)
+	{
+		SearchAllFileFromFolder(it, true, files);
+	}
+
+	XFileParser xfileP;
+	vector<Vertex> combinedVertex;
+	vector<unsigned int> combinedIndices;
+
+	vector<SkinnedVertex> combinedSkinnedVertex;
+	vector<unsigned int> combinedSkinnedIndices;
+
+	vector<Material> matDatas;
+	vector<string> matNames;
+
+	vector<SkinnedVertex> skinnedVertices;
+	vector<Vertex> vertices;
+	vector<unsigned int> indices;
+
+	//Instance for only XFile load
+	vector<Ani::Subset> subsets;
+	vector<Ani::AniMaterial> mats;
+	Ani::SkinnedData skinnedData;
+
+	for (auto& it : files)
+	{
+		MeshObject meshObject;
+		string extension;
+		string fileName = GetFileNameFromPath(it, extension);
+		wstring temp(it.begin(), it.end());
+		indices.clear();
+
+		UINT baseVertexOffset = 0;
+		UINT baseIndexOffset = 0;
+		meshObject.primitiveType = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+
+		if (extension == "X")
+		{
+			if (skinnedData.GetAnimationNum())
+			{
+				meshObject.type = CGH::MESH_SKINED;
+				baseVertexOffset = static_cast<UINT>(combinedSkinnedVertex.size());
+				baseIndexOffset = static_cast<UINT>(combinedSkinnedIndices.size());
+				
+				skinnedVertices.clear();
+				xfileP.LoadXfile(it, skinnedVertices, indices, subsets, mats, skinnedData);
+			}
+			else
+			{
+				baseVertexOffset = static_cast<UINT>(combinedVertex.size());
+				baseIndexOffset = static_cast<UINT>(combinedIndices.size());
+
+				vertices.clear();
+				xfileP.LoadXfile(it, skinnedVertices, indices, subsets, mats, skinnedData);
+			}
+
+			for (auto& it2 : subsets)
+			{
+				UINT faceCount = 0;
+				UINT num = 0;
+				for (auto& materalIndex : it2.materialIndexCount)
+				{
+					SubmeshData sub;
+					sub.material = materalIndex.first;
+					sub.indexOffset = it2.indexStart + baseIndexOffset + faceCount;
+					sub.numIndex = materalIndex.second;
+					sub.vertexOffset = it2.vertexStart + baseVertexOffset;
+					sub.numVertex = it2.vertexCount;
+
+					faceCount += materalIndex.second;
+					meshObject.subs.insert({ materalIndex.first + to_string(num++),sub });
+				}
+			}
+
+			for (auto& it2 : mats)
+			{
+				Material material;
+				for (auto& textureIter : it2.textures)
+				{
+					if (textureIter.isNormalMap)
+					{
+						material.normalMapIndex = m_TextureBuffer->GetTextureIndex(textureIter.name);
+					}
+					else
+					{
+						material.diffuseMapIndex = m_TextureBuffer->GetTextureIndex(textureIter.name);
+					}
+				}
+
+				material.diffuseAlbedo = it2.diffuse;
+				material.fresnel0 = it2.specular;
+				material.roughness = it2.specularExponent;
+				matDatas.push_back(material);
+				matNames.push_back(it2.name);
+			}
+
+			m_SkinnedDatas.insert({ fileName, skinnedData });
+			m_Meshs.insert({ fileName, meshObject });
+		}
+
+		if (meshObject.type == CGH::MESH_SKINED)
+		{
+			combinedSkinnedVertex.insert(combinedSkinnedVertex.end(), skinnedVertices.begin(), skinnedVertices.end());
+			combinedSkinnedIndices.insert(combinedSkinnedIndices.end(), indices.begin(), indices.end());
+		}
+		else
+		{
+			combinedVertex.insert(combinedVertex.end(), vertices.begin(), vertices.end());
+			combinedIndices.insert(combinedIndices.end(), indices.begin(), indices.end());
+		}
+	}
+
+	if (combinedVertex.size())
+	{
+		m_VertexBuffer = make_unique<cDefaultBuffer<Vertex>>(m_D3dDevice.Get(), 
+			m_CommandList.Get(), vertices, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
+
+		m_IndexBuffer= make_unique<cDefaultBuffer<UINT>>(m_D3dDevice.Get(),
+			m_CommandList.Get(), indices, D3D12_RESOURCE_STATE_INDEX_BUFFER);
+	}
+
+	if (combinedSkinnedVertex.size())
+	{
+		m_SkinnedVertexBuffer = make_unique<cDefaultBuffer<SkinnedVertex>>(m_D3dDevice.Get(),
+			m_CommandList.Get(), vertices, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
+
+		m_SkinnedIndexBuffer = make_unique<cDefaultBuffer<UINT>>(m_D3dDevice.Get(),
+			m_CommandList.Get(), indices, D3D12_RESOURCE_STATE_INDEX_BUFFER);
+	}
+
+	m_Materials = make_unique<cIndexManagementBuffer<Material>>(m_D3dDevice.Get(), 
+		m_CommandList.Get(), matNames, matDatas);
+
+	ThrowIfFailed(m_CommandList->Close());
+	ID3D12CommandList* cmdsLists[] = { m_CommandList.Get() };
+	m_CommandQueue->ExecuteCommandLists(_countof(cmdsLists), cmdsLists);
+	FlushCommandQueue();
+
+	m_Materials->ClearUploadBuffer();
+	m_VertexBuffer->ClearUploadBuffer();
+	m_IndexBuffer->ClearUploadBuffer();
+	m_SkinnedVertexBuffer->ClearUploadBuffer();
+	m_SkinnedIndexBuffer->ClearUploadBuffer();
+}
+
+void GraphicDX12::ReadyWorksEnd()
+{
+	BuildFrameResources();
+
+	ThrowIfFailed(m_CommandList->Close());
+	ID3D12CommandList* cmdsLists[] = { m_CommandList.Get() };
+	m_CommandQueue->ExecuteCommandLists(_countof(cmdsLists), cmdsLists);
+	FlushCommandQueue();
 }
 
 void GraphicDX12::FlushCommandQueue()
@@ -360,12 +530,12 @@ void GraphicDX12::Draw()
 
 	m_CommandList->SetGraphicsRootSignature(m_RootSignature.Get());
 
-	auto matBuffer = m_FrameResource->materialBuffer->Resource();
+	auto matBuffer = m_Materials->GetBufferResource();
 	m_CommandList->SetGraphicsRootShaderResourceView(0, matBuffer->GetGPUVirtualAddress());
 	m_CommandList->SetGraphicsRootConstantBufferView(1, m_FrameResource->passCB->Resource()->GetGPUVirtualAddress());
 	m_CommandList->SetGraphicsRootDescriptorTable(3, m_TextureBuffer->GetHeap()->GetGPUDescriptorHandleForHeapStart());
 
-	DrawMesh(1, &m_MeshObject);
+	DrawObjects();
 
 	m_CommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(),
 		D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
@@ -397,8 +567,7 @@ D3D12_CPU_DESCRIPTOR_HANDLE GraphicDX12::DepthStencilView() const
 
 void GraphicDX12::BuildFrameResources()
 {
-	m_FrameResource = make_unique<FrameResource>(m_D3dDevice.Get(),
-		2);
+	m_FrameResource = make_unique<FrameResource>(m_D3dDevice.Get(), 2);
 
 	m_FrameResource->ObjectCB = make_unique<UploadBuffer<ObjectConstants>>(m_D3dDevice.Get(), 1, true);
 }
@@ -588,18 +757,18 @@ void GraphicDX12::UpdateObjects()
 
 }
 
-void GraphicDX12::DrawMesh(UINT numMeshs, MeshObject* meshs)
+void GraphicDX12::DrawObjects()
 {
-	for (UINT i = 0; i < numMeshs; i++)
+	/*for (UINT i = 0; i < numMeshs; i++)
 	{
 		D3D12_VERTEX_BUFFER_VIEW vertexBufferView = {};
-		vertexBufferView.BufferLocation = reinterpret_cast<D3D12_GPU_VIRTUAL_ADDRESS>(meshs[i].m_VertexData);
+		vertexBufferView.BufferLocation = reinterpret_cast<D3D12_GPU_VIRTUAL_ADDRESS>(meshs[i].vertexBufferrVirtualAdress);
 		vertexBufferView.SizeInBytes = meshs[i].m_VertexDataSize;
 		vertexBufferView.StrideInBytes = meshs[i].m_VertexByteSize;
 
 		D3D12_INDEX_BUFFER_VIEW indexBufferView = {};
 		indexBufferView.BufferLocation = reinterpret_cast<D3D12_GPU_VIRTUAL_ADDRESS>(meshs[i].m_IndexData);
-
+		
 		if (meshs[i].m_IndexByteSize == 2)
 		{
 			indexBufferView.Format = DXGI_FORMAT_R16_UINT;
@@ -616,12 +785,12 @@ void GraphicDX12::DrawMesh(UINT numMeshs, MeshObject* meshs)
 		m_CommandList->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		m_CommandList->SetGraphicsRootConstantBufferView(2, m_FrameResource->ObjectCB->Resource()->GetGPUVirtualAddress());
 
-		for (auto& it : meshs->m_Subs)
+		for (auto& it : meshs->subs)
 		{
 
 			m_CommandList->DrawIndexedInstanced(it.second.numIndex, 1, it.second.indexOffset, 0, 0);
 		}
-	}
+	}*/
 }
 
 ComPtr<ID3DBlob> GraphicDX12::CompileShader(

@@ -1,11 +1,10 @@
 #pragma once
 
-#include "IComponent.h"
+#include "GameObject.h"
 #include <memory>
 
 class ICompnentProvider
 {
 public:
-	virtual std::unique_ptr<IComponent> CreateComponent(COMPONENTTYPE type, PxTransform& trnas)=0;
-
+	virtual std::unique_ptr<IComponent> CreateComponent(COMPONENTTYPE type, GameObject& gameObject)=0;
 };

@@ -1,54 +1,62 @@
 #pragma once
-
+#include "AnimationStructs.h"
 #include <memory>
-#include <string>
-#include <vector>
-#include "Vertex.h"
-#include "AnimationObject.h"
+#include <utility>
 
-namespace Ani
-{
-	struct Mesh;
-	struct Node;
-	struct AnimBone;
-	struct Animation;
-	struct AniMaterial;
-}
-
-// This Codes was referenced from HLSLCrossCompiler-master
+// This Codes was referenced from HLSLCrossCompiler-master (xfileparser.cpp)
 
 class XFileParser final
 {
 public:
-	XFileParser();
-	virtual ~XFileParser();
-
-	void GetVertexData(std::vector<SkinnedVertex>& vertexes, std::vector<unsigned int>& indices);
-	std::unique_ptr<AnimationObject> GetAniObject() 
+	struct BoneWeight
 	{
-		assert(m_AniObject.get() != nullptr);
+		unsigned int	vertexIndex = 0;
+		float			weight = 0;
+	};
 
-		return move(m_AniObject); 
-	}
+	struct Bone
+	{
+		CGH::MAT16 offsetMat;
+		std::vector<BoneWeight> weights;
+	};
+
+public:
+	XFileParser();
+	virtual ~XFileParser() {}
+
+	bool LoadXfile(const std::string& filename,
+		std::vector<SkinnedVertex>& vertices,
+		std::vector<unsigned int>& indices,
+		std::vector<Ani::Subset>& subsets,
+		std::vector<Ani::AniMaterial>& mats,
+		Ani::SkinnedData& skinInfo);
 
 private:
-	void Parsing(const std::string& filePath);
-	void ParseFile();
+	void CheckFileAttribute(std::vector<char>& fileData, std::vector<char>& uncompressed);
 	void ParseDataObjectTemplate();
-	void ParseDataObjectFrame(Ani::Node* pParent);
+	void ParseDataObjectFrame(int parentIndex,
+							std::vector<SkinnedVertex>& vertices,
+							std::vector<unsigned int>& indices,
+							std::vector<Ani::Subset>& subsets,
+							std::vector<Ani::AniMaterial>& mats,
+							Ani::SkinnedData& skinInfo);
 	void ParseDataObjectTransformationMatrix(CGH::MAT16& pMatrix);
-	void ParseDataObjectMesh(Ani::Mesh* pMesh);
-	void ParseDataObjectSkinWeights(Ani::Mesh* pMesh);
-	void ParseDataObjectSkinMeshHeader(Ani::Mesh* pMesh);
-	void ParseDataObjectMeshNormals(Ani::Mesh* pMesh);
-	void ParseDataObjectMeshTextureCoords(Ani::Mesh* pMesh);
-	void ParseDataObjectMeshVertexColors(Ani::Mesh* pMesh);
-	void ParseDataObjectMeshMaterialList(Ani::Mesh* pMesh);
-	void ParseDataObjectMaterial(Ani::AniMaterial* pMaterial);
+	void ParseDataObjectMesh(std::vector<SkinnedVertex>& vertices,
+							std::vector<unsigned int>& indices,
+							std::vector<Ani::Subset>& subsets,
+							std::vector<Ani::AniMaterial>& mats);
+
+	void ParseDataObjectSkinMeshHeader();
+	void ParseDataObjectSkinWeights(Ani::Subset& subset);
+	void ParseDataObjectMeshNormals(Ani::Subset& subset, std::vector<SkinnedVertex>& vertices);
+	void ParseDataObjectMeshTextureCoords(Ani::Subset& subset, std::vector<SkinnedVertex>& vertices);
+	void ParseDataObjectMeshVertexColors(Ani::Subset& subset, std::vector<SkinnedVertex>& vertices);
+	void ParseDataObjectMeshMaterialList(Ani::Subset& subset, std::vector<Ani::AniMaterial>& mats);
+	void ParseDataObjectMaterial(Ani::AniMaterial& mats);
 	void ParseDataObjectAnimTicksPerSecond();
-	void ParseDataObjectAnimationSet();
-	void ParseDataObjectAnimation(Ani::Animation* pAnim);
-	void ParseDataObjectAnimationKey(Ani::AnimBone* pAnimBone);
+	void ParseDataObjectAnimationSet(Ani::SkinnedData& skinInfo);
+	std::string ParseDataObjectAnimation(Ani::Animation& pAnim);
+	void ParseDataObjectAnimationKey(Ani::AnimBone& pAnimBone);
 	void ParseDataObjectTextureFilename(std::string& pName);
 	void ParseUnknownDataObject();
 
@@ -92,12 +100,15 @@ private:
 	/** Throws an exception with a line number and the given text. */
 	void ThrowException(const std::string& pText);
 
-	/** Filters the imported hierarchy for some degenerated cases that some exporters produce.
-	 * @param pData The sub-hierarchy to filter
-	 */
-	void FilterHierarchy(Ani::Node* pNode);
+private:
+	void DataRearrangement(std::vector<SkinnedVertex>& vertices,
+						Ani::SkinnedData& skinInfo);
 
 protected:
+	std::unordered_map<std::string, unsigned int>		m_IndexMap;
+	std::unordered_map<std::string, XFileParser::Bone>	m_Bones;
+	std::vector<std::string>							m_BoneNames;
+
 	unsigned int m_MajorVersion, m_MinorVersion;
 	bool m_IsBinaryFormat;
 	unsigned int m_BinaryFloatSize;
@@ -107,13 +118,5 @@ protected:
 	const char* End;
 
 	unsigned int m_LineNumber;
-
-private:
-	std::vector<Ani::Node>				m_Nodes;
-	std::vector<int>					m_ParentIndex;
-	std::vector<Ani::Animation>			m_AnimationClips;
-	std::vector<SkinnedVertex>			m_Vertexes;
-	std::vector<unsigned int>			m_Indices;
-	std::unique_ptr<AnimationObject>	m_AniObject;
 };
 

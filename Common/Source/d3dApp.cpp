@@ -70,7 +70,7 @@ bool D3DApp::Initialize()
 	if (!m_GDevice->Init(m_hMainWnd)) return false;
 	if (!m_PXDevice->Init(m_GDevice->GetDevicePtr())) return false;
 	
-	m_GDevice->ReadyWorks();
+	m_GDevice->ReadyWorks(m_TargetTextureFolders, m_TargetMeshFolders);
 
 	InitObjects();
 
@@ -80,6 +80,9 @@ bool D3DApp::Initialize()
  
 LRESULT D3DApp::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
+	m_Mouse.ProcessMessage(msg, wParam, lParam);
+	m_Keyboard.ProcessMessage(msg, wParam, lParam);
+
 	switch( msg )
 	{
 	case WM_ACTIVATE:

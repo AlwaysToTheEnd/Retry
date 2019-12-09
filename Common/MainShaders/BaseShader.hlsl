@@ -1,9 +1,12 @@
 struct MaterialData
 {
-	float4 DriffuseAlbedo;
-	float3 FresnelR0;
-	float Roughness;
-	float4x4 MatTransform;
+	float4		DriffuseAlbedo;
+	float3		FresnelR0;
+	float		Roughness;
+	int			DiffuseMapIndex;
+	int			NormalMapIndex;
+	uint		MaterialPad1;
+	uint		MaterialPad2;
 };
 
 StructuredBuffer<MaterialData> gInstanceData : register(t0, space1);

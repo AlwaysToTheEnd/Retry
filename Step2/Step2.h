@@ -3,19 +3,17 @@
 #include "../Common/Source/GraphicDX12.h"
 #include "../Common/Source/d3dApp.h"
 #include "../Common/Source/cCamera.h"
-#include "DirectXTK/Mouse.h"
-#include "DirectXTK/Keyboard.h"
 
 //using typedef to select core devices.
 typedef GraphicDX12	UsingGraphicDevice;
 typedef PhysX4_0	UsingPhsicsDevice;
 
-inline MAT16 GetDXMatrixAtRigidActor(const physx::PxRigidActor* rigidActor)
+inline CGH::MAT16 GetDXMatrixAtRigidActor(const physx::PxRigidActor* rigidActor)
 {
-	MAT16 T;
+	CGH::MAT16 T;
 	physx::PxMat44 mat(rigidActor->getGlobalPose());
 
-	memcpy(&T.m[0][0], &mat.column0.x, sizeof(MAT16));
+	memcpy(&T.m[0][0], &mat.column0.x, sizeof(CGH::MAT16));
 
 	return T;
 }
@@ -28,7 +26,7 @@ public:
 	Step2& operator=(const Step2& rhs) = delete;
 	virtual ~Step2();
 
-	virtual std::unique_ptr<IComponent> CreateComponent(COMPONENTTYPE type, PxTransform& tran) override;
+	virtual std::unique_ptr<IComponent> CreateComponent(COMPONENTTYPE type, GameObject& gameObject) override;
 	virtual LRESULT MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) override;
 
 private:
@@ -39,7 +37,6 @@ private:
 	virtual void InitObjects() override;
 
 private:
-	cCamera		m_Camera;
-	Mouse		m_Mouse;
-	Keyboard	m_Keyboard;
+	cCamera					m_Camera;
+	std::vector<CGH::MAT16>	m_ObjectsMat;
 };

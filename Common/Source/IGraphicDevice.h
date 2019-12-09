@@ -4,19 +4,12 @@
 #include "Vertex.h"
 
 class cCamera;
-using namespace CGH;
-
-namespace CGH
-{
-	enum MESH_TYPE
-	{
-		MESH_NORMAL,
-		MESH_SKINED
-	};
-}
+struct MeshObject;
+class D3DApp;
 
 class IGraphicDevice : public ICompnentProvider
 {
+	friend class D3DApp;
 public:
 	IGraphicDevice() = default;
 	virtual ~IGraphicDevice() = default;
@@ -27,10 +20,13 @@ public:
 	virtual void* GetDevicePtr() = 0;
 	virtual void OnResize() = 0;
 
-	void ReadyWorks()
+private:
+	void ReadyWorks(const std::vector<std::string>& targetTextureFolders,
+					const std::vector<std::string>& targetMeshFolders)
 	{
-		LoadMeshAndMaterialFromFolder();
-		LoadTextureFromFolder();
+		LoadTextureFromFolder(targetTextureFolders);
+		LoadMeshAndMaterialFromFolder(targetMeshFolders);
+		ReadyWorksEnd();
 	}
 
 public:
@@ -40,12 +36,13 @@ public:
 	void SetClientSize(UINT width, UINT height) { m_ClientWidth = width, m_ClientHeight = height; }
 
 protected:
-	virtual void LoadMeshAndMaterialFromFolder() = 0;
-	virtual void LoadTextureFromFolder() = 0;
+	virtual void LoadTextureFromFolder(const std::vector<std::string>& targetTextureFolders) = 0;
+	virtual void LoadMeshAndMaterialFromFolder(const std::vector<std::string>& targetMeshFolders) = 0;
+	virtual void ReadyWorksEnd() = 0;
 
 protected:
-	MAT16			m_ViewMatrix;
-	MAT16			m_ProjectionMat;
+	CGH::MAT16		m_ViewMatrix;
+	CGH::MAT16		m_ProjectionMat;
 	HWND			m_MainWndHandle = nullptr;
 	int				m_ClientWidth = 1000;
 	int				m_ClientHeight = 700;
