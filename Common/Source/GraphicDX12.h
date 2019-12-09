@@ -18,7 +18,7 @@
 #pragma comment(lib, "D3D12.lib")
 #pragma comment(lib, "dxgi.lib")
 
-#include "XFileParser.h"
+#include "XFileParser.h"	
 
 class cTextureBuffer;
 

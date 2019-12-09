@@ -19,7 +19,6 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\Common\Source\AnimationObject.cpp" />
     <ClCompile Include="..\Common\Source\AnimationStructs.cpp" />
     <ClCompile Include="..\Common\Source\BaseClass.cpp" />
     <ClCompile Include="..\Common\Source\BaseComponent.cpp" />
@@ -47,7 +46,6 @@
     <ClCompile Include="Step2.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\Common\Source\AnimationObject.h" />
     <ClInclude Include="..\Common\Source\AnimationStructs.h" />
     <ClInclude Include="..\Common\Source\BaseClass.h" />
     <ClInclude Include="..\Common\Source\BaseComponent.h" />
