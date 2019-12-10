@@ -1,7 +1,7 @@
 #pragma once
-#include "IComponentProvider.h"
+#include "IComponentCreater.h"
 
-class IPhysicsDevice : public ICompnentProvider
+class IPhysicsDevice : public ICompnentCreater
 {
 public:
 	IPhysicsDevice() = default;

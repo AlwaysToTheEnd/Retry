@@ -23,6 +23,7 @@
     <ClCompile Include="..\Common\Source\BaseClass.cpp" />
     <ClCompile Include="..\Common\Source\BaseComponent.cpp" />
     <ClCompile Include="..\Common\Source\cCamera.cpp" />
+    <ClCompile Include="..\Common\Source\ComponentUpdater.cpp" />
     <ClCompile Include="..\Common\Source\cTextureBuffer.cpp" />
     <ClCompile Include="..\Common\Source\d3dApp.cpp" />
     <ClCompile Include="..\Common\Source\d3dUtil.cpp" />
@@ -32,6 +33,8 @@
     <ClCompile Include="..\Common\Source\GameObject.cpp" />
     <ClCompile Include="..\Common\Source\GraphicComponent.cpp" />
     <ClCompile Include="..\Common\Source\GraphicDX12.cpp" />
+    <ClCompile Include="..\Common\Source\IComponent.cpp" />
+    <ClCompile Include="..\Common\Source\IComponentCreater.cpp" />
     <ClCompile Include="..\Common\Source\PhysX4_0.cpp" />
     <ClCompile Include="..\Common\Source\XFileParser.cpp" />
     <ClCompile Include="..\Common\Source\zlib\adler32.c" />
@@ -51,6 +54,7 @@
     <ClInclude Include="..\Common\Source\BaseComponent.h" />
     <ClInclude Include="..\Common\Source\cCamera.h" />
     <ClInclude Include="..\Common\Source\cDefaultBuffer.h" />
+    <ClInclude Include="..\Common\Source\ComponentUpdater.h" />
     <ClInclude Include="..\Common\Source\DDSTextureLoader.h" />
     <ClInclude Include="..\Common\Source\DX12RenderClasses.h" />
     <ClInclude Include="..\Common\Source\GameObject.h" />
@@ -60,7 +64,7 @@
     <ClInclude Include="..\Common\Source\d3dApp.h" />
     <ClInclude Include="..\Common\Source\d3dUtil.h" />
     <ClInclude Include="..\Common\Source\d3dx12Residency.h" />
-    <ClInclude Include="..\Common\Source\IComponentProvider.h" />
+    <ClInclude Include="..\Common\Source\IComponentCreater.h" />
     <ClInclude Include="..\Common\Source\IGraphicDevice.h" />
     <ClInclude Include="..\Common\Source\GraphicDX12.h" />
     <ClInclude Include="..\Common\Source\cIndexManagementBuffer.h" />

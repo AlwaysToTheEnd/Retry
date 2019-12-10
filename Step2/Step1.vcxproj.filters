@@ -43,6 +43,15 @@
     <Filter Include="Common\CodeResources\Components">
       <UniqueIdentifier>{cebfb674-268f-4769-8844-0419a7c46bea}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Common\CodeResources\Procedure Class">
+      <UniqueIdentifier>{f8b7cc8e-b6ca-43c8-b634-649675801085}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Common\DeviceInstance\DX12Supporters\Buffer">
+      <UniqueIdentifier>{f715426f-ec1b-493c-9c2b-e87a85c6c3ec}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Object\GameObjects">
+      <UniqueIdentifier>{55e480f8-e552-48de-a884-b8b2d8b2518d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Step2.cpp">
@@ -54,31 +63,7 @@
     <ClCompile Include="..\Common\Source\BaseClass.cpp">
       <Filter>Common\CodeResources</Filter>
     </ClCompile>
-    <ClCompile Include="..\Common\Source\cCamera.cpp">
-      <Filter>Common\CodeResources</Filter>
-    </ClCompile>
     <ClCompile Include="..\Common\Source\d3dUtil.cpp">
-      <Filter>Common\CodeResources</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Common\Source\GraphicDX12.cpp">
-      <Filter>Common\DeviceInstance\DX12Supporters</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Common\Source\PhysX4_0.cpp">
-      <Filter>Common\DeviceInstance\PXSupporters</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Common\Source\DirectXTK\Keyboard.cpp">
-      <Filter>Common\CodeResources</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Common\Source\DirectXTK\Mouse.cpp">
-      <Filter>Common\CodeResources</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Common\Source\GameObject.cpp">
-      <Filter>Common\CodeResources</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Common\Source\cTextureBuffer.cpp">
-      <Filter>Common\DeviceInstance\DX12Supporters</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Common\Source\DDSTextureLoader.cpp">
       <Filter>Common\CodeResources</Filter>
     </ClCompile>
     <ClCompile Include="..\Common\Source\zlib\inflate.c">
@@ -120,15 +105,45 @@
     <ClCompile Include="..\Common\Source\BaseComponent.cpp">
       <Filter>Common\CodeResources\Components</Filter>
     </ClCompile>
+    <ClCompile Include="..\Common\Source\GameObject.cpp">
+      <Filter>Object\GameObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Source\cCamera.cpp">
+      <Filter>Common\CodeResources\Procedure Class</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Source\DirectXTK\Keyboard.cpp">
+      <Filter>Common\CodeResources\Procedure Class</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Source\DirectXTK\Mouse.cpp">
+      <Filter>Common\CodeResources\Procedure Class</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Source\cTextureBuffer.cpp">
+      <Filter>Common\DeviceInstance\DX12Supporters\Buffer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Source\DDSTextureLoader.cpp">
+      <Filter>Common\DeviceInstance\DX12Supporters\Buffer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Source\GraphicDX12.cpp">
+      <Filter>Common\DeviceInstance\_Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Source\IComponent.cpp">
+      <Filter>Common\CodeResources\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Source\PhysX4_0.cpp">
+      <Filter>Common\DeviceInstance\_Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Source\IComponentCreater.cpp">
+      <Filter>Common\DeviceInstance\_Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Source\ComponentUpdater.cpp">
+      <Filter>Common\CodeResources\Components</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Common\Source\d3dApp.h">
       <Filter>Step2</Filter>
     </ClInclude>
     <ClInclude Include="..\Common\Source\BaseClass.h">
-      <Filter>Common\CodeResources</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Common\Source\cCamera.h">
       <Filter>Common\CodeResources</Filter>
     </ClInclude>
     <ClInclude Include="..\Common\Source\d3dUtil.h">
@@ -143,29 +158,8 @@
     <ClInclude Include="..\Common\Source\IGraphicDevice.h">
       <Filter>Common\DeviceInstance\_Interface</Filter>
     </ClInclude>
-    <ClInclude Include="..\Common\Source\GraphicDX12.h">
-      <Filter>Common\DeviceInstance\DX12Supporters</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Common\Source\PhysX4_0.h">
-      <Filter>Common\DeviceInstance\PXSupporters</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Common\Source\d3dx12Residency.h">
-      <Filter>Common\CodeResources</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Common\Source\IComponentProvider.h">
-      <Filter>Common\CodeResources</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Common\Source\GameObject.h">
-      <Filter>Common\CodeResources</Filter>
-    </ClInclude>
     <ClInclude Include="..\Common\Source\DX12RenderClasses.h">
       <Filter>Common\DeviceInstance\DX12Supporters</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Common\Source\cTextureBuffer.h">
-      <Filter>Common\DeviceInstance\DX12Supporters</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Common\Source\DDSTextureLoader.h">
-      <Filter>Common\CodeResources</Filter>
     </ClInclude>
     <ClInclude Include="Step2.h">
       <Filter>Step2</Filter>
@@ -179,12 +173,6 @@
     <ClInclude Include="..\Common\Source\AnimationStructs.h">
       <Filter>Common\CodeResources</Filter>
     </ClInclude>
-    <ClInclude Include="..\Common\Source\cIndexManagementBuffer.h">
-      <Filter>Common\DeviceInstance\DX12Supporters</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Common\Source\cDefaultBuffer.h">
-      <Filter>Common\DeviceInstance\DX12Supporters</Filter>
-    </ClInclude>
     <ClInclude Include="..\Common\Source\IComponent.h">
       <Filter>Common\CodeResources\Components</Filter>
     </ClInclude>
@@ -193,6 +181,39 @@
     </ClInclude>
     <ClInclude Include="..\Common\Source\GraphicComponent.h">
       <Filter>Common\CodeResources\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\GameObject.h">
+      <Filter>Object\GameObjects</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\cCamera.h">
+      <Filter>Common\CodeResources\Procedure Class</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\d3dx12Residency.h">
+      <Filter>Common\DeviceInstance\DX12Supporters</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\cTextureBuffer.h">
+      <Filter>Common\DeviceInstance\DX12Supporters\Buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\cDefaultBuffer.h">
+      <Filter>Common\DeviceInstance\DX12Supporters\Buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\cIndexManagementBuffer.h">
+      <Filter>Common\DeviceInstance\DX12Supporters\Buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\DDSTextureLoader.h">
+      <Filter>Common\DeviceInstance\DX12Supporters\Buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\GraphicDX12.h">
+      <Filter>Common\DeviceInstance\_Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\IComponentCreater.h">
+      <Filter>Common\DeviceInstance\_Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\ComponentUpdater.h">
+      <Filter>Common\CodeResources\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\PhysX4_0.h">
+      <Filter>Common\DeviceInstance\_Interface</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

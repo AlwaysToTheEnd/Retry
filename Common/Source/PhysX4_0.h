@@ -2,8 +2,7 @@
 #include "PxPhysicsAPI.h"
 #include "IPhysicsDevice.h"
 #include "Px1RefPtr.h"
-#include "IComponentProvider.h"
-
+#include "IComponentCreater.h"
 
 class PhysX4_0 final : public IPhysicsDevice
 {
@@ -14,6 +13,9 @@ public:
 	virtual bool Init(void* graphicDevicePtr);
 	virtual void Update();
 	virtual std::unique_ptr<IComponent> CreateComponent(COMPONENTTYPE type, GameObject& gameObject) override;
+
+private: // Only Used by FuncPtr
+	virtual void ComponentDeleteManaging(COMPONENTTYPE type, int id) override;
 
 private:
 	physx::PxFilterFlags ScissorFilter(physx::PxFilterObjectAttributes attributes0, physx::PxFilterData filterData0,

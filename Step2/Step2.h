@@ -26,7 +26,6 @@ public:
 	Step2& operator=(const Step2& rhs) = delete;
 	virtual ~Step2();
 
-	virtual std::unique_ptr<IComponent> CreateComponent(COMPONENTTYPE type, GameObject& gameObject) override;
 	virtual LRESULT MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) override;
 
 private:
@@ -38,5 +37,4 @@ private:
 
 private:
 	cCamera					m_Camera;
-	std::vector<CGH::MAT16>	m_ObjectsMat;
 };

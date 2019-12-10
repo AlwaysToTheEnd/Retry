@@ -1,13 +1,13 @@
 #pragma once
 #include "d3dUtil.h"
-#include "IComponentProvider.h"
+#include "IComponentCreater.h"
 #include "Vertex.h"
 
 class cCamera;
 struct MeshObject;
 class D3DApp;
 
-class IGraphicDevice : public ICompnentProvider
+class IGraphicDevice : public ICompnentCreater
 {
 	friend class D3DApp;
 public:

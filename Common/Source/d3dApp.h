@@ -3,6 +3,7 @@
 #include "IGraphicDevice.h"
 #include "IPhysicsDevice.h"
 #include "IComponent.h"
+#include "ComponentUpdater.h"
 #include "DirectXTK/Mouse.h"
 #include "DirectXTK/Keyboard.h"
 
@@ -13,7 +14,7 @@ extern const std::string gMainFolderFath = "./../Common/";
 
 struct MeshObject;
 
-class D3DApp
+class D3DApp :public ICompnentCreater
 {
 public:
 	std::vector<std::string>		m_TargetMeshFolders =
@@ -33,14 +34,16 @@ protected:
 
 public:
 	static D3DApp* GetApp();
-	Mouse* GetMouse() { return &m_Mouse; }
-	Keyboard* GetKeyBoard() { return &m_Keyboard; }
-
+	DirectX::Mouse* GetMouse() { return &m_Mouse; }
+	DirectX::Keyboard* GetKeyBoard() { return &m_Keyboard; }
+	
 	bool Initialize();
 	int Run();
 
+	std::unique_ptr<IComponent> CreateComponent(COMPONENTTYPE type, GameObject& gameObject) override;
+	void ComponentDeleteManaging(COMPONENTTYPE type, int id) override;
+
 public:
-	virtual std::unique_ptr<IComponent> CreateComponent(COMPONENTTYPE type, GameObject& gameObject) = 0;
 	virtual LRESULT MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 protected:
@@ -58,8 +61,8 @@ private:
 protected:
 	static D3DApp* m_App;
 
-	Mouse		m_Mouse;
-	Keyboard	m_Keyboard;
+	DirectX::Mouse		m_Mouse;
+	DirectX::Keyboard	m_Keyboard;
 
 	HINSTANCE	m_hAppInst = nullptr;
 	HWND		m_hMainWnd = nullptr;
@@ -70,6 +73,8 @@ protected:
 
 	std::unique_ptr<IGraphicDevice>	m_GDevice;
 	std::unique_ptr<IPhysicsDevice>	m_PXDevice;
+
+	InstanceAndIndexManager<CGH::MAT16>	m_ObjectsMat;
 };
 
 template<typename GraphicDeviceClass,typename PhysicsDeviceClass>

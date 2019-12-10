@@ -13,6 +13,7 @@
 #include "DX12RenderClasses.h"
 #include "cIndexManagementBuffer.h"
 #include "IGraphicDevice.h"
+#include "AnimationStructs.h"
 
 #pragma comment(lib,"d3dcompiler.lib")
 #pragma comment(lib, "D3D12.lib")
@@ -21,6 +22,8 @@
 #include "XFileParser.h"	
 
 class cTextureBuffer;
+
+using Microsoft::WRL::ComPtr;
 
 template <typename T>
 class UploadBuffer
@@ -113,6 +116,9 @@ public:
 	virtual void OnResize() override;
 	virtual void* GetDevicePtr() override { return m_D3dDevice.Get(); }
 	virtual std::unique_ptr<IComponent> CreateComponent(COMPONENTTYPE type, GameObject& gameObject) override;
+	
+private: // Only Used by FuncPtr
+	virtual void ComponentDeleteManaging(COMPONENTTYPE type, int id) override;
 
 private: // Used Function by ReadyWorks 
 	virtual void LoadTextureFromFolder(const std::vector<std::string>& targetTextureFolders) override;

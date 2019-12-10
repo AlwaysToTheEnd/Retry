@@ -269,22 +269,25 @@ void GraphicDX12::OnResize()
 std::unique_ptr<IComponent> GraphicDX12::CreateComponent(COMPONENTTYPE type, GameObject& gameObject)
 {
 	IComponent* newComponent=nullptr;
-	
+
+	auto ComUpdater = GetComponentUpdater(type);
+	UINT id = ComUpdater.GetNextID();
+
 	switch (type)
 	{
 	case COMPONENTTYPE::COM_RENDERER:
 	{
-		newComponent = new ComRenderer(gameObject);
+		newComponent = new ComRenderer(gameObject, id);
 	}
 		break;
 	case COMPONENTTYPE::COM_MESH:
 	{
-
+		newComponent = new ComMesh(gameObject, id);
 	}
 		break;
 	case COMPONENTTYPE::COM_ANIMATER:
 	{
-
+		newComponent = new ComAnimater(gameObject, id);
 	}
 		break;
 	default:
@@ -292,7 +295,30 @@ std::unique_ptr<IComponent> GraphicDX12::CreateComponent(COMPONENTTYPE type, Gam
 		break;
 	}
 
+	ComUpdater.AddData(newComponent);
 	return std::unique_ptr<IComponent>(newComponent);
+}
+
+void GraphicDX12::ComponentDeleteManaging(COMPONENTTYPE type, int id)
+{
+	switch (type)
+	{
+	case COMPONENTTYPE::COM_RENDERER:
+	{
+	}
+		break;
+	case COMPONENTTYPE::COM_MESH:
+	{
+	}
+		break;
+	case COMPONENTTYPE::COM_ANIMATER:
+	{
+	}
+		break;
+	default:
+		assert(false);
+		break;
+	}
 }
 
 void GraphicDX12::LoadTextureFromFolder(const std::vector<std::string>& targetTextureFolders)
@@ -326,6 +352,8 @@ void GraphicDX12::LoadTextureFromFolder(const std::vector<std::string>& targetTe
 			m_CommandQueue.Get(), it.first, it.second);
 	}
 
+	auto test1= bind(&GraphicDX12::FlushCommandQueue, this);
+	function<void()> test = test1;
 	m_TextureBuffer->End(m_CommandQueue.Get(), bind(&GraphicDX12::FlushCommandQueue, this));
 }
 

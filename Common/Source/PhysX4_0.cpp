@@ -122,7 +122,50 @@ void PhysX4_0::Update()
 
 std::unique_ptr<IComponent> PhysX4_0::CreateComponent(COMPONENTTYPE type, GameObject& gameObject)
 {
-	return std::unique_ptr<IComponent>();
+	IComponent* newComponent = nullptr;
+
+	switch (type)
+	{
+	case COMPONENTTYPE::COM_PHYSICS:
+		break;
+	case COMPONENTTYPE::COM_TRANSFORM:
+		break;
+	case COMPONENTTYPE::COM_RENDERER:
+		break;
+	case COMPONENTTYPE::COM_MESH:
+		break;
+	case COMPONENTTYPE::COM_ANIMATER:
+		break;
+	case COMPONENTTYPE::COM_END:
+		break;
+	default:
+		assert(false);
+		break;
+	}
+
+	return std::unique_ptr<IComponent>(newComponent);
+}
+
+void PhysX4_0::ComponentDeleteManaging(COMPONENTTYPE type, int id)
+{
+	switch (type)
+	{
+	case COMPONENTTYPE::COM_PHYSICS:
+		break;
+	case COMPONENTTYPE::COM_TRANSFORM:
+		break;
+	case COMPONENTTYPE::COM_RENDERER:
+		break;
+	case COMPONENTTYPE::COM_MESH:
+		break;
+	case COMPONENTTYPE::COM_ANIMATER:
+		break;
+	case COMPONENTTYPE::COM_END:
+		break;
+	default:
+		assert(false);
+		break;
+	}
 }
 
 PxFilterFlags PhysX4_0::ScissorFilter(PxFilterObjectAttributes attributes0, PxFilterData filterData0, PxFilterObjectAttributes attributes1, PxFilterData filterData1, PxPairFlags& pairFlags, const void* constantBlock, PxU32 constantBlockSize)

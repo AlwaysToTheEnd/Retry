@@ -1,6 +1,5 @@
 #include "Step2.h"
 #include <random>
-#include "BaseComponent.h"
 using namespace std;
 
 mt19937_64 g_random(710);
@@ -31,33 +30,6 @@ void Step2::InitObjects()
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
-
-std::unique_ptr<IComponent> Step2::CreateComponent(COMPONENTTYPE type, GameObject& gameObject)
-{
-	if (type == COMPONENTTYPE::COM_END)
-	{
-		assert(false && "THIS COMPONENT IS NONE USED TYPE");
-		return nullptr;
-	}
-
-	if (type == COMPONENTTYPE::COM_TRANSFORM)
-	{
-		return make_unique<ComTransform>(gameObject, 
-			static_cast<unsigned int>(m_ObjectsMat.size()), &m_ObjectsMat);
-
-		m_ObjectsMat.emplace_back();
-	}
-	if (type < COMPONENTTYPE::COM_TRANSFORM)
-	{
-		return m_PXDevice->CreateComponent(type, gameObject);
-	}
-	else
-	{
-		return m_GDevice->CreateComponent(type, gameObject);
-	}
-
-	return nullptr;
-}
 
 LRESULT Step2::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {

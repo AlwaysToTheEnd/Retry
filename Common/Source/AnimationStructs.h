@@ -115,20 +115,3 @@ namespace Ani
 		std::unordered_map<std::string, Animation>	m_Animations;
 	};
 }
-
-struct SubmeshData
-{
-	std::string		material;
-	unsigned int	numVertex = 0;
-	unsigned int	vertexOffset = 0;
-	unsigned int	numIndex = 0;
-	unsigned int	indexOffset = 0;
-};
-
-struct MeshObject
-{
-	unsigned int	primitiveType;
-	CGH::MESH_TYPE	type = CGH::MESH_NORMAL;
-
-	std::unordered_map<std::string, SubmeshData> subs;
-};
