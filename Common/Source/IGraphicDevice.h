@@ -17,6 +17,7 @@ public:
 	virtual bool Init(HWND hWnd) = 0;
 	virtual void Update() = 0;
 	virtual void Draw() = 0;
+	virtual void ReservedWorksClear() = 0;
 	virtual void* GetDevicePtr() = 0;
 	virtual void OnResize() = 0;
 

@@ -30,7 +30,11 @@ void D3DApp::BaseUpdate()
 {
 	Update();
 
+	GetComponentUpdater(COMPONENTTYPE::COM_TRANSFORM).Update();
+	GetComponentUpdater(COMPONENTTYPE::COM_PHYSICS).Update();
 	m_PXDevice->Update();
+	GetComponentUpdater(COMPONENTTYPE::COM_ANIMATOR).Update();
+	GetComponentUpdater(COMPONENTTYPE::COM_RENDERER).Update();
 	m_GDevice->Update();
 }
 
@@ -51,6 +55,7 @@ int D3DApp::Run()
 			{
 				BaseUpdate();
 				m_GDevice->Draw();
+				m_GDevice->ReservedWorksClear();
 			}
 			else
 			{

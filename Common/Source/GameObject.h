@@ -3,13 +3,12 @@
 #include <unordered_map>
 #include <memory>
 #include <assert.h>
-
 #include "IComponent.h"
 
 class GameObject
 {
 public:
-	GameObject();
+	GameObject() = default;
 	virtual ~GameObject() = default;
 
 	virtual void Init() = 0;
@@ -18,12 +17,13 @@ public:
 	template<typename T> T* GetComponent();
 	template<typename T> std::vector<T*> GetComponents();
 
+	static std::unordered_map<unsigned int, unsigned int> GetComponentTypeIDs();
 protected:
 	IComponent* AddComponent(COMPONENTTYPE type);
 
 private:
 	static std::unordered_map<unsigned int, unsigned int>	m_TypeIDs;
-	std::vector<std::unique_ptr<IComponent>>				m_Components[NUMCOMPONENTTYPE];
+	std::vector<std::unique_ptr<IComponent>>				m_Components[IComponent::NUMCOMPONENTTYPE];
 };
 
 template<typename T>
@@ -36,7 +36,7 @@ inline T* GameObject::GetComponent()
 	{
 		if (m_Components[iter->second].size())
 		{
-			component = m_Components[iter->second].front().get();
+			component = reinterpret_cast<T*>(m_Components[iter->second].front().get());
 		}
 	}
 
@@ -55,7 +55,7 @@ inline std::vector<T*> GameObject::GetComponents()
 		{
 			for (auto& it : m_Components[iter->second])
 			{
-				components.push_back(it.get());
+				components.push_back(reinterpret_cast<T*>(it.get()));
 			}
 		}
 	}

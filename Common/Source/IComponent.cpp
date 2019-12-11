@@ -7,6 +7,7 @@ IComponent::IComponent(COMPONENTTYPE type, GameObject& gameObject, int ID)
 	: m_TargetGameObject(&gameObject)
 	, m_Type(type)
 	, m_ID(ID)
+	, m_IsActive(true)
 {
 
 }

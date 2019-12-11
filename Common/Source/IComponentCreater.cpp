@@ -1,6 +1,6 @@
 #include "IComponentCreater.h"
 
-ComponentUpdater ICompnentCreater::m_ComUpdater[NUMCOMPONENTTYPE];
+ComponentUpdater ICompnentCreater::m_ComUpdater[IComponent::NUMCOMPONENTTYPE];
 
 ICompnentCreater::ICompnentCreater()
 {

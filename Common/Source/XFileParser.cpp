@@ -48,7 +48,6 @@ bool XFileParser::LoadXfile(	const std::string& filename,
 	skinInfo.m_Animations.clear();
 	skinInfo.m_BoneHierarchy.clear();
 	skinInfo.m_BoneOffsets.clear();
-	skinInfo.m_LocalTrnasform.clear();
 
 	m_IndexMap.clear();
 	m_Bones.clear();
@@ -130,6 +129,8 @@ bool XFileParser::LoadXfile(	const std::string& filename,
 	}
 
 	DataRearrangement(vertices, skinInfo);
+
+	return true;
 }
 
 void XFileParser::CheckFileAttribute(std::vector<char>& fileData, std::vector<char>& uncompressed)
@@ -331,7 +332,6 @@ void XFileParser::ParseDataObjectFrame(int parentIndex,
 	unsigned int currFrameIndex = skinInfo.m_BoneHierarchy.size();
 	m_IndexMap.insert({ name, currFrameIndex });
 	skinInfo.m_BoneHierarchy.push_back(parentIndex);
-	skinInfo.m_LocalTrnasform.emplace_back();
 
 	// Now inside a frame.
 	// read tokens until closing brace is reached.
@@ -354,7 +354,8 @@ void XFileParser::ParseDataObjectFrame(int parentIndex,
 		}
 		else if (objectName == "FrameTransformMatrix")
 		{
-			ParseDataObjectTransformationMatrix(skinInfo.m_LocalTrnasform.back());
+			CGH::MAT16 temp;
+			ParseDataObjectTransformationMatrix(temp);
 		}
 		else if (objectName == "Mesh")
 		{
@@ -639,7 +640,7 @@ void XFileParser::ParseDataObjectMeshMaterialList(Ani::Subset& subset, std::vect
 
 	vector<unsigned int> indexCount;
 	// read per-face material indices
-	unsigned int prevIndex = 0;
+	int prevIndex = -1;
 	unsigned int currCount = 0;
 	for (unsigned int i = 0; i < numMatIndices; i++)
 	{
@@ -852,6 +853,8 @@ string XFileParser::ParseDataObjectAnimation(Ani::Animation& pAnim)
 	}
 
 	pAnim.animBones.push_back(banim);
+
+	return boneName;
 }
 
 void XFileParser::ParseDataObjectAnimationKey(Ani::AnimBone& pAnimBone)
@@ -1492,7 +1495,7 @@ void XFileParser::ThrowException(const string& pText)
 void XFileParser::DataRearrangement(std::vector<SkinnedVertex>& vertices,
 								Ani::SkinnedData& skinInfo)
 {
-	skinInfo.m_BoneOffsets.resize(skinInfo.m_LocalTrnasform.size());
+	skinInfo.m_BoneOffsets.resize(skinInfo.m_BoneHierarchy.size());
 
 	for (auto& it : m_Bones)
 	{

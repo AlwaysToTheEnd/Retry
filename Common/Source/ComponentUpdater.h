@@ -18,7 +18,6 @@ protected:
 	std::vector<unsigned int>	m_DeletedIndices;
 };
 
-
 class ComponentUpdater : public InstanceAndIndexManager<IComponent*>
 {
 public:

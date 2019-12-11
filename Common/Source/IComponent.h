@@ -1,5 +1,6 @@
 #pragma once
 #include <functional>
+#include <vector>
 
 class GameObject;
 class D3DApp;
@@ -10,16 +11,16 @@ enum class COMPONENTTYPE
 
 	COM_TRANSFORM,
 
-	COM_RENDERER,
 	COM_MESH,
-	COM_ANIMATER,
+	COM_ANIMATOR,
+	COM_RENDERER,
 	COM_END,
 };
 
-extern const int NUMCOMPONENTTYPE = static_cast<int>(COMPONENTTYPE::COM_END);
-
 class IComponent
 {
+public:
+	static const int NUMCOMPONENTTYPE = static_cast<int>(COMPONENTTYPE::COM_END);
 	friend class D3DApp;
 public:
 	IComponent(COMPONENTTYPE type, GameObject& gameObject, int ID);
@@ -31,12 +32,12 @@ public:
 	int GetID() const { return m_ID; }
 
 protected:
-	GameObject*		m_TargetGameObject = nullptr;
-	COMPONENTTYPE	m_Type;
-	bool			m_IsActive = true;
+	GameObject*	const	m_TargetGameObject = nullptr;
 
 private:
-	int m_ID = -1;
+	COMPONENTTYPE		m_Type;
+	bool				m_IsActive;
+	const int			m_ID;
 
 private:
 	static void SetInstanceDeleteManagingFunc(std::function<void(COMPONENTTYPE, int)> func);

@@ -33,6 +33,7 @@ public:
 	{
 		m_ElementByteSize = sizeof(T);
 		m_IsConstantBuffer = isConstantBuffer;
+		m_NumElement = elementCount;
 
 		if (isConstantBuffer)
 		{
@@ -72,27 +73,33 @@ public:
 		std::memcpy(&m_MappedData[elementIndex * m_ElementByteSize], &data, sizeof(T));
 	}
 
-	void CopyData(int numElement, int offsetIndex, const T& data)
+	void CopyData(int numElement, int offsetIndex, const T* data)
 	{
-		std::memcpy(&m_MappedData[offsetIndex * m_ElementByteSize], &data, sizeof(T) * numElement);
+		assert(!m_IsConstantBuffer);
+		std::memcpy(&m_MappedData[offsetIndex * m_ElementByteSize], data, sizeof(T) * numElement);
 	}
+
+	UINT GetElementByteSize() const { return m_ElementByteSize; }
 
 private:
 	ComPtr<ID3D12Resource> m_UploadBuffer;
 	BYTE* m_MappedData = nullptr;
 
+	UINT m_NumElement = 0; 
 	UINT m_ElementByteSize = 0;
 	bool m_IsConstantBuffer = false;
 };
 
 struct FrameResource
 {
-	FrameResource(ID3D12Device* device, UINT passCount)
+	FrameResource(ID3D12Device* device, UINT passCount, UINT objectCount,UINT aniBoneSetNum)
 	{
 		ThrowIfFailed(device->CreateCommandAllocator(
 			D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(cmdListAlloc.GetAddressOf())));
 
 		passCB = std::make_unique<UploadBuffer<PassConstants>>(device, passCount, true);
+		objectCB = std::make_unique<UploadBuffer<ObjectConstants>>(device, objectCount, true);
+		aniBoneMatBuffer = std::make_unique<UploadBuffer<AniBoneMat>>(device, aniBoneSetNum, false);
 	}
 
 	FrameResource(const FrameResource& rhs) = delete;
@@ -101,17 +108,29 @@ struct FrameResource
 	ComPtr<ID3D12CommandAllocator> cmdListAlloc;
 	
 	std::unique_ptr<UploadBuffer<PassConstants>> passCB = nullptr;
-	std::unique_ptr<UploadBuffer<ObjectConstants>> ObjectCB = nullptr;
+	std::unique_ptr<UploadBuffer<ObjectConstants>> objectCB = nullptr;
+	std::unique_ptr<UploadBuffer<AniBoneMat>> aniBoneMatBuffer = nullptr;
 };
 
 class GraphicDX12 final : public IGraphicDevice
 {
+	enum
+	{
+		MATERIAL_BUFFER,
+		PASS_CB,
+		OBJECT_CB,
+		TEXTURE_TABLE,
+		ANIBONE_BUFFER,
+		ROOT_COUNT
+	};
+
 public:
 	GraphicDX12();
 	virtual ~GraphicDX12() override;
 
 	virtual void Update() override;
 	virtual void Draw() override;
+	virtual void ReservedWorksClear() override;
 	virtual bool Init(HWND hWnd) override;
 	virtual void OnResize() override;
 	virtual void* GetDevicePtr() override { return m_D3dDevice.Get(); }
@@ -124,8 +143,6 @@ private: // Used Function by ReadyWorks
 	virtual void LoadTextureFromFolder(const std::vector<std::string>& targetTextureFolders) override;
 	virtual void LoadMeshAndMaterialFromFolder(const std::vector<std::string>& targetMeshFolders) override;
 	virtual void ReadyWorksEnd() override;
-
-	void BuildFrameResources();
 
 public: // Used Functions
 	virtual void SetCamera(cCamera* camera) { m_currCamera = camera; }
@@ -140,14 +157,18 @@ private: // Device Base Functions
 	D3D12_CPU_DESCRIPTOR_HANDLE CurrentBackBufferView() const;
 	D3D12_CPU_DESCRIPTOR_HANDLE DepthStencilView() const;
 
-private: // Object Base Builds
+private: // Base object Builds
+	void BuildFrameResources();
 	void BuildRootSignature();
 	void BuildShadersAndInputLayout();
 	void BuildPSOs();
 
 private:
 	void UpdateMainPassCB();
-	void UpdateObjects();
+	void UpdateObjectCB();
+	void UpdateAniBoneBuffer();
+
+private:
 	void DrawObjects();
 
 private:
@@ -204,6 +225,13 @@ private:
 	std::unordered_map<std::string, MeshObject>						m_Meshs;
 	std::unordered_map<std::string, Ani::SkinnedData>				m_SkinnedDatas;
 	std::unique_ptr<FrameResource>									m_FrameResource;
+
+private:
+	std::vector<AniBoneMat>							m_ReservedAniBones;
+	std::vector<RenderInfo>							m_ReservedRenders;
+
+	std::vector<ObjectConstants>					m_RenderObjects;
+	std::vector<const SubmeshData*>					m_RenderObjectsSubmesh;
 
 private:
 	std::unique_ptr<cDefaultBuffer<Vertex>>			m_VertexBuffer;

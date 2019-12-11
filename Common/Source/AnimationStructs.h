@@ -24,6 +24,7 @@
 #define AI_MAX_NUMBER_OF_TEXTURECOORDS 0x8
 
 class XFileParser;
+struct AniBoneMat;
 
 namespace Ani
 {
@@ -95,23 +96,24 @@ namespace Ani
 		friend XFileParser;
 
 	public:
-		unsigned int BoneCount() const { return static_cast<unsigned int>(m_BoneOffsets.size()); }
-		float GetClipStartTime(const std::string& clipName) const;
-		float GetClipEndTime(const std::string& clipName) const;
-		void GetFinalTransforms(const std::string& clipName, float timePos,
-			std::vector<CGH::MAT16>& finalTransforms);
-		unsigned int GetAnimationNum() const { return static_cast<unsigned int>(m_Animations.size()); }
+		unsigned int				BoneCount() const { return static_cast<unsigned int>(m_BoneOffsets.size()); }
+		float						GetClipStartTime(const std::string& clipName) const;
+		float						GetClipEndTime(const std::string& clipName) const;
+		void						GetFinalTransforms(const std::string& clipName, unsigned long long timePos, AniBoneMat& finalTransforms) const;
+		unsigned int				GetAnimationNum() const { return static_cast<unsigned int>(m_Animations.size()); }
+		std::vector<std::string>	GetAnimationNames() const;
+		
+		bool						CheckAnimation(std::string& key) const;
 
 	private:
-		void CalLocalTransformFromAnimation(const std::string& clipName, float timePos);
+		void CalLocalTransformFromAnimation(const std::string& clipName, std::vector<CGH::MAT16>& LocalTransforms , unsigned long long timePos) const;
 
-		DirectX::XMVECTOR XM_CALLCONV GetAnimationKeyOnTick(const std::vector<TimeValue<DirectX::XMFLOAT3>>& values, float timePos) const;
-		DirectX::XMVECTOR XM_CALLCONV GetAnimationKeyOnTick(const std::vector<TimeValue<DirectX::XMFLOAT4>>& values, float timePos) const;
+		DirectX::XMVECTOR XM_CALLCONV GetAnimationKeyOnTick(const std::vector<TimeValue<DirectX::XMFLOAT3>>& values, unsigned long long timePos) const;
+		DirectX::XMVECTOR XM_CALLCONV GetAnimationKeyOnTick(const std::vector<TimeValue<DirectX::XMFLOAT4>>& values, unsigned long long timePos) const;
 
 	private:
 		std::vector<int>							m_BoneHierarchy;
 		std::vector<CGH::MAT16>						m_BoneOffsets;
-		std::vector<CGH::MAT16>						m_LocalTrnasform;
 		std::unordered_map<std::string, Animation>	m_Animations;
 	};
 }

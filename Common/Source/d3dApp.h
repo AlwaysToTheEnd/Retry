@@ -10,20 +10,21 @@
 #define GETAPP D3DApp::GetApp()
 #define GKEYBOARD D3DApp::GetApp()->GetKeyBoard()
 #define GMOUSE D3DApp::GetApp()->GetMouse()
-extern const std::string gMainFolderFath = "./../Common/";
 
 struct MeshObject;
 
 class D3DApp :public ICompnentCreater
 {
 public:
+	const std::string MainFolderFath = "./../Common/";
+
 	std::vector<std::string>		m_TargetMeshFolders =
 	{
-		gMainFolderFath + "MeshData"
+		MainFolderFath + "MeshData"
 	};
 	std::vector<std::string>		m_TargetTextureFolders =
 	{
-		gMainFolderFath + "TextureData"
+		MainFolderFath + "TextureData"
 	};
 
 protected:

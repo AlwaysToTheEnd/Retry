@@ -4,17 +4,22 @@
 #include <string>
 #include <unordered_map>
 #include "BaseClass.h"
-
-class MeshObject;
+#define BONEMAXMATRIX 128
 
 struct ObjectConstants
 {
-	CGH::MAT16	world;
-	CGH::MAT16	texTransform;
+	CGH::MAT16		world;
 	unsigned int	materialIndex = 0;
-	unsigned int	pad1;
-	unsigned int	pad2;
-	unsigned int	pad3;
+	int				aniBoneIndex = -1;
+	unsigned int	meshType;
+	unsigned int	primitive;
+};
+
+struct RenderInfo
+{
+	CGH::MAT16	world;
+	std::string	meshName;
+	int			aniBoneIndex = -1;
 };
 
 struct Material
@@ -74,4 +79,9 @@ struct MeshObject
 	CGH::MESH_TYPE	type = CGH::MESH_NORMAL;
 
 	std::unordered_map<std::string, SubmeshData> subs;
+};
+
+struct AniBoneMat
+{
+	CGH::MAT16		bones[BONEMAXMATRIX];
 };

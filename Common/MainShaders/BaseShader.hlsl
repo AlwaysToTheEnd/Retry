@@ -1,3 +1,4 @@
+
 struct MaterialData
 {
 	float4		DriffuseAlbedo;
@@ -9,10 +10,14 @@ struct MaterialData
 	uint		MaterialPad2;
 };
 
+struct AniBoneSet
+{
+	float4x4 AniBoneMats[128];
+};
+
 StructuredBuffer<MaterialData> gInstanceData : register(t0, space1);
-StructuredBuffer<float4x4> gAniBoneMat : register(t1, space1);
-texture2D gMainTexture : register(t0);
-RasterizerOrderedTexture2D<float> gTest : register(u0);
+StructuredBuffer<AniBoneSet> gAniBoneMat : register(t1, space1);
+Texture2D gMainTexture[1] : register(t0);
 
 SamplerState gsamPointWrap : register(s0);
 SamplerState gsamPointClamp : register(s1);
@@ -43,15 +48,20 @@ cbuffer cbPass : register(b0)
 
 cbuffer objectData : register(b1)
 {
-	float4x4 World;
-	float4x4 TexTransform;
+	float4x4	World;
+	uint		MaterialIndex;
+	int			AniMoneIndex;
+	uint		Pad0;
+	uint		Pad1;
 };
 
 struct VertexIn
 {
-	float3 PosL : POSITION;
-	float3 NormalL : NORMAL;
-	float2 TexC : TEXCOORD;
+	float3	PosL : POSITION;
+	float3	NormalL : NORMAL;
+	float2	TexC : TEXCOORD;
+	float3	BoneWeights : WEIGHTS;
+	uint4	BoneIndices : BONEINDICES;
 };
 
 struct VertexOut
@@ -76,7 +86,7 @@ VertexOut VS(VertexIn vin)
 float4 PS(VertexOut pin) : SV_Target
 {
 	float4 litColor = float4(0,0,0,1);
-	litColor = gMainTexture.Sample(gsamPointWrap, pin.TexC);
+	litColor = gMainTexture[0].Sample(gsamPointWrap, pin.TexC);
 
 	litColor.a = 1.0f;
 	return litColor;

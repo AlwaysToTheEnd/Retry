@@ -22,7 +22,8 @@ public:
 	const CGH::MAT16& GetMatrix() { return (*m_TransformMats)[GetID()]; }
 
 private:
-	static std::vector<CGH::MAT16>*	m_TransformMats;
+	static std::vector<CGH::MAT16>* m_TransformMats;
+
 	DirectX::XMFLOAT3 m_Pos;
 	DirectX::XMFLOAT4 m_Quter;
 };

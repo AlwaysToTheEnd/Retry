@@ -134,7 +134,7 @@ std::unique_ptr<IComponent> PhysX4_0::CreateComponent(COMPONENTTYPE type, GameOb
 		break;
 	case COMPONENTTYPE::COM_MESH:
 		break;
-	case COMPONENTTYPE::COM_ANIMATER:
+	case COMPONENTTYPE::COM_ANIMATOR:
 		break;
 	case COMPONENTTYPE::COM_END:
 		break;
@@ -158,7 +158,7 @@ void PhysX4_0::ComponentDeleteManaging(COMPONENTTYPE type, int id)
 		break;
 	case COMPONENTTYPE::COM_MESH:
 		break;
-	case COMPONENTTYPE::COM_ANIMATER:
+	case COMPONENTTYPE::COM_ANIMATOR:
 		break;
 	case COMPONENTTYPE::COM_END:
 		break;

@@ -1,6 +1,11 @@
 #pragma once
 #include <memory>
 #include <utility>
+#include <vector>
+#include <string>
+#include <unordered_map>
+#include "BaseClass.h"
+#include "Vertex.h"
 
 // This Codes was referenced from HLSLCrossCompiler-master (xfileparser.cpp)
 
@@ -10,6 +15,7 @@ namespace Ani
 	struct AnimBone;
 	struct Subset;
 	struct AniMaterial;
+	struct Animation;
 }
 
 class XFileParser final
@@ -126,4 +132,3 @@ protected:
 
 	unsigned int m_LineNumber;
 };
-

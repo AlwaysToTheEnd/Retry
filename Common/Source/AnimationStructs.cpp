@@ -1,4 +1,5 @@
 #include "AnimationStructs.h"
+#include "DX12RenderClasses.h"
 
 using namespace DirectX;
 
@@ -58,19 +59,23 @@ float Ani::SkinnedData::GetClipEndTime(const std::string& clipName) const
 	return -1.0f;
 }
 
-void Ani::SkinnedData::GetFinalTransforms(const std::string& clipName, float timePos, std::vector<CGH::MAT16>& finalTransforms)
+void Ani::SkinnedData::GetFinalTransforms(
+	const std::string& clipName, 
+	unsigned long long timePos,
+	AniBoneMat& finalTransforms) const
 {
+	std::vector<CGH::MAT16> localTransform;
 	std::vector<CGH::MAT16> combinedMats;
-	finalTransforms.clear();
-	finalTransforms.resize(m_LocalTrnasform.size());
-	combinedMats.resize(m_LocalTrnasform.size());
+	combinedMats.resize(m_BoneOffsets.size());
 
-	CalLocalTransformFromAnimation(clipName, timePos);
+	assert(BONEMAXMATRIX <= m_BoneOffsets.size());
 
-	for (size_t i = 0; i < finalTransforms.size(); i++)
+	CalLocalTransformFromAnimation(clipName, localTransform, timePos);
+
+	for (size_t i = 0; i < m_BoneOffsets.size(); i++)
 	{
 		XMMATRIX offsetMatrix = XMLoadFloat4x4(m_BoneOffsets[i]);
-		XMMATRIX currBoneMat = XMLoadFloat4x4(m_LocalTrnasform[i]);
+		XMMATRIX currBoneMat = XMLoadFloat4x4(localTransform[i]);
 		XMMATRIX parentMat = XMMatrixIdentity();
 		XMMATRIX combined = XMMatrixIdentity();
 
@@ -81,14 +86,32 @@ void Ani::SkinnedData::GetFinalTransforms(const std::string& clipName, float tim
 
 		combined = parentMat * currBoneMat;
 		XMStoreFloat4x4(combinedMats[i], combined);
-		XMStoreFloat4x4(finalTransforms[i], offsetMatrix * combined);
+		XMStoreFloat4x4(finalTransforms.bones[i], offsetMatrix * combined);
 	}
 }
 
-void Ani::SkinnedData::CalLocalTransformFromAnimation(const std::string& clipName, float timePos)
+std::vector<std::string> Ani::SkinnedData::GetAnimationNames() const
+{
+	std::vector<std::string> result;
+
+	for (auto& it : m_Animations)
+	{
+		result.push_back(it.first);
+	}
+
+	return result;
+}
+
+bool Ani::SkinnedData::CheckAnimation(std::string& key) const
+{
+	return m_Animations.find(key) != m_Animations.end();
+}
+
+void Ani::SkinnedData::CalLocalTransformFromAnimation(const std::string& clipName, std::vector<CGH::MAT16>& LocalTransforms, unsigned long long timePos) const
 {
 	auto aniIter = m_Animations.find(clipName);
 	assert(aniIter != m_Animations.end() && ("This skinned don't have [" + clipName + "] animation").c_str());
+	LocalTransforms.resize(aniIter->second.animBones.size());
 
 	for (auto& it : aniIter->second.animBones)
 	{
@@ -102,7 +125,7 @@ void Ani::SkinnedData::CalLocalTransformFromAnimation(const std::string& clipNam
 			XMVECTOR r = GetAnimationKeyOnTick(it.rotKeys, timePos);
 
 			mat = XMMatrixAffineTransformation(s, zero, r, p);
-			XMStoreFloat4x4(m_LocalTrnasform[it.localMatIndex], mat);
+			XMStoreFloat4x4(LocalTransforms[it.localMatIndex], mat);
 		}
 		else if (it.trafoKeys.size())
 		{
@@ -115,7 +138,7 @@ void Ani::SkinnedData::CalLocalTransformFromAnimation(const std::string& clipNam
 	}
 }
 
-DirectX::XMVECTOR XM_CALLCONV Ani::SkinnedData::GetAnimationKeyOnTick(const std::vector<TimeValue<DirectX::XMFLOAT3>>& values, float timePos) const
+DirectX::XMVECTOR XM_CALLCONV Ani::SkinnedData::GetAnimationKeyOnTick(const std::vector<TimeValue<DirectX::XMFLOAT3>>& values, unsigned long long timePos) const
 {
 
 	DirectX::XMVECTOR result = DirectX::XMVectorSet(0, 0, 0, 1);
@@ -151,7 +174,7 @@ DirectX::XMVECTOR XM_CALLCONV Ani::SkinnedData::GetAnimationKeyOnTick(const std:
 	return result;
 }
 
-DirectX::XMVECTOR XM_CALLCONV Ani::SkinnedData::GetAnimationKeyOnTick(const std::vector<TimeValue<DirectX::XMFLOAT4>>& values, float timePos) const
+DirectX::XMVECTOR XM_CALLCONV Ani::SkinnedData::GetAnimationKeyOnTick(const std::vector<TimeValue<DirectX::XMFLOAT4>>& values, unsigned long long timePos) const
 {
 	DirectX::XMVECTOR result = DirectX::XMVectorSet(0, 0, 0, 1);
 

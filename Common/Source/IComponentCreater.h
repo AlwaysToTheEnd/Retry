@@ -15,5 +15,5 @@ protected:
 	ComponentUpdater& GetComponentUpdater(COMPONENTTYPE type);
 
 private:
-	static ComponentUpdater	m_ComUpdater[NUMCOMPONENTTYPE];
+	static ComponentUpdater	m_ComUpdater[IComponent::NUMCOMPONENTTYPE];
 };
