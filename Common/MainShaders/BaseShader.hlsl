@@ -95,8 +95,9 @@ VertexOut VS(VertexIn vin)
 		vin.PosL = posL;
 	}
 
-	vout.PosH = mul(float4(vin.PosL, 1.0f), World);
-	vout.PosH = mul(vout.PosH, gViewProj);
+	vout.PosH = mul(float4(vin.PosL, 1.0f), gViewProj);
+	//vout.PosH = mul(float4(vin.PosL, 1.0f), World);
+	//vout.PosH = mul(vout.PosH, gViewProj);
 
 	return vout;
 }
