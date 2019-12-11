@@ -47,6 +47,7 @@
     <ClCompile Include="..\Common\Source\zlib\trees.c" />
     <ClCompile Include="..\Common\Source\zlib\zutil.c" />
     <ClCompile Include="Step2.cpp" />
+    <ClCompile Include="TestObject.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Common\Source\AnimationStructs.h" />
@@ -74,6 +75,7 @@
     <ClInclude Include="..\Common\Source\Vertex.h" />
     <ClInclude Include="..\Common\Source\XFileParser.h" />
     <ClInclude Include="Step2.h" />
+    <ClInclude Include="TestObject.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Common\MainShaders\BaseShader.hlsl">

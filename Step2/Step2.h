@@ -3,6 +3,7 @@
 #include "../Common/Source/GraphicDX12.h"
 #include "../Common/Source/d3dApp.h"
 #include "../Common/Source/cCamera.h"
+#include "TestObject.h"
 
 //using typedef to select core devices.
 typedef GraphicDX12	UsingGraphicDevice;
@@ -37,4 +38,5 @@ private:
 
 private:
 	cCamera					m_Camera;
+	TestObject				m_Test;
 };

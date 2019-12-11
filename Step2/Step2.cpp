@@ -17,6 +17,8 @@ Step2::~Step2()
 
 void Step2::Update()
 {
+	m_Camera.Update();
+	m_Test.Update();
 }
 
 void Step2::SelectDevices()
@@ -27,6 +29,7 @@ void Step2::SelectDevices()
 void Step2::InitObjects()
 {
 	m_GDevice->SetCamera(&m_Camera);
+	m_Test.Init();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////

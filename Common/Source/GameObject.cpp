@@ -1,7 +1,8 @@
 #include "GameObject.h"
-#include "d3dApp.h"
 #include "BaseComponent.h"
 #include "GraphicComponent.h"
+#include "d3dApp.h"
+
 
 std::unordered_map<unsigned int, unsigned int> GameObject::m_TypeIDs = GameObject::GetComponentTypeIDs();
 
@@ -42,7 +43,7 @@ std::unordered_map<unsigned int, unsigned int> GameObject::GetComponentTypeIDs()
 	return map;
 }
 
-IComponent* GameObject::AddComponent(COMPONENTTYPE type)
+IComponent* GameObject::CreateComponent(COMPONENTTYPE type)
 {
 	unsigned int index = static_cast<unsigned int>(type);
 	m_Components[index].push_back(GETAPP->CreateComponent(type, *this));

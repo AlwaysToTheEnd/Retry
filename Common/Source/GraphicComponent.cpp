@@ -9,6 +9,14 @@ std::vector<RenderInfo>* ComRenderer::m_ReservedRenderObjects = nullptr;
 const std::unordered_map<std::string, Ani::SkinnedData>* ComAnimator::m_SkinnedDatas = nullptr;
 std::vector<AniBoneMat>* ComAnimator::m_ReservedAniBone = nullptr;
 
+void ComMesh::GetMeshNames(std::vector<std::string>& out)
+{
+	for (auto& it : *m_Meshs)
+	{
+		out.push_back(it.first);
+	}
+}
+
 bool ComMesh::SelectMesh(std::string& name)
 {
 	auto iter = m_Meshs->find(name);
@@ -80,7 +88,7 @@ void ComRenderer::Update()
 
 	if (comMesh != nullptr && comTransform != nullptr)
 	{
-		addInfo.meshName = comMesh->GetMeshName();
+		addInfo.meshName = comMesh->GetCurrMeshName();
 		addInfo.world = comTransform->GetMatrix();
 	}
 	else

@@ -83,7 +83,6 @@ bool GraphicDX12::Init(HWND hWnd)
 	OnResize();
 
 	ThrowIfFailed(m_DirectCmdListAlloc->Reset());
-	ThrowIfFailed(m_CommandList->Reset(m_DirectCmdListAlloc.Get(), nullptr));
 
 	return true;
 }
@@ -255,7 +254,7 @@ std::unique_ptr<IComponent> GraphicDX12::CreateComponent(COMPONENTTYPE type, Gam
 {
 	IComponent* newComponent = nullptr;
 
-	auto ComUpdater = GetComponentUpdater(type);
+	auto& ComUpdater = GetComponentUpdater(type);
 	UINT id = ComUpdater.GetNextID();
 
 	switch (type)
@@ -286,7 +285,7 @@ std::unique_ptr<IComponent> GraphicDX12::CreateComponent(COMPONENTTYPE type, Gam
 
 void GraphicDX12::ComponentDeleteManaging(COMPONENTTYPE type, int id)
 {
-	auto ComUpdater = GetComponentUpdater(type);
+	auto& ComUpdater = GetComponentUpdater(type);
 
 	switch (type)
 	{
@@ -341,6 +340,8 @@ void GraphicDX12::LoadTextureFromFolder(const std::vector<std::string>& targetTe
 
 void GraphicDX12::LoadMeshAndMaterialFromFolder(const std::vector<std::string>& targetMeshFolders)
 {
+	ThrowIfFailed(m_CommandList->Reset(m_DirectCmdListAlloc.Get(), nullptr));
+
 	vector<string> files;
 
 	for (auto& it : targetMeshFolders)
@@ -390,7 +391,7 @@ void GraphicDX12::LoadMeshAndMaterialFromFolder(const std::vector<std::string>& 
 			baseIndexOffset = static_cast<UINT>(combinedSkinnedIndices.size());
 
 			xfileP.LoadXfile(it, skinnedVertices, indices, subsets, mats, skinnedData);
-
+			
 			for (auto& it2 : subsets)
 			{
 				UINT faceCount = 0;
@@ -455,16 +456,16 @@ void GraphicDX12::LoadMeshAndMaterialFromFolder(const std::vector<std::string>& 
 
 
 	m_VertexBuffer = make_unique<cDefaultBuffer<Vertex>>(m_D3dDevice.Get(),
-		m_CommandList.Get(), combinedVertex, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
+		m_CommandList.Get(), combinedVertex, D3D12_RESOURCE_STATE_GENERIC_READ);
 
 	m_IndexBuffer = make_unique<cDefaultBuffer<UINT>>(m_D3dDevice.Get(),
-		m_CommandList.Get(), combinedIndices, D3D12_RESOURCE_STATE_INDEX_BUFFER);
+		m_CommandList.Get(), combinedIndices, D3D12_RESOURCE_STATE_GENERIC_READ);
 
 	m_SkinnedVertexBuffer = make_unique<cDefaultBuffer<SkinnedVertex>>(m_D3dDevice.Get(),
-		m_CommandList.Get(), combinedSkinnedVertex, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
+		m_CommandList.Get(), combinedSkinnedVertex, D3D12_RESOURCE_STATE_GENERIC_READ);
 
 	m_SkinnedIndexBuffer = make_unique<cDefaultBuffer<UINT>>(m_D3dDevice.Get(),
-		m_CommandList.Get(), combinedSkinnedIndices, D3D12_RESOURCE_STATE_INDEX_BUFFER);
+		m_CommandList.Get(), combinedSkinnedIndices, D3D12_RESOURCE_STATE_GENERIC_READ);
 
 
 	m_Materials = make_unique<cIndexManagementBuffer<Material>>(m_D3dDevice.Get(),
@@ -475,6 +476,7 @@ void GraphicDX12::LoadMeshAndMaterialFromFolder(const std::vector<std::string>& 
 	m_CommandQueue->ExecuteCommandLists(_countof(cmdsLists), cmdsLists);
 	FlushCommandQueue();
 
+	ThrowIfFailed(m_DirectCmdListAlloc->Reset());
 	m_Materials->ClearUploadBuffer();
 	m_VertexBuffer->ClearUploadBuffer();
 	m_IndexBuffer->ClearUploadBuffer();
@@ -484,8 +486,7 @@ void GraphicDX12::LoadMeshAndMaterialFromFolder(const std::vector<std::string>& 
 
 void GraphicDX12::ReadyWorksEnd()
 {
-	m_DirectCmdListAlloc->Reset();
-	m_CommandList->Reset(m_DirectCmdListAlloc.Get(), nullptr);
+	ThrowIfFailed(m_CommandList->Reset(m_DirectCmdListAlloc.Get(), nullptr));
 
 	BuildFrameResources();
 	BuildRootSignature();
@@ -496,6 +497,7 @@ void GraphicDX12::ReadyWorksEnd()
 	ID3D12CommandList* cmdsLists[] = { m_CommandList.Get() };
 	m_CommandQueue->ExecuteCommandLists(_countof(cmdsLists), cmdsLists);
 	FlushCommandQueue();
+	ThrowIfFailed(m_DirectCmdListAlloc->Reset());
 }
 
 void GraphicDX12::FlushCommandQueue()
@@ -671,7 +673,7 @@ void GraphicDX12::BuildRootSignature()
 	slotRootParam[TEXTURE_TABLE].InitAsDescriptorTable(1, &texTable, D3D12_SHADER_VISIBILITY_PIXEL);
 
 	CD3DX12_ROOT_SIGNATURE_DESC rootDesc;
-	rootDesc.Init(4, slotRootParam, _countof(staticSamplers),
+	rootDesc.Init(ROOT_COUNT, slotRootParam, _countof(staticSamplers),
 		staticSamplers, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
 	ComPtr<ID3DBlob> serializedRootSig = nullptr;
@@ -692,8 +694,14 @@ void GraphicDX12::BuildRootSignature()
 
 void GraphicDX12::BuildShadersAndInputLayout()
 {
-	m_Shaders["baseVS"] = CompileShader(L"../Common/MainShaders/BaseShader.hlsl", nullptr, "VS", "vs_5_1");
-	m_Shaders["basePS"] = CompileShader(L"../Common/MainShaders/BaseShader.hlsl", nullptr, "PS", "ps_5_1");
+	string textureNum = to_string(m_TextureBuffer->GetTexturesNum());
+	string boneMaxMatrixNum = to_string(BONEMAXMATRIX);
+	D3D_SHADER_MACRO macros[] = { 
+		"MAXTEXTURE", textureNum.c_str(), 
+		"BONEMAXMATRIX", boneMaxMatrixNum.c_str(), NULL, NULL };
+
+	m_Shaders["baseVS"] = CompileShader(L"../Common/MainShaders/BaseShader.hlsl", macros, "VS", "vs_5_1");
+	m_Shaders["basePS"] = CompileShader(L"../Common/MainShaders/BaseShader.hlsl", macros, "PS", "ps_5_1");
 
 	m_NTVertexInputLayout =
 	{
@@ -701,7 +709,7 @@ void GraphicDX12::BuildShadersAndInputLayout()
 		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
 		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 24, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
 		{ "WEIGHTS", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 32, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-		{ "BONEINDICES", 0, DXGI_FORMAT_R32G32B32A32_UINT, 0, 44, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
+		{ "BONEINDICES", 0, DXGI_FORMAT_R8G8B8A8_UINT, 0, 44, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
 	};
 }
 
@@ -822,8 +830,8 @@ void GraphicDX12::DrawObjects()
 	D3D12_INDEX_BUFFER_VIEW indexBufferView = {};
 	indexBufferView.Format = DXGI_FORMAT_R32_UINT;
 
-	auto ObjectCBVritualAD = m_FrameResource->passCB->Resource()->GetGPUVirtualAddress();
-	const UINT strideSize = m_FrameResource->passCB->GetElementByteSize();
+	auto ObjectCBVritualAD = m_FrameResource->objectCB->Resource()->GetGPUVirtualAddress();
+	const UINT strideSize = m_FrameResource->objectCB->GetElementByteSize();
 	for (size_t i = 0; i < m_RenderObjects.size(); i++)
 	{
 		if (m_RenderObjects[i].meshType == CGH::MESH_SKINED)
@@ -849,11 +857,11 @@ void GraphicDX12::DrawObjects()
 		m_CommandList->IASetIndexBuffer(&indexBufferView);
 		m_CommandList->IASetPrimitiveTopology(static_cast<D3D_PRIMITIVE_TOPOLOGY>(m_RenderObjects[i].primitive));
 		m_CommandList->SetGraphicsRootShaderResourceView(ANIBONE_BUFFER, m_FrameResource->aniBoneMatBuffer->Resource()->GetGPUVirtualAddress());
-		m_FrameResource->objectCB->Resource()->GetGPUVirtualAddress();
-		m_CommandList->SetGraphicsRootConstantBufferView(OBJECT_CB, ObjectCBVritualAD + (i * strideSize));
+		m_CommandList->SetGraphicsRootConstantBufferView(OBJECT_CB, ObjectCBVritualAD);
 
 		m_CommandList->DrawIndexedInstanced(m_RenderObjectsSubmesh[i]->numIndex, 1,
-			m_RenderObjectsSubmesh[i]->indexOffset, m_RenderObjectsSubmesh[i]->vertexOffset, 0);
+			m_RenderObjectsSubmesh[i]->indexOffset, 0, 0);
+		ObjectCBVritualAD += strideSize;
 	}
 }
 

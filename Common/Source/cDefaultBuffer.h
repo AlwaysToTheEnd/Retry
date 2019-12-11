@@ -58,23 +58,13 @@ inline cDefaultBuffer<T>::cDefaultBuffer(
 			D3D12_RESOURCE_STATE_GENERIC_READ, nullptr,
 			IID_PPV_ARGS(m_UploadBuffer.GetAddressOf())));
 
-		CD3DX12_RANGE range(0, m_BufferSize);
+		D3D12_SUBRESOURCE_DATA subResourceData = {};
+		subResourceData.pData = datas.data();
+		subResourceData.RowPitch = m_BufferSize;
+		subResourceData.SlicePitch = subResourceData.RowPitch;
 
-		m_UploadBuffer->Map(0, &range, reinterpret_cast<void**>(&mappedData));
-
-		std::memcpy(mappedData, datas.data(), elementByteSize);
-
-		m_UploadBuffer->Unmap(0, &range);
-
-		commandList->CopyBufferRegion(m_Resource.Get(), 0, m_UploadBuffer.Get(), 0, m_BufferSize);
-
-		D3D12_RESOURCE_BARRIER barrier = {};
-		barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-		barrier.Flags = D3D12_RESOURCE_BARRIER_FLAGS::D3D12_RESOURCE_BARRIER_FLAG_NONE;
-		barrier.Transition.pResource = m_Resource.Get();
-		barrier.Transition.StateAfter = endState;
-		barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST;
-		barrier.Transition.Subresource = 0;
-		commandList->ResourceBarrier(1, &barrier);
+		UpdateSubresources<1>(commandList, m_Resource.Get(), m_UploadBuffer.Get(), 0, 0, 1, &subResourceData);
+		commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_Resource.Get(),
+			D3D12_RESOURCE_STATE_COPY_DEST, endState));
 	}
 }

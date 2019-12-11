@@ -73,7 +73,7 @@ std::unique_ptr<IComponent> D3DApp::CreateComponent(COMPONENTTYPE type, GameObje
 
 	assert(type != COMPONENTTYPE::COM_END && "THIS COMPONENT IS NONE USED TYPE");
 
-	auto ComUpdater = GetComponentUpdater(type);
+	auto& ComUpdater = GetComponentUpdater(type);
 	UINT id = ComUpdater.GetNextID();
 
 	if (type == COMPONENTTYPE::COM_TRANSFORM)
@@ -82,7 +82,7 @@ std::unique_ptr<IComponent> D3DApp::CreateComponent(COMPONENTTYPE type, GameObje
 
 		m_ObjectsMat.AddData();
 	}
-	if (type < COMPONENTTYPE::COM_TRANSFORM)
+	else if (type < COMPONENTTYPE::COM_TRANSFORM)
 	{
 		return m_PXDevice->CreateComponent(type, gameObject);
 	}
@@ -109,7 +109,7 @@ void D3DApp::ComponentDeleteManaging(COMPONENTTYPE type, int id)
 	{
 		m_ObjectsMat.SignalDelete(id);
 	}
-	if (type < COMPONENTTYPE::COM_TRANSFORM)
+	else if (type < COMPONENTTYPE::COM_TRANSFORM)
 	{
 		m_PXDevice->ComponentDeleteManaging(type, id);
 	}

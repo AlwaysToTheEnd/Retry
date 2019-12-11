@@ -640,7 +640,7 @@ void XFileParser::ParseDataObjectMeshMaterialList(Ani::Subset& subset, std::vect
 
 	vector<unsigned int> indexCount;
 	// read per-face material indices
-	int prevIndex = -1;
+	int prevIndex = 0;
 	unsigned int currCount = 0;
 	for (unsigned int i = 0; i < numMatIndices; i++)
 	{
@@ -653,6 +653,8 @@ void XFileParser::ParseDataObjectMeshMaterialList(Ani::Subset& subset, std::vect
 			prevIndex = currIndex;
 		}
 	}
+
+	indexCount.push_back(currCount * 3);
 
 	// in version 03.02, the face indices end with two semicolons.
 	// commented out version check, as version 03.03 exported from blender also has 2 semicolons

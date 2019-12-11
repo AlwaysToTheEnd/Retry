@@ -4,7 +4,7 @@
 #include <string>
 #include <unordered_map>
 #include "BaseClass.h"
-#define BONEMAXMATRIX 128
+#define BONEMAXMATRIX 256
 
 struct ObjectConstants
 {
@@ -76,7 +76,7 @@ struct SubmeshData
 struct MeshObject
 {
 	unsigned int	primitiveType;
-	CGH::MESH_TYPE	type = CGH::MESH_NORMAL;
+	CGH::MESH_TYPE	type = CGH::MESH_TYPE::MESH_NORMAL;
 
 	std::unordered_map<std::string, SubmeshData> subs;
 };

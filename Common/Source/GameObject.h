@@ -19,7 +19,10 @@ public:
 
 	static std::unordered_map<unsigned int, unsigned int> GetComponentTypeIDs();
 protected:
-	IComponent* AddComponent(COMPONENTTYPE type);
+	template<typename T> T* AddComponent();
+
+private:
+	IComponent* CreateComponent(COMPONENTTYPE type);
 
 private:
 	static std::unordered_map<unsigned int, unsigned int>	m_TypeIDs;
@@ -61,4 +64,18 @@ inline std::vector<T*> GameObject::GetComponents()
 	}
 
 	return components;
+}
+
+template<typename T>
+inline T* GameObject::AddComponent()
+{
+	T* component = nullptr;
+	auto iter = m_TypeIDs.find(typeid(T).hash_code());
+
+	if (iter != m_TypeIDs.end())
+	{
+		component = static_cast<T*>(CreateComponent(static_cast<COMPONENTTYPE>(iter->second)));
+	}
+
+	return component;
 }

@@ -138,6 +138,9 @@
     <ClCompile Include="..\Common\Source\ComponentUpdater.cpp">
       <Filter>Common\CodeResources\Components</Filter>
     </ClCompile>
+    <ClCompile Include="TestObject.cpp">
+      <Filter>Object</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Common\Source\d3dApp.h">
@@ -214,6 +217,9 @@
     </ClInclude>
     <ClInclude Include="..\Common\Source\PhysX4_0.h">
       <Filter>Common\DeviceInstance\_Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="TestObject.h">
+      <Filter>Object</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

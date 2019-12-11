@@ -12,12 +12,12 @@ struct MaterialData
 
 struct AniBoneSet
 {
-	float4x4 AniBoneMats[128];
+	float4x4 AniBoneMats[BONEMAXMATRIX];
 };
 
 StructuredBuffer<MaterialData> gInstanceData : register(t0, space1);
 StructuredBuffer<AniBoneSet> gAniBoneMat : register(t1, space1);
-Texture2D gMainTexture[1] : register(t0);
+Texture2D gMainTexture[MAXTEXTURE] : register(t0);
 
 SamplerState gsamPointWrap : register(s0);
 SamplerState gsamPointClamp : register(s1);

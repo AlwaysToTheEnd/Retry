@@ -19,8 +19,9 @@ public:
 
 	virtual void Update() override {};
 
+	static void GetMeshNames(std::vector<std::string>& out);
 	bool SelectMesh(std::string& name);
-	const std::string& GetMeshName() const { return m_CurrMeshName; }
+	const std::string& GetCurrMeshName() const { return m_CurrMeshName; }
 
 private:
 	static const std::unordered_map<std::string, MeshObject>* m_Meshs;

@@ -136,6 +136,9 @@ public:
 	virtual void* GetDevicePtr() override { return m_D3dDevice.Get(); }
 	virtual std::unique_ptr<IComponent> CreateComponent(COMPONENTTYPE type, GameObject& gameObject) override;
 	
+public: // Used Functions
+	virtual void SetCamera(cCamera* camera) { m_currCamera = camera; }
+
 private: // Only Used by FuncPtr
 	virtual void ComponentDeleteManaging(COMPONENTTYPE type, int id) override;
 
@@ -143,9 +146,6 @@ private: // Used Function by ReadyWorks
 	virtual void LoadTextureFromFolder(const std::vector<std::string>& targetTextureFolders) override;
 	virtual void LoadMeshAndMaterialFromFolder(const std::vector<std::string>& targetMeshFolders) override;
 	virtual void ReadyWorksEnd() override;
-
-public: // Used Functions
-	virtual void SetCamera(cCamera* camera) { m_currCamera = camera; }
 
 private: // Device Base Functions
 	void FlushCommandQueue();
@@ -180,7 +180,7 @@ private:
 	D3D12_VIEWPORT	m_ScreenViewport;
 	D3D12_RECT		m_ScissorRect;
 	std::wstring	m_MainWndCaption = L"DX12";
-	D3D_DRIVER_TYPE	m_D3dDriverType = D3D_DRIVER_TYPE_HARDWARE;
+	D3D_DRIVER_TYPE	m_D3dDriverType = D3D_DRIVER_TYPE::D3D_DRIVER_TYPE_UNKNOWN;
 
 	ComPtr<IDXGIFactory4>	m_DxgiFactory;
 	ComPtr<IDXGISwapChain>	m_SwapChain;
