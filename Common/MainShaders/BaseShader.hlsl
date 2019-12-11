@@ -10,13 +10,8 @@ struct MaterialData
 	uint		MaterialPad2;
 };
 
-struct AniBoneSet
-{
-	float4x4 AniBoneMats[BONEMAXMATRIX];
-};
-
 StructuredBuffer<MaterialData> gInstanceData : register(t0, space1);
-StructuredBuffer<AniBoneSet> gAniBoneMat : register(t1, space1);
+StructuredBuffer<float4x4> gAniBoneMat : register(t1, space1);
 Texture2D gMainTexture[MAXTEXTURE] : register(t0);
 
 SamplerState gsamPointWrap : register(s0);
@@ -50,7 +45,7 @@ cbuffer objectData : register(b1)
 {
 	float4x4	World;
 	uint		MaterialIndex;
-	int			AniMoneIndex;
+	int			AniBoneIndex;
 	uint		Pad0;
 	uint		Pad1;
 };
@@ -73,12 +68,35 @@ struct VertexOut
 VertexOut VS(VertexIn vin)
 {
 	VertexOut vout = (VertexOut)0.0f;
-	vout.PosH = float4(vin.PosL,1.0f);
-	//vout.PosH = mul(float4(vin.PosL, 1.0f), World);
-	vout.PosH = mul(vout.PosH, gViewProj);
+
 	vout.TexC = vin.TexC;
 
-	//vout.TexC = mul(float4(vin.TexC, 0.0f, 1.0f), gInstanceData[MaterialIndex].MatTransform).xy;
+	float weights[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+	weights[0] = vin.BoneWeights.x;
+	weights[1] = vin.BoneWeights.y;
+	weights[2] = vin.BoneWeights.z;
+	weights[3] = 1.0f - weights[0] - weights[1] - weights[2];
+
+	if (AniBoneIndex != -1)
+	{
+		float3 posL = float3(0.0f, 0.0f, 0.0f);
+		//float3 normalL = float3(0.0f, 0.0f, 0.0f);
+		//float3 tangentL = float3(0.0f, 0.0f, 0.0f);
+		for (int i = 0; i < 4; ++i)
+		{
+			// Assume no nonuniform scaling when transforming normals, so 
+			// that we do not have to use the inverse-transpose.
+
+			posL += weights[i] * mul(float4(vin.PosL, 1.0f), gAniBoneMat[vin.BoneIndices[i]]).xyz;
+			//normalL += weights[i] * mul(vin.NormalL, (float3x3)gAniBoneMat[AniBoneIndex].AniBoneMats[vin.BoneIndices[i]]);
+			//tangentL += weights[i] * mul(vin.TangentL.xyz, (float3x3)gAniBoneMat[AniBoneIndex].AniBoneMats[vin.BoneIndices[i]]);
+		}
+
+		vin.PosL = posL;
+	}
+
+	vout.PosH = mul(float4(vin.PosL, 1.0f), World);
+	vout.PosH = mul(vout.PosH, gViewProj);
 
 	return vout;
 }

@@ -402,7 +402,7 @@ void GraphicDX12::LoadMeshAndMaterialFromFolder(const std::vector<std::string>& 
 					sub.material = materalIndex.first;
 					sub.indexOffset = it2.indexStart + baseIndexOffset + faceCount;
 					sub.numIndex = materalIndex.second;
-					sub.vertexOffset = it2.vertexStart + baseVertexOffset;
+					sub.vertexOffset = baseVertexOffset;
 					sub.numVertex = it2.vertexCount;
 
 					faceCount += materalIndex.second;
@@ -596,7 +596,7 @@ D3D12_CPU_DESCRIPTOR_HANDLE GraphicDX12::DepthStencilView() const
 
 void GraphicDX12::BuildFrameResources()
 {
-	m_FrameResource = make_unique<FrameResource>(m_D3dDevice.Get(), 1, 100, 100);
+	m_FrameResource = make_unique<FrameResource>(m_D3dDevice.Get(), 1, 100, BONEMAXMATRIX*100);
 }
 
 void GraphicDX12::BuildRootSignature()
@@ -821,7 +821,15 @@ void GraphicDX12::UpdateAniBoneBuffer()
 {
 	auto aniBoneBuffer = m_FrameResource->aniBoneMatBuffer.get();
 
-	aniBoneBuffer->CopyData(m_ReservedAniBones.size(), 0, m_ReservedAniBones.data());
+	UINT index = 0;
+	for (auto& it : m_ReservedAniBones)
+	{
+		for (int i = 0; i < BONEMAXMATRIX; i++)
+		{
+			XMStoreFloat4x4(it.bones[i], XMMatrixTranspose(XMLoadFloat4x4(it.bones[i])));
+			aniBoneBuffer->CopyData(index++, it.bones[i]);
+		}
+	}
 }
 
 void GraphicDX12::DrawObjects()
@@ -830,38 +838,61 @@ void GraphicDX12::DrawObjects()
 	D3D12_INDEX_BUFFER_VIEW indexBufferView = {};
 	indexBufferView.Format = DXGI_FORMAT_R32_UINT;
 
+	
 	auto ObjectCBVritualAD = m_FrameResource->objectCB->Resource()->GetGPUVirtualAddress();
-	const UINT strideSize = m_FrameResource->objectCB->GetElementByteSize();
+	auto AniBoneCBVritualAD = m_FrameResource->aniBoneMatBuffer->Resource()->GetGPUVirtualAddress();
+	const UINT ObjectStrideSize = m_FrameResource->objectCB->GetElementByteSize();
+	const UINT AniBoneStrideSize = m_FrameResource->aniBoneMatBuffer->GetElementByteSize();
+	
+	CGH::MESH_TYPE currType = CGH::MESH_NONE;
+	D3D_PRIMITIVE_TOPOLOGY currPrimitive = D3D_PRIMITIVE_TOPOLOGY::D3D_PRIMITIVE_TOPOLOGY_UNDEFINED;
+
 	for (size_t i = 0; i < m_RenderObjects.size(); i++)
 	{
-		if (m_RenderObjects[i].meshType == CGH::MESH_SKINED)
+		if (m_RenderObjects[i].meshType != currType)
 		{
-			vertexBufferView.BufferLocation = m_SkinnedVertexBuffer->GetBufferResource()->GetGPUVirtualAddress();
-			vertexBufferView.SizeInBytes = m_SkinnedVertexBuffer->GetBufferSize();
-			vertexBufferView.StrideInBytes = sizeof(SkinnedVertex);
+			if (m_RenderObjects[i].meshType == CGH::MESH_SKINED)
+			{
+				vertexBufferView.BufferLocation = m_SkinnedVertexBuffer->GetBufferResource()->GetGPUVirtualAddress();
+				vertexBufferView.SizeInBytes = m_SkinnedVertexBuffer->GetBufferSize();
+				vertexBufferView.StrideInBytes = sizeof(SkinnedVertex);
 
-			indexBufferView.BufferLocation = m_SkinnedIndexBuffer->GetBufferResource()->GetGPUVirtualAddress();
-			indexBufferView.SizeInBytes = m_SkinnedIndexBuffer->GetBufferSize();
+				indexBufferView.BufferLocation = m_SkinnedIndexBuffer->GetBufferResource()->GetGPUVirtualAddress();
+				indexBufferView.SizeInBytes = m_SkinnedIndexBuffer->GetBufferSize();
+			}
+			else
+			{
+				vertexBufferView.BufferLocation = m_VertexBuffer->GetBufferResource()->GetGPUVirtualAddress();
+				vertexBufferView.SizeInBytes = m_VertexBuffer->GetBufferSize();
+				vertexBufferView.StrideInBytes = sizeof(Vertex);
+
+				indexBufferView.BufferLocation = m_IndexBuffer->GetBufferResource()->GetGPUVirtualAddress();
+				indexBufferView.SizeInBytes = m_IndexBuffer->GetBufferSize();
+			}
+
+			m_CommandList->IASetVertexBuffers(0, 1, &vertexBufferView);
+			m_CommandList->IASetIndexBuffer(&indexBufferView);
+
+			currType = static_cast<CGH::MESH_TYPE>(m_RenderObjects[i].meshType);
 		}
-		else
+	
+		if (currPrimitive != m_RenderObjects[i].primitive)
 		{
-			vertexBufferView.BufferLocation = m_VertexBuffer->GetBufferResource()->GetGPUVirtualAddress();
-			vertexBufferView.SizeInBytes = m_VertexBuffer->GetBufferSize();
-			vertexBufferView.StrideInBytes = sizeof(Vertex);
-
-			indexBufferView.BufferLocation = m_IndexBuffer->GetBufferResource()->GetGPUVirtualAddress();
-			indexBufferView.SizeInBytes = m_IndexBuffer->GetBufferSize();
+			currPrimitive = static_cast<D3D_PRIMITIVE_TOPOLOGY>(m_RenderObjects[i].primitive);
+			m_CommandList->IASetPrimitiveTopology(currPrimitive);
 		}
-
-		m_CommandList->IASetVertexBuffers(0, 1, &vertexBufferView);
-		m_CommandList->IASetIndexBuffer(&indexBufferView);
-		m_CommandList->IASetPrimitiveTopology(static_cast<D3D_PRIMITIVE_TOPOLOGY>(m_RenderObjects[i].primitive));
-		m_CommandList->SetGraphicsRootShaderResourceView(ANIBONE_BUFFER, m_FrameResource->aniBoneMatBuffer->Resource()->GetGPUVirtualAddress());
+		
 		m_CommandList->SetGraphicsRootConstantBufferView(OBJECT_CB, ObjectCBVritualAD);
 
+		if (m_RenderObjects[i].materialIndex != -1)
+		{
+			m_CommandList->SetGraphicsRootShaderResourceView(ANIBONE_BUFFER,
+				AniBoneCBVritualAD + (m_RenderObjects[i].materialIndex * AniBoneStrideSize* BONEMAXMATRIX));
+		}
+
 		m_CommandList->DrawIndexedInstanced(m_RenderObjectsSubmesh[i]->numIndex, 1,
-			m_RenderObjectsSubmesh[i]->indexOffset, 0, 0);
-		ObjectCBVritualAD += strideSize;
+			m_RenderObjectsSubmesh[i]->indexOffset, m_RenderObjectsSubmesh[i]->vertexOffset, 0);
+		ObjectCBVritualAD += ObjectStrideSize;
 	}
 }
 

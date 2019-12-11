@@ -20,7 +20,7 @@ public:
 	virtual void Update() override {};
 
 	static void GetMeshNames(std::vector<std::string>& out);
-	bool SelectMesh(std::string& name);
+	bool SelectMesh(const std::string& name);
 	const std::string& GetCurrMeshName() const { return m_CurrMeshName; }
 
 private:
@@ -41,7 +41,7 @@ public:
 		, m_CurrSkinnedData(nullptr)
 		, m_currTick(0)
 	{
-		if (skinnedDatas == nullptr)
+		if (m_SkinnedDatas == nullptr)
 		{
 			m_SkinnedDatas = skinnedDatas;
 			m_ReservedAniBone = reservedAniBone;
@@ -50,8 +50,10 @@ public:
 
 	virtual void Update() override;
 
-	bool SelectSkin(std::string& name);
-	bool SelectAnimation(std::string& name);
+	static void GetSkinNames(std::vector<std::string>& out);
+	void GetAniNames(std::vector<std::string>& out);
+	bool SelectSkin(const std::string& name);
+	bool SelectAnimation(const std::string& name);
 	int GetBoneMatStoredIndex() const { return m_BoneMatStoredIndex; }
 
 private:

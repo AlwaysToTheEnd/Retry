@@ -73,6 +73,11 @@ public:
 		std::memcpy(&m_MappedData[elementIndex * m_ElementByteSize], &data, sizeof(T));
 	}
 
+	void CopyData(int elementIndex, const T* data)
+	{
+		std::memcpy(&m_MappedData[elementIndex * m_ElementByteSize], data, sizeof(T));
+	}
+
 	void CopyData(int numElement, int offsetIndex, const T* data)
 	{
 		assert(!m_IsConstantBuffer);
@@ -99,7 +104,7 @@ struct FrameResource
 
 		passCB = std::make_unique<UploadBuffer<PassConstants>>(device, passCount, true);
 		objectCB = std::make_unique<UploadBuffer<ObjectConstants>>(device, objectCount, true);
-		aniBoneMatBuffer = std::make_unique<UploadBuffer<AniBoneMat>>(device, aniBoneSetNum, false);
+		aniBoneMatBuffer = std::make_unique<UploadBuffer<DirectX::XMFLOAT4X4>>(device, aniBoneSetNum, true);
 	}
 
 	FrameResource(const FrameResource& rhs) = delete;
@@ -109,7 +114,7 @@ struct FrameResource
 	
 	std::unique_ptr<UploadBuffer<PassConstants>> passCB = nullptr;
 	std::unique_ptr<UploadBuffer<ObjectConstants>> objectCB = nullptr;
-	std::unique_ptr<UploadBuffer<AniBoneMat>> aniBoneMatBuffer = nullptr;
+	std::unique_ptr<UploadBuffer<DirectX::XMFLOAT4X4>> aniBoneMatBuffer = nullptr;
 };
 
 class GraphicDX12 final : public IGraphicDevice

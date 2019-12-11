@@ -67,8 +67,9 @@ void Ani::SkinnedData::GetFinalTransforms(
 	std::vector<CGH::MAT16> localTransform;
 	std::vector<CGH::MAT16> combinedMats;
 	combinedMats.resize(m_BoneOffsets.size());
+	localTransform.resize(m_BoneOffsets.size());
 
-	assert(BONEMAXMATRIX <= m_BoneOffsets.size());
+	assert(BONEMAXMATRIX >= m_BoneOffsets.size());
 
 	CalLocalTransformFromAnimation(clipName, localTransform, timePos);
 
@@ -102,7 +103,7 @@ std::vector<std::string> Ani::SkinnedData::GetAnimationNames() const
 	return result;
 }
 
-bool Ani::SkinnedData::CheckAnimation(std::string& key) const
+bool Ani::SkinnedData::CheckAnimation(const std::string& key) const
 {
 	return m_Animations.find(key) != m_Animations.end();
 }
@@ -111,7 +112,6 @@ void Ani::SkinnedData::CalLocalTransformFromAnimation(const std::string& clipNam
 {
 	auto aniIter = m_Animations.find(clipName);
 	assert(aniIter != m_Animations.end() && ("This skinned don't have [" + clipName + "] animation").c_str());
-	LocalTransforms.resize(aniIter->second.animBones.size());
 
 	for (auto& it : aniIter->second.animBones)
 	{

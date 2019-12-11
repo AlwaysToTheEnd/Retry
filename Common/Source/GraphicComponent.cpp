@@ -17,7 +17,7 @@ void ComMesh::GetMeshNames(std::vector<std::string>& out)
 	}
 }
 
-bool ComMesh::SelectMesh(std::string& name)
+bool ComMesh::SelectMesh(const std::string& name)
 {
 	auto iter = m_Meshs->find(name);
 	if (iter == m_Meshs->end())
@@ -34,14 +34,12 @@ bool ComMesh::SelectMesh(std::string& name)
 
 void ComAnimator::Update()
 {
-	AniBoneMat aniBoneMat;
-
 	if (m_CurrSkinnedData && m_CurrAniName.length())
 	{
 		//#TODO: Get deltaTime and add to currTick
-		m_CurrSkinnedData->GetFinalTransforms(m_CurrAniName, m_currTick, aniBoneMat);
 		m_BoneMatStoredIndex = m_ReservedAniBone->size();
-		m_ReservedAniBone->push_back(aniBoneMat);
+		m_ReservedAniBone->emplace_back();
+		m_CurrSkinnedData->GetFinalTransforms(m_CurrAniName, m_currTick, m_ReservedAniBone->back());
 	}
 	else
 	{
@@ -49,7 +47,23 @@ void ComAnimator::Update()
 	}
 }
 
-bool ComAnimator::SelectSkin(std::string& name)
+void ComAnimator::GetSkinNames(std::vector<std::string>& out)
+{
+	for (auto& it : *m_SkinnedDatas)
+	{
+		out.push_back(it.first);
+	}
+}
+
+void ComAnimator::GetAniNames(std::vector<std::string>& out)
+{
+	if (m_CurrSkinnedData)
+	{
+		out = m_CurrSkinnedData->GetAnimationNames();
+	}
+}
+
+bool ComAnimator::SelectSkin(const std::string& name)
 {
 	auto iter = m_SkinnedDatas->find(name);
 	m_CurrAniName.clear();
@@ -65,7 +79,7 @@ bool ComAnimator::SelectSkin(std::string& name)
 	return true;
 }
 
-bool ComAnimator::SelectAnimation(std::string& name)
+bool ComAnimator::SelectAnimation(const std::string& name)
 {
 	if (m_CurrSkinnedData==nullptr)
 	{

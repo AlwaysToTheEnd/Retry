@@ -541,14 +541,25 @@ void XFileParser::ParseDataObjectMeshNormals(Ani::Subset& subset,
 
 	// read count
 	unsigned int numNormals = ReadInt();
-	assert(subset.vertexCount == numNormals);
+
+	if (subset.vertexCount == numNormals)
+	{
+		const unsigned int maxNum = subset.vertexCount + subset.vertexStart;
+		for (unsigned int i = subset.vertexStart; i < maxNum; i++)
+		{
+			vertices[i].normal = ReadVector3();
+		}
+	}
+	else
+	{
+		for (unsigned int i = 0; i < numNormals; i++)
+		{
+			ReadVector3();
+		}
+	}
 
 	// read normal vectors
-	const unsigned int maxNum = subset.vertexCount + subset.vertexStart;
-	for (unsigned int i = subset.vertexStart; i < maxNum; i++)
-	{
-		vertices[i].normal = ReadVector3();
-	}
+	
 
 	// read normal indices
 	unsigned int numFaces = ReadInt();

@@ -103,7 +103,7 @@ namespace Ani
 		unsigned int				GetAnimationNum() const { return static_cast<unsigned int>(m_Animations.size()); }
 		std::vector<std::string>	GetAnimationNames() const;
 		
-		bool						CheckAnimation(std::string& key) const;
+		bool						CheckAnimation(const std::string& key) const;
 
 	private:
 		void CalLocalTransformFromAnimation(const std::string& clipName, std::vector<CGH::MAT16>& LocalTransforms , unsigned long long timePos) const;
