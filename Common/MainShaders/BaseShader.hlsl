@@ -11,7 +11,6 @@ struct MaterialData
 };
 
 StructuredBuffer<MaterialData> gInstanceData : register(t0, space1);
-StructuredBuffer<float4x4> gAniBoneMat : register(t1, space1);
 Texture2D gMainTexture[MAXTEXTURE] : register(t0);
 
 SamplerState gsamPointWrap : register(s0);
@@ -21,6 +20,12 @@ SamplerState gsamLinearClamp : register(s3);
 SamplerState gsamAnisotropicWrap : register(s4);
 SamplerState gsamAnisotropicClamp : register(s5);
 SamplerComparisonState gsamShadow : register(s6);
+
+
+cbuffer cbSkinned : register(b2)
+{
+	float4x4 gAniBoneMat[BONEMAXMATRIX];
+};
 
 cbuffer cbPass : register(b0)
 {

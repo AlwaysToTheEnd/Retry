@@ -667,9 +667,9 @@ void GraphicDX12::BuildRootSignature()
 
 	CD3DX12_ROOT_PARAMETER slotRootParam[ROOT_COUNT];
 	slotRootParam[MATERIAL_BUFFER].InitAsShaderResourceView(0, 1);
-	slotRootParam[ANIBONE_BUFFER].InitAsShaderResourceView(1, 1);
 	slotRootParam[PASS_CB].InitAsConstantBufferView(0);
 	slotRootParam[OBJECT_CB].InitAsConstantBufferView(1);
+	slotRootParam[ANIBONE_BUFFER].InitAsConstantBufferView(2);
 	slotRootParam[TEXTURE_TABLE].InitAsDescriptorTable(1, &texTable, D3D12_SHADER_VISIBILITY_PIXEL);
 
 	CD3DX12_ROOT_SIGNATURE_DESC rootDesc;
@@ -824,11 +824,7 @@ void GraphicDX12::UpdateAniBoneBuffer()
 	UINT index = 0;
 	for (auto& it : m_ReservedAniBones)
 	{
-		for (int i = 0; i < BONEMAXMATRIX; i++)
-		{
-			XMStoreFloat4x4(it.bones[i], XMMatrixTranspose(XMLoadFloat4x4(it.bones[i])));
-			aniBoneBuffer->CopyData(index++, it.bones[i]);
-		}
+		aniBoneBuffer->CopyData(index++, it);
 	}
 }
 
@@ -838,7 +834,6 @@ void GraphicDX12::DrawObjects()
 	D3D12_INDEX_BUFFER_VIEW indexBufferView = {};
 	indexBufferView.Format = DXGI_FORMAT_R32_UINT;
 
-	
 	auto ObjectCBVritualAD = m_FrameResource->objectCB->Resource()->GetGPUVirtualAddress();
 	auto AniBoneCBVritualAD = m_FrameResource->aniBoneMatBuffer->Resource()->GetGPUVirtualAddress();
 	const UINT ObjectStrideSize = m_FrameResource->objectCB->GetElementByteSize();
@@ -884,10 +879,10 @@ void GraphicDX12::DrawObjects()
 		
 		m_CommandList->SetGraphicsRootConstantBufferView(OBJECT_CB, ObjectCBVritualAD);
 
-		if (m_RenderObjects[i].materialIndex != -1)
+		if (m_RenderObjects[i].aniBoneIndex != -1)
 		{
-			m_CommandList->SetGraphicsRootShaderResourceView(ANIBONE_BUFFER,
-				AniBoneCBVritualAD + (m_RenderObjects[i].materialIndex * AniBoneStrideSize* BONEMAXMATRIX));
+			m_CommandList->SetGraphicsRootConstantBufferView(ANIBONE_BUFFER,
+				AniBoneCBVritualAD + (m_RenderObjects[i].aniBoneIndex * AniBoneStrideSize));
 		}
 
 		m_CommandList->DrawIndexedInstanced(m_RenderObjectsSubmesh[i]->numIndex, 1,

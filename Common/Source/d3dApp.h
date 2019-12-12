@@ -11,6 +11,9 @@
 #define GKEYBOARD D3DApp::GetApp()->GetKeyBoard()
 #define GMOUSE D3DApp::GetApp()->GetMouse()
 
+typedef DirectX::Keyboard::Keys KEYState;
+typedef DirectX::Mouse::ButtonStateTracker::ButtonState MOUSEState;
+
 struct MeshObject;
 
 class D3DApp :public ICompnentCreater
@@ -35,8 +38,8 @@ protected:
 
 public:
 	static D3DApp* GetApp();
-	DirectX::Mouse* GetMouse() { return &m_Mouse; }
-	DirectX::Keyboard* GetKeyBoard() { return &m_Keyboard; }
+	const DirectX::Mouse::ButtonStateTracker& GetMouse() { return m_MouseTracker; }
+	const DirectX::Keyboard::KeyboardStateTracker& GetKeyBoard() { return m_KeyboardTracker; }
 	
 	bool Initialize();
 	int Run();
@@ -62,8 +65,10 @@ private:
 protected:
 	static D3DApp* m_App;
 
-	DirectX::Mouse		m_Mouse;
-	DirectX::Keyboard	m_Keyboard;
+	DirectX::Mouse						m_Mouse;
+	DirectX::Mouse::ButtonStateTracker	m_MouseTracker;
+	DirectX::Keyboard					m_Keyboard;
+	DirectX::Keyboard::KeyboardStateTracker	m_KeyboardTracker;
 
 	HINSTANCE	m_hAppInst = nullptr;
 	HWND		m_hMainWnd = nullptr;

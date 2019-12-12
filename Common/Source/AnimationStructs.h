@@ -98,8 +98,8 @@ namespace Ani
 
 	public:
 		unsigned int				BoneCount() const { return static_cast<unsigned int>(m_BoneOffsets.size()); }
-		float						GetClipStartTime(const std::string& clipName) const;
-		float						GetClipEndTime(const std::string& clipName) const;
+		unsigned int				GetClipStartTime(const std::string& clipName) const;
+		unsigned int				GetClipEndTime(const std::string& clipName) const;
 		void						GetFinalTransforms(const std::string& clipName, unsigned long long timePos, AniBoneMat& finalTransforms) const;
 		unsigned int				GetAnimationNum() const { return static_cast<unsigned int>(m_Animations.size()); }
 		std::vector<std::string>	GetAnimationNames() const;
@@ -111,6 +111,7 @@ namespace Ani
 
 		DirectX::XMVECTOR XM_CALLCONV GetAnimationKeyOnTick(const std::vector<TimeValue<DirectX::XMFLOAT3>>& values, unsigned long long timePos) const;
 		DirectX::XMVECTOR XM_CALLCONV GetAnimationKeyOnTick(const std::vector<TimeValue<DirectX::XMFLOAT4>>& values, unsigned long long timePos) const;
+		DirectX::XMMATRIX XM_CALLCONV GetAnimationKeyOnTick(const std::vector<TimeValue<CGH::MAT16>>& values, unsigned long long timePos) const;
 
 	private:
 		std::vector<int>							m_FrameHierarchy;

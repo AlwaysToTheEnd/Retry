@@ -1504,22 +1504,23 @@ void XFileParser::DataRearrangement(std::vector<SkinnedVertex>& vertices,
 	skinInfo.m_BoneOffsets.resize(boneNum);
 	skinInfo.m_BoneOffsetsFrameIndex.resize(boneNum);
 
-	for (size_t i = 0; i < boneNum; i++)
+	for (size_t boneIndex = 0; boneIndex < boneNum; boneIndex++)
 	{
 		//Fill offsetMatrix
-		skinInfo.m_BoneOffsetsFrameIndex[i] = m_FrameIndex.find(m_Bones[i].TargetFrame)->second;
-		skinInfo.m_BoneOffsets[i] = m_Bones[i].offsetMat;
+		XFileParser::Bone& currBone = m_Bones[boneIndex];
+		skinInfo.m_BoneOffsetsFrameIndex[boneIndex] = m_FrameIndex.find(currBone.TargetFrame)->second;
+		skinInfo.m_BoneOffsets[boneIndex] = currBone.offsetMat;
 
-		for (auto& it : m_Bones[i].weights)
+		for (auto& it : currBone.weights)
 		{
 			float* weightData = &vertices[it.vertexIndex].boneWeights.x;
 			bool isEndWeight = true;
-			for (int i = 0; i < 3; i++)
+			for (int j = 0; j < 3; j++)
 			{
-				if (weightData[i] == 0)
+				if (weightData[j] == 0)
 				{
-					weightData[i] = it.weight;
-					vertices[it.vertexIndex].boneIndices[i] = i;
+					weightData[j] = it.weight;
+					vertices[it.vertexIndex].boneIndices[j] = boneIndex;
 					isEndWeight = false;
 					break;
 				}
@@ -1527,7 +1528,7 @@ void XFileParser::DataRearrangement(std::vector<SkinnedVertex>& vertices,
 
 			if (isEndWeight)
 			{
-				vertices[it.vertexIndex].boneIndices[3] = i;
+				vertices[it.vertexIndex].boneIndices[3] = boneIndex;
 			}
 		}
 	}

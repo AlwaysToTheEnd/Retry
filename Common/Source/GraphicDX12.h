@@ -104,7 +104,7 @@ struct FrameResource
 
 		passCB = std::make_unique<UploadBuffer<PassConstants>>(device, passCount, true);
 		objectCB = std::make_unique<UploadBuffer<ObjectConstants>>(device, objectCount, true);
-		aniBoneMatBuffer = std::make_unique<UploadBuffer<DirectX::XMFLOAT4X4>>(device, aniBoneSetNum, true);
+		aniBoneMatBuffer = std::make_unique<UploadBuffer<AniBoneMat>>(device, aniBoneSetNum, true);
 	}
 
 	FrameResource(const FrameResource& rhs) = delete;
@@ -114,7 +114,7 @@ struct FrameResource
 	
 	std::unique_ptr<UploadBuffer<PassConstants>> passCB = nullptr;
 	std::unique_ptr<UploadBuffer<ObjectConstants>> objectCB = nullptr;
-	std::unique_ptr<UploadBuffer<DirectX::XMFLOAT4X4>> aniBoneMatBuffer = nullptr;
+	std::unique_ptr<UploadBuffer<AniBoneMat>> aniBoneMatBuffer = nullptr;
 };
 
 class GraphicDX12 final : public IGraphicDevice

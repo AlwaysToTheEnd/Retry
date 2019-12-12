@@ -28,6 +28,8 @@ D3DApp::~D3DApp()
 
 void D3DApp::BaseUpdate()
 {
+	m_MouseTracker.Update(m_Mouse.GetState());
+	m_KeyboardTracker.Update(m_Keyboard.GetState());
 	Update();
 
 	GetComponentUpdater(COMPONENTTYPE::COM_TRANSFORM).Update();
@@ -139,8 +141,8 @@ bool D3DApp::Initialize()
 
 LRESULT D3DApp::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	m_Mouse.ProcessMessage(msg, wParam, lParam);
-	m_Keyboard.ProcessMessage(msg, wParam, lParam);
+	DirectX::Keyboard::ProcessMessage(msg, wParam, lParam);
+	DirectX::Mouse::ProcessMessage(msg, wParam, lParam);
 
 	switch (msg)
 	{

@@ -4,7 +4,7 @@
 #include <string>
 #include <unordered_map>
 #include "BaseClass.h"
-#define BONEMAXMATRIX 256
+#define BONEMAXMATRIX 160
 
 struct ObjectConstants
 {

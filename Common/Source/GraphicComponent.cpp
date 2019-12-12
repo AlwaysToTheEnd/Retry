@@ -36,10 +36,19 @@ void ComAnimator::Update()
 {
 	if (m_CurrSkinnedData && m_CurrAniName.length())
 	{
+		m_CurrTick++;
 		//#TODO: Get deltaTime and add to currTick
 		m_BoneMatStoredIndex = m_ReservedAniBone->size();
 		m_ReservedAniBone->emplace_back();
-		m_CurrSkinnedData->GetFinalTransforms(m_CurrAniName, m_currTick, m_ReservedAniBone->back());
+		m_CurrSkinnedData->GetFinalTransforms(m_CurrAniName, m_CurrTick, m_ReservedAniBone->back());
+
+		if (m_IsRoof)
+		{
+			if (m_CurrTick > m_CurrSkinnedData->GetClipEndTime(m_CurrAniName))
+			{
+				m_CurrTick = 0;
+			}
+		}
 	}
 	else
 	{
@@ -67,7 +76,7 @@ bool ComAnimator::SelectSkin(const std::string& name)
 {
 	auto iter = m_SkinnedDatas->find(name);
 	m_CurrAniName.clear();
-	m_currTick = 0;
+	m_CurrTick = 0;
 
 	if (iter == m_SkinnedDatas->end())
 	{

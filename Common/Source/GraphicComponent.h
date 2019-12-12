@@ -39,7 +39,8 @@ public:
 		: IComponent(COMPONENTTYPE::COM_ANIMATOR, gameObject, ID)
 		, m_BoneMatStoredIndex(-1)
 		, m_CurrSkinnedData(nullptr)
-		, m_currTick(0)
+		, m_CurrTick(0)
+		, m_IsRoof(false)
 	{
 		if (m_SkinnedDatas == nullptr)
 		{
@@ -52,6 +53,7 @@ public:
 
 	static void GetSkinNames(std::vector<std::string>& out);
 	void GetAniNames(std::vector<std::string>& out);
+	void SetRoof(bool value) { m_IsRoof = value; }
 	bool SelectSkin(const std::string& name);
 	bool SelectAnimation(const std::string& name);
 	int GetBoneMatStoredIndex() const { return m_BoneMatStoredIndex; }
@@ -63,7 +65,9 @@ private:
 	const Ani::SkinnedData*	m_CurrSkinnedData;
 	std::string				m_CurrAniName;
 	int						m_BoneMatStoredIndex;
-	unsigned long long		m_currTick;
+
+	unsigned long long		m_CurrTick;
+	bool					m_IsRoof;
 };
 
 class ComRenderer :public IComponent

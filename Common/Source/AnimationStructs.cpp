@@ -1,9 +1,11 @@
 #include "AnimationStructs.h"
 #include "DX12RenderClasses.h"
+#include <d3d12.h>
+#include "DirectXTK/SimpleMath.h"
 
 using namespace DirectX;
 
-float Ani::SkinnedData::GetClipStartTime(const std::string& clipName) const
+unsigned int Ani::SkinnedData::GetClipStartTime(const std::string& clipName) const
 {
 	auto aniIter = m_Animations.find(clipName);
 	assert(aniIter != m_Animations.end() && ("This skinned don't have [" + clipName + "] animation").c_str());
@@ -31,7 +33,7 @@ float Ani::SkinnedData::GetClipStartTime(const std::string& clipName) const
 	return -1.0f;
 }
 
-float Ani::SkinnedData::GetClipEndTime(const std::string& clipName) const
+unsigned int Ani::SkinnedData::GetClipEndTime(const std::string& clipName) const
 {
 	auto aniIter = m_Animations.find(clipName);
 	assert(aniIter != m_Animations.end() && ("This skinned don't have [" + clipName + "] animation").c_str());
@@ -84,18 +86,23 @@ void Ani::SkinnedData::GetFinalTransforms(
 		{
 			assert(targetFrameIndex < i);
 			parentMat = XMLoadFloat4x4(combinedMats[targetFrameIndex]);
-		}
 
-		combined = currFrameMat * parentMat;
-		XMStoreFloat4x4(combinedMats[i], combined);
+			combined = currFrameMat * parentMat;
+			XMStoreFloat4x4(combinedMats[i], combined);
+		}
+		else
+		{
+			XMStoreFloat4x4(combinedMats[i], currFrameMat);
+		}
 	}
 
 	for (size_t i = 0; i < m_BoneOffsets.size(); i++)
 	{
+		unsigned int index = m_BoneOffsetsFrameIndex[i];
 		XMMATRIX boneOffset = XMLoadFloat4x4(m_BoneOffsets[i]);
-		XMMATRIX combined = XMLoadFloat4x4(combinedMats[m_BoneOffsetsFrameIndex[i]]);
+		XMMATRIX combined = XMLoadFloat4x4(combinedMats[index]);
 
-		XMStoreFloat4x4(finalTransforms.bones[i], XMMatrixMultiply(boneOffset ,combined));
+		XMStoreFloat4x4(finalTransforms.bones[i], XMMatrixTranspose(XMMatrixMultiply(boneOffset ,combined)));
 	}
 }
 
@@ -137,7 +144,7 @@ void Ani::SkinnedData::CalLocalTransformFromAnimation(const std::string& clipNam
 		}
 		else if (it.trafoKeys.size())
 		{
-
+			XMStoreFloat4x4(LocalTransforms[it.localMatIndex], GetAnimationKeyOnTick(it.trafoKeys, timePos));
 		}
 		else
 		{
@@ -167,7 +174,7 @@ DirectX::XMVECTOR XM_CALLCONV Ani::SkinnedData::GetAnimationKeyOnTick(const std:
 			{
 				float lerpPercent =
 					(timePos - values[i].time) /
-					(values[i + 1].time - values[i].time);
+					static_cast<float>((values[i + 1].time - values[i].time));
 
 				DirectX::XMVECTOR prev = DirectX::XMLoadFloat3(&values[i].value);
 				DirectX::XMVECTOR next = DirectX::XMLoadFloat3(&values[i + 1].value);
@@ -202,13 +209,46 @@ DirectX::XMVECTOR XM_CALLCONV Ani::SkinnedData::GetAnimationKeyOnTick(const std:
 			{
 				float lerpPercent =
 					(timePos - values[i].time) /
-					(values[i + 1].time - values[i].time);
+					static_cast<float>((values[i + 1].time - values[i].time));
 
 				DirectX::XMVECTOR prev = DirectX::XMLoadFloat4(&values[i].value);
 				DirectX::XMVECTOR next = DirectX::XMLoadFloat4(&values[i + 1].value);
 
 				result = DirectX::XMQuaternionSlerp(prev, next, lerpPercent);
 
+				break;
+			}
+		}
+	}
+
+	return result;
+}
+
+DirectX::XMMATRIX XM_CALLCONV Ani::SkinnedData::GetAnimationKeyOnTick(const std::vector<TimeValue<CGH::MAT16>>& values, unsigned long long timePos) const
+{
+	DirectX::XMMATRIX result = DirectX::XMMatrixIdentity();
+
+	if (timePos <= values.front().time)
+	{
+		result = DirectX::XMLoadFloat4x4(values.front().value);
+	}
+	else if (timePos >= values.back().time)
+	{
+		result = DirectX::XMLoadFloat4x4(values.back().value);
+	}
+	else
+	{
+		for (size_t i = 0; i < values.size() - 1; i++)
+		{
+			if (timePos >= values[i].time && timePos <= values[i + 1].time)
+			{
+				float lerpPercent =
+					(timePos - values[i].time) /
+					static_cast<float>((values[i + 1].time - values[i].time));
+				DirectX::XMMATRIX prev = DirectX::XMLoadFloat4x4(values[i].value);
+				DirectX::XMMATRIX next = DirectX::XMLoadFloat4x4(values[i + 1].value);
+				
+				result = DirectX::SimpleMath::Matrix::Lerp(prev, next, lerpPercent);
 				break;
 			}
 		}
