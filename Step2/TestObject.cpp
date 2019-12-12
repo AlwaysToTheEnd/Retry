@@ -30,7 +30,7 @@ void TestObject::Init()
 
 	if (names.size())
 	{
-		ani->SelectAnimation(names.front());
+		ani->SelectAnimation("WindCutter3");
 	}
 }
 

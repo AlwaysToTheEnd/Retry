@@ -30,29 +30,28 @@ XFileParser::XFileParser()
 	, m_LineNumber(0)
 	, P(nullptr)
 	, End(nullptr)
-	, m_CurrFrameIndex(0)
 {
-	
+
 }
 
-bool XFileParser::LoadXfile(	const std::string& filename, 
-							std::vector<SkinnedVertex>& vertices, 
-							std::vector<unsigned int>& indices,	
-							std::vector<Ani::Subset>& subsets, 
-							std::vector<Ani::AniMaterial>& mats, 
-							Ani::SkinnedData& skinInfo)
+bool XFileParser::LoadXfile(const std::string& filename,
+	std::vector<SkinnedVertex>& vertices,
+	std::vector<unsigned int>& indices,
+	std::vector<Ani::Subset>& subsets,
+	std::vector<Ani::AniMaterial>& mats,
+	Ani::SkinnedData& skinInfo)
 {
 	vertices.clear();
 	indices.clear();
 	subsets.clear();
 	mats.clear();
 	skinInfo.m_Animations.clear();
-	skinInfo.m_BoneHierarchy.clear();
+	skinInfo.m_FrameHierarchy.clear();
 	skinInfo.m_BoneOffsets.clear();
-
-	m_IndexMap.clear();
+	skinInfo.m_BoneOffsetsFrameIndex.clear();
+	m_FrameIndex.clear();
 	m_Bones.clear();
-	m_BoneNames.clear();
+
 	FILE* load = nullptr;
 	vector<char> fileData;
 	vector<char> uncompressed;
@@ -93,12 +92,12 @@ bool XFileParser::LoadXfile(	const std::string& filename,
 		}
 		else if (objectName == "Frame")
 		{
-			ParseDataObjectFrame(-1, vertices,indices,subsets,mats,skinInfo);
+			ParseDataObjectFrame(-1, vertices, indices, subsets, mats, skinInfo);
 		}
 		else if (objectName == "Mesh")
 		{
 			// some meshes have no frames at all
-			ParseDataObjectMesh(vertices, indices, subsets,mats);
+			ParseDataObjectMesh(vertices, indices, subsets, mats);
 		}
 		else if (objectName == "AnimTicksPerSecond")
 		{
@@ -316,11 +315,11 @@ void XFileParser::ParseDataObjectTemplate()
 }
 
 void XFileParser::ParseDataObjectFrame(int parentIndex,
-									std::vector<SkinnedVertex>& vertices,
-									std::vector<unsigned int>& indices,
-									std::vector<Ani::Subset>& subsets,
-									std::vector<Ani::AniMaterial>& mats,
-									Ani::SkinnedData& skinInfo)
+	std::vector<SkinnedVertex>& vertices,
+	std::vector<unsigned int>& indices,
+	std::vector<Ani::Subset>& subsets,
+	std::vector<Ani::AniMaterial>& mats,
+	Ani::SkinnedData& skinInfo)
 {
 	// A coordinate frame, or "frame of reference." The Frame template
 	// is open and can contain any object. The Direct3D extensions (D3DX)
@@ -330,9 +329,10 @@ void XFileParser::ParseDataObjectFrame(int parentIndex,
 	string name;
 	readHeadOfDataObject(&name);
 
-	m_CurrFrameIndex= skinInfo.m_BoneHierarchy.size();
-	m_IndexMap.insert({ name, m_CurrFrameIndex });
-	skinInfo.m_BoneHierarchy.push_back(parentIndex);
+	const unsigned int currFrameIndex = skinInfo.m_FrameHierarchy.size();
+	assert(m_FrameIndex.find(name) == m_FrameIndex.end());
+	m_FrameIndex.insert({ name, currFrameIndex });
+	skinInfo.m_FrameHierarchy.push_back(parentIndex);
 
 	// Now inside a frame.
 	// read tokens until closing brace is reached.
@@ -351,7 +351,7 @@ void XFileParser::ParseDataObjectFrame(int parentIndex,
 		}
 		else if (objectName == "Frame")
 		{
-			ParseDataObjectFrame(m_CurrFrameIndex, vertices, indices, subsets, mats, skinInfo);
+			ParseDataObjectFrame(currFrameIndex, vertices, indices, subsets, mats, skinInfo);
 		}
 		else if (objectName == "FrameTransformMatrix")
 		{
@@ -360,7 +360,7 @@ void XFileParser::ParseDataObjectFrame(int parentIndex,
 		}
 		else if (objectName == "Mesh")
 		{
-			ParseDataObjectMesh(vertices,indices,subsets,mats);
+			ParseDataObjectMesh(vertices, indices, subsets, mats);
 		}
 		else
 		{
@@ -391,9 +391,9 @@ void XFileParser::ParseDataObjectTransformationMatrix(CGH::MAT16& pMatrix)
 }
 
 void XFileParser::ParseDataObjectMesh(std::vector<SkinnedVertex>& vertices,
-									std::vector<UINT>& indices,
-									std::vector<Ani::Subset>& subsets,
-									std::vector<Ani::AniMaterial>& mats)
+	std::vector<UINT>& indices,
+	std::vector<Ani::Subset>& subsets,
+	std::vector<Ani::AniMaterial>& mats)
 {
 	string name;
 	Subset subset;
@@ -448,7 +448,7 @@ void XFileParser::ParseDataObjectMesh(std::vector<SkinnedVertex>& vertices,
 		}
 		else if (objectName == "MeshNormals")
 		{
-			ParseDataObjectMeshNormals(subset,vertices);
+			ParseDataObjectMeshNormals(subset, vertices);
 		}
 		else if (objectName == "MeshTextureCoords")
 		{
@@ -460,7 +460,7 @@ void XFileParser::ParseDataObjectMesh(std::vector<SkinnedVertex>& vertices,
 		}
 		else if (objectName == "MeshMaterialList")
 		{
-			ParseDataObjectMeshMaterialList(subset,mats);
+			ParseDataObjectMeshMaterialList(subset, mats);
 		}
 		else if (objectName == "VertexDuplicationIndices")
 		{
@@ -487,17 +487,17 @@ void XFileParser::ParseDataObjectMesh(std::vector<SkinnedVertex>& vertices,
 void XFileParser::ParseDataObjectSkinWeights(Ani::Subset& subset)
 {
 	readHeadOfDataObject();
-	
+
 	XFileParser::Bone bone;
 
-	GetNextTokenAsString(bone.name);
+	GetNextTokenAsString(bone.TargetFrame);
 	const size_t numWeights = ReadInt();
 	bone.weights.reserve(numWeights);
 
 	for (size_t i = 0; i < numWeights; i++)
 	{
 		BoneWeight weight;
-		weight.vertexIndex = ReadInt()+subset.vertexStart;
+		weight.vertexIndex = ReadInt() + subset.vertexStart;
 		bone.weights.push_back(weight);
 	}
 
@@ -517,7 +517,7 @@ void XFileParser::ParseDataObjectSkinWeights(Ani::Subset& subset)
 	bone.offsetMat.m[3][0] = ReadFloat(); bone.offsetMat.m[3][1] = ReadFloat();
 	bone.offsetMat.m[3][2] = ReadFloat(); bone.offsetMat.m[3][3] = ReadFloat();
 
-	m_Bones[m_CurrFrameIndex].push_back(bone);
+	m_Bones.push_back(bone);
 
 	CheckForSemicolon();
 	CheckForClosingBrace();
@@ -535,7 +535,7 @@ void XFileParser::ParseDataObjectSkinMeshHeader()
 }
 
 void XFileParser::ParseDataObjectMeshNormals(Ani::Subset& subset,
-											std::vector<SkinnedVertex>& vertices)
+	std::vector<SkinnedVertex>& vertices)
 {
 	readHeadOfDataObject();
 
@@ -559,7 +559,7 @@ void XFileParser::ParseDataObjectMeshNormals(Ani::Subset& subset,
 	}
 
 	// read normal vectors
-	
+
 
 	// read normal indices
 	unsigned int numFaces = ReadInt();
@@ -580,12 +580,12 @@ void XFileParser::ParseDataObjectMeshNormals(Ani::Subset& subset,
 }
 
 void XFileParser::ParseDataObjectMeshTextureCoords(Ani::Subset& subset,
-												std::vector<SkinnedVertex>& vertices)
+	std::vector<SkinnedVertex>& vertices)
 {
 	readHeadOfDataObject();
 	if (subset.numTexture + 1 > AI_MAX_NUMBER_OF_TEXTURECOORDS)
 		ThrowException("Too many sets of texture coordinates");
-
+	subset.numTexture++;
 	const unsigned int numCoords = ReadInt();
 	const unsigned int maxCoord = subset.vertexStart + numCoords;
 	if (numCoords != subset.vertexCount)
@@ -602,12 +602,12 @@ void XFileParser::ParseDataObjectMeshTextureCoords(Ani::Subset& subset,
 }
 
 void XFileParser::ParseDataObjectMeshVertexColors(Ani::Subset& subset,
-												std::vector<SkinnedVertex>& vertices)
+	std::vector<SkinnedVertex>& vertices)
 {
 	readHeadOfDataObject();
 	if (subset.numColors + 1 > AI_MAX_NUMBER_OF_COLOR_SETS)
 		ThrowException("Too many colorsets");
-
+	subset.numColors++;
 	const unsigned int numColors = ReadInt();
 	const unsigned int maxColor = subset.vertexStart + numColors;
 	if (numColors != subset.vertexCount)
@@ -646,7 +646,7 @@ void XFileParser::ParseDataObjectMeshMaterialList(Ani::Subset& subset, std::vect
 
 	// some models have a material index count of 1... to be able to read them we
 	// replicate this single material index on every face
-	if (numMatIndices != subset.indexCount/3 && numMatIndices != 1)
+	if (numMatIndices != subset.indexCount / 3 && numMatIndices != 1)
 		ThrowException("Per-Face material index count does not match face count.");
 
 	vector<unsigned int> indexCount;
@@ -659,7 +659,7 @@ void XFileParser::ParseDataObjectMeshMaterialList(Ani::Subset& subset, std::vect
 		unsigned int currIndex = ReadInt();
 		if (prevIndex != currIndex)
 		{
-			indexCount.push_back(currCount*3);
+			indexCount.push_back(currCount * 3);
 			currCount = 0;
 			prevIndex = currIndex;
 		}
@@ -678,7 +678,7 @@ void XFileParser::ParseDataObjectMeshMaterialList(Ani::Subset& subset, std::vect
 	// if there was only a single material index, replicate it on all faces
 	if (numMatIndices < subset.indexCount / 3)
 	{
-		indexCount.back()+= subset.indexCount - numMatIndices*3;
+		indexCount.back() += subset.indexCount - numMatIndices * 3;
 	}
 
 	// read following data objects
@@ -791,10 +791,11 @@ void XFileParser::ParseDataObjectAnimationSet(Ani::SkinnedData& skinInfo)
 {
 	string animName;
 	readHeadOfDataObject(&animName);
+	assert(skinInfo.m_Animations.find(animName) == skinInfo.m_Animations.end());
 	skinInfo.m_Animations.insert({ animName, Animation() });
-	
-	bool isFistTime = m_BoneNames.size() == 0;
+
 	bool running = true;
+
 	while (running)
 	{
 		string objectName = GetNextToken();
@@ -808,14 +809,7 @@ void XFileParser::ParseDataObjectAnimationSet(Ani::SkinnedData& skinInfo)
 		}
 		else if (objectName == "Animation")
 		{
-			if(isFistTime)
-			{
-				m_BoneNames.push_back(ParseDataObjectAnimation(skinInfo.m_Animations[animName]));
-			}
-			else
-			{
-				ParseDataObjectAnimation(skinInfo.m_Animations[animName]);
-			}
+			ParseDataObjectAnimation(skinInfo.m_Animations[animName]);
 		}
 		else
 		{
@@ -823,11 +817,11 @@ void XFileParser::ParseDataObjectAnimationSet(Ani::SkinnedData& skinInfo)
 			ParseUnknownDataObject();
 		}
 	}
+
 }
 
-string XFileParser::ParseDataObjectAnimation(Ani::Animation& pAnim)
+void XFileParser::ParseDataObjectAnimation(Ani::Animation& pAnim)
 {
-	string boneName;
 	AnimBone banim;
 	readHeadOfDataObject();
 
@@ -855,7 +849,7 @@ string XFileParser::ParseDataObjectAnimation(Ani::Animation& pAnim)
 		else if (objectName == "{")
 		{
 			// read frame name
-			boneName = GetNextToken();
+			banim.name = GetNextToken();
 			CheckForClosingBrace();
 		}
 		else
@@ -866,8 +860,6 @@ string XFileParser::ParseDataObjectAnimation(Ani::Animation& pAnim)
 	}
 
 	pAnim.animBones.push_back(banim);
-
-	return boneName;
 }
 
 void XFileParser::ParseDataObjectAnimationKey(Ani::AnimBone& pAnimBone)
@@ -1031,7 +1023,7 @@ void XFileParser::FindNextNoneWhiteSpace()
 	bool running = true;
 	while (running)
 	{
-		while (P < End && isspace((unsigned char)* P))
+		while (P < End && isspace((unsigned char)*P))
 		{
 			if (*P == '\n')
 			{
@@ -1167,7 +1159,7 @@ string XFileParser::GetNextToken()
 			return s;
 		}
 
-		while ((P < End) && !isspace((unsigned char)* P))
+		while ((P < End) && !isspace((unsigned char)*P))
 		{
 			// either keep token delimiters when already holding a token, or return if first valid char
 			if (*P == ';' || *P == '}' || *P == '{' || *P == ',')
@@ -1506,28 +1498,28 @@ void XFileParser::ThrowException(const string& pText)
 }
 
 void XFileParser::DataRearrangement(std::vector<SkinnedVertex>& vertices,
-								Ani::SkinnedData& skinInfo)
+	Ani::SkinnedData& skinInfo)
 {
-	skinInfo.m_BoneOffsets.resize(skinInfo.m_BoneHierarchy.size());
+	const size_t boneNum = m_Bones.size();
+	skinInfo.m_BoneOffsets.resize(boneNum);
+	skinInfo.m_BoneOffsetsFrameIndex.resize(boneNum);
 
-	for (auto& it : m_Bones)
+	for (size_t i = 0; i < boneNum; i++)
 	{
 		//Fill offsetMatrix
+		skinInfo.m_BoneOffsetsFrameIndex[i] = m_FrameIndex.find(m_Bones[i].TargetFrame)->second;
+		skinInfo.m_BoneOffsets[i] = m_Bones[i].offsetMat;
 
-		auto frameIter = m_IndexMap.find(it.first);
-		skinInfo.m_BoneOffsets[frameIter->second] = it.second.offsetMat;
-
-		//Fill weights and boneIndex of vertex
-		for (auto& it2 : it.second.weights)
+		for (auto& it : m_Bones[i].weights)
 		{
-			float* weightData = &vertices[it2.vertexIndex].boneWeights.x;
+			float* weightData = &vertices[it.vertexIndex].boneWeights.x;
 			bool isEndWeight = true;
-			for (int i=0; i<3; i++)
+			for (int i = 0; i < 3; i++)
 			{
 				if (weightData[i] == 0)
 				{
-					weightData[i] = it2.weight;
-					vertices[it2.vertexIndex].boneIndices[i]= frameIter->second;
+					weightData[i] = it.weight;
+					vertices[it.vertexIndex].boneIndices[i] = i;
 					isEndWeight = false;
 					break;
 				}
@@ -1535,32 +1527,18 @@ void XFileParser::DataRearrangement(std::vector<SkinnedVertex>& vertices,
 
 			if (isEndWeight)
 			{
-				vertices[it2.vertexIndex].boneIndices[3]= frameIter->second;
+				vertices[it.vertexIndex].boneIndices[3] = i;
 			}
 		}
 	}
 
 	//Fill LocalMatIndex of bones
-	bool isFirstTime = true;
-	vector<unsigned int> boneIndexList;
-	for (auto& it:skinInfo.m_Animations)
+	for (auto& it : skinInfo.m_Animations)
 	{
-		if (isFirstTime)
+		for (size_t i = 0; i < it.second.animBones.size(); i++)
 		{
-			for (size_t i = 0; i < it.second.animBones.size(); i++)
-			{
-				it.second.animBones[i].localMatIndex = m_IndexMap.find(m_BoneNames[i])->second;
-				boneIndexList.push_back(it.second.animBones[i].localMatIndex);
-			}
-
-			isFirstTime = false;
-		}
-		else
-		{
-			for (size_t i = 0; i < it.second.animBones.size(); i++)
-			{
-				it.second.animBones[i].localMatIndex = boneIndexList[i];
-			}
+			int num = m_FrameIndex.find(it.second.animBones[i].name)->second;
+			it.second.animBones[i].localMatIndex = num;
 		}
 	}
 }

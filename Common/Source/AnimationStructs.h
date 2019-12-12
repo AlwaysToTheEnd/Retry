@@ -78,6 +78,7 @@ namespace Ani
 
 	struct AnimBone
 	{
+		std::string name;
 		unsigned int localMatIndex=0;
 		std::vector<TimeValue<DirectX::XMFLOAT3>> posKeys;
 		std::vector<TimeValue<DirectX::XMFLOAT4>> rotKeys;
@@ -112,7 +113,8 @@ namespace Ani
 		DirectX::XMVECTOR XM_CALLCONV GetAnimationKeyOnTick(const std::vector<TimeValue<DirectX::XMFLOAT4>>& values, unsigned long long timePos) const;
 
 	private:
-		std::vector<int>							m_BoneHierarchy;
+		std::vector<int>							m_FrameHierarchy;
+		std::vector<unsigned int>					m_BoneOffsetsFrameIndex;
 		std::vector<CGH::MAT16>						m_BoneOffsets;
 		std::unordered_map<std::string, Animation>	m_Animations;
 	};

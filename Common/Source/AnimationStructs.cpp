@@ -66,28 +66,36 @@ void Ani::SkinnedData::GetFinalTransforms(
 {
 	std::vector<CGH::MAT16> localTransform;
 	std::vector<CGH::MAT16> combinedMats;
-	combinedMats.resize(m_BoneOffsets.size());
-	localTransform.resize(m_BoneOffsets.size());
+	localTransform.resize(m_FrameHierarchy.size());
+	combinedMats.resize(m_FrameHierarchy.size());
 
 	assert(BONEMAXMATRIX >= m_BoneOffsets.size());
 
 	CalLocalTransformFromAnimation(clipName, localTransform, timePos);
 
-	for (size_t i = 0; i < m_BoneOffsets.size(); i++)
+	for (size_t i = 0; i < localTransform.size(); i++)
 	{
-		XMMATRIX offsetMatrix = XMLoadFloat4x4(m_BoneOffsets[i]);
-		XMMATRIX currBoneMat = XMLoadFloat4x4(localTransform[i]);
+		int targetFrameIndex = m_FrameHierarchy[i];
+		XMMATRIX currFrameMat = XMLoadFloat4x4(localTransform[i]);
 		XMMATRIX parentMat = XMMatrixIdentity();
 		XMMATRIX combined = XMMatrixIdentity();
 
-		if (m_BoneHierarchy[i] != -1)
+		if (targetFrameIndex != -1)
 		{
-			parentMat = XMLoadFloat4x4(combinedMats[m_BoneHierarchy[i]]);
+			assert(targetFrameIndex < i);
+			parentMat = XMLoadFloat4x4(combinedMats[targetFrameIndex]);
 		}
 
-		combined = parentMat * currBoneMat;
+		combined = currFrameMat * parentMat;
 		XMStoreFloat4x4(combinedMats[i], combined);
-		XMStoreFloat4x4(finalTransforms.bones[i], offsetMatrix * combined);
+	}
+
+	for (size_t i = 0; i < m_BoneOffsets.size(); i++)
+	{
+		XMMATRIX boneOffset = XMLoadFloat4x4(m_BoneOffsets[i]);
+		XMMATRIX combined = XMLoadFloat4x4(combinedMats[m_BoneOffsetsFrameIndex[i]]);
+
+		XMStoreFloat4x4(finalTransforms.bones[i], XMMatrixMultiply(boneOffset ,combined));
 	}
 }
 
@@ -121,10 +129,10 @@ void Ani::SkinnedData::CalLocalTransformFromAnimation(const std::string& clipNam
 		if (it.posKeys.size())
 		{
 			XMVECTOR s = GetAnimationKeyOnTick(it.scaleKeys, timePos);
-			XMVECTOR p = GetAnimationKeyOnTick(it.posKeys, timePos);
+			XMVECTOR t = GetAnimationKeyOnTick(it.posKeys, timePos);
 			XMVECTOR r = GetAnimationKeyOnTick(it.rotKeys, timePos);
 
-			mat = XMMatrixAffineTransformation(s, zero, r, p);
+			mat = XMMatrixAffineTransformation(s, zero, r, t);
 			XMStoreFloat4x4(LocalTransforms[it.localMatIndex], mat);
 		}
 		else if (it.trafoKeys.size())

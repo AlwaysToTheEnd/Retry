@@ -29,7 +29,7 @@ public:
 
 	struct Bone
 	{
-		std::string name;
+		std::string TargetFrame;
 		CGH::MAT16 offsetMat;
 		std::vector<BoneWeight> weights;
 	};
@@ -69,7 +69,7 @@ private:
 	void ParseDataObjectMaterial(Ani::AniMaterial& mats);
 	void ParseDataObjectAnimTicksPerSecond();
 	void ParseDataObjectAnimationSet(Ani::SkinnedData& skinInfo);
-	std::string ParseDataObjectAnimation(Ani::Animation& pAnim);
+	void ParseDataObjectAnimation(Ani::Animation& pAnim);
 	void ParseDataObjectAnimationKey(Ani::AnimBone& pAnimBone);
 	void ParseDataObjectTextureFilename(std::string& pName);
 	void ParseUnknownDataObject();
@@ -119,10 +119,8 @@ private:
 						Ani::SkinnedData& skinInfo);
 
 protected:
-	std::unordered_map<unsigned int, std::vector<XFileParser::Bone>> m_Bones;
-	std::unordered_map<std::string, unsigned int>		m_IndexMap;
-	std::vector<std::string>							m_BoneNames;
-	unsigned int										m_CurrFrameIndex;
+	std::vector<XFileParser::Bone>						m_Bones;
+	std::unordered_map<std::string, unsigned int>		m_FrameIndex;
 
 	unsigned int m_MajorVersion, m_MinorVersion;
 	bool m_IsBinaryFormat;
