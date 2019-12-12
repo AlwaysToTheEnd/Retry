@@ -29,6 +29,7 @@ public:
 
 	struct Bone
 	{
+		std::string name;
 		CGH::MAT16 offsetMat;
 		std::vector<BoneWeight> weights;
 	};
@@ -118,9 +119,10 @@ private:
 						Ani::SkinnedData& skinInfo);
 
 protected:
+	std::unordered_map<unsigned int, std::vector<XFileParser::Bone>> m_Bones;
 	std::unordered_map<std::string, unsigned int>		m_IndexMap;
-	std::unordered_map<std::string, XFileParser::Bone>	m_Bones;
 	std::vector<std::string>							m_BoneNames;
+	unsigned int										m_CurrFrameIndex;
 
 	unsigned int m_MajorVersion, m_MinorVersion;
 	bool m_IsBinaryFormat;

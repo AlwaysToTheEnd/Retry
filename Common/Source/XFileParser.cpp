@@ -30,6 +30,7 @@ XFileParser::XFileParser()
 	, m_LineNumber(0)
 	, P(nullptr)
 	, End(nullptr)
+	, m_CurrFrameIndex(0)
 {
 	
 }
@@ -329,8 +330,8 @@ void XFileParser::ParseDataObjectFrame(int parentIndex,
 	string name;
 	readHeadOfDataObject(&name);
 
-	unsigned int currFrameIndex = skinInfo.m_BoneHierarchy.size();
-	m_IndexMap.insert({ name, currFrameIndex });
+	m_CurrFrameIndex= skinInfo.m_BoneHierarchy.size();
+	m_IndexMap.insert({ name, m_CurrFrameIndex });
 	skinInfo.m_BoneHierarchy.push_back(parentIndex);
 
 	// Now inside a frame.
@@ -350,7 +351,7 @@ void XFileParser::ParseDataObjectFrame(int parentIndex,
 		}
 		else if (objectName == "Frame")
 		{
-			ParseDataObjectFrame(currFrameIndex, vertices, indices, subsets, mats, skinInfo);
+			ParseDataObjectFrame(m_CurrFrameIndex, vertices, indices, subsets, mats, skinInfo);
 		}
 		else if (objectName == "FrameTransformMatrix")
 		{
@@ -488,9 +489,8 @@ void XFileParser::ParseDataObjectSkinWeights(Ani::Subset& subset)
 	readHeadOfDataObject();
 	
 	XFileParser::Bone bone;
-	string name;
 
-	GetNextTokenAsString(name);
+	GetNextTokenAsString(bone.name);
 	const size_t numWeights = ReadInt();
 	bone.weights.reserve(numWeights);
 
@@ -517,7 +517,7 @@ void XFileParser::ParseDataObjectSkinWeights(Ani::Subset& subset)
 	bone.offsetMat.m[3][0] = ReadFloat(); bone.offsetMat.m[3][1] = ReadFloat();
 	bone.offsetMat.m[3][2] = ReadFloat(); bone.offsetMat.m[3][3] = ReadFloat();
 
-	m_Bones.insert({ name, bone });
+	m_Bones[m_CurrFrameIndex].push_back(bone);
 
 	CheckForSemicolon();
 	CheckForClosingBrace();
@@ -1513,6 +1513,7 @@ void XFileParser::DataRearrangement(std::vector<SkinnedVertex>& vertices,
 	for (auto& it : m_Bones)
 	{
 		//Fill offsetMatrix
+
 		auto frameIter = m_IndexMap.find(it.first);
 		skinInfo.m_BoneOffsets[frameIter->second] = it.second.offsetMat;
 
