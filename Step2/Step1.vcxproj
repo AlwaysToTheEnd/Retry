@@ -27,7 +27,6 @@
     <ClCompile Include="..\Common\Source\cTextureBuffer.cpp" />
     <ClCompile Include="..\Common\Source\d3dApp.cpp" />
     <ClCompile Include="..\Common\Source\d3dUtil.cpp" />
-    <ClCompile Include="..\Common\Source\DDSTextureLoader.cpp" />
     <ClCompile Include="..\Common\Source\DirectXTK\Keyboard.cpp" />
     <ClCompile Include="..\Common\Source\DirectXTK\Mouse.cpp" />
     <ClCompile Include="..\Common\Source\GameObject.cpp" />
@@ -56,7 +55,6 @@
     <ClInclude Include="..\Common\Source\cCamera.h" />
     <ClInclude Include="..\Common\Source\cDefaultBuffer.h" />
     <ClInclude Include="..\Common\Source\ComponentUpdater.h" />
-    <ClInclude Include="..\Common\Source\DDSTextureLoader.h" />
     <ClInclude Include="..\Common\Source\DX12RenderClasses.h" />
     <ClInclude Include="..\Common\Source\GameObject.h" />
     <ClInclude Include="..\Common\Source\GraphicComponent.h" />
@@ -173,7 +171,7 @@
       <AdditionalLibraryDirectories>./../Common/Lib</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
-      <AdditionalOptions>/LIBPATH:../../Common/Lib SimulationController_static_64.lib SceneQuery_static_64.lib PhysXVehicle_static_64.lib PhysXTask_static_64.lib PhysXPvdSDK_static_64.lib PhysXFoundation_64.lib PhysXExtensions_static_64.lib PhysXCooking_64.lib PhysXCommon_64.lib PhysXCharacterKinematic_static_64.lib PhysX_64.lib LowLevelDynamics_static_64.lib LowLevelAABB_static_64.lib FastXml_static_64.lib LowLevel_static_64.lib /DEBUG</AdditionalOptions>
+      <AdditionalOptions>/LIBPATH:../../Common/Lib SimulationController_static_64.lib SceneQuery_static_64.lib PhysXVehicle_static_64.lib PhysXTask_static_64.lib PhysXPvdSDK_static_64.lib PhysXFoundation_64.lib PhysXExtensions_static_64.lib PhysXCooking_64.lib PhysXCommon_64.lib PhysXCharacterKinematic_static_64.lib PhysX_64.lib LowLevelDynamics_static_64.lib LowLevelAABB_static_64.lib FastXml_static_64.lib LowLevel_static_64.lib DirectXTex.lib /DEBUG</AdditionalOptions>
       <IgnoreSpecificDefaultLibraries>
       </IgnoreSpecificDefaultLibraries>
     </Link>

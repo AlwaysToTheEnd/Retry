@@ -120,9 +120,6 @@
     <ClCompile Include="..\Common\Source\cTextureBuffer.cpp">
       <Filter>Common\DeviceInstance\DX12Supporters\Buffer</Filter>
     </ClCompile>
-    <ClCompile Include="..\Common\Source\DDSTextureLoader.cpp">
-      <Filter>Common\DeviceInstance\DX12Supporters\Buffer</Filter>
-    </ClCompile>
     <ClCompile Include="..\Common\Source\GraphicDX12.cpp">
       <Filter>Common\DeviceInstance\_Interface</Filter>
     </ClCompile>
@@ -201,9 +198,6 @@
       <Filter>Common\DeviceInstance\DX12Supporters\Buffer</Filter>
     </ClInclude>
     <ClInclude Include="..\Common\Source\cIndexManagementBuffer.h">
-      <Filter>Common\DeviceInstance\DX12Supporters\Buffer</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Common\Source\DDSTextureLoader.h">
       <Filter>Common\DeviceInstance\DX12Supporters\Buffer</Filter>
     </ClInclude>
     <ClInclude Include="..\Common\Source\GraphicDX12.h">

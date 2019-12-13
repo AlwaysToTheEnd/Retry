@@ -20,6 +20,7 @@ public:
 	static std::unordered_map<unsigned int, unsigned int> GetComponentTypeIDs();
 protected:
 	template<typename T> T* AddComponent();
+	template<typename T> void DeleteComponent(T* component = nullptr);
 
 private:
 	IComponent* CreateComponent(COMPONENTTYPE type);
@@ -78,4 +79,30 @@ inline T* GameObject::AddComponent()
 	}
 
 	return component;
+}
+
+template<typename T>
+inline void GameObject::DeleteComponent(T* component)
+{
+	auto iter = m_TypeIDs.find(typeid(T).hash_code());
+
+	if (iter != m_TypeIDs.end())
+	{
+		unsigned int index = iter->second;
+		if (component == nullptr)
+		{
+			m_Components[index].pop_back();
+		}
+		else
+		{
+			for (auto comIter = m_Components[index].begin(); comIter != m_Components[index].end(); comIter++)
+			{
+				if (comIter->get() == component)
+				{
+					m_Components[index].erase(comIter);
+					break;
+				}
+			}
+		}
+	}
 }

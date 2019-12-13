@@ -224,7 +224,6 @@ private:
 	ComPtr<ID3D12RootSignature>										m_RootSignature = nullptr;
 	
 	PassConstants													m_MainPassCB;
-	std::unordered_map<std::string, std::wstring>					m_TexturePaths;
 	std::unique_ptr<cTextureBuffer>									m_TextureBuffer;
 	std::unique_ptr<cIndexManagementBuffer<Material>>				m_Materials;
 	std::unordered_map<std::string, MeshObject>						m_Meshs;

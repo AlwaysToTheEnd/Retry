@@ -5,6 +5,7 @@
 
 void TestObject::Init()
 {
+	auto trans = AddComponent<ComTransform>();
 	AddComponent<ComTransform>();
 	auto mesh = AddComponent<ComMesh>();
 	AddComponent<ComRenderer>();

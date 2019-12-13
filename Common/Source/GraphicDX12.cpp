@@ -310,6 +310,7 @@ void GraphicDX12::LoadTextureFromFolder(const std::vector<std::string>& targetTe
 		SearchAllFileFromFolder(path, true, files);
 	}
 
+	vector<wstring> texTurePaths;
 	for (auto& it : files)
 	{
 		string extension;
@@ -318,19 +319,19 @@ void GraphicDX12::LoadTextureFromFolder(const std::vector<std::string>& targetTe
 
 		if (CheckFileExtension(extension) == EXTENSIONTYPE::EXE_TEXTURE)
 		{
-			m_TexturePaths.insert({ fileName, temp });
+			texTurePaths.push_back(temp);
 		}
 	}
 
-	const UINT numTexturePath = m_TexturePaths.size();
+	const UINT numTexturePath = texTurePaths.size();
 	m_TextureBuffer = make_unique<cTextureBuffer>(m_D3dDevice.Get(), numTexturePath);
 
 	m_TextureBuffer->Begin(m_D3dDevice.Get());
 
-	for (auto& it : m_TexturePaths)
+	for (auto& it : texTurePaths)
 	{
 		m_TextureBuffer->AddTexture(m_D3dDevice.Get(),
-			m_CommandQueue.Get(), it.first, it.second);
+			m_CommandQueue.Get(), it);
 	}
 
 	auto test1 = bind(&GraphicDX12::FlushCommandQueue, this);

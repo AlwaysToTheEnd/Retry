@@ -104,7 +104,7 @@ void D3DApp::ComponentDeleteManaging(COMPONENTTYPE type, int id)
 		assert(false && "THIS COMPONENT IS NONE USED TYPE");
 	}
 
-	auto ComUpdater = GetComponentUpdater(type);
+	auto& ComUpdater = GetComponentUpdater(type);
 	ComUpdater.SignalDelete(id);
 
 	if (type == COMPONENTTYPE::COM_TRANSFORM)

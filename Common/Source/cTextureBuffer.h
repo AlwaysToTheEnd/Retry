@@ -1,21 +1,20 @@
 #pragma once
 #include <wrl.h>
 #include <d3d12.h>
-#include "d3dUtil.h"
 #include <functional>
+#include <unordered_map>
+#include <string>
 
 using Microsoft::WRL::ComPtr;
-struct IWICBitmapFrameDecode;
-struct IWICImagingFactory2;
 
-enum WIC_LOADER_FLAGS : uint32_t
+//important reference
+//https://github.com/Microsoft/DirectXTex/wiki/DirectXTex
+
+namespace DirectX
 {
-	WIC_LOADER_DEFAULT = 0,
-	WIC_LOADER_FORCE_SRGB = 0x1,
-	WIC_LOADER_IGNORE_SRGB = 0x2,
-	WIC_LOADER_MIP_AUTOGEN = 0x4,
-	WIC_LOADER_MIP_RESERVE = 0x8,
-};
+	struct TexMetadata;
+	class ScratchImage;
+}
 
 class cTextureBuffer
 {
@@ -46,7 +45,7 @@ public:
 	cTextureBuffer(ID3D12Device* device, UINT maxTexture);
 	
 	void Begin(ID3D12Device* device);
-	void AddTexture(ID3D12Device* device, ID3D12CommandQueue* cmdqueue, const std::string& name, const std::wstring& filename);
+	void AddTexture(ID3D12Device* device, ID3D12CommandQueue* cmdqueue, const std::wstring& filename);
 	void AddCubeMapTexture(ID3D12Device* device, ID3D12CommandQueue* cmdqueue, const std::string& name, const std::wstring& filename);
 	void AddNullTexture(ID3D12Device* device, const std::string& name, DXGI_FORMAT srvFormat,
 		const D3D12_RESOURCE_DESC* resourceDesc,const D3D12_CLEAR_VALUE* optClear);
@@ -59,9 +58,7 @@ public:
 	UINT GetTexturesNum() const { return (UINT)m_Textures.size(); }
 
 private:
-	HRESULT LoadWICTexture(ID3D12Device* device, const std::wstring& filename,size_t maxsize,
-		D3D12_RESOURCE_FLAGS resFlags, WIC_LOADER_FLAGS loadflags, ID3D12Resource** texture, ID3D12Resource** uploadBuffer);
-	bool IsDDSTextureFile(const std::wstring& filename);
+	void DataToDevice(ID3D12Device* device, const DirectX::TexMetadata& metadata, const DirectX::ScratchImage& scratch, TEXTURENUM& target);
 
 private:
 	ComPtr<ID3D12GraphicsCommandList>			m_commandList;
