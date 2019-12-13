@@ -310,7 +310,7 @@ void GraphicDX12::LoadTextureFromFolder(const std::vector<std::string>& targetTe
 		SearchAllFileFromFolder(path, true, files);
 	}
 
-	vector<wstring> texTurePaths;
+	unordered_map<string, wstring> texTurePaths;
 	for (auto& it : files)
 	{
 		string extension;
@@ -319,7 +319,7 @@ void GraphicDX12::LoadTextureFromFolder(const std::vector<std::string>& targetTe
 
 		if (CheckFileExtension(extension) == EXTENSIONTYPE::EXE_TEXTURE)
 		{
-			texTurePaths.push_back(temp);
+			texTurePaths[fileName]=temp;
 		}
 	}
 
@@ -331,7 +331,7 @@ void GraphicDX12::LoadTextureFromFolder(const std::vector<std::string>& targetTe
 	for (auto& it : texTurePaths)
 	{
 		m_TextureBuffer->AddTexture(m_D3dDevice.Get(),
-			m_CommandQueue.Get(), it);
+			m_CommandQueue.Get(), it.second);
 	}
 
 	auto test1 = bind(&GraphicDX12::FlushCommandQueue, this);
@@ -418,11 +418,11 @@ void GraphicDX12::LoadMeshAndMaterialFromFolder(const std::vector<std::string>& 
 				{
 					if (textureIter.isNormalMap)
 					{
-						//material.normalMapIndex = m_TextureBuffer->GetTextureIndex(textureIter.name);
+						material.normalMapIndex = m_TextureBuffer->GetTextureIndex(textureIter.name);
 					}
 					else
 					{
-						//material.diffuseMapIndex = m_TextureBuffer->GetTextureIndex(textureIter.name);
+						material.diffuseMapIndex = m_TextureBuffer->GetTextureIndex(textureIter.name);
 					}
 				}
 

@@ -52,6 +52,9 @@
     <Filter Include="Object\GameObjects">
       <UniqueIdentifier>{55e480f8-e552-48de-a884-b8b2d8b2518d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Common\CodeResources\AnimationTree">
+      <UniqueIdentifier>{08dd9b4e-5586-45da-8ec8-0c9288782583}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Step2.cpp">
@@ -214,6 +217,9 @@
     </ClInclude>
     <ClInclude Include="TestObject.h">
       <Filter>Object</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\AnimationTree.h">
+      <Filter>Common\CodeResources\AnimationTree</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

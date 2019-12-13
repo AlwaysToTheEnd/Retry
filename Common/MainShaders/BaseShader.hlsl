@@ -100,8 +100,8 @@ VertexOut VS(VertexIn vin)
 		vin.PosL = posL;
 	}
 
-	vout.PosH = mul(float4(vin.PosL, 1.0f), gViewProj);
-	//vout.PosH = mul(float4(vin.PosL, 1.0f), World);
+	vout.PosH = mul(float4(vin.PosL, 1.0f), World);
+	vout.PosH = mul(vout.PosH, gViewProj);
 	//vout.PosH = mul(vout.PosH, gViewProj);
 
 	return vout;
@@ -110,7 +110,12 @@ VertexOut VS(VertexIn vin)
 float4 PS(VertexOut pin) : SV_Target
 {
 	float4 litColor = float4(0,0,0,1);
-	litColor = gMainTexture[0].Sample(gsamPointWrap, pin.TexC);
+	int index = gInstanceData[MaterialIndex].DiffuseMapIndex;
+
+	if (index >= 0)
+	{
+		litColor = gMainTexture[index].Sample(gsamPointWrap, pin.TexC);
+	}
 
 	litColor.a = 1.0f;
 	return litColor;

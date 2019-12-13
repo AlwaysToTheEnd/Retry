@@ -54,7 +54,7 @@ public:
 	ID3D12DescriptorHeap* GetHeap() { return m_SrvHeap.Get(); }
 	ComPtr<ID3D12Resource> GetTexture(const std::string& name);
 	
-	UINT GetTextureIndex(const std::string& name) const;
+	int GetTextureIndex(const std::string& name) const;
 	UINT GetTexturesNum() const { return (UINT)m_Textures.size(); }
 
 private:

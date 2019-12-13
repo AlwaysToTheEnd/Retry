@@ -179,11 +179,14 @@ ComPtr<ID3D12Resource> cTextureBuffer::GetTexture(const string& name)
 	return it->second.tex.resource;
 }
 
-UINT cTextureBuffer::GetTextureIndex(const string& name) const
+int cTextureBuffer::GetTextureIndex(const string& name) const
 {
 	auto it = m_Textures.find(name);
-	assert(it != m_Textures.end() && "can not find this name");
-
+	if (it == m_Textures.end())
+	{
+		return -1;
+	}
+	
 	return it->second.num;
 }
 
@@ -202,7 +205,6 @@ void cTextureBuffer::DataToDevice(
 	D3D12_RESOURCE_DESC textureDesc = {};
 	D3D12_RESOURCE_DESC uploaderDesc = {};
 	CD3DX12_RANGE range(0, scratch.GetPixelsSize());
-	uint8_t* mapedPtr = nullptr;
 
 	textureDesc.Alignment = D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT;
 	textureDesc.DepthOrArraySize= metadata.arraySize;
@@ -240,24 +242,11 @@ void cTextureBuffer::DataToDevice(
 		nullptr,
 		IID_PPV_ARGS(target.tex.uploadHeap.GetAddressOf())));
 
-	ThrowIfFailed(target.tex.uploadHeap->Map(0, &range, reinterpret_cast<void**>(&mapedPtr)));
-	std::memcpy(mapedPtr, pixelMemory, range.End);
-	target.tex.uploadHeap->Unmap(0, &range);
+	D3D12_SUBRESOURCE_DATA subData;
+	subData.pData = pixelMemory;
+	subData.RowPitch = image->rowPitch;
+	subData.SlicePitch = image->slicePitch;
+	UpdateSubresources<1>(m_commandList.Get(), target.tex.resource.Get(), 
+		target.tex.uploadHeap.Get(), 0, 0, 1, &subData);
 
-	D3D12_TEXTURE_COPY_LOCATION dest;
-	dest.pResource = target.tex.resource.Get();
-	dest.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
-	dest.SubresourceIndex = 0;
-
-	uploaderDesc = target.tex.uploadHeap->GetDesc();
-	D3D12_PLACED_SUBRESOURCE_FOOTPRINT footPrint;
-	device->GetCopyableFootprints(&uploaderDesc, 0, 1, 0, &footPrint, nullptr, nullptr, nullptr);
-
-	D3D12_TEXTURE_COPY_LOCATION src;
-	src.pResource = target.tex.uploadHeap.Get();
-	src.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
-	src.PlacedFootprint = footPrint;
-	src.PlacedFootprint.Footprint.Width = footPrint.Footprint.RowPitch;
-	src.PlacedFootprint.Footprint.Format = textureDesc.Format;
-	m_commandList->CopyTextureRegion(&dest, 0, 0, 0, &src, nullptr);
 }

@@ -46,21 +46,6 @@ void cCamera::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		m_isRButtonDown = false;
 	}
 	break;
-	case WM_KEYDOWN:
-	{
-		switch (wParam)
-		{
-		case VK_UP:
-			m_eyePos.y += 0.1f;
-			break;
-		case VK_DOWN:
-			m_eyePos.y -= 0.1f;
-			break;
-		default:
-			break;
-		}
-	}
-	break;
 	case WM_MOUSEMOVE:
 	{
 		if (m_isRButtonDown)

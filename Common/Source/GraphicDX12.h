@@ -90,9 +90,9 @@ private:
 	ComPtr<ID3D12Resource> m_UploadBuffer;
 	BYTE* m_MappedData = nullptr;
 
-	UINT m_NumElement = 0; 
-	UINT m_ElementByteSize = 0;
-	bool m_IsConstantBuffer = false;
+	UINT	m_NumElement = 0; 
+	UINT64	m_ElementByteSize = 0;
+	bool	m_IsConstantBuffer = false;
 };
 
 struct FrameResource

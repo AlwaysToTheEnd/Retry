@@ -5,7 +5,7 @@
 
 void TestObject::Init()
 {
-	auto trans = AddComponent<ComTransform>();
+	m_Transform = AddComponent<ComTransform>();
 	AddComponent<ComTransform>();
 	auto mesh = AddComponent<ComMesh>();
 	AddComponent<ComRenderer>();
@@ -16,7 +16,7 @@ void TestObject::Init()
 
 	if (names.size())
 	{
-		mesh->SelectMesh(names.front());
+		mesh->SelectMesh(names.back());
 	}
 
 	names.clear();
@@ -24,7 +24,7 @@ void TestObject::Init()
 
 	if (names.size())
 	{
-		ani->SelectSkin(names.front());
+		ani->SelectSkin(names.back());
 	}
 	
 	names.clear();
@@ -49,8 +49,22 @@ void TestObject::Update()
 		std::vector<std::string> names;
 		ani->GetAniNames(names);
 
-		ani->SelectAnimation(names[index]);
+		if (names.size())
+		{
+			ani->SelectAnimation(names[index]);
 
-		index = (index + 1) % names.size();
+			index = (index + 1) % names.size();
+		}
+	}
+
+	if (GKEYBOARD.lastState.Right)
+	{
+		m_Transform->m_Pos.x += 0.001f;
+	}
+
+
+	if (GKEYBOARD.lastState.Left)
+	{
+		m_Transform->m_Pos.x -= 0.001f;
 	}
 }
