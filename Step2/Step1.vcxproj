@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Common\Source\AnimationStructs.cpp" />
+    <ClCompile Include="..\Common\Source\AnimationTree.cpp" />
     <ClCompile Include="..\Common\Source\BaseClass.cpp" />
     <ClCompile Include="..\Common\Source\BaseComponent.cpp" />
     <ClCompile Include="..\Common\Source\cCamera.cpp" />

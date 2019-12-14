@@ -34,8 +34,6 @@ void TestObject::Init()
 	{
 		ani->SelectAnimation(names.front());
 	}
-
-	ani->SetRoof(true);
 }
 
 void TestObject::Update()

@@ -2,7 +2,7 @@
 #include "BaseComponent.h"
 #include "GameObject.h"
 
-const std::unordered_map<std::string, MeshObject>* ComMesh::m_Meshs=nullptr;
+const std::unordered_map<std::string, MeshObject>* ComMesh::m_Meshs = nullptr;
 
 std::vector<RenderInfo>* ComRenderer::m_ReservedRenderObjects = nullptr;
 
@@ -26,7 +26,7 @@ bool ComMesh::SelectMesh(const std::string& name)
 		m_CurrMeshName.clear();
 		return false;
 	}
-	
+
 	m_CurrMesh = &iter->second;
 	m_CurrMeshName = name;
 	return true;
@@ -36,19 +36,18 @@ void ComAnimator::Update()
 {
 	if (m_CurrSkinnedData && m_CurrAniName.length())
 	{
-		m_CurrTick++;
-		//#TODO: Get deltaTime and add to currTick
+		//#TODO Input Delta time
+		m_SkinAniTree.Update(1);
+		std::string aniName = m_SkinAniTree.GetCurrAnimationName();
+
+		if (aniName.length())
+		{
+			m_CurrAniName = aniName;
+		}
+
 		m_BoneMatStoredIndex = m_ReservedAniBone->size();
 		m_ReservedAniBone->emplace_back();
-		m_CurrSkinnedData->GetFinalTransforms(m_CurrAniName, m_CurrTick, m_ReservedAniBone->back());
-
-		if (m_IsRoof)
-		{
-			if (m_CurrTick > m_CurrSkinnedData->GetClipEndTime(m_CurrAniName))
-			{
-				m_CurrTick = 0;
-			}
-		}
+		m_CurrSkinnedData->GetFinalTransforms(m_CurrAniName, m_SkinAniTree.GetCurrAnimationTick(), m_ReservedAniBone->back());
 	}
 	else
 	{
@@ -64,7 +63,7 @@ void ComAnimator::GetSkinNames(std::vector<std::string>& out)
 	}
 }
 
-void ComAnimator::GetAniNames(std::vector<std::string>& out)
+void ComAnimator::GetAniNames(std::vector<std::string>& out) const
 {
 	if (m_CurrSkinnedData)
 	{
@@ -76,7 +75,6 @@ bool ComAnimator::SelectSkin(const std::string& name)
 {
 	auto iter = m_SkinnedDatas->find(name);
 	m_CurrAniName.clear();
-	m_CurrTick = 0;
 
 	if (iter == m_SkinnedDatas->end())
 	{
@@ -90,11 +88,11 @@ bool ComAnimator::SelectSkin(const std::string& name)
 
 bool ComAnimator::SelectAnimation(const std::string& name)
 {
-	if (m_CurrSkinnedData==nullptr)
+	if (m_CurrSkinnedData == nullptr)
 	{
 		return false;
 	}
-	
+
 	if (m_CurrSkinnedData->CheckAnimation(name))
 	{
 		m_CurrAniName = name;

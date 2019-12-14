@@ -141,6 +141,9 @@
     <ClCompile Include="TestObject.cpp">
       <Filter>Object</Filter>
     </ClCompile>
+    <ClCompile Include="..\Common\Source\AnimationTree.cpp">
+      <Filter>Common\CodeResources\AnimationTree</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Common\Source\d3dApp.h">

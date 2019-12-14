@@ -2,6 +2,12 @@
 #include "IComponent.h"
 #include "DX12RenderClasses.h"
 #include "AnimationStructs.h"
+#include "AnimationTree.h"
+
+namespace AniTree
+{
+	class AnimationTree;
+}
 
 class ComMesh :public IComponent
 {
@@ -39,8 +45,6 @@ public:
 		: IComponent(COMPONENTTYPE::COM_ANIMATOR, gameObject, ID)
 		, m_BoneMatStoredIndex(-1)
 		, m_CurrSkinnedData(nullptr)
-		, m_CurrTick(0)
-		, m_IsRoof(false)
 	{
 		if (m_SkinnedDatas == nullptr)
 		{
@@ -52,8 +56,8 @@ public:
 	virtual void Update() override;
 
 	static void GetSkinNames(std::vector<std::string>& out);
-	void GetAniNames(std::vector<std::string>& out);
-	void SetRoof(bool value) { m_IsRoof = value; }
+	AniTree::AnimationTree& GetAnimationTree() { return m_SkinAniTree; }
+	void GetAniNames(std::vector<std::string>& out) const;
 	bool SelectSkin(const std::string& name);
 	bool SelectAnimation(const std::string& name);
 	int GetBoneMatStoredIndex() const { return m_BoneMatStoredIndex; }
@@ -62,12 +66,10 @@ private:
 	static const std::unordered_map<std::string, Ani::SkinnedData>* m_SkinnedDatas;
 	static std::vector<AniBoneMat>*									m_ReservedAniBone;
 
-	const Ani::SkinnedData*	m_CurrSkinnedData;
-	std::string				m_CurrAniName;
-	int						m_BoneMatStoredIndex;
-
-	unsigned long long		m_CurrTick;
-	bool					m_IsRoof;
+	AniTree::AnimationTree			m_SkinAniTree;
+	const Ani::SkinnedData*			m_CurrSkinnedData;
+	std::string						m_CurrAniName;
+	int								m_BoneMatStoredIndex;
 };
 
 class ComRenderer :public IComponent
