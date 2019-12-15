@@ -51,11 +51,11 @@ cbuffer objectData : register(b1)
 	float4x4	World;
 	uint		MaterialIndex;
 	int			AniBoneIndex;
-	uint		Pad0;
-	uint		Pad1;
+	int			PrevAniBone;
+	float		blendFactor;
 };
 
-struct VertexIn
+struct SkinnedVertex
 {
 	float3	PosL : POSITION;
 	float3	NormalL : NORMAL;
@@ -64,13 +64,21 @@ struct VertexIn
 	uint4	BoneIndices : BONEINDICES;
 };
 
+struct VertexIn
+{
+	float3	PosL : POSITION;
+	float3	NormalL : NORMAL;
+	float2	TexC : TEXCOORD;
+};
+
 struct VertexOut
 {
 	float4 PosH : SV_POSITION;
 	float2 TexC : TEXCOORD0;
 };
 
-VertexOut VS(VertexIn vin)
+#ifdef SKINNED_VERTEX_SAHDER
+VertexOut VS(SkinnedVertex vin)
 {
 	VertexOut vout = (VertexOut)0.0f;
 
@@ -102,10 +110,24 @@ VertexOut VS(VertexIn vin)
 
 	vout.PosH = mul(float4(vin.PosL, 1.0f), World);
 	vout.PosH = mul(vout.PosH, gViewProj);
-	//vout.PosH = mul(vout.PosH, gViewProj);
 
 	return vout;
 }
+#else
+
+VertexOut VS(VertexIn vin)
+{
+	VertexOut vout = (VertexOut)0.0f;
+
+	vout.TexC = vin.TexC;
+
+	vout.PosH = mul(float4(vin.PosL, 1.0f), World);
+	vout.PosH = mul(vout.PosH, gViewProj);
+
+	return vout;
+}
+
+#endif
 
 float4 PS(VertexOut pin) : SV_Target
 {

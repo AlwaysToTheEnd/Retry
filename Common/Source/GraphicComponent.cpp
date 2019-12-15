@@ -37,7 +37,7 @@ void ComAnimator::Update()
 	//#TODO Input Delta time
 	m_CurrTick += 1;
 
-	if (m_AniTree!=nullptr)
+	if (m_AniTree != nullptr)
 	{
 		if (m_AniTree->Update(10))
 		{
@@ -60,6 +60,9 @@ void ComAnimator::Update()
 
 void ComAnimator::GetSkinNames(std::vector<std::string>& out)
 {
+	assert(m_SkinnedDatas);
+	out.clear();
+
 	for (auto& it : *m_SkinnedDatas)
 	{
 		out.push_back(it.first);
@@ -80,6 +83,8 @@ void ComAnimator::SetAnimationTree(bool value)
 
 void ComAnimator::GetAniNames(std::vector<std::string>& out) const
 {
+	out.clear();
+
 	if (m_CurrSkinnedData)
 	{
 		out = m_CurrSkinnedData->GetAnimationNames();
@@ -103,16 +108,16 @@ bool ComAnimator::SelectSkin(const std::string& name)
 
 bool ComAnimator::SelectAnimation(const std::string& name)
 {
-	if (m_CurrSkinnedData == nullptr)
+	if (m_CurrSkinnedData != nullptr)
 	{
-		return false;
+		if (m_CurrSkinnedData->CheckAnimation(name))
+		{
+			m_CurrAniName = name;
+			return true;
+		}
 	}
 
-	if (m_CurrSkinnedData->CheckAnimation(name))
-	{
-		m_CurrAniName = name;
-		return true;
-	}
+	return false;
 }
 
 void ComRenderer::Update()
@@ -139,4 +144,9 @@ void ComRenderer::Update()
 	}
 
 	m_ReservedRenderObjects->push_back(addInfo);
+}
+
+void ComFont::Update()
+{
+
 }

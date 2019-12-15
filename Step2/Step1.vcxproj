@@ -21,6 +21,7 @@
   <ItemGroup>
     <ClCompile Include="..\Common\Source\AnimationStructs.cpp" />
     <ClCompile Include="..\Common\Source\AnimationTree.cpp" />
+    <ClCompile Include="..\Common\Source\AnimationTreeCreator.cpp" />
     <ClCompile Include="..\Common\Source\BaseClass.cpp" />
     <ClCompile Include="..\Common\Source\BaseComponent.cpp" />
     <ClCompile Include="..\Common\Source\cCamera.cpp" />
@@ -28,8 +29,7 @@
     <ClCompile Include="..\Common\Source\cTextureBuffer.cpp" />
     <ClCompile Include="..\Common\Source\d3dApp.cpp" />
     <ClCompile Include="..\Common\Source\d3dUtil.cpp" />
-    <ClCompile Include="..\Common\Source\DirectXTK\Keyboard.cpp" />
-    <ClCompile Include="..\Common\Source\DirectXTK\Mouse.cpp" />
+    <ClCompile Include="..\Common\Source\DX12FontMG.cpp" />
     <ClCompile Include="..\Common\Source\GameObject.cpp" />
     <ClCompile Include="..\Common\Source\GraphicComponent.cpp" />
     <ClCompile Include="..\Common\Source\GraphicDX12.cpp" />
@@ -52,11 +52,13 @@
   <ItemGroup>
     <ClInclude Include="..\Common\Source\AnimationStructs.h" />
     <ClInclude Include="..\Common\Source\AnimationTree.h" />
+    <ClInclude Include="..\Common\Source\AnimationTreeCreator.h" />
     <ClInclude Include="..\Common\Source\BaseClass.h" />
     <ClInclude Include="..\Common\Source\BaseComponent.h" />
     <ClInclude Include="..\Common\Source\cCamera.h" />
     <ClInclude Include="..\Common\Source\cDefaultBuffer.h" />
     <ClInclude Include="..\Common\Source\ComponentUpdater.h" />
+    <ClInclude Include="..\Common\Source\DX12FontMG.h" />
     <ClInclude Include="..\Common\Source\DX12RenderClasses.h" />
     <ClInclude Include="..\Common\Source\GameObject.h" />
     <ClInclude Include="..\Common\Source\GraphicComponent.h" />
@@ -64,7 +66,6 @@
     <ClInclude Include="..\Common\Source\cTextureBuffer.h" />
     <ClInclude Include="..\Common\Source\d3dApp.h" />
     <ClInclude Include="..\Common\Source\d3dUtil.h" />
-    <ClInclude Include="..\Common\Source\d3dx12Residency.h" />
     <ClInclude Include="..\Common\Source\IComponentCreater.h" />
     <ClInclude Include="..\Common\Source\IGraphicDevice.h" />
     <ClInclude Include="..\Common\Source\GraphicDX12.h" />
@@ -167,13 +168,14 @@
       </PrecompiledHeaderFile>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <FloatingPointModel>Precise</FloatingPointModel>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <AdditionalLibraryDirectories>./../Common/Lib</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
-      <AdditionalOptions>/LIBPATH:../../Common/Lib SimulationController_static_64.lib SceneQuery_static_64.lib PhysXVehicle_static_64.lib PhysXTask_static_64.lib PhysXPvdSDK_static_64.lib PhysXFoundation_64.lib PhysXExtensions_static_64.lib PhysXCooking_64.lib PhysXCommon_64.lib PhysXCharacterKinematic_static_64.lib PhysX_64.lib LowLevelDynamics_static_64.lib LowLevelAABB_static_64.lib FastXml_static_64.lib LowLevel_static_64.lib DirectXTex.lib /DEBUG</AdditionalOptions>
+      <AdditionalOptions>/LIBPATH:../../Common/Lib SimulationController_static_64.lib SceneQuery_static_64.lib PhysXVehicle_static_64.lib PhysXTask_static_64.lib PhysXPvdSDK_static_64.lib PhysXFoundation_64.lib PhysXExtensions_static_64.lib PhysXCooking_64.lib PhysXCommon_64.lib PhysXCharacterKinematic_static_64.lib PhysX_64.lib LowLevelDynamics_static_64.lib LowLevelAABB_static_64.lib FastXml_static_64.lib LowLevel_static_64.lib DirectXTex.lib DirectXTK12.lib /DEBUG</AdditionalOptions>
       <IgnoreSpecificDefaultLibraries>
       </IgnoreSpecificDefaultLibraries>
     </Link>

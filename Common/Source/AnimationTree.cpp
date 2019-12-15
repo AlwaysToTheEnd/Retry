@@ -12,6 +12,18 @@ void AniTree::AniNode::Update(unsigned long long deltaTime)
 	}
 }
 
+const std::string& AniTree::AniNode::GetAniName() const
+{
+	if (m_TargetAniName.length())
+	{
+		return m_TargetAniName;
+	}
+	else
+	{
+		return m_NodeName;
+	}
+}
+
 bool AniTree::AnimationTree::Update(unsigned long long deltaTime)
 {
 	if (m_AniNodes.size())

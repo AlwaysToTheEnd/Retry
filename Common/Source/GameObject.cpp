@@ -32,6 +32,9 @@ std::unordered_map<unsigned int, unsigned int> GameObject::GetComponentTypeIDs()
 		case COMPONENTTYPE::COM_ANIMATOR:
 			hash_code = typeid(ComAnimator).hash_code();
 			break;
+		case COMPONENTTYPE::COM_FONT:
+			hash_code = typeid(ComFont).hash_code();
+			break;
 		default:
 			assert(false);
 			break;

@@ -76,7 +76,7 @@ namespace AniTree
 	{
 	public:
 		AniNode(const std::string& ani, unsigned int aniClipEndTime, bool roof, unsigned int index)
-			: m_TargetAniName(ani)
+			: m_NodeName(ani)
 			, m_Index(index)
 			, m_AniEndTime(aniClipEndTime)
 			, m_CurrTick(0)
@@ -86,7 +86,8 @@ namespace AniTree
 		}
 
 		void Update(unsigned long long deltaTime);
-		const std::string& GetAniName() const { return m_TargetAniName; }
+		const std::string& GetAniName() const;
+		void SetAniName(const std::string& name) { m_TargetAniName = name; }
 		unsigned long long GetCurrTick() const { return m_CurrTick; }
 		unsigned long long GetEndTick() const { return m_AniEndTime; }
 
@@ -94,9 +95,10 @@ namespace AniTree
 		bool IsRoofAni() { return m_RoofAni; }
 
 	private:
-		const unsigned int m_Index;
-		const unsigned int m_AniEndTime;
-		const std::string m_TargetAniName;
+		const unsigned int	m_Index;
+		const unsigned int	m_AniEndTime;
+		const std::string	m_NodeName;
+		std::string			m_TargetAniName;
 
 		bool				m_RoofAni;
 		unsigned long long	m_CurrTick;

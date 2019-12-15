@@ -37,6 +37,7 @@ void D3DApp::BaseUpdate()
 	m_PXDevice->Update();
 	GetComponentUpdater(COMPONENTTYPE::COM_ANIMATOR).Update();
 	GetComponentUpdater(COMPONENTTYPE::COM_RENDERER).Update();
+	GetComponentUpdater(COMPONENTTYPE::COM_FONT).Update();
 	m_GDevice->Update();
 }
 

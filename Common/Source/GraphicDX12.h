@@ -1,25 +1,25 @@
 #pragma once
+#include <d3d12.h>
+#include <d3dx12.h>
 #include <wrl.h>
 #include <dxgi1_4.h>
-#include <d3d12.h>
 #include <D3Dcompiler.h>
 #include <DirectXMath.h>
 #include <DirectXPackedVector.h>
 #include <DirectXColors.h>
 #include <DirectXCollision.h>
 #include <algorithm>
-#include "d3dx12.h"
-#include "d3dx12Residency.h"
+#include <functional>
 #include "DX12RenderClasses.h"
 #include "cIndexManagementBuffer.h"
 #include "IGraphicDevice.h"
 #include "AnimationStructs.h"
+#include "XFileParser.h"
 
 #pragma comment(lib,"d3dcompiler.lib")
 #pragma comment(lib, "D3D12.lib")
 #pragma comment(lib, "dxgi.lib")
 
-#include "XFileParser.h"	
 
 class cTextureBuffer;
 

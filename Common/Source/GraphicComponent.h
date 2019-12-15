@@ -96,3 +96,17 @@ public:
 private:
 	static std::vector<RenderInfo>* m_ReservedRenderObjects;
 };
+
+class ComFont :public IComponent
+{
+public:
+	ComFont(GameObject& gameObject, int ID)
+		: IComponent(COMPONENTTYPE::COM_FONT, gameObject, ID)
+	{
+	
+	}
+
+	virtual void Update() override;
+private:
+
+};

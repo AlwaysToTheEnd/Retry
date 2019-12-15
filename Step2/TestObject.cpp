@@ -45,32 +45,15 @@ void TestObject::Init()
 		aniTree->AddAniNode(names[i], ani->GetAniEndTime(names[i]), false);
 	}
 
-	UnionData standard;
-	standard._b = true;
-	TriggerData trigger(static_cast<TRIGGER_TYPE>((TRIGGER_TYPE_SAME)), 
-		DATA_TYPE::TYPE_BOOL, standard);
-
 	aniTree->AddArrow(0, 1, TO_ANI_ARROW_TYPE::TO_ANI_NODE_TYPE_ONE_OK,
-		CHANGE_CONDITION_TYPE_TRIGGER, &trigger);
+		CHANGE_CONDITION_TYPE_ANI_END, nullptr);
 	aniTree->AddArrow(1, 2, TO_ANI_ARROW_TYPE::TO_ANI_NODE_TYPE_ONE_OK,
-		CHANGE_CONDITION_TYPE_TRIGGER, &trigger);
+		CHANGE_CONDITION_TYPE_ANI_END, nullptr);
 	aniTree->AddArrow(2, 0, TO_ANI_ARROW_TYPE::TO_ANI_NODE_TYPE_ONE_OK,
-		CHANGE_CONDITION_TYPE_TRIGGER, &trigger);
+		CHANGE_CONDITION_TYPE_ANI_END, nullptr);
 }
 
 void TestObject::Update()
 {
-	AnimationTree* aniTree = ani->GetAnimationTree();
 
-	std::vector<OutputTrigger> triggers;
-	aniTree->GetTriggers(triggers);
-
-	for (int i = 0; i < 3; i++)
-	{
-		if(GKEYBOARD.IsKeyPressed(static_cast<DirectX::Keyboard::Keys>(DirectX::Keyboard::D1 + i)))
-		{
-			triggers[i].trigger.m_Trigger._b = true;
-			break;
-		}
-	}
 }

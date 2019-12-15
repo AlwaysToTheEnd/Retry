@@ -1,7 +1,6 @@
 #include "GraphicDX12.h"
 #include "cCamera.h"
 #include "cTextureBuffer.h"
-#include <functional>
 #include "GraphicComponent.h"
 #include "BaseClass.h"
 
@@ -262,6 +261,11 @@ std::unique_ptr<IComponent> GraphicDX12::CreateComponent(COMPONENTTYPE type, Gam
 	case COMPONENTTYPE::COM_RENDERER:
 	{
 		newComponent = new ComRenderer(gameObject, id, &m_ReservedRenders);
+	}
+	break;
+	case COMPONENTTYPE::COM_FONT:
+	{
+		newComponent = new ComFont(gameObject, id);
 	}
 	break;
 	case COMPONENTTYPE::COM_MESH:
@@ -699,7 +703,9 @@ void GraphicDX12::BuildShadersAndInputLayout()
 	string boneMaxMatrixNum = to_string(BONEMAXMATRIX);
 	D3D_SHADER_MACRO macros[] = { 
 		"MAXTEXTURE", textureNum.c_str(), 
-		"BONEMAXMATRIX", boneMaxMatrixNum.c_str(), NULL, NULL };
+		"BONEMAXMATRIX", boneMaxMatrixNum.c_str(),
+		"SKINNED_VERTEX_SAHDER",NULL,
+		NULL, NULL };
 
 	m_Shaders["baseVS"] = CompileShader(L"../Common/MainShaders/BaseShader.hlsl", macros, "VS", "vs_5_1");
 	m_Shaders["basePS"] = CompileShader(L"../Common/MainShaders/BaseShader.hlsl", macros, "PS", "ps_5_1");

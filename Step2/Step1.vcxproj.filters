@@ -55,6 +55,9 @@
     <Filter Include="Common\CodeResources\AnimationTree">
       <UniqueIdentifier>{08dd9b4e-5586-45da-8ec8-0c9288782583}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Common\CodeResources\BaseClass">
+      <UniqueIdentifier>{0fcf8d5d-fc37-43be-91ee-fca7b7451f41}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Step2.cpp">
@@ -62,12 +65,6 @@
     </ClCompile>
     <ClCompile Include="..\Common\Source\d3dApp.cpp">
       <Filter>Step2</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Common\Source\BaseClass.cpp">
-      <Filter>Common\CodeResources</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Common\Source\d3dUtil.cpp">
-      <Filter>Common\CodeResources</Filter>
     </ClCompile>
     <ClCompile Include="..\Common\Source\zlib\inflate.c">
       <Filter>Common\CodeResources\Ziplib</Filter>
@@ -99,9 +96,6 @@
     <ClCompile Include="..\Common\Source\XFileParser.cpp">
       <Filter>Common\CodeResources\Parser</Filter>
     </ClCompile>
-    <ClCompile Include="..\Common\Source\AnimationStructs.cpp">
-      <Filter>Common\CodeResources</Filter>
-    </ClCompile>
     <ClCompile Include="..\Common\Source\GraphicComponent.cpp">
       <Filter>Common\CodeResources\Components</Filter>
     </ClCompile>
@@ -110,15 +104,6 @@
     </ClCompile>
     <ClCompile Include="..\Common\Source\GameObject.cpp">
       <Filter>Object\GameObjects</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Common\Source\cCamera.cpp">
-      <Filter>Common\CodeResources\Procedure Class</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Common\Source\DirectXTK\Keyboard.cpp">
-      <Filter>Common\CodeResources\Procedure Class</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Common\Source\DirectXTK\Mouse.cpp">
-      <Filter>Common\CodeResources\Procedure Class</Filter>
     </ClCompile>
     <ClCompile Include="..\Common\Source\cTextureBuffer.cpp">
       <Filter>Common\DeviceInstance\DX12Supporters\Buffer</Filter>
@@ -138,25 +123,34 @@
     <ClCompile Include="..\Common\Source\ComponentUpdater.cpp">
       <Filter>Common\CodeResources\Components</Filter>
     </ClCompile>
-    <ClCompile Include="TestObject.cpp">
-      <Filter>Object</Filter>
-    </ClCompile>
     <ClCompile Include="..\Common\Source\AnimationTree.cpp">
       <Filter>Common\CodeResources\AnimationTree</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Source\AnimationTreeCreator.cpp">
+      <Filter>Common\CodeResources\AnimationTree</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Source\AnimationStructs.cpp">
+      <Filter>Common\CodeResources\BaseClass</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Source\BaseClass.cpp">
+      <Filter>Common\CodeResources\BaseClass</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Source\d3dUtil.cpp">
+      <Filter>Common\CodeResources\BaseClass</Filter>
+    </ClCompile>
+    <ClCompile Include="TestObject.cpp">
+      <Filter>Step2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Source\DX12FontMG.cpp">
+      <Filter>Common\DeviceInstance\DX12Supporters</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Source\cCamera.cpp">
+      <Filter>Common\CodeResources\Procedure Class</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Common\Source\d3dApp.h">
       <Filter>Step2</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Common\Source\BaseClass.h">
-      <Filter>Common\CodeResources</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Common\Source\d3dUtil.h">
-      <Filter>Common\CodeResources</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Common\Source\Px1RefPtr.h">
-      <Filter>Common\CodeResources</Filter>
     </ClInclude>
     <ClInclude Include="..\Common\Source\IPhysicsDevice.h">
       <Filter>Common\DeviceInstance\_Interface</Filter>
@@ -170,14 +164,8 @@
     <ClInclude Include="Step2.h">
       <Filter>Step2</Filter>
     </ClInclude>
-    <ClInclude Include="..\Common\Source\Vertex.h">
-      <Filter>Common\CodeResources</Filter>
-    </ClInclude>
     <ClInclude Include="..\Common\Source\XFileParser.h">
       <Filter>Common\CodeResources\Parser</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Common\Source\AnimationStructs.h">
-      <Filter>Common\CodeResources</Filter>
     </ClInclude>
     <ClInclude Include="..\Common\Source\IComponent.h">
       <Filter>Common\CodeResources\Components</Filter>
@@ -193,9 +181,6 @@
     </ClInclude>
     <ClInclude Include="..\Common\Source\cCamera.h">
       <Filter>Common\CodeResources\Procedure Class</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Common\Source\d3dx12Residency.h">
-      <Filter>Common\DeviceInstance\DX12Supporters</Filter>
     </ClInclude>
     <ClInclude Include="..\Common\Source\cTextureBuffer.h">
       <Filter>Common\DeviceInstance\DX12Supporters\Buffer</Filter>
@@ -218,11 +203,32 @@
     <ClInclude Include="..\Common\Source\PhysX4_0.h">
       <Filter>Common\DeviceInstance\_Interface</Filter>
     </ClInclude>
-    <ClInclude Include="TestObject.h">
-      <Filter>Object</Filter>
-    </ClInclude>
     <ClInclude Include="..\Common\Source\AnimationTree.h">
       <Filter>Common\CodeResources\AnimationTree</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\AnimationTreeCreator.h">
+      <Filter>Common\CodeResources\AnimationTree</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\BaseClass.h">
+      <Filter>Common\CodeResources\BaseClass</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\AnimationStructs.h">
+      <Filter>Common\CodeResources\BaseClass</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\Vertex.h">
+      <Filter>Common\CodeResources\BaseClass</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\d3dUtil.h">
+      <Filter>Common\CodeResources\BaseClass</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\Px1RefPtr.h">
+      <Filter>Common\CodeResources\BaseClass</Filter>
+    </ClInclude>
+    <ClInclude Include="TestObject.h">
+      <Filter>Step2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\DX12FontMG.h">
+      <Filter>Common\DeviceInstance\DX12Supporters</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
