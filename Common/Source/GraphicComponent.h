@@ -1,4 +1,5 @@
 #pragma once
+#include <memory>
 #include "IComponent.h"
 #include "DX12RenderClasses.h"
 #include "AnimationStructs.h"
@@ -45,6 +46,7 @@ public:
 		: IComponent(COMPONENTTYPE::COM_ANIMATOR, gameObject, ID)
 		, m_BoneMatStoredIndex(-1)
 		, m_CurrSkinnedData(nullptr)
+		, m_CurrTick(0)
 	{
 		if (m_SkinnedDatas == nullptr)
 		{
@@ -56,20 +58,24 @@ public:
 	virtual void Update() override;
 
 	static void GetSkinNames(std::vector<std::string>& out);
-	AniTree::AnimationTree& GetAnimationTree() { return m_SkinAniTree; }
+	unsigned int GetAniEndTime(const std::string& name) const { return m_CurrSkinnedData->GetClipEndTime(name); }
+	int GetBoneMatStoredIndex() const { return m_BoneMatStoredIndex; }
 	void GetAniNames(std::vector<std::string>& out) const;
+	AniTree::AnimationTree* GetAnimationTree() { return m_AniTree.get(); }
+	
+	void SetAnimationTree(bool value);
 	bool SelectSkin(const std::string& name);
 	bool SelectAnimation(const std::string& name);
-	int GetBoneMatStoredIndex() const { return m_BoneMatStoredIndex; }
 
 private:
 	static const std::unordered_map<std::string, Ani::SkinnedData>* m_SkinnedDatas;
 	static std::vector<AniBoneMat>*									m_ReservedAniBone;
 
-	AniTree::AnimationTree			m_SkinAniTree;
-	const Ani::SkinnedData*			m_CurrSkinnedData;
-	std::string						m_CurrAniName;
-	int								m_BoneMatStoredIndex;
+	std::unique_ptr<AniTree::AnimationTree>	m_AniTree;
+	const Ani::SkinnedData*					m_CurrSkinnedData;
+	unsigned long long						m_CurrTick;
+	std::string								m_CurrAniName;
+	int										m_BoneMatStoredIndex;
 };
 
 class ComRenderer :public IComponent

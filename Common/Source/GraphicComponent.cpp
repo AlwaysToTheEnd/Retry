@@ -34,20 +34,23 @@ bool ComMesh::SelectMesh(const std::string& name)
 
 void ComAnimator::Update()
 {
+	//#TODO Input Delta time
+	m_CurrTick += 1;
+
+	if (m_AniTree!=nullptr)
+	{
+		if (m_AniTree->Update(10))
+		{
+			m_CurrTick = m_AniTree->GetCurrAnimationTick();
+			m_CurrAniName = m_AniTree->GetCurrAnimationName();
+		}
+	}
+
 	if (m_CurrSkinnedData && m_CurrAniName.length())
 	{
-		//#TODO Input Delta time
-		m_SkinAniTree.Update(1);
-		std::string aniName = m_SkinAniTree.GetCurrAnimationName();
-
-		if (aniName.length())
-		{
-			m_CurrAniName = aniName;
-		}
-
 		m_BoneMatStoredIndex = m_ReservedAniBone->size();
 		m_ReservedAniBone->emplace_back();
-		m_CurrSkinnedData->GetFinalTransforms(m_CurrAniName, m_SkinAniTree.GetCurrAnimationTick(), m_ReservedAniBone->back());
+		m_CurrSkinnedData->GetFinalTransforms(m_CurrAniName, m_CurrTick, m_ReservedAniBone->back());
 	}
 	else
 	{
@@ -60,6 +63,18 @@ void ComAnimator::GetSkinNames(std::vector<std::string>& out)
 	for (auto& it : *m_SkinnedDatas)
 	{
 		out.push_back(it.first);
+	}
+}
+
+void ComAnimator::SetAnimationTree(bool value)
+{
+	if (value)
+	{
+		m_AniTree = std::make_unique<AniTree::AnimationTree>();
+	}
+	else
+	{
+		m_AniTree = nullptr;
 	}
 }
 

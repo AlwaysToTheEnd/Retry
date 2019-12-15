@@ -3,13 +3,14 @@
 #include "GraphicComponent.h"
 #include "d3dApp.h"
 
+using namespace AniTree;
+
 void TestObject::Init()
 {
-	m_Transform = AddComponent<ComTransform>();
 	AddComponent<ComTransform>();
 	auto mesh = AddComponent<ComMesh>();
 	AddComponent<ComRenderer>();
-	auto ani= AddComponent<ComAnimator>();
+	ani= AddComponent<ComAnimator>();
 	
 	std::vector<std::string> names;
 	mesh->GetMeshNames(names);
@@ -34,35 +35,42 @@ void TestObject::Init()
 	{
 		ani->SelectAnimation(names.front());
 	}
+
+	ani->SetAnimationTree(true);
+
+	AnimationTree* aniTree = ani->GetAnimationTree();
+
+	for (size_t i = 0; i < 3; i++)
+	{
+		aniTree->AddAniNode(names[i], ani->GetAniEndTime(names[i]), false);
+	}
+
+	UnionData standard;
+	standard._b = true;
+	TriggerData trigger(static_cast<TRIGGER_TYPE>((TRIGGER_TYPE_SAME)), 
+		DATA_TYPE::TYPE_BOOL, standard);
+
+	aniTree->AddArrow(0, 1, TO_ANI_ARROW_TYPE::TO_ANI_NODE_TYPE_ONE_OK,
+		CHANGE_CONDITION_TYPE_TRIGGER, &trigger);
+	aniTree->AddArrow(1, 2, TO_ANI_ARROW_TYPE::TO_ANI_NODE_TYPE_ONE_OK,
+		CHANGE_CONDITION_TYPE_TRIGGER, &trigger);
+	aniTree->AddArrow(2, 0, TO_ANI_ARROW_TYPE::TO_ANI_NODE_TYPE_ONE_OK,
+		CHANGE_CONDITION_TYPE_TRIGGER, &trigger);
 }
 
 void TestObject::Update()
 {
-	static int index = 0;
+	AnimationTree* aniTree = ani->GetAnimationTree();
 
-	if (GMOUSE.leftButton== MOUSEState::RELEASED)
+	std::vector<OutputTrigger> triggers;
+	aniTree->GetTriggers(triggers);
+
+	for (int i = 0; i < 3; i++)
 	{
-		auto ani = GetComponent<ComAnimator>();
-		
-		std::vector<std::string> names;
-		ani->GetAniNames(names);
-
-		if (names.size())
+		if(GKEYBOARD.IsKeyPressed(static_cast<DirectX::Keyboard::Keys>(DirectX::Keyboard::D1 + i)))
 		{
-			ani->SelectAnimation(names[index]);
-
-			index = (index + 1) % names.size();
+			triggers[i].trigger.m_Trigger._b = true;
+			break;
 		}
-	}
-
-	if (GKEYBOARD.lastState.Right)
-	{
-		m_Transform->m_Pos.x += 0.001f;
-	}
-
-
-	if (GKEYBOARD.lastState.Left)
-	{
-		m_Transform->m_Pos.x -= 0.001f;
 	}
 }

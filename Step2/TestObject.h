@@ -2,6 +2,7 @@
 #include "GameObject.h"
 
 class ComTransform;
+class ComAnimator;
 
 class TestObject :public GameObject
 {
@@ -12,5 +13,5 @@ public:
 	virtual void Init() override;
 	virtual void Update() override;
 private:
-	ComTransform* m_Transform;
+	ComAnimator* ani;
 };
