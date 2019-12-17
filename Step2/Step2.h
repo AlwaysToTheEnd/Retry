@@ -1,5 +1,5 @@
 #pragma once
-#include "../Common/Source/PhysX4_0.h"
+#include "../Common/Source/PhysX4_1.h"
 #include "../Common/Source/GraphicDX12.h"
 #include "../Common/Source/d3dApp.h"
 #include "../Common/Source/cCamera.h"
@@ -7,7 +7,7 @@
 
 //using typedef to select core devices.
 typedef GraphicDX12	UsingGraphicDevice;
-typedef PhysX4_0	UsingPhsicsDevice;
+typedef PhysX4_1	UsingPhsicsDevice;
 
 inline CGH::MAT16 GetDXMatrixAtRigidActor(const physx::PxRigidActor* rigidActor)
 {
