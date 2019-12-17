@@ -6,8 +6,6 @@
 #include <DirectXMath.h>
 #include <memory>
 #include <wrl.h>
-#include "d3dUtil.h"
-
 
 using Microsoft::WRL::ComPtr;
 

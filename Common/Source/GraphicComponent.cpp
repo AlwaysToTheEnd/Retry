@@ -9,6 +9,8 @@ std::vector<RenderInfo>* ComRenderer::m_ReservedRenderObjects = nullptr;
 const std::unordered_map<std::string, Ani::SkinnedData>* ComAnimator::m_SkinnedDatas = nullptr;
 std::vector<AniBoneMat>* ComAnimator::m_ReservedAniBone = nullptr;
 
+std::vector<RenderFont>* ComFont::m_ReservedFonts = nullptr;
+
 void ComMesh::GetMeshNames(std::vector<std::string>& out)
 {
 	for (auto& it : *m_Meshs)

@@ -5,6 +5,8 @@
 #include "AnimationStructs.h"
 #include "AnimationTree.h"
 
+struct RenderFont;
+
 namespace AniTree
 {
 	class AnimationTree;
@@ -100,13 +102,19 @@ private:
 class ComFont :public IComponent
 {
 public:
-	ComFont(GameObject& gameObject, int ID)
+	ComFont(GameObject& gameObject, int ID, 
+		std::vector<RenderFont>* reservedFonts)
 		: IComponent(COMPONENTTYPE::COM_FONT, gameObject, ID)
 	{
-	
+		if (m_ReservedFonts == nullptr)
+		{
+			m_ReservedFonts = reservedFonts;
+		}
 	}
 
 	virtual void Update() override;
 private:
+	static std::vector<RenderFont>* m_ReservedFonts;
+
 
 };

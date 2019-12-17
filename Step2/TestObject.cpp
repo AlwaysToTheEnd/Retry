@@ -7,7 +7,7 @@ using namespace AniTree;
 
 void TestObject::Init()
 {
-	AddComponent<ComTransform>();
+	/*AddComponent<ComTransform>();
 	auto mesh = AddComponent<ComMesh>();
 	AddComponent<ComRenderer>();
 	ani= AddComponent<ComAnimator>();
@@ -50,7 +50,7 @@ void TestObject::Init()
 	aniTree->AddArrow(1, 2, TO_ANI_ARROW_TYPE::TO_ANI_NODE_TYPE_ONE_OK,
 		CHANGE_CONDITION_TYPE_ANI_END, nullptr);
 	aniTree->AddArrow(2, 0, TO_ANI_ARROW_TYPE::TO_ANI_NODE_TYPE_ONE_OK,
-		CHANGE_CONDITION_TYPE_ANI_END, nullptr);
+		CHANGE_CONDITION_TYPE_ANI_END, nullptr);*/
 }
 
 void TestObject::Update()

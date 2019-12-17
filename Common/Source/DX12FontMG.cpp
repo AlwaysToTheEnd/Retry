@@ -1,10 +1,9 @@
 #include "DX12FontMG.h"
 #include "d3dUtil.h"
-#include <DirectXTK/SimpleMath.h>
-#include <DirectXTK/ResourceUploadBatch.h>
-#include <DirectXTK/SpriteBatch.h>
-#include <DirectXTK/SpriteFont.h>
-
+#include <SimpleMath.h>
+#include <ResourceUploadBatch.h>
+#include <SpriteBatch.h>
+#include <SpriteFont.h>
 
 using namespace DirectX;
 

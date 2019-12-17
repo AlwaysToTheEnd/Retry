@@ -1,7 +1,7 @@
 #include "AnimationStructs.h"
 #include "DX12RenderClasses.h"
 #include <d3d12.h>
-#include "DirectXTK/SimpleMath.h"
+#include <SimpleMath.h>
 
 using namespace DirectX;
 

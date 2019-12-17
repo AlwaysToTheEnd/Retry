@@ -1,11 +1,10 @@
 #pragma once
-#include "d3dUtil.h"
 #include "IGraphicDevice.h"
 #include "IPhysicsDevice.h"
 #include "IComponent.h"
 #include "ComponentUpdater.h"
-#include "DirectXTK/Mouse.h"
-#include "DirectXTK/Keyboard.h"
+#include <Mouse.h>
+#include <Keyboard.h>
 
 #define GETAPP D3DApp::GetApp()
 #define GKEYBOARD D3DApp::GetApp()->GetKeyBoard()
