@@ -3,46 +3,44 @@
 #include <DirectXMath.h>
 #include "IComponent.h"
 #include "BaseClass.h"
+#include "foundation/PxMat44.h"
 
 class ComTransform :public IComponent
 {
 public:
-	ComTransform(GameObject& gameObject, int ID,
-		std::vector<CGH::MAT16>* tranMatsPtr)
+	ComTransform(GameObject& gameObject, int ID, physx::PxTransform& transform)
 		: IComponent(COMPONENTTYPE::COM_TRANSFORM, gameObject, ID)
-		, m_Pos(0,0,0)
-		, m_Scale(1,1,1)
-		, m_Quter(0,0,0,0)
+		, m_Transform(transform)
 	{
-		if (m_TransformMats == nullptr)
-		{
-			m_TransformMats = tranMatsPtr;
-		}
+		
 	}
 	virtual ~ComTransform() = default;
 
 	virtual void Update() override;
 
-public:
-	void SetMatrix(CGH::MAT16& mat);
-
-	DirectX::XMFLOAT3 m_Pos;
-	DirectX::XMFLOAT3 m_Scale;
-	DirectX::XMFLOAT4 m_Quter;
-
-	const CGH::MAT16& GetMatrix() { return (*m_TransformMats)[GetID()]; }
-private:
-	CGH::MAT16& GetNoneConstMat() { return (*m_TransformMats)[GetID()]; }
+	const CGH::MAT16& GetMatrix() const { return m_Mat; }
 
 private:
-	static std::vector<CGH::MAT16>* m_TransformMats;
+	physx::PxTransform& m_Transform;
+	CGH::MAT16 m_Mat;
 };
 
-class ComPhysics :public IComponent
+class ComRigidDynamic :public IComponent
 {
 public:
-	ComPhysics(GameObject& gameObject, int ID);
-	virtual ~ComPhysics() = default;
+	ComRigidDynamic(GameObject& gameObject, int ID);
+	virtual ~ComRigidDynamic() = default;
+
+	virtual void Update() override;
+
+private:
+};
+
+class ComRigidStatic :public IComponent
+{
+public:
+	ComRigidStatic(GameObject& gameObject, int ID);
+	virtual ~ComRigidStatic() = default;
 
 	virtual void Update() override;
 

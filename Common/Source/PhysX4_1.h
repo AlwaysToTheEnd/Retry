@@ -2,7 +2,6 @@
 #include "PxPhysicsAPI.h"
 #include "IPhysicsDevice.h"
 #include "Px1RefPtr.h"
-#include "IComponentCreater.h"
 
 class PhysX4_1 final : public IPhysicsDevice
 {
@@ -22,11 +21,10 @@ private:
 		physx::PxFilterObjectAttributes attributes1, physx::PxFilterData filterData1,
 		physx::PxPairFlags& pairFlags, const void* constantBlock, physx::PxU32 constantBlockSize);
 
-
 private:
 	physx::PxDefaultAllocator					m_allocator;
 	physx::PxDefaultErrorCallback				m_errorCallback;
-
+	
 	Px1RefPtr<physx::PxPhysics>					m_physics;
 	Px1RefPtr<physx::PxFoundation>				m_foundation;
 	Px1RefPtr<physx::PxDefaultCpuDispatcher>	m_dispatcher;

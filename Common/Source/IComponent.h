@@ -7,8 +7,8 @@ class D3DApp;
 
 enum class COMPONENTTYPE
 {
-	COM_PHYSICS,
-
+	COM_DYNAMIC,
+	COM_STATIC,
 	COM_TRANSFORM,
 
 	COM_MESH,

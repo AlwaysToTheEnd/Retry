@@ -17,8 +17,11 @@ std::unordered_map<unsigned int, unsigned int> GameObject::GetComponentTypeIDs()
 
 		switch (type)
 		{
-		case COMPONENTTYPE::COM_PHYSICS:
-			hash_code = typeid(ComPhysics).hash_code();
+		case COMPONENTTYPE::COM_DYNAMIC:
+			hash_code = typeid(ComRigidDynamic).hash_code();
+			break;
+		case COMPONENTTYPE::COM_STATIC:
+			hash_code = typeid(ComRigidStatic).hash_code();
 			break;
 		case COMPONENTTYPE::COM_TRANSFORM:
 			hash_code = typeid(ComTransform).hash_code();

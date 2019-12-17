@@ -82,8 +82,6 @@ protected:
 
 	std::unique_ptr<IGraphicDevice>	m_GDevice;
 	std::unique_ptr<IPhysicsDevice>	m_PXDevice;
-
-	InstanceAndIndexManager<CGH::MAT16>	m_ObjectsMat;
 };
 
 template<typename GraphicDeviceClass,typename PhysicsDeviceClass>

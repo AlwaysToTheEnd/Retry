@@ -288,7 +288,11 @@ std::unique_ptr<IComponent> GraphicDX12::CreateComponent(COMPONENTTYPE type, Gam
 		break;
 	}
 
-	ComUpdater.AddData(newComponent);
+	if (newComponent)
+	{
+		ComUpdater.AddData(newComponent);
+	}
+
 	return std::unique_ptr<IComponent>(newComponent);
 }
 

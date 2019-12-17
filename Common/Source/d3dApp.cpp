@@ -32,9 +32,11 @@ void D3DApp::BaseUpdate()
 	m_KeyboardTracker.Update(m_Keyboard.GetState());
 	Update();
 
+	GetComponentUpdater(COMPONENTTYPE::COM_DYNAMIC).Update();
 	GetComponentUpdater(COMPONENTTYPE::COM_TRANSFORM).Update();
-	GetComponentUpdater(COMPONENTTYPE::COM_PHYSICS).Update();
 	m_PXDevice->Update();
+	GetComponentUpdater(COMPONENTTYPE::COM_STATIC).Update();
+
 	GetComponentUpdater(COMPONENTTYPE::COM_ANIMATOR).Update();
 	GetComponentUpdater(COMPONENTTYPE::COM_RENDERER).Update();
 	GetComponentUpdater(COMPONENTTYPE::COM_FONT).Update();
@@ -72,20 +74,9 @@ int D3DApp::Run()
 
 std::unique_ptr<IComponent> D3DApp::CreateComponent(COMPONENTTYPE type, GameObject& gameObject)
 {
-	unique_ptr<IComponent> result = nullptr;
-
 	assert(type != COMPONENTTYPE::COM_END && "THIS COMPONENT IS NONE USED TYPE");
 
-	auto& ComUpdater = GetComponentUpdater(type);
-	UINT id = ComUpdater.GetNextID();
-
-	if (type == COMPONENTTYPE::COM_TRANSFORM)
-	{
-		result = make_unique<ComTransform>(gameObject, id, m_ObjectsMat.GetDataPtr());
-
-		m_ObjectsMat.AddData();
-	}
-	else if (type < COMPONENTTYPE::COM_TRANSFORM)
+	if (type < COMPONENTTYPE::COM_TRANSFORM)
 	{
 		return m_PXDevice->CreateComponent(type, gameObject);
 	}
@@ -93,9 +84,6 @@ std::unique_ptr<IComponent> D3DApp::CreateComponent(COMPONENTTYPE type, GameObje
 	{
 		return m_GDevice->CreateComponent(type, gameObject);
 	}
-
-	ComUpdater.AddData(result.get());
-	return result;
 }
 
 void D3DApp::ComponentDeleteManaging(COMPONENTTYPE type, int id)
@@ -105,14 +93,7 @@ void D3DApp::ComponentDeleteManaging(COMPONENTTYPE type, int id)
 		assert(false && "THIS COMPONENT IS NONE USED TYPE");
 	}
 
-	auto& ComUpdater = GetComponentUpdater(type);
-	ComUpdater.SignalDelete(id);
-
-	if (type == COMPONENTTYPE::COM_TRANSFORM)
-	{
-		m_ObjectsMat.SignalDelete(id);
-	}
-	else if (type < COMPONENTTYPE::COM_TRANSFORM)
+	if (type < COMPONENTTYPE::COM_TRANSFORM)
 	{
 		m_PXDevice->ComponentDeleteManaging(type, id);
 	}

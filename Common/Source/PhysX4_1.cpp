@@ -1,4 +1,5 @@
 #include "PhysX4_1.h"
+#include "BaseComponent.h"
 #include <Windows.h>
 using namespace physx;
 
@@ -72,7 +73,7 @@ bool PhysX4_1::Init(void* graphicDevicePtr)
 	sceneDesc.cpuDispatcher = m_dispatcher.Get();
 	sceneDesc.broadPhaseType = PxBroadPhaseType::eABP;
 	sceneDesc.filterShader = PxDefaultSimulationFilterShader;
-
+	
 	if (graphicDevicePtr != nullptr)
 	{
 		PxCudaContextManagerDesc cudaDesc;
@@ -110,7 +111,7 @@ bool PhysX4_1::Init(void* graphicDevicePtr)
 	// 대량의 데이터를 생성하고 변환, 직렬화 하는 유틸리티 생성
 	m_cooking = PxCreateCooking(PX_PHYSICS_VERSION, *m_foundation,
 		PxCookingParams(PxTolerancesScale()));
-
+	
 	return true;
 }
 
@@ -124,13 +125,28 @@ std::unique_ptr<IComponent> PhysX4_1::CreateComponent(COMPONENTTYPE type, GameOb
 {
 	IComponent* newComponent = nullptr;
 
+	auto& ComUpdater = GetComponentUpdater(type);
+	UINT id = ComUpdater.GetNextID();
+
 	switch (type)
 	{
-	case COMPONENTTYPE::COM_PHYSICS:
+	case COMPONENTTYPE::COM_DYNAMIC:
+		newComponent = new ComRigidDynamic(gameObject, id);
+		break;
+	case COMPONENTTYPE::COM_STATIC:
+		newComponent = new ComRigidStatic(gameObject, id);
+		break;
+	case COMPONENTTYPE::COM_TRANSFORM:
+		newComponent = new ComTransform(gameObject, id);
 		break;
 	default:
 		assert(false);
 		break;
+	}
+
+	if (newComponent)
+	{
+		ComUpdater.AddData(newComponent);
 	}
 
 	return std::unique_ptr<IComponent>(newComponent);
@@ -142,7 +158,9 @@ void PhysX4_1::ComponentDeleteManaging(COMPONENTTYPE type, int id)
 
 	switch (type)
 	{
-	case COMPONENTTYPE::COM_PHYSICS:
+	case COMPONENTTYPE::COM_DYNAMIC:
+	case COMPONENTTYPE::COM_STATIC:
+	case COMPONENTTYPE::COM_TRANSFORM:
 		ComUpdater.SignalDelete(id);
 		break;
 	default:
@@ -151,7 +169,10 @@ void PhysX4_1::ComponentDeleteManaging(COMPONENTTYPE type, int id)
 	}
 }
 
-PxFilterFlags PhysX4_1::ScissorFilter(PxFilterObjectAttributes attributes0, PxFilterData filterData0, PxFilterObjectAttributes attributes1, PxFilterData filterData1, PxPairFlags& pairFlags, const void* constantBlock, PxU32 constantBlockSize)
+PxFilterFlags PhysX4_1::ScissorFilter(PxFilterObjectAttributes attributes0,
+	PxFilterData filterData0, PxFilterObjectAttributes attributes1, 
+	PxFilterData filterData1, PxPairFlags& pairFlags, 
+	const void* constantBlock, PxU32 constantBlockSize)
 {
 	return PxFilterFlags();
 }

@@ -176,7 +176,7 @@
       <AdditionalLibraryDirectories>./../Common/Lib</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
-      <AdditionalOptions>/LIBPATH:../../Common/Lib SimulationController_static_64.lib SceneQuery_static_64.lib PhysXVehicle_static_64.lib PhysXTask_static_64.lib PhysXPvdSDK_static_64.lib PhysXFoundation_64.lib PhysXExtensions_static_64.lib PhysXCooking_64.lib PhysXCommon_64.lib PhysXCharacterKinematic_static_64.lib PhysX_64.lib LowLevelDynamics_static_64.lib LowLevelAABB_static_64.lib FastXml_static_64.lib LowLevel_static_64.lib DirectXTex.lib DirectXTK12.lib /DEBUG</AdditionalOptions>
+      <AdditionalOptions>/LIBPATH:./../Common/Lib SimulationController_static_64.lib SceneQuery_static_64.lib PhysXVehicle_static_64.lib PhysXTask_static_64.lib PhysXPvdSDK_static_64.lib PhysXFoundation_64.lib PhysXExtensions_static_64.lib PhysXCooking_64.lib PhysXCommon_64.lib PhysXCharacterKinematic_static_64.lib PhysX_64.lib LowLevelDynamics_static_64.lib LowLevelAABB_static_64.lib FastXml_static_64.lib LowLevel_static_64.lib DirectXTex.lib DirectXTK12.lib /DEBUG</AdditionalOptions>
       <IgnoreSpecificDefaultLibraries>
       </IgnoreSpecificDefaultLibraries>
     </Link>

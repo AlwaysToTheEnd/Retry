@@ -1,28 +1,21 @@
 #include "BaseComponent.h"
 
-using namespace DirectX;
-std::vector<CGH::MAT16>* ComTransform::m_TransformMats = nullptr;
+static void GetDXMatrixAtPxTransform(const physx::PxTransform& rigidActor, CGH::MAT16& mat)
+{
+	physx::PxMat44 pxMat(rigidActor);
+	memcpy(&mat.m[0][0], &pxMat.column0.x, sizeof(CGH::MAT16));
+}
 
-ComPhysics::ComPhysics(GameObject& gameObject, int ID)
-	:IComponent(COMPONENTTYPE::COM_PHYSICS, gameObject, ID)
+ComRigidDynamic::ComRigidDynamic(GameObject& gameObject, int ID)
+	:IComponent(COMPONENTTYPE::COM_DYNAMIC, gameObject, ID)
 {
 }
 
-void ComPhysics::Update()
+void ComRigidDynamic::Update()
 {
 }
 
 void ComTransform::Update()
 {
-	XMVECTOR pos = XMLoadFloat3(&m_Pos);
-	XMVECTOR scale = XMLoadFloat3(&m_Scale);
-	XMVECTOR quter = XMLoadFloat4(&m_Quter);
-	XMVECTOR zero = XMVectorZero();
-
-	XMStoreFloat4x4(GetNoneConstMat(), XMMatrixAffineTransformation(scale, zero, quter, pos));
-}
-
-void ComTransform::SetMatrix(CGH::MAT16& mat)
-{
-
+	GetDXMatrixAtPxTransform(m_Transform, m_Mat);
 }

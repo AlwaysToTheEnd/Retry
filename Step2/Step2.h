@@ -9,16 +9,6 @@
 typedef GraphicDX12	UsingGraphicDevice;
 typedef PhysX4_1	UsingPhsicsDevice;
 
-inline CGH::MAT16 GetDXMatrixAtRigidActor(const physx::PxRigidActor* rigidActor)
-{
-	CGH::MAT16 T;
-	physx::PxMat44 mat(rigidActor->getGlobalPose());
-
-	memcpy(&T.m[0][0], &mat.column0.x, sizeof(CGH::MAT16));
-
-	return T;
-}
-
 class Step2 final : public D3DApp
 {
 public:
