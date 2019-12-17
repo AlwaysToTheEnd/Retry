@@ -245,6 +245,11 @@ void GraphicDX12::OnResize()
 
 	m_ScissorRect = { 0, 0, m_ClientWidth, m_ClientHeight };
 
+	if (m_FontManager)
+	{
+		m_FontManager->Resize(m_ClientWidth, m_ClientHeight);
+	}
+
 	XMMATRIX P = XMMatrixPerspectiveFovLH(0.25f * XM_PI, (float)m_ClientWidth / m_ClientHeight, 1.0f, 1000.0f);
 	XMStoreFloat4x4(m_ProjectionMat, P);
 }
@@ -265,7 +270,7 @@ std::unique_ptr<IComponent> GraphicDX12::CreateComponent(COMPONENTTYPE type, Gam
 	break;
 	case COMPONENTTYPE::COM_FONT:
 	{
-		newComponent = new ComFont(gameObject, id);
+		newComponent = new ComFont(gameObject, id, &m_ReservedFonts);
 	}
 	break;
 	case COMPONENTTYPE::COM_MESH:
@@ -296,6 +301,7 @@ void GraphicDX12::ComponentDeleteManaging(COMPONENTTYPE type, int id)
 	case COMPONENTTYPE::COM_RENDERER:
 	case COMPONENTTYPE::COM_MESH:
 	case COMPONENTTYPE::COM_ANIMATOR:
+	case COMPONENTTYPE::COM_FONT:
 		ComUpdater.SignalDelete(id);
 		break;
 	default:
@@ -304,14 +310,12 @@ void GraphicDX12::ComponentDeleteManaging(COMPONENTTYPE type, int id)
 	}
 }
 
-void GraphicDX12::LoadTextureFromFolder(const std::vector<std::string>& targetTextureFolders)
+void GraphicDX12::LoadTextureFromFolder(const std::vector<std::wstring>& targetTextureFolders)
 {
 	vector<string> files;
 	for (auto& it : targetTextureFolders)
 	{
-		wstring path;
-		path.insert(path.end(), it.begin(), it.end());
-		SearchAllFileFromFolder(path, true, files);
+		SearchAllFileFromFolder(it, true, files);
 	}
 
 	unordered_map<string, wstring> texTurePaths;
@@ -343,7 +347,7 @@ void GraphicDX12::LoadTextureFromFolder(const std::vector<std::string>& targetTe
 	m_TextureBuffer->End(m_CommandQueue.Get(), bind(&GraphicDX12::FlushCommandQueue, this));
 }
 
-void GraphicDX12::LoadMeshAndMaterialFromFolder(const std::vector<std::string>& targetMeshFolders)
+void GraphicDX12::LoadMeshAndMaterialFromFolder(const std::vector<std::wstring>& targetMeshFolders)
 {
 	ThrowIfFailed(m_CommandList->Reset(m_DirectCmdListAlloc.Get(), nullptr));
 
@@ -351,9 +355,7 @@ void GraphicDX12::LoadMeshAndMaterialFromFolder(const std::vector<std::string>& 
 
 	for (auto& it : targetMeshFolders)
 	{
-		wstring path;
-		path.insert(path.end(), it.begin(), it.end());
-		SearchAllFileFromFolder(path, true, files);
+		SearchAllFileFromFolder(it, true, files);
 	}
 
 	XFileParser xfileP;
@@ -489,6 +491,21 @@ void GraphicDX12::LoadMeshAndMaterialFromFolder(const std::vector<std::string>& 
 	m_SkinnedIndexBuffer->ClearUploadBuffer();
 }
 
+void GraphicDX12::LoadFontFromFolder(const std::vector<std::wstring>& targetFontFolders)
+{
+	vector<wstring> files;
+	for (auto& it : targetFontFolders)
+	{
+		SearchAllFileFromFolder(it, true, files);
+	}
+
+	m_FontManager = make_unique<DX12FontManager>();
+	m_FontManager->Init(m_D3dDevice.Get(), m_CommandQueue.Get(), 
+		files, m_BackBufferFormat, m_DepthStencilFormat);
+
+	m_FontManager->Resize(m_ClientWidth, m_ClientHeight);
+}
+
 void GraphicDX12::ReadyWorksEnd()
 {
 	ThrowIfFailed(m_CommandList->Reset(m_DirectCmdListAlloc.Get(), nullptr));
@@ -564,12 +581,14 @@ void GraphicDX12::Draw()
 	m_CommandList->SetGraphicsRootDescriptorTable(TEXTURE_TABLE, m_TextureBuffer->GetHeap()->GetGPUDescriptorHandleForHeapStart());
 
 	DrawObjects();
+	m_FontManager->RenderCommandWrite(m_CommandList.Get(), m_ReservedFonts);
 
 	m_CommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(),
 		D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
 	ThrowIfFailed(m_CommandList->Close());
 	ID3D12CommandList* cmdsLists[] = { m_CommandList.Get() };
 	m_CommandQueue->ExecuteCommandLists(_countof(cmdsLists), cmdsLists);
+	m_FontManager->Commit(m_CommandQueue.Get());
 
 	ThrowIfFailed(m_SwapChain->Present(0, 0));
 	m_CurrBackBuffer = (m_CurrBackBuffer + 1) % SwapChainBufferCount;
@@ -581,6 +600,7 @@ void GraphicDX12::ReservedWorksClear()
 {
 	m_ReservedAniBones.clear();
 	m_ReservedRenders.clear();
+	m_ReservedFonts.clear();
 }
 
 ID3D12Resource* GraphicDX12::CurrentBackBuffer() const

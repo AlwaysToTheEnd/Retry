@@ -132,7 +132,7 @@ bool D3DApp::Initialize()
 	if (!m_GDevice->Init(m_hMainWnd)) return false;
 	if (!m_PXDevice->Init(m_GDevice->GetDevicePtr())) return false;
 
-	m_GDevice->ReadyWorks(m_TargetTextureFolders, m_TargetMeshFolders);
+	m_GDevice->ReadyWorks(m_TargetTextureFolders, m_TargetMeshFolders, m_TargetFontFolders);
 
 	InitObjects();
 

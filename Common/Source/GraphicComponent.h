@@ -25,6 +25,7 @@ public:
 			m_Meshs = meshs;
 		}
 	}
+	virtual ~ComMesh() = default;
 
 	virtual void Update() override {};
 
@@ -56,6 +57,7 @@ public:
 			m_ReservedAniBone = reservedAniBone;
 		}
 	}
+	virtual ~ComAnimator() = default;
 
 	virtual void Update() override;
 
@@ -92,6 +94,7 @@ public:
 			m_ReservedRenderObjects = reservedRenderObjects;
 		}
 	}
+	virtual ~ComRenderer() = default;
 
 	virtual void Update() override;
 
@@ -105,16 +108,22 @@ public:
 	ComFont(GameObject& gameObject, int ID, 
 		std::vector<RenderFont>* reservedFonts)
 		: IComponent(COMPONENTTYPE::COM_FONT, gameObject, ID)
+		, m_OffsetPos(0,0)
 	{
 		if (m_ReservedFonts == nullptr)
 		{
 			m_ReservedFonts = reservedFonts;
 		}
 	}
+	virtual ~ComFont() = default;
 
 	virtual void Update() override;
+
+public:
+	std::wstring		m_Text;
+	DirectX::XMFLOAT2	m_OffsetPos;
+
 private:
 	static std::vector<RenderFont>* m_ReservedFonts;
-
-
+	
 };

@@ -19,6 +19,7 @@ public:
 			m_TransformMats = tranMatsPtr;
 		}
 	}
+	virtual ~ComTransform() = default;
 
 	virtual void Update() override;
 
@@ -41,6 +42,7 @@ class ComPhysics :public IComponent
 {
 public:
 	ComPhysics(GameObject& gameObject, int ID);
+	virtual ~ComPhysics() = default;
 
 	virtual void Update() override;
 

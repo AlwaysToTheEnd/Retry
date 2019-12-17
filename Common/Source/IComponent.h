@@ -25,7 +25,7 @@ public:
 	friend class D3DApp;
 public:
 	IComponent(COMPONENTTYPE type, GameObject& gameObject, int ID);
-	~IComponent();
+	virtual ~IComponent();
 	virtual void Update() {};
 
 	COMPONENTTYPE GetType() const { return m_Type; }

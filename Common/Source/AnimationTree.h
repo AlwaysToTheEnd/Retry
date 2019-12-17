@@ -119,7 +119,7 @@ namespace AniTree
 		TriggerData& trigger;
 	};
 
-	class AnimationTree
+	class AnimationTree final
 	{
 	public:
 		AnimationTree()

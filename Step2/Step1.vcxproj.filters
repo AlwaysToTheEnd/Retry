@@ -114,9 +114,6 @@
     <ClCompile Include="..\Common\Source\IComponent.cpp">
       <Filter>Common\CodeResources\Components</Filter>
     </ClCompile>
-    <ClCompile Include="..\Common\Source\PhysX4_0.cpp">
-      <Filter>Common\DeviceInstance\_Interface</Filter>
-    </ClCompile>
     <ClCompile Include="..\Common\Source\IComponentCreater.cpp">
       <Filter>Common\DeviceInstance\_Interface</Filter>
     </ClCompile>
@@ -146,6 +143,12 @@
     </ClCompile>
     <ClCompile Include="..\Common\Source\cCamera.cpp">
       <Filter>Common\CodeResources\Procedure Class</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Source\DX12RenderClasses.cpp">
+      <Filter>Common\DeviceInstance\DX12Supporters</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Source\PhysX4_1.cpp">
+      <Filter>Common\DeviceInstance\_Interface</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -200,9 +203,6 @@
     <ClInclude Include="..\Common\Source\ComponentUpdater.h">
       <Filter>Common\CodeResources\Components</Filter>
     </ClInclude>
-    <ClInclude Include="..\Common\Source\PhysX4_0.h">
-      <Filter>Common\DeviceInstance\_Interface</Filter>
-    </ClInclude>
     <ClInclude Include="..\Common\Source\AnimationTree.h">
       <Filter>Common\CodeResources\AnimationTree</Filter>
     </ClInclude>
@@ -229,6 +229,9 @@
     </ClInclude>
     <ClInclude Include="..\Common\Source\DX12FontMG.h">
       <Filter>Common\DeviceInstance\DX12Supporters</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\PhysX4_1.h">
+      <Filter>Common\DeviceInstance\_Interface</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

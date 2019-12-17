@@ -30,12 +30,13 @@
     <ClCompile Include="..\Common\Source\d3dApp.cpp" />
     <ClCompile Include="..\Common\Source\d3dUtil.cpp" />
     <ClCompile Include="..\Common\Source\DX12FontMG.cpp" />
+    <ClCompile Include="..\Common\Source\DX12RenderClasses.cpp" />
     <ClCompile Include="..\Common\Source\GameObject.cpp" />
     <ClCompile Include="..\Common\Source\GraphicComponent.cpp" />
     <ClCompile Include="..\Common\Source\GraphicDX12.cpp" />
     <ClCompile Include="..\Common\Source\IComponent.cpp" />
     <ClCompile Include="..\Common\Source\IComponentCreater.cpp" />
-    <ClCompile Include="..\Common\Source\PhysX4_0.cpp" />
+    <ClCompile Include="..\Common\Source\PhysX4_1.cpp" />
     <ClCompile Include="..\Common\Source\XFileParser.cpp" />
     <ClCompile Include="..\Common\Source\zlib\adler32.c" />
     <ClCompile Include="..\Common\Source\zlib\compress.c" />
@@ -71,7 +72,7 @@
     <ClInclude Include="..\Common\Source\GraphicDX12.h" />
     <ClInclude Include="..\Common\Source\cIndexManagementBuffer.h" />
     <ClInclude Include="..\Common\Source\IPhysicsDevice.h" />
-    <ClInclude Include="..\Common\Source\PhysX4_0.h" />
+    <ClInclude Include="..\Common\Source\PhysX4_1.h" />
     <ClInclude Include="..\Common\Source\Px1RefPtr.h" />
     <ClInclude Include="..\Common\Source\Vertex.h" />
     <ClInclude Include="..\Common\Source\XFileParser.h" />

@@ -85,3 +85,23 @@ struct AniBoneMat
 {
 	CGH::MAT16		bones[BONEMAXMATRIX];
 };
+
+struct RenderFont
+{
+	RenderFont(const std::wstring& fontName, const std::wstring& text)
+		: printString(text)
+		, fontIndex(GetFontIndex(fontName))
+	{
+
+	}
+
+	static unsigned int GetFontIndex(const std::wstring& fontName);
+	static std::vector<std::wstring> fontNames;
+
+	const unsigned int fontIndex;
+	const std::wstring& printString;
+	float rotation = 0;
+	DirectX::XMFLOAT3 pos = { 0, 0, 0 };
+	DirectX::XMFLOAT3 scale = { 1, 1, 1 };
+	DirectX::XMFLOAT4 color = { 0,0,0,1 };
+};

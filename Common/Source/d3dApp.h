@@ -18,15 +18,19 @@ struct MeshObject;
 class D3DApp :public ICompnentCreater
 {
 public:
-	const std::string MainFolderFath = "./../Common/";
+	const std::wstring MainFolderFath = L"./../Common/";
 
-	std::vector<std::string>		m_TargetMeshFolders =
+	std::vector<std::wstring>		m_TargetMeshFolders =
 	{
-		MainFolderFath + "MeshData"
+		MainFolderFath + L"MeshData"
 	};
-	std::vector<std::string>		m_TargetTextureFolders =
+	std::vector<std::wstring>		m_TargetTextureFolders =
 	{
-		MainFolderFath + "TextureData"
+		MainFolderFath + L"TextureData"
+	};
+	std::vector<std::wstring>		m_TargetFontFolders =
+	{
+		MainFolderFath + L"FontData"
 	};
 
 protected:

@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <functional>
 #include "DX12RenderClasses.h"
+#include "DX12FontMG.h"
 #include "cIndexManagementBuffer.h"
 #include "IGraphicDevice.h"
 #include "AnimationStructs.h"
@@ -148,8 +149,9 @@ private: // Only Used by FuncPtr
 	virtual void ComponentDeleteManaging(COMPONENTTYPE type, int id) override;
 
 private: // Used Function by ReadyWorks 
-	virtual void LoadTextureFromFolder(const std::vector<std::string>& targetTextureFolders) override;
-	virtual void LoadMeshAndMaterialFromFolder(const std::vector<std::string>& targetMeshFolders) override;
+	virtual void LoadTextureFromFolder(const std::vector<std::wstring>& targetTextureFolders) override;
+	virtual void LoadMeshAndMaterialFromFolder(const std::vector<std::wstring>& targetMeshFolders) override;
+	virtual void LoadFontFromFolder(const std::vector<std::wstring>& targetFontFolders) override;
 	virtual void ReadyWorksEnd() override;
 
 private: // Device Base Functions
@@ -229,11 +231,13 @@ private:
 	std::unordered_map<std::string, MeshObject>						m_Meshs;
 	std::unordered_map<std::string, Ani::SkinnedData>				m_SkinnedDatas;
 	std::unique_ptr<FrameResource>									m_FrameResource;
+	std::unique_ptr<DX12FontManager>								m_FontManager;
 
 private:
+	std::vector<RenderFont>							m_ReservedFonts;
+
 	std::vector<AniBoneMat>							m_ReservedAniBones;
 	std::vector<RenderInfo>							m_ReservedRenders;
-
 	std::vector<ObjectConstants>					m_RenderObjects;
 	std::vector<const SubmeshData*>					m_RenderObjectsSubmesh;
 

@@ -3,6 +3,7 @@
 
 class ComTransform;
 class ComAnimator;
+class ComFont;
 
 class TestObject :public GameObject
 {
@@ -13,5 +14,6 @@ public:
 	virtual void Init() override;
 	virtual void Update() override;
 private:
-	ComAnimator* ani;
+	ComAnimator*	ani;
+	ComFont*		font;
 };

@@ -22,11 +22,13 @@ public:
 	virtual void OnResize() = 0;
 
 private:
-	void ReadyWorks(const std::vector<std::string>& targetTextureFolders,
-					const std::vector<std::string>& targetMeshFolders)
+	void ReadyWorks(const std::vector<std::wstring>& targetTextureFolders,
+					const std::vector<std::wstring>& targetMeshFolders,
+					const std::vector<std::wstring>& targetFontFolders)
 	{
 		LoadTextureFromFolder(targetTextureFolders);
 		LoadMeshAndMaterialFromFolder(targetMeshFolders);
+		LoadFontFromFolder(targetFontFolders);
 		ReadyWorksEnd();
 	}
 
@@ -37,8 +39,9 @@ public:
 	void SetClientSize(UINT width, UINT height) { m_ClientWidth = width, m_ClientHeight = height; }
 
 protected:
-	virtual void LoadTextureFromFolder(const std::vector<std::string>& targetTextureFolders) = 0;
-	virtual void LoadMeshAndMaterialFromFolder(const std::vector<std::string>& targetMeshFolders) = 0;
+	virtual void LoadTextureFromFolder(const std::vector<std::wstring>& targetTextureFolders) = 0;
+	virtual void LoadMeshAndMaterialFromFolder(const std::vector<std::wstring>& targetMeshFolders) = 0;
+	virtual void LoadFontFromFolder(const std::vector<std::wstring>& targetFontFolders) = 0;
 	virtual void ReadyWorksEnd() = 0;
 
 protected:

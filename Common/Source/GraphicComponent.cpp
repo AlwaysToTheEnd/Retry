@@ -150,5 +150,9 @@ void ComRenderer::Update()
 
 void ComFont::Update()
 {
+	RenderFont addedFont(L"baseFont.spritefont", m_Text);
+	addedFont.pos.x = m_OffsetPos.x;
+	addedFont.pos.y = m_OffsetPos.y;
 
+	m_ReservedFonts->push_back(addedFont);
 }

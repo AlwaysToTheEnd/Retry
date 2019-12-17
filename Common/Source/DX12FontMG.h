@@ -1,29 +1,17 @@
 #pragma once
-#include <string>
 #include <vector>
 #include <unordered_map>
 #include <d3d12.h>
-#include <DirectXMath.h>
 #include <memory>
 #include <wrl.h>
+#include "DX12RenderClasses.h"
+#include <SpriteBatch.h>
+#include <SpriteFont.h>
+#include <GraphicsMemory.h>
+
 
 using Microsoft::WRL::ComPtr;
 
-namespace DirectX
-{
-	class SpriteBatch;
-	class SpriteFont;
-}
-
-struct RenderFont
-{
-	unsigned int fontIndex = 0;
- 	const std::wstring& printString;
-	float rotation = 0;
-	DirectX::XMFLOAT3 pos = { 0, 0, 0 };
-	DirectX::XMFLOAT3 scale = { 1, 1, 1 };
-	DirectX::XMFLOAT4 color = { 0,0,0,0 };
-};
 
 class DX12FontManager
 {
@@ -36,13 +24,17 @@ public:
 				DXGI_FORMAT rtFormat, DXGI_FORMAT dsFormat);
 
 	void Resize(unsigned int clientWidth, unsigned clientHeight);
-	void RenderCommandWrite(ID3D12GraphicsCommandList* cmdList, const std::vector<RenderFont>& renderFonts);
+	void RenderCommandWrite(ID3D12GraphicsCommandList* cmdList, 
+		const std::vector<RenderFont>& renderFonts);
+
+	void Commit(ID3D12CommandQueue* queue) { m_Memory->Commit(queue); }
 
 private:
-	ComPtr<ID3D12DescriptorHeap>			m_DescriptorHeap = nullptr;
-	std::unique_ptr<DirectX::SpriteBatch>	m_SpriteBatch = nullptr;
+	ComPtr<ID3D12DescriptorHeap>				m_DescriptorHeap;
+	std::unique_ptr<DirectX::SpriteBatch>		m_SpriteBatch;
+	std::unique_ptr<DirectX::GraphicsMemory>	m_Memory;
 
-	std::vector<DirectX::SpriteFont>		m_Fonts;
-	std::vector<std::wstring>				m_FontNames;
+	std::vector<DirectX::SpriteFont>			m_Fonts;
+	std::vector<std::wstring>					m_FontNames;
 };
 

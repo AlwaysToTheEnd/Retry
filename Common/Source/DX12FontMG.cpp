@@ -2,8 +2,7 @@
 #include "d3dUtil.h"
 #include <SimpleMath.h>
 #include <ResourceUploadBatch.h>
-#include <SpriteBatch.h>
-#include <SpriteFont.h>
+
 
 using namespace DirectX;
 
@@ -11,6 +10,8 @@ void DX12FontManager::Init(ID3D12Device* device, ID3D12CommandQueue* queue,
 							const std::vector<std::wstring>& filePaths,
 							DXGI_FORMAT rtFormat, DXGI_FORMAT dsForma)
 {
+	m_Memory=std::make_unique<GraphicsMemory>(device);
+
 	D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
 	heapDesc.NumDescriptors = filePaths.size();
 	heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
@@ -42,6 +43,9 @@ void DX12FontManager::Init(ID3D12Device* device, ID3D12CommandQueue* queue,
 	}
 
 	auto uploadResourcesFinished = resourceUpload.End(queue);
+
+	RenderFont::fontNames = m_FontNames;
+
 	uploadResourcesFinished.wait();
 }
 
@@ -57,7 +61,8 @@ void DX12FontManager::Resize(unsigned int clientWidth, unsigned clientHeight)
 	}
 }
 
-void DX12FontManager::RenderCommandWrite(ID3D12GraphicsCommandList* cmdList, const std::vector<RenderFont>& renderFonts)
+void DX12FontManager::RenderCommandWrite(ID3D12GraphicsCommandList* cmdList, 
+	const std::vector<RenderFont>& renderFonts)
 {
 	ID3D12DescriptorHeap* heaps[] = { m_DescriptorHeap.Get() };
 	cmdList->SetDescriptorHeaps(_countof(heaps), heaps);
@@ -81,3 +86,5 @@ void DX12FontManager::RenderCommandWrite(ID3D12GraphicsCommandList* cmdList, con
 
 	m_SpriteBatch->End();
 }
+
+
