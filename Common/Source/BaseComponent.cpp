@@ -19,3 +19,12 @@ void ComTransform::Update()
 {
 	GetDXMatrixAtPxTransform(m_Transform, m_Mat);
 }
+
+ComRigidStatic::ComRigidStatic(GameObject& gameObject, int ID)
+	:IComponent(COMPONENTTYPE::COM_STATIC, gameObject, ID)
+{
+}
+
+void ComRigidStatic::Update()
+{
+}

@@ -76,13 +76,13 @@ std::unique_ptr<IComponent> D3DApp::CreateComponent(COMPONENTTYPE type, GameObje
 {
 	assert(type != COMPONENTTYPE::COM_END && "THIS COMPONENT IS NONE USED TYPE");
 
-	if (type < COMPONENTTYPE::COM_TRANSFORM)
+	if (type > COMPONENTTYPE::COM_TRANSFORM)
 	{
-		return m_PXDevice->CreateComponent(type, gameObject);
+		return m_GDevice->CreateComponent(type, gameObject);
 	}
 	else
 	{
-		return m_GDevice->CreateComponent(type, gameObject);
+		return m_PXDevice->CreateComponent(type, gameObject);
 	}
 }
 
@@ -93,13 +93,13 @@ void D3DApp::ComponentDeleteManaging(COMPONENTTYPE type, int id)
 		assert(false && "THIS COMPONENT IS NONE USED TYPE");
 	}
 
-	if (type < COMPONENTTYPE::COM_TRANSFORM)
+	if (type > COMPONENTTYPE::COM_TRANSFORM)
 	{
-		m_PXDevice->ComponentDeleteManaging(type, id);
+		m_GDevice->ComponentDeleteManaging(type, id);
 	}
 	else
 	{
-		m_GDevice->ComponentDeleteManaging(type, id);
+		m_PXDevice->ComponentDeleteManaging(type, id);
 	}
 }
 

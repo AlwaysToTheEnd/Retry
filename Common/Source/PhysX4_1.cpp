@@ -127,7 +127,7 @@ std::unique_ptr<IComponent> PhysX4_1::CreateComponent(COMPONENTTYPE type, GameOb
 
 	auto& ComUpdater = GetComponentUpdater(type);
 	UINT id = ComUpdater.GetNextID();
-
+	static PxTransform ts = {};
 	switch (type)
 	{
 	case COMPONENTTYPE::COM_DYNAMIC:
@@ -137,7 +137,7 @@ std::unique_ptr<IComponent> PhysX4_1::CreateComponent(COMPONENTTYPE type, GameOb
 		newComponent = new ComRigidStatic(gameObject, id);
 		break;
 	case COMPONENTTYPE::COM_TRANSFORM:
-		newComponent = new ComTransform(gameObject, id);
+		newComponent = new ComTransform(gameObject, id, ts);
 		break;
 	default:
 		assert(false);
