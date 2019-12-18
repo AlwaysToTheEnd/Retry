@@ -1,30 +1,43 @@
 #include "BaseComponent.h"
+#include "GameObject.h"
+#include "PxRigidStatic.h"
+#include "PxRigidDynamic.h"
+#include "foundation/PxMat44.h"
 
-static void GetDXMatrixAtPxTransform(const physx::PxTransform& rigidActor, CGH::MAT16& mat)
-{
-	physx::PxMat44 pxMat(rigidActor);
-	memcpy(&mat.m[0][0], &pxMat.column0.x, sizeof(CGH::MAT16));
-}
-
-ComRigidDynamic::ComRigidDynamic(GameObject& gameObject, int ID)
-	:IComponent(COMPONENTTYPE::COM_DYNAMIC, gameObject, ID)
-{
-}
 
 void ComRigidDynamic::Update()
 {
+	auto transform = m_TargetGameObject->GetComponent<ComTransform>();
+
+	if (transform)
+	{
+		transform->m_Transform = m_RigidBody->getGlobalPose();
+	}
 }
 
-void ComTransform::Update()
+DirectX::XMFLOAT4X4 ComTransform::GetMatrix() const
 {
-	GetDXMatrixAtPxTransform(m_Transform, m_Mat);
+	DirectX::XMFLOAT4X4 result;
+	physx::PxMat44 pxMat(m_Transform);
+
+	for (size_t i = 0; i < 4; i++)
+	{
+		for (size_t j = 0; j < 4; j++)
+		{
+			result.m[i][j] = pxMat[i][j];
+		}
+	}
+
+	return result;
 }
 
-ComRigidStatic::ComRigidStatic(GameObject& gameObject, int ID)
-	:IComponent(COMPONENTTYPE::COM_STATIC, gameObject, ID)
-{
-}
 
 void ComRigidStatic::Update()
 {
+	auto transform = m_TargetGameObject->GetComponent<ComTransform>();
+
+	if (transform)
+	{
+		transform->m_Transform = m_RigidBody->getGlobalPose();
+	}
 }

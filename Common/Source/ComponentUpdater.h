@@ -11,7 +11,7 @@ public:
 	void AddData(T com);
 	void AddData();
 	virtual void SignalDelete(unsigned int id);
-	std::vector<T>* GetDataPtr() { return &m_Datas; }
+	virtual T& GetData(unsigned int id) { return m_Datas[id]; }
 
 protected:
 	std::vector<T>				m_Datas;

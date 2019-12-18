@@ -3,46 +3,68 @@
 #include <DirectXMath.h>
 #include "IComponent.h"
 #include "BaseClass.h"
-#include "foundation/PxMat44.h"
+#include "foundation/PxTransform.h"
 
-class ComTransform :public IComponent
+namespace physx
 {
-public:
-	ComTransform(GameObject& gameObject, int ID, physx::PxTransform& transform)
-		: IComponent(COMPONENTTYPE::COM_TRANSFORM, gameObject, ID)
-		, m_Transform(transform)
-	{
-		
-	}
-	virtual ~ComTransform() = default;
-
-	virtual void Update() override;
-
-	const CGH::MAT16& GetMatrix() const { return m_Mat; }
-
-private:
-	physx::PxTransform& m_Transform;
-	CGH::MAT16 m_Mat;
-};
+	class PxRigidStatic;
+	class PxRigidDynamic;
+}
 
 class ComRigidDynamic :public IComponent
 {
 public:
-	ComRigidDynamic(GameObject& gameObject, int ID);
+	ComRigidDynamic(GameObject& gameObject, int ID,
+		physx::PxRigidDynamic* rigidBody)
+		:IComponent(COMPONENTTYPE::COM_DYNAMIC, gameObject, ID)
+		, m_RigidBody(rigidBody)
+	{
+
+	}
 	virtual ~ComRigidDynamic() = default;
 
 	virtual void Update() override;
+	physx::PxRigidDynamic* GetRigidBody() { return m_RigidBody; }
 
 private:
+	physx::PxRigidDynamic* m_RigidBody;
 };
 
 class ComRigidStatic :public IComponent
 {
 public:
-	ComRigidStatic(GameObject& gameObject, int ID);
+	ComRigidStatic(GameObject& gameObject, int ID,
+		physx::PxRigidStatic* rigidBody)
+		:IComponent(COMPONENTTYPE::COM_STATIC, gameObject, ID)
+		, m_RigidBody(rigidBody)
+	{
+
+	}
 	virtual ~ComRigidStatic() = default;
 
 	virtual void Update() override;
+	physx::PxRigidStatic* GetRigidBody() { return m_RigidBody; }
 
 private:
+	physx::PxRigidStatic* m_RigidBody;
+};
+
+class ComTransform :public IComponent
+{
+	friend class ComRigidDynamic;
+	friend class ComRigidStatic;
+public:
+	ComTransform(GameObject& gameObject, int ID)
+		: IComponent(COMPONENTTYPE::COM_TRANSFORM, gameObject, ID)
+	{
+
+	}
+	virtual ~ComTransform() = default;
+
+	virtual void Update() override {}
+
+	DirectX::XMFLOAT4X4 GetMatrix() const;
+
+private:
+	physx::PxTransform m_Transform;
 };

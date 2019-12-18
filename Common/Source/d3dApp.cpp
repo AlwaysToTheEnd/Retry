@@ -32,10 +32,9 @@ void D3DApp::BaseUpdate()
 	m_KeyboardTracker.Update(m_Keyboard.GetState());
 	Update();
 
-	GetComponentUpdater(COMPONENTTYPE::COM_DYNAMIC).Update();
-	GetComponentUpdater(COMPONENTTYPE::COM_TRANSFORM).Update();
 	m_PXDevice->Update();
 	GetComponentUpdater(COMPONENTTYPE::COM_STATIC).Update();
+	GetComponentUpdater(COMPONENTTYPE::COM_DYNAMIC).Update();
 
 	GetComponentUpdater(COMPONENTTYPE::COM_ANIMATOR).Update();
 	GetComponentUpdater(COMPONENTTYPE::COM_RENDERER).Update();

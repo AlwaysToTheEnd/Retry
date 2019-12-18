@@ -10,12 +10,12 @@ PhysX4_1::PhysX4_1()
 
 PhysX4_1::~PhysX4_1()
 {
-	m_planeMaterial = nullptr;
-	m_scene = nullptr;
-	m_dispatcher = nullptr;
-	m_cooking = nullptr;
-	m_cudaManager = nullptr;
-	m_physics = nullptr;
+	m_PlaneMaterial = nullptr;
+	m_Scene = nullptr;
+	m_Dispatcher = nullptr;
+	m_Cooking = nullptr;
+	m_CudaManager = nullptr;
+	m_Physics = nullptr;
 
 	if (m_PVD.Get())
 	{
@@ -29,20 +29,20 @@ PhysX4_1::~PhysX4_1()
 	}
 	
 
-	m_foundation = nullptr;
-	m_foundation = nullptr;
+	m_Foundation = nullptr;
+	m_Foundation = nullptr;
 }
 
 bool PhysX4_1::Init(void* graphicDevicePtr)
 {
 	// 가장 기초가 되는 Foundation 생성, 싱글톤 클래스임에 주의하자.
-	m_foundation = PxCreateFoundation(PX_PHYSICS_VERSION,
-		m_allocator, m_errorCallback);
+	m_Foundation = PxCreateFoundation(PX_PHYSICS_VERSION,
+		m_Allocator, m_ErrorCallback);
 
 	// Physics Visual Debugger에 연결하기 포트 생성및 연결 작업. 
 	// 사용하지 않는다면 하지 않아도 무방하다.
 
-	m_PVD = PxCreatePvd(*m_foundation);
+	m_PVD = PxCreatePvd(*m_Foundation);
 	PxPvdTransport* transport = PxDefaultPvdSocketTransportCreate("127.0.0.1", 5425, 10);
 	m_PVD->connect(*transport, PxPvdInstrumentationFlag::eALL);
 
@@ -53,24 +53,24 @@ bool PhysX4_1::Init(void* graphicDevicePtr)
 	// mass(1000) 
 	// speed(10) 
 
-	m_physics = PxCreatePhysics(PX_PHYSICS_VERSION, *m_foundation,
+	m_Physics = PxCreatePhysics(PX_PHYSICS_VERSION, *m_Foundation,
 		PxTolerancesScale(),
 		true, m_PVD.Get());
-	PxRegisterHeightFields(*m_physics);
+	PxRegisterHeightFields(*m_Physics);
 
 	SYSTEM_INFO info;
 	GetSystemInfo(&info);
 
 	// CPU작업을 어떤식으로 할지 정한다. 씬에 적용
 	// 쓰레드의 수를 정한다.
-	m_dispatcher = PxDefaultCpuDispatcherCreate(info.dwNumberOfProcessors);
+	m_Dispatcher = PxDefaultCpuDispatcherCreate(info.dwNumberOfProcessors);
 
 	// 오브젝트들이 시뮬레이션 될 공간을 생성한다.
 	// 씬 안에 시뮬레이션 될 액터 등 이 담기고 씬을 기준으로 시뮬레이션 한다.
 	// PxSceneDesc는 씬의 속성 정보를 담은 구조체이다.
-	PxSceneDesc sceneDesc(m_physics->getTolerancesScale());
+	PxSceneDesc sceneDesc(m_Physics->getTolerancesScale());
 	sceneDesc.gravity = PxVec3(0.0f, -9.81f, 0.0f);
-	sceneDesc.cpuDispatcher = m_dispatcher.Get();
+	sceneDesc.cpuDispatcher = m_Dispatcher.Get();
 	sceneDesc.broadPhaseType = PxBroadPhaseType::eABP;
 	sceneDesc.filterShader = PxDefaultSimulationFilterShader;
 	
@@ -78,8 +78,8 @@ bool PhysX4_1::Init(void* graphicDevicePtr)
 	{
 		PxCudaContextManagerDesc cudaDesc;
 		cudaDesc.graphicsDevice = graphicDevicePtr;
-		m_cudaManager = PxCreateCudaContextManager(*m_foundation, cudaDesc);
-		sceneDesc.gpuDispatcher = m_cudaManager->getGpuDispatcher();
+		m_CudaManager = PxCreateCudaContextManager(*m_Foundation, cudaDesc);
+		sceneDesc.gpuDispatcher = m_CudaManager->getGpuDispatcher();
 		sceneDesc.flags |= PxSceneFlag::eENABLE_GPU_DYNAMICS;
 		sceneDesc.flags |= PxSceneFlag::eENABLE_PCM;
 		sceneDesc.flags |= PxSceneFlag::eENABLE_STABILIZATION;
@@ -96,20 +96,20 @@ bool PhysX4_1::Init(void* graphicDevicePtr)
 	//static SceneSimulationEventCallBack custumSimulationEvent;
 	//sceneDesc.simulationEventCallback = &custumSimulationEvent;
 
-	m_scene = m_physics->createScene(sceneDesc);
+	m_Scene = m_Physics->createScene(sceneDesc);
 
 	//pvd 클라이언트 세팅
-	PxPvdSceneClient* pvdClient = m_scene->getScenePvdClient();
+	PxPvdSceneClient* pvdClient = m_Scene->getScenePvdClient();
 	if (pvdClient)
 	{
 		pvdClient->setScenePvdFlag(PxPvdSceneFlag::eTRANSMIT_CONSTRAINTS, true);
 		pvdClient->setScenePvdFlag(PxPvdSceneFlag::eTRANSMIT_CONTACTS, true);
 		pvdClient->setScenePvdFlag(PxPvdSceneFlag::eTRANSMIT_SCENEQUERIES, true);
-		m_scene->setVisualizationParameter(PxVisualizationParameter::eACTOR_AXES, 2.0f);
+		m_Scene->setVisualizationParameter(PxVisualizationParameter::eACTOR_AXES, 2.0f);
 	}
 
 	// 대량의 데이터를 생성하고 변환, 직렬화 하는 유틸리티 생성
-	m_cooking = PxCreateCooking(PX_PHYSICS_VERSION, *m_foundation,
+	m_Cooking = PxCreateCooking(PX_PHYSICS_VERSION, *m_Foundation,
 		PxCookingParams(PxTolerancesScale()));
 	
 	return true;
@@ -117,8 +117,8 @@ bool PhysX4_1::Init(void* graphicDevicePtr)
 
 void PhysX4_1::Update()
 {
-	m_scene->simulate(1.0f / 60.0f);
-	m_scene->fetchResults(true);
+	m_Scene->simulate(1.0f / 60.0f);
+	m_Scene->fetchResults(true);
 }
 
 std::unique_ptr<IComponent> PhysX4_1::CreateComponent(COMPONENTTYPE type, GameObject& gameObject)
@@ -127,17 +127,30 @@ std::unique_ptr<IComponent> PhysX4_1::CreateComponent(COMPONENTTYPE type, GameOb
 
 	auto& ComUpdater = GetComponentUpdater(type);
 	UINT id = ComUpdater.GetNextID();
-	static PxTransform ts = {};
+	
+	static PxTransform identityTransform = {};
+	
 	switch (type)
 	{
 	case COMPONENTTYPE::COM_DYNAMIC:
-		newComponent = new ComRigidDynamic(gameObject, id);
+	{
+		PxRigidDynamic* rigidBody = m_Physics->createRigidDynamic(identityTransform);
+		m_Dynamics.AddData();
+		m_Dynamics.GetData(id) = rigidBody;
+		
+		newComponent = new ComRigidDynamic(gameObject, id, rigidBody);
+	}
 		break;
 	case COMPONENTTYPE::COM_STATIC:
-		newComponent = new ComRigidStatic(gameObject, id);
+	{
+		PxRigidStatic* rigidBody = m_Physics->createRigidStatic(identityTransform);
+		m_Statics.AddData();
+		m_Statics.GetData(id) = rigidBody;
+		newComponent = new ComRigidStatic(gameObject, id, rigidBody);
+	}
 		break;
 	case COMPONENTTYPE::COM_TRANSFORM:
-		newComponent = new ComTransform(gameObject, id, ts);
+		newComponent = new ComTransform(gameObject, id);
 		break;
 	default:
 		assert(false);
@@ -155,18 +168,27 @@ std::unique_ptr<IComponent> PhysX4_1::CreateComponent(COMPONENTTYPE type, GameOb
 void PhysX4_1::ComponentDeleteManaging(COMPONENTTYPE type, int id)
 {
 	auto& ComUpdater = GetComponentUpdater(type);
+	IComponent* deletedComponent = ComUpdater.GetData(id);
 
 	switch (type)
 	{
 	case COMPONENTTYPE::COM_DYNAMIC:
+		m_Scene->removeActor(*reinterpret_cast<ComRigidDynamic*>(deletedComponent)->GetRigidBody());
+		m_Dynamics.GetData(id) = nullptr;
+		m_Dynamics.SignalDelete(id);
+		break;
 	case COMPONENTTYPE::COM_STATIC:
+		m_Scene->removeActor(*reinterpret_cast<ComRigidStatic*>(deletedComponent)->GetRigidBody());
+		m_Statics.GetData(id) = nullptr;
+		m_Statics.SignalDelete(id);
 	case COMPONENTTYPE::COM_TRANSFORM:
-		ComUpdater.SignalDelete(id);
 		break;
 	default:
 		assert(false);
 		break;
 	}
+
+	ComUpdater.SignalDelete(id);
 }
 
 PxFilterFlags PhysX4_1::ScissorFilter(PxFilterObjectAttributes attributes0,

@@ -22,18 +22,20 @@ private:
 		physx::PxPairFlags& pairFlags, const void* constantBlock, physx::PxU32 constantBlockSize);
 
 private:
-	physx::PxDefaultAllocator					m_allocator;
-	physx::PxDefaultErrorCallback				m_errorCallback;
+	physx::PxDefaultAllocator					m_Allocator;
+	physx::PxDefaultErrorCallback				m_ErrorCallback;
 	
-	Px1RefPtr<physx::PxPhysics>					m_physics;
-	Px1RefPtr<physx::PxFoundation>				m_foundation;
-	Px1RefPtr<physx::PxDefaultCpuDispatcher>	m_dispatcher;
-	Px1RefPtr<physx::PxCooking>					m_cooking;
-	Px1RefPtr<physx::PxCudaContextManager>		m_cudaManager;
-	Px1RefPtr<physx::PxScene>					m_scene;
+	Px1RefPtr<physx::PxFoundation>				m_Foundation;
+	Px1RefPtr<physx::PxPhysics>					m_Physics;
+	Px1RefPtr<physx::PxDefaultCpuDispatcher>	m_Dispatcher;
+	Px1RefPtr<physx::PxCooking>					m_Cooking;
+	Px1RefPtr<physx::PxCudaContextManager>		m_CudaManager;
+	Px1RefPtr<physx::PxScene>					m_Scene;
 	Px1RefPtr<physx::PxPvd>						m_PVD;
 
 private:
-	Px1RefPtr<physx::PxMaterial>				m_planeMaterial;
+	Px1RefPtr<physx::PxMaterial>				m_PlaneMaterial;
+	InstanceAndIndexManager<Px1RefPtr<physx::PxRigidDynamic>>	m_Dynamics;
+	InstanceAndIndexManager<Px1RefPtr<physx::PxRigidStatic>>	m_Statics;
 };
 
