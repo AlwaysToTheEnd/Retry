@@ -25,6 +25,8 @@ class PhysX4_1 final : public IPhysicsDevice
 			{
 				m_Objects.push_back(reinterpret_cast<PhysXFunctionalObject*>(a1->userData));
 			}
+
+			return physx::PxFilterFlag::eCALLBACK;
 		}
 
 		virtual	void pairLost(physx::PxU32 pairID, physx::PxFilterObjectAttributes attributes0, 
@@ -37,7 +39,7 @@ class PhysX4_1 final : public IPhysicsDevice
 		virtual bool statusChange(physx::PxU32& pairID, physx::PxPairFlags& pairFlags, 
 			physx::PxFilterFlags& filterFlags)
 		{
-
+			return true;
 		}
 
 		void ReservedObjectsExcute()

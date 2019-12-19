@@ -13,8 +13,7 @@ void TestObject::Init()
 	auto mesh = AddComponent<ComMesh>();
 	AddComponent<ComRenderer>();
 	ani= AddComponent<ComAnimator>();
-	auto rigid = AddComponent<ComRigidDynamic>();
-
+	auto rigid = AddComponent<ComRigidStatic>();
 
 	std::vector<std::string> names;
 	mesh->GetMeshNames(names);
