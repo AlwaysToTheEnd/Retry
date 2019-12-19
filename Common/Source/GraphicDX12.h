@@ -140,10 +140,11 @@ public:
 	virtual bool Init(HWND hWnd) override;
 	virtual void OnResize() override;
 	virtual void* GetDevicePtr() override { return m_D3dDevice.Get(); }
+	virtual void GetWorldRay(DirectX::XMFLOAT3& origin, DirectX::XMFLOAT3& ray) const override;
 	virtual std::unique_ptr<IComponent> CreateComponent(COMPONENTTYPE type, GameObject& gameObject) override;
 	
 public: // Used Functions
-	virtual void SetCamera(cCamera* camera) { m_currCamera = camera; }
+	virtual void SetCamera(cCamera* camera) { m_CurrCamera = camera; }
 
 private: // Only Used by FuncPtr
 	virtual void ComponentDeleteManaging(COMPONENTTYPE type, int id) override;
@@ -217,7 +218,9 @@ private:
 	bool							m_4xMsaaState = false;
 	UINT							m_4xmsaaQuality = 0;
 
-	cCamera*						m_currCamera = nullptr;
+	cCamera*						m_CurrCamera = nullptr;
+	DirectX::XMFLOAT3				m_RayOrigin;
+	DirectX::XMFLOAT3				m_Ray;
 
 private:
 	std::unordered_map<std::string, ComPtr<ID3D12PipelineState>>	m_PSOs;

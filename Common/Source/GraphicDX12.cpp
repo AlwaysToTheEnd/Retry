@@ -254,6 +254,12 @@ void GraphicDX12::OnResize()
 	XMStoreFloat4x4(m_ProjectionMat, P);
 }
 
+void GraphicDX12::GetWorldRay(DirectX::XMFLOAT3& origin, DirectX::XMFLOAT3& ray) const
+{
+	origin = m_RayOrigin;
+	ray = m_Ray;
+}
+
 std::unique_ptr<IComponent> GraphicDX12::CreateComponent(COMPONENTTYPE type, GameObject& gameObject)
 {
 	IComponent* newComponent = nullptr;
@@ -306,7 +312,7 @@ void GraphicDX12::ComponentDeleteManaging(COMPONENTTYPE type, int id)
 	case COMPONENTTYPE::COM_MESH:
 	case COMPONENTTYPE::COM_ANIMATOR:
 	case COMPONENTTYPE::COM_FONT:
-		ComUpdater.SignalDelete(id);
+		ComUpdater.SignalDeleted(id);
 		break;
 	default:
 		assert(false);
@@ -545,9 +551,9 @@ void GraphicDX12::FlushCommandQueue()
 
 void GraphicDX12::Update()
 {
-	if (m_currCamera)
+	if (m_CurrCamera)
 	{
-		m_ViewMatrix = *m_currCamera->GetViewMatrix();
+		m_ViewMatrix = *m_CurrCamera->GetViewMatrix();
 	}
 
 	UpdateMainPassCB();
@@ -816,6 +822,20 @@ void GraphicDX12::UpdateMainPassCB()
 	//m_MainPassCB.Lights[2].strength = { 0.2f, 0.2f, 0.2f };
 
 	m_FrameResource->passCB->CopyData(0, m_MainPassCB);
+
+	XMVECTOR rayOrigin = XMVectorSet(0, 0, 0, 1);
+	XMVECTOR ray = XMVectorSet(0, 0, 1, 0);
+
+	if (m_CurrCamera)
+	{
+		ray = m_CurrCamera->GetViewRay(m_ProjectionMat, m_ClientWidth, m_ClientHeight);
+	}
+
+	rayOrigin = XMVector3TransformCoord(rayOrigin, invView);
+	ray = XMVector3TransformNormal(ray, invView);
+
+	XMStoreFloat3(&m_RayOrigin, rayOrigin);
+	XMStoreFloat3(&m_Ray, ray);
 }
 
 void GraphicDX12::UpdateObjectCB()

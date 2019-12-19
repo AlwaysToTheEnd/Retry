@@ -2,6 +2,7 @@
 #include "GameObject.h"
 #include "PxRigidStatic.h"
 #include "PxRigidDynamic.h"
+#include "PxScene.h"
 #include "foundation/PxMat44.h"
 
 
@@ -11,7 +12,17 @@ void ComRigidDynamic::Update()
 
 	if (transform)
 	{
-		transform->m_Transform = m_RigidBody->getGlobalPose();
+		transform->SetTransform(m_RigidBody->getGlobalPose());
+	}
+}
+
+void ComRigidStatic::Update()
+{
+	auto transform = m_TargetGameObject->GetComponent<ComTransform>();
+
+	if (transform)
+	{
+		transform->SetTransform(m_RigidBody->getGlobalPose());
 	}
 }
 
@@ -29,15 +40,4 @@ DirectX::XMFLOAT4X4 ComTransform::GetMatrix() const
 	}
 
 	return result;
-}
-
-
-void ComRigidStatic::Update()
-{
-	auto transform = m_TargetGameObject->GetComponent<ComTransform>();
-
-	if (transform)
-	{
-		transform->m_Transform = m_RigidBody->getGlobalPose();
-	}
 }

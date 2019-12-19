@@ -73,6 +73,7 @@
     <ClInclude Include="..\Common\Source\cIndexManagementBuffer.h" />
     <ClInclude Include="..\Common\Source\IPhysicsDevice.h" />
     <ClInclude Include="..\Common\Source\PhysX4_1.h" />
+    <ClInclude Include="..\Common\Source\PhysXFunctionalObject.h" />
     <ClInclude Include="..\Common\Source\Px1RefPtr.h" />
     <ClInclude Include="..\Common\Source\Vertex.h" />
     <ClInclude Include="..\Common\Source\XFileParser.h" />

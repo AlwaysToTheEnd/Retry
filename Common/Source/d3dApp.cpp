@@ -31,7 +31,7 @@ void D3DApp::BaseUpdate()
 	m_MouseTracker.Update(m_Mouse.GetState());
 	m_KeyboardTracker.Update(m_Keyboard.GetState());
 	Update();
-
+	
 	m_PXDevice->Update();
 	GetComponentUpdater(COMPONENTTYPE::COM_STATIC).Update();
 	GetComponentUpdater(COMPONENTTYPE::COM_DYNAMIC).Update();
@@ -40,6 +40,7 @@ void D3DApp::BaseUpdate()
 	GetComponentUpdater(COMPONENTTYPE::COM_RENDERER).Update();
 	GetComponentUpdater(COMPONENTTYPE::COM_FONT).Update();
 	m_GDevice->Update();
+	m_GDevice->GetWorldRay(m_RayOrigin, m_Ray);
 }
 
 int D3DApp::Run()
@@ -100,6 +101,12 @@ void D3DApp::ComponentDeleteManaging(COMPONENTTYPE type, int id)
 	{
 		m_PXDevice->ComponentDeleteManaging(type, id);
 	}
+}
+
+void D3DApp::ExcuteFuncOfClickedObjectFromPXDevice(float dis)
+{
+	m_PXDevice->ExcuteFuncOfClickedObject(m_RayOrigin.x, m_RayOrigin.y, m_RayOrigin.z,
+		m_Ray.x, m_Ray.y, m_Ray.z, dis);
 }
 
 bool D3DApp::Initialize()

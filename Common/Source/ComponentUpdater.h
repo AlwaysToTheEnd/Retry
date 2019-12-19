@@ -10,7 +10,7 @@ public:
 	unsigned int GetNextID();
 	void AddData(T com);
 	void AddData();
-	virtual void SignalDelete(unsigned int id);
+	virtual void SignalDeleted(unsigned int id);
 	virtual T& GetData(unsigned int id) { return m_Datas[id]; }
 
 protected:
@@ -22,7 +22,7 @@ class ComponentUpdater : public InstanceAndIndexManager<IComponent*>
 {
 public:
 	void Update();
-	virtual void SignalDelete(unsigned int id) override;
+	virtual void SignalDeleted(unsigned int id) override;
 };
 
 template<typename T>
@@ -70,7 +70,7 @@ inline void InstanceAndIndexManager<T>::AddData()
 }
 
 template<typename T>
-inline void InstanceAndIndexManager<T>::SignalDelete(unsigned int id)
+inline void InstanceAndIndexManager<T>::SignalDeleted(unsigned int id)
 {
 	assert(id <= m_Datas.size());
 

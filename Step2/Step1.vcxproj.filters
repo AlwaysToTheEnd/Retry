@@ -233,6 +233,9 @@
     <ClInclude Include="..\Common\Source\PhysX4_1.h">
       <Filter>Common\DeviceInstance\PXSupporters</Filter>
     </ClInclude>
+    <ClInclude Include="..\Common\Source\PhysXFunctionalObject.h">
+      <Filter>Common\DeviceInstance\PXSupporters</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Common\MainShaders\BaseShader.hlsl">

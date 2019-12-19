@@ -49,6 +49,7 @@ public:
 
 	std::unique_ptr<IComponent> CreateComponent(COMPONENTTYPE type, GameObject& gameObject) override;
 	void ComponentDeleteManaging(COMPONENTTYPE type, int id) override;
+	void ExcuteFuncOfClickedObjectFromPXDevice(float dis);
 
 public:
 	virtual LRESULT MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -72,6 +73,9 @@ protected:
 	DirectX::Mouse::ButtonStateTracker	m_MouseTracker;
 	DirectX::Keyboard					m_Keyboard;
 	DirectX::Keyboard::KeyboardStateTracker	m_KeyboardTracker;
+
+	DirectX::XMFLOAT3	m_RayOrigin = {};
+	DirectX::XMFLOAT3	m_Ray = {};
 
 	HINSTANCE	m_hAppInst = nullptr;
 	HWND		m_hMainWnd = nullptr;

@@ -9,20 +9,22 @@ public:
 	~cCamera();
 
 	void Update();
-	void SetRotationX(float x) { m_rotX = x; }
-	void SetRotationY(float y) { m_rotY = y; }
-	void SetDistance(float distance) { m_distance = distance; }
+	void SetRotationX(float x) { m_RotX = x; }
+	void SetRotationY(float y) { m_RotY = y; }
+	void SetDistance(float distance) { m_Distance = distance; }
 	void WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
-	const CGH::MAT16* GetViewMatrix() const { return &m_viewMat; }
-	const DirectX::XMFLOAT3 GetEyePos() const { return m_eyePos; }
+	DirectX::XMVECTOR XM_CALLCONV GetViewRay(const CGH::MAT16& projectionMat, unsigned int viewPortWidth, unsigned int viewPortHeight) const;
+	const CGH::MAT16* GetViewMatrix() const { return &m_ViewMat; }
+	const DirectX::XMFLOAT3 GetEyePos() const { return m_EyePos; }
 private:
-	CGH::MAT16			m_viewMat;
-	DirectX::XMFLOAT3	m_eyePos;
-	POINT				m_prevMouse;
-	bool				m_isRButtonDown;
-	float				m_distance;
-	float				m_rotX;
-	float				m_rotY;
+	CGH::MAT16			m_ViewMat;
+	DirectX::XMFLOAT3	m_EyePos;
+	POINT				m_CurrMouse;
+	POINT				m_PrevMouse;
+	bool				m_IsRButtonDown;
+	float				m_Distance;
+	float				m_RotX;
+	float				m_RotY;
 };
 

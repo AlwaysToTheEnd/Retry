@@ -14,7 +14,7 @@ void ComponentUpdater::Update()
 	}
 }
 
-void ComponentUpdater::SignalDelete(unsigned int id)
+void ComponentUpdater::SignalDeleted(unsigned int id)
 {
 	assert(id <= m_Datas.size());
 

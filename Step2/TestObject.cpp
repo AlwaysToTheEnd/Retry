@@ -1,6 +1,8 @@
 #include "TestObject.h"
 #include "BaseComponent.h"
 #include "GraphicComponent.h"
+#include "PxRigidDynamic.h"
+#include "PxRigidStatic.h"
 #include "d3dApp.h"
 
 using namespace AniTree;
@@ -11,7 +13,9 @@ void TestObject::Init()
 	auto mesh = AddComponent<ComMesh>();
 	AddComponent<ComRenderer>();
 	ani= AddComponent<ComAnimator>();
-	
+	auto rigid = AddComponent<ComRigidDynamic>();
+
+
 	std::vector<std::string> names;
 	mesh->GetMeshNames(names);
 
@@ -60,5 +64,5 @@ void TestObject::Init()
 
 void TestObject::Update()
 {
-
+	
 }

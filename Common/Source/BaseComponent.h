@@ -51,17 +51,17 @@ private:
 
 class ComTransform :public IComponent
 {
-	friend class ComRigidDynamic;
-	friend class ComRigidStatic;
 public:
 	ComTransform(GameObject& gameObject, int ID)
 		: IComponent(COMPONENTTYPE::COM_TRANSFORM, gameObject, ID)
+		, m_Transform(physx::PxIDENTITY::PxIdentity)
 	{
-
+		
 	}
 	virtual ~ComTransform() = default;
 
 	virtual void Update() override {}
+	void SetTransform(const physx::PxTransform& transform) { m_Transform = transform; }
 
 	DirectX::XMFLOAT4X4 GetMatrix() const;
 
