@@ -32,7 +32,7 @@
 /** \addtogroup foundation
 @{
 */
-
+#include <DirectXMath.h>
 #include "foundation/PxQuat.h"
 #include "foundation/PxVec4.h"
 #include "foundation/PxMat33.h"
@@ -133,6 +133,16 @@ class PxMat44
 		column1 = PxVec4(xy - zw, 1.0f - xx - zz, yz + xw, 0.0f);
 		column2 = PxVec4(xz + yw, yz - xw, 1.0f - xx - yy, 0.0f);
 		column3 = PxVec4(0.0f, 0.0f, 0.0f, 1.0f);
+	}
+
+	operator DirectX::XMFLOAT4X4* ()
+	{
+		return reinterpret_cast<DirectX::XMFLOAT4X4*>(this);
+	}
+
+	operator const DirectX::XMFLOAT4X4* () const
+	{
+		return reinterpret_cast<const DirectX::XMFLOAT4X4*>(this);
 	}
 
 	//! Construct from a diagonal vector

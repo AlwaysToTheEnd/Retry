@@ -126,9 +126,6 @@
     <ClCompile Include="..\Common\Source\AnimationStructs.cpp">
       <Filter>Common\CodeResources\BaseClass</Filter>
     </ClCompile>
-    <ClCompile Include="..\Common\Source\BaseClass.cpp">
-      <Filter>Common\CodeResources\BaseClass</Filter>
-    </ClCompile>
     <ClCompile Include="..\Common\Source\d3dUtil.cpp">
       <Filter>Common\CodeResources\BaseClass</Filter>
     </ClCompile>

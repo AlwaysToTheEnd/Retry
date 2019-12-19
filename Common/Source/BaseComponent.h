@@ -63,7 +63,7 @@ public:
 	virtual void Update() override {}
 	void SetTransform(const physx::PxTransform& transform) { m_Transform = transform; }
 
-	DirectX::XMFLOAT4X4 GetMatrix() const;
+	physx::PxMat44 GetMatrix() const { return physx::PxMat44(m_Transform); }
 
 private:
 	physx::PxTransform m_Transform;

@@ -131,7 +131,7 @@ void ComRenderer::Update()
 
 	if (comMesh != nullptr && comTransform != nullptr)
 	{
-		DirectX::XMMATRIX mat = DirectX::XMLoadFloat4x4(&comTransform->GetMatrix());
+		DirectX::XMMATRIX mat = DirectX::XMLoadFloat4x4(comTransform->GetMatrix());
 		addInfo.meshName = comMesh->GetCurrMeshName();
 		DirectX::XMStoreFloat4x4(addInfo.world, DirectX::XMMatrixTranspose(mat));
 	}

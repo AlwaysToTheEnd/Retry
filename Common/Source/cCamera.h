@@ -14,11 +14,11 @@ public:
 	void SetDistance(float distance) { m_Distance = distance; }
 	void WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
-	DirectX::XMVECTOR XM_CALLCONV GetViewRay(const CGH::MAT16& projectionMat, unsigned int viewPortWidth, unsigned int viewPortHeight) const;
-	const CGH::MAT16* GetViewMatrix() const { return &m_ViewMat; }
+	DirectX::XMVECTOR XM_CALLCONV GetViewRay(const physx::PxMat44& projectionMat, unsigned int viewPortWidth, unsigned int viewPortHeight) const;
+	const physx::PxMat44* GetViewMatrix() const { return &m_ViewMat; }
 	const DirectX::XMFLOAT3 GetEyePos() const { return m_EyePos; }
 private:
-	CGH::MAT16			m_ViewMat;
+	physx::PxMat44			m_ViewMat;
 	DirectX::XMFLOAT3	m_EyePos;
 	POINT				m_CurrMouse;
 	POINT				m_PrevMouse;

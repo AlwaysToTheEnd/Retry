@@ -355,7 +355,7 @@ void XFileParser::ParseDataObjectFrame(int parentIndex,
 		}
 		else if (objectName == "FrameTransformMatrix")
 		{
-			CGH::MAT16 temp;
+			physx::PxMat44 temp;
 			ParseDataObjectTransformationMatrix(temp);
 		}
 		else if (objectName == "Mesh")
@@ -370,20 +370,20 @@ void XFileParser::ParseDataObjectFrame(int parentIndex,
 	}
 }
 
-void XFileParser::ParseDataObjectTransformationMatrix(CGH::MAT16& pMatrix)
+void XFileParser::ParseDataObjectTransformationMatrix(physx::PxMat44& pMatrix)
 {
 	// read header, we're not interested if it has a name
 	readHeadOfDataObject();
 
 	// read its components
-	pMatrix.m[0][0] = ReadFloat(); pMatrix.m[0][1] = ReadFloat();
-	pMatrix.m[0][2] = ReadFloat(); pMatrix.m[0][3] = ReadFloat();
-	pMatrix.m[1][0] = ReadFloat(); pMatrix.m[1][1] = ReadFloat();
-	pMatrix.m[1][2] = ReadFloat(); pMatrix.m[1][3] = ReadFloat();
-	pMatrix.m[2][0] = ReadFloat(); pMatrix.m[2][1] = ReadFloat();
-	pMatrix.m[2][2] = ReadFloat(); pMatrix.m[2][3] = ReadFloat();
-	pMatrix.m[3][0] = ReadFloat(); pMatrix.m[3][1] = ReadFloat();
-	pMatrix.m[3][2] = ReadFloat(); pMatrix.m[3][3] = ReadFloat();
+	pMatrix[0][0] = ReadFloat(); pMatrix[0][1] = ReadFloat();
+	pMatrix[0][2] = ReadFloat(); pMatrix[0][3] = ReadFloat();
+	pMatrix[1][0] = ReadFloat(); pMatrix[1][1] = ReadFloat();
+	pMatrix[1][2] = ReadFloat(); pMatrix[1][3] = ReadFloat();
+	pMatrix[2][0] = ReadFloat(); pMatrix[2][1] = ReadFloat();
+	pMatrix[2][2] = ReadFloat(); pMatrix[2][3] = ReadFloat();
+	pMatrix[3][0] = ReadFloat(); pMatrix[3][1] = ReadFloat();
+	pMatrix[3][2] = ReadFloat(); pMatrix[3][3] = ReadFloat();
 
 	// trailing symbols
 	CheckForSemicolon();
@@ -508,14 +508,14 @@ void XFileParser::ParseDataObjectSkinWeights(Ani::Subset& subset)
 	}
 
 	// read matrix offset
-	bone.offsetMat.m[0][0] = ReadFloat(); bone.offsetMat.m[0][1] = ReadFloat();
-	bone.offsetMat.m[0][2] = ReadFloat(); bone.offsetMat.m[0][3] = ReadFloat();
-	bone.offsetMat.m[1][0] = ReadFloat(); bone.offsetMat.m[1][1] = ReadFloat();
-	bone.offsetMat.m[1][2] = ReadFloat(); bone.offsetMat.m[1][3] = ReadFloat();
-	bone.offsetMat.m[2][0] = ReadFloat(); bone.offsetMat.m[2][1] = ReadFloat();
-	bone.offsetMat.m[2][2] = ReadFloat(); bone.offsetMat.m[2][3] = ReadFloat();
-	bone.offsetMat.m[3][0] = ReadFloat(); bone.offsetMat.m[3][1] = ReadFloat();
-	bone.offsetMat.m[3][2] = ReadFloat(); bone.offsetMat.m[3][3] = ReadFloat();
+	bone.offsetMat[0][0] = ReadFloat(); bone.offsetMat[0][1] = ReadFloat();
+	bone.offsetMat[0][2] = ReadFloat(); bone.offsetMat[0][3] = ReadFloat();
+	bone.offsetMat[1][0] = ReadFloat(); bone.offsetMat[1][1] = ReadFloat();
+	bone.offsetMat[1][2] = ReadFloat(); bone.offsetMat[1][3] = ReadFloat();
+	bone.offsetMat[2][0] = ReadFloat(); bone.offsetMat[2][1] = ReadFloat();
+	bone.offsetMat[2][2] = ReadFloat(); bone.offsetMat[2][3] = ReadFloat();
+	bone.offsetMat[3][0] = ReadFloat(); bone.offsetMat[3][1] = ReadFloat();
+	bone.offsetMat[3][2] = ReadFloat(); bone.offsetMat[3][3] = ReadFloat();
 
 	m_Bones.push_back(bone);
 
@@ -927,16 +927,16 @@ void XFileParser::ParseDataObjectAnimationKey(Ani::AnimBone& pAnimBone)
 				ThrowException("Invalid number of arguments for matrix key in animation");
 
 			// read matrix
-			TimeValue<CGH::MAT16> key;
+			TimeValue<physx::PxMat44> key;
 			key.time = time;
-			key.value.m[0][0] = ReadFloat(); key.value.m[0][1] = ReadFloat();
-			key.value.m[0][2] = ReadFloat(); key.value.m[0][3] = ReadFloat();
-			key.value.m[1][0] = ReadFloat(); key.value.m[1][1] = ReadFloat();
-			key.value.m[1][2] = ReadFloat(); key.value.m[1][3] = ReadFloat();
-			key.value.m[2][0] = ReadFloat(); key.value.m[2][1] = ReadFloat();
-			key.value.m[2][2] = ReadFloat(); key.value.m[2][3] = ReadFloat();
-			key.value.m[3][0] = ReadFloat(); key.value.m[3][1] = ReadFloat();
-			key.value.m[3][2] = ReadFloat(); key.value.m[3][3] = ReadFloat();
+			key.value[0][0] = ReadFloat(); key.value[0][1] = ReadFloat();
+			key.value[0][2] = ReadFloat(); key.value[0][3] = ReadFloat();
+			key.value[1][0] = ReadFloat(); key.value[1][1] = ReadFloat();
+			key.value[1][2] = ReadFloat(); key.value[1][3] = ReadFloat();
+			key.value[2][0] = ReadFloat(); key.value[2][1] = ReadFloat();
+			key.value[2][2] = ReadFloat(); key.value[2][3] = ReadFloat();
+			key.value[3][0] = ReadFloat(); key.value[3][1] = ReadFloat();
+			key.value[3][2] = ReadFloat(); key.value[3][3] = ReadFloat();
 			pAnimBone.trafoKeys.push_back(key);
 
 			CheckForSemicolon();

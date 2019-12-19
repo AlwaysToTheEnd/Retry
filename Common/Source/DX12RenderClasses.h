@@ -8,7 +8,7 @@
 
 struct ObjectConstants
 {
-	CGH::MAT16		world;
+	physx::PxMat44		world;
 	unsigned int	materialIndex = 0;
 	int				aniBoneIndex = -1;
 	unsigned int	meshType;
@@ -17,7 +17,7 @@ struct ObjectConstants
 
 struct RenderInfo
 {
-	CGH::MAT16	world;
+	physx::PxMat44	world;
 	std::string	meshName;
 	int			aniBoneIndex = -1;
 };
@@ -46,14 +46,14 @@ struct Light
 
 struct PassConstants
 {
-	CGH::MAT16 view;
-	CGH::MAT16 invView;
-	CGH::MAT16 proj;
-	CGH::MAT16 invProj;
-	CGH::MAT16 viewProj;
-	CGH::MAT16 invViewProj;
-	CGH::MAT16 rightViewProj;
-	CGH::MAT16 shadowMapMatrix;
+	physx::PxMat44 view;
+	physx::PxMat44 invView;
+	physx::PxMat44 proj;
+	physx::PxMat44 invProj;
+	physx::PxMat44 viewProj;
+	physx::PxMat44 invViewProj;
+	physx::PxMat44 rightViewProj;
+	physx::PxMat44 shadowMapMatrix;
 	DirectX::XMFLOAT3 eyePosW = { 0.0f, 0.0f, 0.0f };
 	float cbPerObjectPad1 = 0.0f;
 	DirectX::XMFLOAT2 renderTargetSize = { 0.0f, 0.0f };
@@ -83,7 +83,7 @@ struct MeshObject
 
 struct AniBoneMat
 {
-	CGH::MAT16		bones[BONEMAXMATRIX];
+	physx::PxMat44		bones[BONEMAXMATRIX];
 };
 
 struct RenderFont

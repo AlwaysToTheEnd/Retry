@@ -46,8 +46,8 @@ protected:
 	virtual void ReadyWorksEnd() = 0;
 
 protected:
-	CGH::MAT16		m_ViewMatrix;
-	CGH::MAT16		m_ProjectionMat;
+	physx::PxMat44		m_ViewMatrix;
+	physx::PxMat44		m_ProjectionMat;
 	HWND			m_MainWndHandle = nullptr;
 	int				m_ClientWidth = 1000;
 	int				m_ClientHeight = 700;

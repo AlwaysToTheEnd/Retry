@@ -6,8 +6,8 @@ cCamera::cCamera()
 	, m_RotY(0)
 	, m_Distance(5)
 	, m_EyePos(0,0,0)
+	, m_ViewMat(physx::PxIDENTITY::PxIdentity)
 {
-	m_ViewMat.Identity();
 }
 
 
@@ -73,10 +73,10 @@ void cCamera::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	}
 }
 
-DirectX::XMVECTOR XM_CALLCONV cCamera::GetViewRay(const CGH::MAT16& projectionMat, unsigned int viewPortWidth, unsigned int viewPortHeight) const
+DirectX::XMVECTOR XM_CALLCONV cCamera::GetViewRay(const physx::PxMat44& projectionMat, unsigned int viewPortWidth, unsigned int viewPortHeight) const
 {
 	return DirectX::XMVectorSet(
-		((m_CurrMouse.x * 2.0f) / viewPortWidth - 1.0f) / projectionMat.m[0][0],
-		((-m_CurrMouse.y * 2.0f) / viewPortHeight + 1.0f) / projectionMat.m[1][1],
+		((m_CurrMouse.x * 2.0f) / viewPortWidth - 1.0f) / projectionMat[0][0],
+		((-m_CurrMouse.y * 2.0f) / viewPortHeight + 1.0f) / projectionMat[1][1],
 		1.0f, 0.0f);
 }

@@ -66,8 +66,8 @@ void Ani::SkinnedData::GetFinalTransforms(
 	unsigned long long timePos,
 	AniBoneMat& finalTransforms) const
 {
-	std::vector<CGH::MAT16> localTransform;
-	std::vector<CGH::MAT16> combinedMats;
+	std::vector<physx::PxMat44> localTransform;
+	std::vector<physx::PxMat44> combinedMats;
 	localTransform.resize(m_FrameHierarchy.size());
 	combinedMats.resize(m_FrameHierarchy.size());
 
@@ -123,7 +123,7 @@ bool Ani::SkinnedData::CheckAnimation(const std::string& key) const
 	return m_Animations.find(key) != m_Animations.end();
 }
 
-void Ani::SkinnedData::CalLocalTransformFromAnimation(const std::string& clipName, std::vector<CGH::MAT16>& LocalTransforms, unsigned long long timePos) const
+void Ani::SkinnedData::CalLocalTransformFromAnimation(const std::string& clipName, std::vector<physx::PxMat44>& LocalTransforms, unsigned long long timePos) const
 {
 	auto aniIter = m_Animations.find(clipName);
 	assert(aniIter != m_Animations.end() && ("This skinned don't have [" + clipName + "] animation").c_str());
@@ -224,7 +224,7 @@ DirectX::XMVECTOR XM_CALLCONV Ani::SkinnedData::GetAnimationKeyOnTick(const std:
 	return result;
 }
 
-DirectX::XMMATRIX XM_CALLCONV Ani::SkinnedData::GetAnimationKeyOnTick(const std::vector<TimeValue<CGH::MAT16>>& values, unsigned long long timePos) const
+DirectX::XMMATRIX XM_CALLCONV Ani::SkinnedData::GetAnimationKeyOnTick(const std::vector<TimeValue<physx::PxMat44>>& values, unsigned long long timePos) const
 {
 	DirectX::XMMATRIX result = DirectX::XMMatrixIdentity();
 

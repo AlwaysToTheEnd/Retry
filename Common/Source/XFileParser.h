@@ -30,7 +30,7 @@ public:
 	struct Bone
 	{
 		std::string TargetFrame;
-		CGH::MAT16 offsetMat;
+		physx::PxMat44 offsetMat;
 		std::vector<BoneWeight> weights;
 	};
 
@@ -54,7 +54,7 @@ private:
 							std::vector<Ani::Subset>& subsets,
 							std::vector<Ani::AniMaterial>& mats,
 							Ani::SkinnedData& skinInfo);
-	void ParseDataObjectTransformationMatrix(CGH::MAT16& pMatrix);
+	void ParseDataObjectTransformationMatrix(physx::PxMat44& pMatrix);
 	void ParseDataObjectMesh(std::vector<SkinnedVertex>& vertices,
 							std::vector<unsigned int>& indices,
 							std::vector<Ani::Subset>& subsets,
