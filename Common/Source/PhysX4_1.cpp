@@ -10,7 +10,7 @@ PhysX4_1::PhysX4_1()
 
 PhysX4_1::~PhysX4_1()
 {
-	m_PlaneMaterial = nullptr;
+	m_Material = nullptr;
 	m_Scene = nullptr;
 	m_Dispatcher = nullptr;
 	m_Cooking = nullptr;
@@ -112,6 +112,11 @@ bool PhysX4_1::Init(void* graphicDevicePtr)
 	m_Cooking = PxCreateCooking(PX_PHYSICS_VERSION, *m_Foundation,
 		PxCookingParams(PxTolerancesScale()));
 
+	m_Material = m_Physics->createMaterial(0.0f, 0.0f, 0.0f);
+	auto ground = PxCreatePlane(*m_Physics, PxPlane(0, 1, 0, 0), *m_Material);
+
+	m_Scene->addActor(*ground);
+
 	return true;
 }
 
@@ -135,7 +140,17 @@ std::unique_ptr<IComponent> PhysX4_1::CreateComponent(COMPONENTTYPE type, GameOb
 	{
 	case COMPONENTTYPE::COM_DYNAMIC:
 	{
+		//test Codes.
+		PxShape* shape = m_Physics->createShape(PxBoxGeometry(PxVec3(1, 1, 1)), *m_Material, true);
+
 		rigidBody = m_Physics->createRigidDynamic(identityTransform);
+
+		//test Codes.
+		rigidBody->attachShape(*shape);
+		PxRigidBodyExt::updateMassAndInertia(*reinterpret_cast<PxRigidBody*>(rigidBody), 10.0f);
+
+		shape->release();
+
 		m_Dynamics.AddData(rigidBody);
 		newComponent = new ComRigidDynamic(gameObject, id, reinterpret_cast<PxRigidDynamic*>(rigidBody));
 	}

@@ -94,7 +94,7 @@ private:
 	Px1RefPtr<physx::PxPvd>						m_PVD;
 
 private:
-	Px1RefPtr<physx::PxMaterial>					m_PlaneMaterial;
+	Px1RefPtr<physx::PxMaterial>					m_Material;
 	InstanceAndIndexManager<physx::PxRigidActor*>	m_Dynamics;
 	InstanceAndIndexManager<physx::PxRigidActor*>	m_Statics;
 	std::vector<PhysXFunctionalObject*>				m_ReservedFunc;

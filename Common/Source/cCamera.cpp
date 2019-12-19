@@ -4,7 +4,7 @@ using namespace DirectX;
 cCamera::cCamera()
 	: m_RotX(0)
 	, m_RotY(0)
-	, m_Distance(5)
+	, m_Distance(10)
 	, m_EyePos(0,0,0)
 	, m_ViewMat(physx::PxIDENTITY::PxIdentity)
 {
@@ -17,16 +17,24 @@ cCamera::~cCamera()
 
 void cCamera::Update()
 {
-	XMVECTOR target = XMLoadFloat3(&m_EyePos);
-	
-	XMMATRIX viewMat = XMMatrixRotationRollPitchYaw(0, m_RotX, m_RotY);
+	XMMATRIX matRot = XMMatrixRotationRollPitchYaw(m_RotX, m_RotY, 0);
+	XMVECTOR eyePos = XMVectorSet(0, 0, -m_Distance, 1);
 
-	XMVECTOR eyePos = XMVector3TransformNormal(XMVectorSet( 0 ,0 ,m_Distance, 0), viewMat);
-	eyePos = target - eyePos;
+	eyePos = XMVector3TransformNormal(eyePos, matRot);
+	XMVECTOR lookAt = XMVectorZero();
+	XMVECTOR up = { 0,1,0,0 };
 
-	viewMat = XMMatrixLookAtLH(eyePos, target, XMVectorSet(0, 1, 0, 0));
-	
-	XMStoreFloat4x4(m_ViewMat, viewMat);
+	//if (m_target)
+	//{
+	//	XMMATRIX targetRotation = XMMatrixRotationQuaternion(XMLoadFloat4(&m_target->GetQuaternionInstance()));
+	//	up = XMVector3TransformNormal(up, targetRotation);
+	//	eyePos = XMVector3TransformNormal(eyePos, targetRotation);
+	//	lookAt = XMLoadFloat3(&m_target->GetWorldPos());
+	//	eyePos = XMLoadFloat3(&m_target->GetWorldPos()) + eyePos;
+	//}
+
+	XMStoreFloat3(&m_EyePos, eyePos);
+	XMStoreFloat4x4(m_ViewMat, XMMatrixLookAtLH(eyePos, lookAt, up));
 }
 
 

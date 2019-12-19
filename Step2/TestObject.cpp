@@ -3,6 +3,7 @@
 #include "GraphicComponent.h"
 #include "PxRigidDynamic.h"
 #include "PxRigidStatic.h"
+#include "PhysXFunctionalObject.h"
 #include "d3dApp.h"
 
 using namespace AniTree;
@@ -13,8 +14,13 @@ void TestObject::Init()
 	auto mesh = AddComponent<ComMesh>();
 	AddComponent<ComRenderer>();
 	ani= AddComponent<ComAnimator>();
-	auto rigid = AddComponent<ComRigidStatic>();
+	auto rigidCom = AddComponent<ComRigidDynamic>();
+	auto rigidBody = rigidCom->GetRigidBody();
+	auto funcs = new PhysXFunctionalObject();
 
+	funcs->voidFuncs.push_back(std::bind(&TestObject::TextChange, this));
+	rigidBody->userData = funcs;
+	rigidBody->setGlobalPose(physx::PxTransform(physx::PxVec3(0, 3, 0)));
 	std::vector<std::string> names;
 	mesh->GetMeshNames(names);
 
@@ -63,5 +69,32 @@ void TestObject::Init()
 
 void TestObject::Update()
 {
-	
+	if (GMOUSE.leftButton == MOUSEState::RELEASED)
+	{
+		GETAPP->ExcuteFuncOfClickedObjectFromPXDevice(100.0f);
+	}
+
+	static physx::PxTransform tr(physx::PxIDENTITY::PxIdentity);
+
+
+	if (GKEYBOARD.IsKeyPressed(KEYState::Right))
+	{
+
+		tr.p.x += 0.1f;
+
+		GetComponent<ComTransform>()->SetTransform(tr);
+	}
+
+	if (GKEYBOARD.IsKeyPressed(KEYState::Up))
+	{
+
+		tr.p.y += 0.1f;
+
+		GetComponent<ComTransform>()->SetTransform(tr);
+	}
+}
+
+void TestObject::TextChange()
+{
+	font->m_Text = L"Changed Text";
 }

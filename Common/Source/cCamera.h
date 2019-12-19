@@ -18,7 +18,7 @@ public:
 	const physx::PxMat44* GetViewMatrix() const { return &m_ViewMat; }
 	const DirectX::XMFLOAT3 GetEyePos() const { return m_EyePos; }
 private:
-	physx::PxMat44			m_ViewMat;
+	physx::PxMat44		m_ViewMat;
 	DirectX::XMFLOAT3	m_EyePos;
 	POINT				m_CurrMouse;
 	POINT				m_PrevMouse;

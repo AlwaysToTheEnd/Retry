@@ -13,6 +13,8 @@ public:
 
 	virtual void Init() override;
 	virtual void Update() override;
+
+	void TextChange();
 private:
 	ComAnimator*	ani;
 	ComFont*		font;
