@@ -8,18 +8,125 @@
 
 struct ObjectConstants
 {
-	physx::PxMat44		world;
+	physx::PxMat44	world;
 	unsigned int	materialIndex = 0;
 	int				aniBoneIndex = -1;
 	unsigned int	meshType;
 	unsigned int	primitive;
 };
 
-struct RenderInfo
+struct OnlyTexObjectConstants
 {
 	physx::PxMat44	world;
-	std::string	meshName;
-	int			aniBoneIndex = -1;
+	int				textureIndex = -1;
+	int				pad0;
+	int				pad1;
+	int				pas2;
+};
+
+enum RENDER_TYPE
+{
+	RENDER_NONE,
+	RENDER_MESH,
+	RENDER_BOX,
+	RENDER_SPHERE,
+	RENDER_PLANE,
+	RENDER_TEX_PLANE,
+};
+
+struct RenderMeshInfo
+{
+	int	aniBoneIndex = -1;
+};
+
+struct RenderPointInfo
+{
+	DirectX::XMFLOAT3 size;
+	DirectX::XMFLOAT4 color;
+};
+
+struct RenderTexturePointInfo
+{
+	DirectX::XMFLOAT3 size;
+};
+
+struct RenderInfo
+{
+	RenderInfo(RENDER_TYPE _type)
+		:type(_type)
+	{
+		
+	}
+
+	RenderInfo(const RenderInfo& info)
+	{
+		type = info.type;
+		world = info.world;
+		meshOrTextureName = info.meshOrTextureName;
+
+		switch (info.type)
+		{
+		case RENDER_NONE:
+			break;
+		case RENDER_MESH:
+			mesh = info.mesh;
+			break;
+		case RENDER_BOX:
+		case RENDER_SPHERE:
+		case RENDER_PLANE:
+			point = info.point;
+			break;
+		case RENDER_TEX_PLANE:
+			texPoint = info.texPoint;
+			break;
+		default:
+			break;
+		}
+	}
+
+	~RenderInfo()
+	{
+
+	}
+
+	RenderInfo& operator=(const RenderInfo& info)
+	{
+		type = info.type;
+		world = info.world;
+		meshOrTextureName = info.meshOrTextureName;
+
+		switch (info.type)
+		{
+		case RENDER_NONE:
+			break;
+		case RENDER_MESH:
+			mesh = info.mesh;
+			break;
+		case RENDER_BOX:
+		case RENDER_SPHERE:
+		case RENDER_PLANE:
+			point = info.point;
+			break;
+		case RENDER_TEX_PLANE:
+			texPoint = info.texPoint;
+			break;
+		default:
+			break;
+		}
+
+		return *this;
+	}
+
+	RENDER_TYPE		type;
+	physx::PxMat44	world;
+	std::string		meshOrTextureName;
+
+	union
+	{
+		RenderMeshInfo mesh;
+		RenderPointInfo point;
+		RenderTexturePointInfo texPoint;
+	};
 };
 
 struct Material

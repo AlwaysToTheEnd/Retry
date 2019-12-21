@@ -337,7 +337,7 @@ void GraphicDX12::LoadTextureFromFolder(const std::vector<std::wstring>& targetT
 
 		if (CheckFileExtension(extension) == EXTENSIONTYPE::EXE_TEXTURE)
 		{
-			texTurePaths[fileName]=temp;
+			texTurePaths[fileName] = temp;
 		}
 	}
 
@@ -408,7 +408,7 @@ void GraphicDX12::LoadMeshAndMaterialFromFolder(const std::vector<std::wstring>&
 			baseIndexOffset = static_cast<UINT>(combinedSkinnedIndices.size());
 
 			xfileP.LoadXfile(it, skinnedVertices, indices, subsets, mats, skinnedData);
-			
+
 			for (auto& it2 : subsets)
 			{
 				UINT faceCount = 0;
@@ -510,7 +510,7 @@ void GraphicDX12::LoadFontFromFolder(const std::vector<std::wstring>& targetFont
 	}
 
 	m_FontManager = make_unique<DX12FontManager>();
-	m_FontManager->Init(m_D3dDevice.Get(), m_CommandQueue.Get(), 
+	m_FontManager->Init(m_D3dDevice.Get(), m_CommandQueue.Get(),
 		files, m_BackBufferFormat, m_DepthStencilFormat);
 
 	m_FontManager->Resize(m_ClientWidth, m_ClientHeight);
@@ -524,6 +524,7 @@ void GraphicDX12::ReadyWorksEnd()
 	BuildRootSignature();
 	BuildShadersAndInputLayout();
 	BuildPSOs();
+	m_Box_Sphere_Vertices = make_unique<UploadBuffer<B_S_Vertex>>(m_D3dDevice.Get(), 100, false);
 
 	ThrowIfFailed(m_CommandList->Close());
 	ID3D12CommandList* cmdsLists[] = { m_CommandList.Get() };
@@ -567,8 +568,7 @@ void GraphicDX12::Draw()
 
 	ThrowIfFailed(cmdListAlloc->Reset());
 
-	ThrowIfFailed(m_CommandList->Reset(cmdListAlloc,
-		m_PSOs["base"].Get()));
+	ThrowIfFailed(m_CommandList->Reset(cmdListAlloc, nullptr));
 
 	m_CommandList->RSSetViewports(1, &m_ScreenViewport);
 	m_CommandList->RSSetScissorRects(1, &m_ScissorRect);
@@ -579,6 +579,7 @@ void GraphicDX12::Draw()
 	m_CommandList->ClearRenderTargetView(CurrentBackBufferView(), Colors::Aqua, 0, nullptr);
 	m_CommandList->ClearDepthStencilView(DepthStencilView(), D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
 
+	m_CommandList->SetPipelineState(m_PSOs["base"].Get());
 	ID3D12DescriptorHeap* descriptorHeaps[] = { m_TextureBuffer->GetHeap() };
 	m_CommandList->SetDescriptorHeaps(1, descriptorHeaps);
 	m_CommandList->OMSetRenderTargets(1, &CurrentBackBufferView(), true, &DepthStencilView());
@@ -590,7 +591,7 @@ void GraphicDX12::Draw()
 	m_CommandList->SetGraphicsRootConstantBufferView(PASS_CB, m_FrameResource->passCB->Resource()->GetGPUVirtualAddress());
 	m_CommandList->SetGraphicsRootDescriptorTable(TEXTURE_TABLE, m_TextureBuffer->GetHeap()->GetGPUDescriptorHandleForHeapStart());
 
-	DrawObjects();
+	DrawMeshObjects();
 	m_FontManager->RenderCommandWrite(m_CommandList.Get(), m_ReservedFonts);
 
 	m_CommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(),
@@ -631,7 +632,7 @@ D3D12_CPU_DESCRIPTOR_HANDLE GraphicDX12::DepthStencilView() const
 
 void GraphicDX12::BuildFrameResources()
 {
-	m_FrameResource = make_unique<FrameResource>(m_D3dDevice.Get(), 1, 100, BONEMAXMATRIX*100);
+	m_FrameResource = make_unique<FrameResource>(m_D3dDevice.Get(), 1, 100, BONEMAXMATRIX * 100);
 }
 
 void GraphicDX12::BuildRootSignature()
@@ -700,15 +701,15 @@ void GraphicDX12::BuildRootSignature()
 	CD3DX12_DESCRIPTOR_RANGE texTable;
 	texTable.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, m_TextureBuffer->GetTexturesNum(), 0);
 
-	CD3DX12_ROOT_PARAMETER slotRootParam[ROOT_COUNT];
-	slotRootParam[MATERIAL_BUFFER].InitAsShaderResourceView(0, 1);
-	slotRootParam[PASS_CB].InitAsConstantBufferView(0);
-	slotRootParam[OBJECT_CB].InitAsConstantBufferView(1);
-	slotRootParam[ANIBONE_BUFFER].InitAsConstantBufferView(2);
-	slotRootParam[TEXTURE_TABLE].InitAsDescriptorTable(1, &texTable, D3D12_SHADER_VISIBILITY_PIXEL);
+	CD3DX12_ROOT_PARAMETER baseRootParam[ROOT_COUNT];
+	baseRootParam[MATERIAL_BUFFER].InitAsShaderResourceView(0, 1);
+	baseRootParam[PASS_CB].InitAsConstantBufferView(0);
+	baseRootParam[OBJECT_CB].InitAsConstantBufferView(1);
+	baseRootParam[ANIBONE_BUFFER].InitAsConstantBufferView(2);
+	baseRootParam[TEXTURE_TABLE].InitAsDescriptorTable(1, &texTable, D3D12_SHADER_VISIBILITY_PIXEL);
 
 	CD3DX12_ROOT_SIGNATURE_DESC rootDesc;
-	rootDesc.Init(ROOT_COUNT, slotRootParam, _countof(staticSamplers),
+	rootDesc.Init(ROOT_COUNT, baseRootParam, _countof(staticSamplers),
 		staticSamplers, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
 	ComPtr<ID3DBlob> serializedRootSig = nullptr;
@@ -725,20 +726,45 @@ void GraphicDX12::BuildRootSignature()
 
 	ThrowIfFailed(m_D3dDevice->CreateRootSignature(0, serializedRootSig->GetBufferPointer(),
 		serializedRootSig->GetBufferSize(), IID_PPV_ARGS(m_RootSignature.GetAddressOf())));
+
+	///////////////////////////////////////////////////////////////////////////
+	CD3DX12_ROOT_PARAMETER pointRenderRootParam[3];
+	pointRenderRootParam[0].InitAsShaderResourceView(0, 1);
+	pointRenderRootParam[1].InitAsConstantBufferView(0);
+	pointRenderRootParam[2].InitAsDescriptorTable(1, &texTable, D3D12_SHADER_VISIBILITY_PIXEL);
+
+	CD3DX12_ROOT_SIGNATURE_DESC pointRenderrootDesc;
+	pointRenderrootDesc.Init(3, pointRenderRootParam, _countof(staticSamplers),
+		staticSamplers, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+
+	hr = D3D12SerializeRootSignature(&pointRenderrootDesc, D3D_ROOT_SIGNATURE_VERSION_1,
+		serializedRootSig.GetAddressOf(), error.GetAddressOf());
+
+	if (error != nullptr)
+	{
+		::OutputDebugStringA((char*)error->GetBufferPointer());
+	}
+	ThrowIfFailed(hr);
+
+	ThrowIfFailed(m_D3dDevice->CreateRootSignature(0, serializedRootSig->GetBufferPointer(),
+		serializedRootSig->GetBufferSize(), IID_PPV_ARGS(m_PointRenderRootSignature.GetAddressOf())));
 }
 
 void GraphicDX12::BuildShadersAndInputLayout()
 {
 	string textureNum = to_string(m_TextureBuffer->GetTexturesNum());
 	string boneMaxMatrixNum = to_string(BONEMAXMATRIX);
-	D3D_SHADER_MACRO macros[] = { 
-		"MAXTEXTURE", textureNum.c_str(), 
+	D3D_SHADER_MACRO macros[] = {
+		"MAXTEXTURE", textureNum.c_str(),
 		"BONEMAXMATRIX", boneMaxMatrixNum.c_str(),
 		"SKINNED_VERTEX_SAHDER",NULL,
 		NULL, NULL };
 
 	m_Shaders["baseVS"] = CompileShader(L"../Common/MainShaders/BaseShader.hlsl", macros, "VS", "vs_5_1");
 	m_Shaders["basePS"] = CompileShader(L"../Common/MainShaders/BaseShader.hlsl", macros, "PS", "ps_5_1");
+	
+	m_Shaders["pointVS"] = CompileShader(L"../Common/MainShaders/BaseShader.hlsl", macros, "VS", "ps_5_1");
+	m_Shaders["pointPS"] = CompileShader(L"../Common/MainShaders/BaseShader.hlsl", macros, "PS", "ps_5_1");
 
 	m_NTVertexInputLayout =
 	{
@@ -747,6 +773,14 @@ void GraphicDX12::BuildShadersAndInputLayout()
 		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 24, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
 		{ "WEIGHTS", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 32, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
 		{ "BONEINDICES", 0, DXGI_FORMAT_R8G8B8A8_UINT, 0, 44, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
+	};
+
+	m_BSPointInputLayout =
+	{
+		{ "TYPE" ,0,DXGI_FORMAT_R32_UINT,0,0,D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,0},
+		{ "CBINDEX", 0, DXGI_FORMAT_R32_UINT, 0, 4, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		{ "SIZE", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 8, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 20, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
 	};
 }
 
@@ -792,6 +826,20 @@ void GraphicDX12::BuildPSOs()
 	opaquePsoDesc.SampleDesc.Quality = m_4xMsaaState ? (m_4xmsaaQuality - 1) : 0;
 	opaquePsoDesc.DSVFormat = m_DepthStencilFormat;
 	ThrowIfFailed(m_D3dDevice->CreateGraphicsPipelineState(&opaquePsoDesc, IID_PPV_ARGS(&m_PSOs["base"])));
+
+	opaquePsoDesc.pRootSignature = m_PointRenderRootSignature.Get();
+	opaquePsoDesc.VS =
+	{
+		reinterpret_cast<BYTE*>(m_Shaders["baseVS"]->GetBufferPointer()),
+		m_Shaders["baseVS"]->GetBufferSize()
+	};
+	opaquePsoDesc.PS =
+	{
+		reinterpret_cast<BYTE*>(m_Shaders["basePS"]->GetBufferPointer()),
+		m_Shaders["basePS"]->GetBufferSize()
+	};
+	//opaquePsoDesc.GS =
+	ThrowIfFailed(m_D3dDevice->CreateGraphicsPipelineState(&opaquePsoDesc, IID_PPV_ARGS(&m_PSOs["point"])));
 }
 
 void GraphicDX12::UpdateMainPassCB()
@@ -843,28 +891,74 @@ void GraphicDX12::UpdateObjectCB()
 	m_RenderObjects.clear();
 	m_RenderObjectsSubmesh.clear();
 
+	auto meshObjectCB = m_FrameResource->meshObjectCB.get();
+	auto pointCB = m_FrameResource->pointCB.get();
+	m_NumRenderPointObjects = 0;
+
 	for (auto& it : m_ReservedRenders)
 	{
-		MeshObject& mesh = m_Meshs.find(it.meshName)->second;
-		ObjectConstants object;
-		object.world = it.world;
-		object.meshType = mesh.type;
-		object.aniBoneIndex = it.aniBoneIndex;
-		object.primitive = mesh.primitiveType;
-
-		for (auto& it2 : mesh.subs)
+		switch (it.type)
 		{
-			object.materialIndex = m_Materials->GetIndex(it2.second.material);
-			m_RenderObjects.push_back(object);
-			m_RenderObjectsSubmesh.push_back(&it2.second);
+		case RENDER_MESH:
+		{
+			MeshObject& mesh = m_Meshs.find(it.meshOrTextureName)->second;
+			ObjectConstants object;
+			object.world = it.world;
+			object.meshType = mesh.type;
+			object.aniBoneIndex = it.mesh.aniBoneIndex;
+			object.primitive = mesh.primitiveType;
+
+			for (auto& it2 : mesh.subs)
+			{
+				object.materialIndex = m_Materials->GetIndex(it2.second.material);
+				m_RenderObjects.push_back(object);
+				m_RenderObjectsSubmesh.push_back(&it2.second);
+			}
+		}
+		break;
+		case RENDER_BOX:
+		case RENDER_SPHERE:
+		case RENDER_PLANE:
+		{
+			B_S_Vertex temp;
+			OnlyTexObjectConstants OTObjectConstnat;
+
+			temp.type = it.type;
+			temp.cbIndex = m_NumRenderPointObjects;
+			temp.color = it.point.color;
+			temp.size = it.point.size;
+			m_Box_Sphere_Vertices->CopyData(m_NumRenderPointObjects, &temp);
+
+			OTObjectConstnat.world = it.world;
+			pointCB->CopyData(m_NumRenderPointObjects, &OTObjectConstnat);
+			m_NumRenderPointObjects++;
+		}
+		break;
+		case RENDER_TEX_PLANE:
+		{
+			B_S_Vertex temp;
+			OnlyTexObjectConstants OTObjectConstnat;
+
+			temp.type = it.type;
+			temp.cbIndex = m_NumRenderPointObjects;
+			temp.size = it.texPoint.size;
+			m_Box_Sphere_Vertices->CopyData(m_NumRenderPointObjects, &temp);
+
+			OTObjectConstnat.world = it.world;
+			OTObjectConstnat.textureIndex = m_TextureBuffer->GetTextureIndex(it.meshOrTextureName);
+			pointCB->CopyData(m_NumRenderPointObjects, &OTObjectConstnat);
+			m_NumRenderPointObjects++;
+		}
+		break;
+		default:
+			assert(false);
+			break;
 		}
 	}
 
-	auto objectCB = m_FrameResource->objectCB.get();
-
 	for (size_t i = 0; i < m_RenderObjects.size(); i++)
 	{
-		objectCB->CopyData(i, m_RenderObjects[i]);
+		meshObjectCB->CopyData(i, m_RenderObjects[i]);
 	}
 }
 
@@ -879,17 +973,17 @@ void GraphicDX12::UpdateAniBoneBuffer()
 	}
 }
 
-void GraphicDX12::DrawObjects()
+void GraphicDX12::DrawMeshObjects()
 {
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView = {};
 	D3D12_INDEX_BUFFER_VIEW indexBufferView = {};
 	indexBufferView.Format = DXGI_FORMAT_R32_UINT;
 
-	auto ObjectCBVritualAD = m_FrameResource->objectCB->Resource()->GetGPUVirtualAddress();
+	auto ObjectCBVritualAD = m_FrameResource->meshObjectCB->Resource()->GetGPUVirtualAddress();
 	auto AniBoneCBVritualAD = m_FrameResource->aniBoneMatBuffer->Resource()->GetGPUVirtualAddress();
-	const UINT ObjectStrideSize = m_FrameResource->objectCB->GetElementByteSize();
+	const UINT ObjectStrideSize = m_FrameResource->meshObjectCB->GetElementByteSize();
 	const UINT AniBoneStrideSize = m_FrameResource->aniBoneMatBuffer->GetElementByteSize();
-	
+
 	CGH::MESH_TYPE currType = CGH::MESH_NONE;
 	D3D_PRIMITIVE_TOPOLOGY currPrimitive = D3D_PRIMITIVE_TOPOLOGY::D3D_PRIMITIVE_TOPOLOGY_UNDEFINED;
 
@@ -921,13 +1015,13 @@ void GraphicDX12::DrawObjects()
 
 			currType = static_cast<CGH::MESH_TYPE>(m_RenderObjects[i].meshType);
 		}
-	
+
 		if (currPrimitive != m_RenderObjects[i].primitive)
 		{
 			currPrimitive = static_cast<D3D_PRIMITIVE_TOPOLOGY>(m_RenderObjects[i].primitive);
 			m_CommandList->IASetPrimitiveTopology(currPrimitive);
 		}
-		
+
 		m_CommandList->SetGraphicsRootConstantBufferView(OBJECT_CB, ObjectCBVritualAD);
 
 		if (m_RenderObjects[i].aniBoneIndex != -1)
@@ -940,6 +1034,21 @@ void GraphicDX12::DrawObjects()
 			m_RenderObjectsSubmesh[i]->indexOffset, m_RenderObjectsSubmesh[i]->vertexOffset, 0);
 		ObjectCBVritualAD += ObjectStrideSize;
 	}
+}
+
+void GraphicDX12::DrawPointObjects()
+{
+	D3D12_VERTEX_BUFFER_VIEW vertexBufferView = {};
+
+	vertexBufferView.BufferLocation = m_Box_Sphere_Vertices->Resource()->GetGPUVirtualAddress();
+	vertexBufferView.SizeInBytes = m_Box_Sphere_Vertices->GetBufferSize();
+	vertexBufferView.StrideInBytes = m_Box_Sphere_Vertices->GetElementByteSize();
+
+	D3D_PRIMITIVE_TOPOLOGY currPrimitive = D3D_PRIMITIVE_TOPOLOGY::D3D_PRIMITIVE_TOPOLOGY_POINTLIST;
+
+	m_CommandList->IASetVertexBuffers(0, 1, &vertexBufferView);
+
+	m_CommandList->DrawInstanced(m_NumRenderPointObjects, 1, 0, 0);
 }
 
 ComPtr<ID3DBlob> GraphicDX12::CompileShader(

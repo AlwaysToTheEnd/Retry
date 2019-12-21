@@ -88,7 +88,10 @@ public:
 	ComRenderer(GameObject& gameObject, int ID,
 		std::vector<RenderInfo>* reservedRenderObjects)
 		: IComponent(COMPONENTTYPE::COM_RENDERER, gameObject, ID)
+		, m_RenderInfo(RENDER_NONE)
 	{
+		
+
 		if (m_ReservedRenderObjects == nullptr)
 		{
 			m_ReservedRenderObjects = reservedRenderObjects;
@@ -97,8 +100,13 @@ public:
 	virtual ~ComRenderer() = default;
 
 	virtual void Update() override;
+	void SetRenderInfo(const RenderInfo& info) { m_RenderInfo = info; }
 
 private:
+	void RenderMesh();
+
+private:
+	RenderInfo	m_RenderInfo;
 	static std::vector<RenderInfo>* m_ReservedRenderObjects;
 };
 
@@ -125,5 +133,4 @@ public:
 
 private:
 	static std::vector<RenderFont>* m_ReservedFonts;
-	
 };

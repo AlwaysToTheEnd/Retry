@@ -140,17 +140,7 @@ std::unique_ptr<IComponent> PhysX4_1::CreateComponent(COMPONENTTYPE type, GameOb
 	{
 	case COMPONENTTYPE::COM_DYNAMIC:
 	{
-		//test Codes.
-		PxShape* shape = m_Physics->createShape(PxSphereGeometry(1), *m_Material, true);
-
 		rigidBody = m_Physics->createRigidDynamic(identityTransform);
-
-		//test Codes.
-		rigidBody->attachShape(*shape);
-		PxRigidBodyExt::updateMassAndInertia(*reinterpret_cast<PxRigidBody*>(rigidBody), 10.0f);
-
-		shape->release();
-
 		m_Dynamics.AddData(rigidBody);
 		newComponent = new ComRigidDynamic(gameObject, id, reinterpret_cast<PxRigidDynamic*>(rigidBody));
 	}

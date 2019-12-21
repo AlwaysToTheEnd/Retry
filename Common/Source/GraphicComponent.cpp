@@ -124,16 +124,41 @@ bool ComAnimator::SelectAnimation(const std::string& name)
 
 void ComRenderer::Update()
 {
-	RenderInfo addInfo;
 	auto comTransform = m_TargetGameObject->GetComponent<ComTransform>();
+
+	assert(comTransform != nullptr);
+
+	DirectX::XMMATRIX mat = DirectX::XMLoadFloat4x4(comTransform->GetMatrix());
+	DirectX::XMStoreFloat4x4(m_RenderInfo.world, DirectX::XMMatrixTranspose(mat));
+
+	switch (m_RenderInfo.type)
+	{
+	case RENDER_MESH:
+	{
+		RenderMesh();
+	}
+	break;
+	case RENDER_BOX:
+	case RENDER_SPHERE:
+	case RENDER_PLANE:
+	case RENDER_TEX_PLANE:
+		break;
+	default:
+		assert(false);
+		break;
+	}
+
+	m_ReservedRenderObjects->push_back(m_RenderInfo);
+}
+
+void ComRenderer::RenderMesh()
+{
 	auto comMesh = m_TargetGameObject->GetComponent<ComMesh>();
 	auto comAnimator = m_TargetGameObject->GetComponent<ComAnimator>();
 
-	if (comMesh != nullptr && comTransform != nullptr)
+	if (comMesh != nullptr )
 	{
-		DirectX::XMMATRIX mat = DirectX::XMLoadFloat4x4(comTransform->GetMatrix());
-		addInfo.meshName = comMesh->GetCurrMeshName();
-		DirectX::XMStoreFloat4x4(addInfo.world, DirectX::XMMatrixTranspose(mat));
+		m_RenderInfo.meshOrTextureName = comMesh->GetCurrMeshName();
 	}
 	else
 	{
@@ -142,14 +167,13 @@ void ComRenderer::Update()
 
 	if (comAnimator != nullptr)
 	{
-		addInfo.aniBoneIndex = comAnimator->GetBoneMatStoredIndex();
+		m_RenderInfo.mesh.aniBoneIndex = comAnimator->GetBoneMatStoredIndex();
 	}
-
-	m_ReservedRenderObjects->push_back(addInfo);
 }
 
 void ComFont::Update()
 {
+	//#TODO
 	RenderFont addedFont(L"baseFont.spritefont", m_Text);
 	addedFont.pos.x = m_OffsetPos.x;
 	addedFont.pos.y = m_OffsetPos.y;

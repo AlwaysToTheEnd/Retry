@@ -238,5 +238,8 @@
     <None Include="..\Common\MainShaders\BaseShader.hlsl">
       <Filter>Shader</Filter>
     </None>
+    <None Include="..\Common\MainShaders\pointShader.hlsl">
+      <Filter>Shader</Filter>
+    </None>
   </ItemGroup>
 </Project>

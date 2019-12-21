@@ -86,6 +86,8 @@ public:
 	}
 
 	UINT GetElementByteSize() const { return m_ElementByteSize; }
+	UINT GetBufferSize() const { return m_ElementByteSize * m_NumElement; }
+	UINT GetNumElement() const { return m_NumElement; }
 
 private:
 	ComPtr<ID3D12Resource> m_UploadBuffer;
@@ -104,7 +106,8 @@ struct FrameResource
 			D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(cmdListAlloc.GetAddressOf())));
 
 		passCB = std::make_unique<UploadBuffer<PassConstants>>(device, passCount, true);
-		objectCB = std::make_unique<UploadBuffer<ObjectConstants>>(device, objectCount, true);
+		meshObjectCB = std::make_unique<UploadBuffer<ObjectConstants>>(device, objectCount, true);
+		pointCB =std::make_unique<UploadBuffer<OnlyTexObjectConstants>>(device, objectCount, true);
 		aniBoneMatBuffer = std::make_unique<UploadBuffer<AniBoneMat>>(device, aniBoneSetNum, true);
 	}
 
@@ -114,7 +117,8 @@ struct FrameResource
 	ComPtr<ID3D12CommandAllocator> cmdListAlloc;
 	
 	std::unique_ptr<UploadBuffer<PassConstants>> passCB = nullptr;
-	std::unique_ptr<UploadBuffer<ObjectConstants>> objectCB = nullptr;
+	std::unique_ptr<UploadBuffer<ObjectConstants>> meshObjectCB = nullptr;
+	std::unique_ptr<UploadBuffer<OnlyTexObjectConstants>> pointCB = nullptr;
 	std::unique_ptr<UploadBuffer<AniBoneMat>> aniBoneMatBuffer = nullptr;
 };
 
@@ -177,7 +181,8 @@ private:
 	void UpdateAniBoneBuffer();
 
 private:
-	void DrawObjects();
+	void DrawMeshObjects();
+	void DrawPointObjects();
 
 private:
 	ComPtr<ID3DBlob> CompileShader(	const std::wstring& filename,
@@ -225,8 +230,10 @@ private:
 private:
 	std::unordered_map<std::string, ComPtr<ID3D12PipelineState>>	m_PSOs;
 	std::vector<D3D12_INPUT_ELEMENT_DESC>							m_NTVertexInputLayout;
+	std::vector<D3D12_INPUT_ELEMENT_DESC>							m_BSPointInputLayout;
 	std::unordered_map<std::string, ComPtr<ID3DBlob>>				m_Shaders;
 	ComPtr<ID3D12RootSignature>										m_RootSignature = nullptr;
+	ComPtr<ID3D12RootSignature>										m_PointRenderRootSignature = nullptr;
 	
 	PassConstants													m_MainPassCB;
 	std::unique_ptr<cTextureBuffer>									m_TextureBuffer;
@@ -241,12 +248,17 @@ private:
 
 	std::vector<AniBoneMat>							m_ReservedAniBones;
 	std::vector<RenderInfo>							m_ReservedRenders;
+
 	std::vector<ObjectConstants>					m_RenderObjects;
 	std::vector<const SubmeshData*>					m_RenderObjectsSubmesh;
+	unsigned int									m_NumRenderPointObjects;
 
 private:
 	std::unique_ptr<cDefaultBuffer<Vertex>>			m_VertexBuffer;
 	std::unique_ptr<cDefaultBuffer<UINT>>			m_IndexBuffer;
+
 	std::unique_ptr<cDefaultBuffer<SkinnedVertex>>	m_SkinnedVertexBuffer;
 	std::unique_ptr<cDefaultBuffer<UINT>>			m_SkinnedIndexBuffer;
+
+	std::unique_ptr<UploadBuffer<B_S_Vertex>>		m_Box_Sphere_Vertices;
 };

@@ -24,3 +24,12 @@ struct SkinnedVertex
 	DirectX::XMFLOAT3	boneWeights;
 	unsigned char		boneIndices[4];
 };
+
+
+struct B_S_Vertex
+{
+	unsigned int		type = 0;
+	unsigned int		cbIndex = 0;
+	DirectX::XMFLOAT3	size = { 0,0,0 };
+	DirectX::XMFLOAT4	color = { 0,0,0,0 };
+};

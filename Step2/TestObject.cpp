@@ -11,9 +11,10 @@ using namespace physx;
 
 void TestObject::Init()
 {
+	RenderInfo renderInfo(RENDER_MESH);
 	AddComponent<ComTransform>();
 	auto mesh = AddComponent<ComMesh>();
-	AddComponent<ComRenderer>();
+	AddComponent<ComRenderer>()->SetRenderInfo(renderInfo);
 	ani= AddComponent<ComAnimator>();
 	auto rigidCom = AddComponent<ComRigidDynamic>();
 	auto rigidBody = rigidCom->GetRigidBody();
