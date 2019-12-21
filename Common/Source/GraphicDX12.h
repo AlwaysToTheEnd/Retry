@@ -260,5 +260,5 @@ private:
 	std::unique_ptr<cDefaultBuffer<SkinnedVertex>>	m_SkinnedVertexBuffer;
 	std::unique_ptr<cDefaultBuffer<UINT>>			m_SkinnedIndexBuffer;
 
-	std::unique_ptr<UploadBuffer<B_S_Vertex>>		m_Box_Sphere_Vertices;
+	std::unique_ptr<UploadBuffer<B_P_Vertex>>		m_Box_Plane_Vertices;
 };

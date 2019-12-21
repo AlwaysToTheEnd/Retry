@@ -139,7 +139,6 @@ void ComRenderer::Update()
 	}
 	break;
 	case RENDER_BOX:
-	case RENDER_SPHERE:
 	case RENDER_PLANE:
 	case RENDER_TEX_PLANE:
 		break;

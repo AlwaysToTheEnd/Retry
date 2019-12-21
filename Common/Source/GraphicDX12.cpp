@@ -524,7 +524,7 @@ void GraphicDX12::ReadyWorksEnd()
 	BuildRootSignature();
 	BuildShadersAndInputLayout();
 	BuildPSOs();
-	m_Box_Sphere_Vertices = make_unique<UploadBuffer<B_S_Vertex>>(m_D3dDevice.Get(), 100, false);
+	m_Box_Plane_Vertices = make_unique<UploadBuffer<B_P_Vertex>>(m_D3dDevice.Get(), 100, false);
 
 	ThrowIfFailed(m_CommandList->Close());
 	ID3D12CommandList* cmdsLists[] = { m_CommandList.Get() };
@@ -917,17 +917,16 @@ void GraphicDX12::UpdateObjectCB()
 		}
 		break;
 		case RENDER_BOX:
-		case RENDER_SPHERE:
 		case RENDER_PLANE:
 		{
-			B_S_Vertex temp;
+			B_P_Vertex temp;
 			OnlyTexObjectConstants OTObjectConstnat;
 
 			temp.type = it.type;
 			temp.cbIndex = m_NumRenderPointObjects;
 			temp.color = it.point.color;
 			temp.size = it.point.size;
-			m_Box_Sphere_Vertices->CopyData(m_NumRenderPointObjects, &temp);
+			m_Box_Plane_Vertices->CopyData(m_NumRenderPointObjects, &temp);
 
 			OTObjectConstnat.world = it.world;
 			pointCB->CopyData(m_NumRenderPointObjects, &OTObjectConstnat);
@@ -936,13 +935,13 @@ void GraphicDX12::UpdateObjectCB()
 		break;
 		case RENDER_TEX_PLANE:
 		{
-			B_S_Vertex temp;
+			B_P_Vertex temp;
 			OnlyTexObjectConstants OTObjectConstnat;
 
 			temp.type = it.type;
 			temp.cbIndex = m_NumRenderPointObjects;
 			temp.size = it.texPoint.size;
-			m_Box_Sphere_Vertices->CopyData(m_NumRenderPointObjects, &temp);
+			m_Box_Plane_Vertices->CopyData(m_NumRenderPointObjects, &temp);
 
 			OTObjectConstnat.world = it.world;
 			OTObjectConstnat.textureIndex = m_TextureBuffer->GetTextureIndex(it.meshOrTextureName);
@@ -1040,9 +1039,9 @@ void GraphicDX12::DrawPointObjects()
 {
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView = {};
 
-	vertexBufferView.BufferLocation = m_Box_Sphere_Vertices->Resource()->GetGPUVirtualAddress();
-	vertexBufferView.SizeInBytes = m_Box_Sphere_Vertices->GetBufferSize();
-	vertexBufferView.StrideInBytes = m_Box_Sphere_Vertices->GetElementByteSize();
+	vertexBufferView.BufferLocation = m_Box_Plane_Vertices->Resource()->GetGPUVirtualAddress();
+	vertexBufferView.SizeInBytes = m_Box_Plane_Vertices->GetBufferSize();
+	vertexBufferView.StrideInBytes = m_Box_Plane_Vertices->GetElementByteSize();
 
 	D3D_PRIMITIVE_TOPOLOGY currPrimitive = D3D_PRIMITIVE_TOPOLOGY::D3D_PRIMITIVE_TOPOLOGY_POINTLIST;
 

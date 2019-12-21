@@ -38,8 +38,8 @@ cbuffer cbPass : register(b0)
 
 struct VertexIn
 {
-	nointerpolation uint type : TYPE;
-	nointerpolation uint cbIndex : CBINDEX;
+	uint	type : TYPE;
+	uint	cbIndex : CBINDEX;
 	float3	size : SIZE;
 	float4	color : COLOR;
 };
@@ -49,23 +49,24 @@ struct VertexOut
 	float4	PosH : SV_POSITION;
 	float4	Color : COLOR0;
 	float3	Normal : NORMAL;
-	float2	TexC : TEXCOORD0;
-	nointerpolation uint TexIndex : MATNDEX;
+	nointerpolation int TexIndex : MATNDEX;
 };
 
-VertexOut VS(VertexIn vin)
+VertexIn VS(VertexIn vin)
 {
-	VertexOut vout = (VertexOut)0.0f;
-
-	vout.TexC = vin.TexC;
-
-	vout.PosH = mul(float4(vin.PosL, 1.0f), World);
-	vout.PosH = mul(vout.PosH, gViewProj);
-
-	return vout;
+	return vin;
 }
 
-[maxvertexcount(8)]
+//enum RENDER_TYPE
+//{
+//	RENDER_NONE,
+//	RENDER_MESH,
+//	RENDER_BOX,
+//	RENDER_PLANE,
+//	RENDER_TEX_PLANE,
+//};
+
+[maxvertexcount(16)]
 void GS(point VertexIn input[1], inout TriangleStream<VertexOut> output)
 {
 	switch (input[0].type)
@@ -78,10 +79,10 @@ void GS(point VertexIn input[1], inout TriangleStream<VertexOut> output)
 			break;
 		case 4:
 			break;
-		case 5:
-			break;
 		}
 	}
+
+	output.RestartStrip();
 }
 
 float4 PS(VertexOut pin) : SV_Target

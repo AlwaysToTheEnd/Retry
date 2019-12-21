@@ -29,7 +29,6 @@ enum RENDER_TYPE
 	RENDER_NONE,
 	RENDER_MESH,
 	RENDER_BOX,
-	RENDER_SPHERE,
 	RENDER_PLANE,
 	RENDER_TEX_PLANE,
 };
@@ -72,7 +71,6 @@ struct RenderInfo
 			mesh = info.mesh;
 			break;
 		case RENDER_BOX:
-		case RENDER_SPHERE:
 		case RENDER_PLANE:
 			point = info.point;
 			break;
@@ -103,7 +101,6 @@ struct RenderInfo
 			mesh = info.mesh;
 			break;
 		case RENDER_BOX:
-		case RENDER_SPHERE:
 		case RENDER_PLANE:
 			point = info.point;
 			break;
