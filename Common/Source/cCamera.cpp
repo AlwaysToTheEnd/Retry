@@ -4,7 +4,7 @@ using namespace DirectX;
 cCamera::cCamera()
 	: m_RotX(0)
 	, m_RotY(0)
-	, m_Distance(10)
+	, m_Distance(100)
 	, m_EyePos(0,0,0)
 	, m_ViewMat(physx::PxIDENTITY::PxIdentity)
 {

@@ -832,7 +832,7 @@ void GraphicDX12::UpdateMainPassCB()
 	}
 
 	rayOrigin = XMVector3TransformCoord(rayOrigin, invView);
-	ray = XMVector3TransformNormal(ray, invView);
+	ray = XMVector3Normalize(XMVector3TransformNormal(ray, invView));
 
 	XMStoreFloat3(&m_RayOrigin, rayOrigin);
 	XMStoreFloat3(&m_Ray, ray);

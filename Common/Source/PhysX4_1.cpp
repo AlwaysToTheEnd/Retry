@@ -112,7 +112,7 @@ bool PhysX4_1::Init(void* graphicDevicePtr)
 	m_Cooking = PxCreateCooking(PX_PHYSICS_VERSION, *m_Foundation,
 		PxCookingParams(PxTolerancesScale()));
 
-	m_Material = m_Physics->createMaterial(0.0f, 0.0f, 0.0f);
+	m_Material = m_Physics->createMaterial(0.5f, 0.5f, 0.6f);
 	auto ground = PxCreatePlane(*m_Physics, PxPlane(0, 1, 0, 0), *m_Material);
 
 	m_Scene->addActor(*ground);
@@ -141,7 +141,7 @@ std::unique_ptr<IComponent> PhysX4_1::CreateComponent(COMPONENTTYPE type, GameOb
 	case COMPONENTTYPE::COM_DYNAMIC:
 	{
 		//test Codes.
-		PxShape* shape = m_Physics->createShape(PxBoxGeometry(PxVec3(1, 1, 1)), *m_Material, true);
+		PxShape* shape = m_Physics->createShape(PxSphereGeometry(1), *m_Material, true);
 
 		rigidBody = m_Physics->createRigidDynamic(identityTransform);
 
@@ -191,8 +191,10 @@ void PhysX4_1::ExcuteFuncOfClickedObject(float origin_x, float origin_y, float o
 		PxVec3 origin(origin_x, origin_y, origin_z);
 		PxVec3 ray(ray_x, ray_y, ray_z);
 		PxRaycastBuffer rayBuffer;
+		PxQueryFlags queryFlags= PxQueryFlag::eDYNAMIC | PxQueryFlag::eSTATIC;
+		PxQueryFilterData filterData(PxFilterData(), queryFlags);
 
-		m_Scene->raycast(origin, ray, dist, rayBuffer);
+		m_Scene->raycast(origin, ray, dist, rayBuffer, PxHitFlags(0), filterData);
 		
 		PxU32 hitNum = rayBuffer.getNbAnyHits();
 		PxU32 hitDistance = -1;

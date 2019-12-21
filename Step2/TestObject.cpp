@@ -7,6 +7,7 @@
 #include "d3dApp.h"
 
 using namespace AniTree;
+using namespace physx;
 
 void TestObject::Init()
 {
@@ -20,13 +21,13 @@ void TestObject::Init()
 
 	funcs->voidFuncs.push_back(std::bind(&TestObject::TextChange, this));
 	rigidBody->userData = funcs;
-	rigidBody->setGlobalPose(physx::PxTransform(physx::PxVec3(0, 3, 0)));
+	rigidBody->setGlobalPose(physx::PxTransform(physx::PxVec3(0, 1, 0)));
 	std::vector<std::string> names;
 	mesh->GetMeshNames(names);
 
 	if (names.size())
 	{
-		mesh->SelectMesh(names.back());
+		mesh->SelectMesh(names.front());
 	}
 
 	names.clear();
@@ -34,7 +35,7 @@ void TestObject::Init()
 
 	if (names.size())
 	{
-		ani->SelectSkin(names.back());
+		ani->SelectSkin(names.front());
 	}
 	
 	names.clear();
@@ -71,26 +72,17 @@ void TestObject::Update()
 {
 	if (GMOUSE.leftButton == MOUSEState::RELEASED)
 	{
-		GETAPP->ExcuteFuncOfClickedObjectFromPXDevice(100.0f);
+		GETAPP->ExcuteFuncOfClickedObjectFromPXDevice(1000.0f);
 	}
-
-	static physx::PxTransform tr(physx::PxIDENTITY::PxIdentity);
-
 
 	if (GKEYBOARD.IsKeyPressed(KEYState::Right))
 	{
-
-		tr.p.x += 0.1f;
-
-		GetComponent<ComTransform>()->SetTransform(tr);
+		GetComponent<ComRigidDynamic>()->GetRigidBody()->addForce(physx::PxVec3(0, 35, 0),PxForceMode::eVELOCITY_CHANGE);
 	}
 
 	if (GKEYBOARD.IsKeyPressed(KEYState::Up))
 	{
 
-		tr.p.y += 0.1f;
-
-		GetComponent<ComTransform>()->SetTransform(tr);
 	}
 }
 
