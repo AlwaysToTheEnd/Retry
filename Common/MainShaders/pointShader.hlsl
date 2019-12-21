@@ -38,18 +38,18 @@ cbuffer cbPass : register(b0)
 
 struct VertexIn
 {
-	uint	type : TYPE;
+	uint	type : MESHTYPE;
 	uint	cbIndex : CBINDEX;
-	float3	size : SIZE;
-	float4	color : COLOR;
+	float3	size : MESHSIZE;
+	float4	color : MESHCOLOR;
 };
 
 struct VertexOut
 {
-	float4	PosH : SV_POSITION;
-	float4	Color : COLOR0;
-	float3	Normal : NORMAL;
-	nointerpolation int TexIndex : MATNDEX;
+	float4	posH : SV_POSITION;
+	float4	color : COLOR0;
+	float3	normal : NORMAL;
+	nointerpolation int texIndex : MATNDEX;
 };
 
 VertexIn VS(VertexIn vin)
@@ -66,35 +66,125 @@ VertexIn VS(VertexIn vin)
 //	RENDER_TEX_PLANE,
 //};
 
-[maxvertexcount(16)]
+void CreateBox(uint cbIndex, float3 size, float4 color, inout TriangleStream<VertexOut> output)
+{
+	VertexOut vertices[8];
+	// 1  3  7  5
+	// |\ |  | /|
+	// 0 \2  6/ 4
+	vertices[0].posH = float4(-size.x, -size.y, -size.z, 1.0f);
+	vertices[1].posH = float4(-size.x, size.y, -size.z, 1.0f);
+	vertices[2].posH = float4(size.x, -size.y, -size.z, 1.0f);
+	vertices[3].posH = float4(size.x, size.y, -size.z, 1.0f);
+	vertices[4].posH = float4(size.x, -size.y, size.z, 1.0f);
+	vertices[5].posH = float4(size.x, size.y, size.z, 1.0f);
+	vertices[6].posH = float4(-size.x, -size.y, size.z, 1.0f);
+	vertices[7].posH = float4(-size.x, size.y, size.z, 1.0f);
+
+	[unroll]
+	for (int i = 0; i < 8; i++)
+	{
+		vertices[i].color = color;
+		vertices[i].texIndex = gObjectData[cbIndex].TextureIndex;
+		vertices[i].posH = mul(vertices[i].posH, gObjectData[cbIndex].World);
+		vertices[i].posH = mul(vertices[i].posH, gViewProj);
+	}
+
+	output.Append(vertices[0]);
+	output.Append(vertices[1]);
+	output.Append(vertices[2]);
+	output.Append(vertices[3]);
+	output.Append(vertices[4]);
+	output.Append(vertices[5]);
+	output.Append(vertices[6]);
+	output.Append(vertices[7]);
+	output.Append(vertices[0]);
+	output.Append(vertices[1]);
+	output.RestartStrip();
+
+	output.Append(vertices[3]);
+	output.Append(vertices[1]);
+	output.Append(vertices[5]);
+	output.Append(vertices[7]);
+	output.RestartStrip();
+
+	output.Append(vertices[0]);
+	output.Append(vertices[2]);
+	output.Append(vertices[6]);
+	output.Append(vertices[4]);
+	output.RestartStrip();
+}
+
+void CreatePlane(uint cbIndex, float2 size, float4 color, inout TriangleStream<VertexOut> output)
+{
+	VertexOut vertices[4];
+
+	// 1  3
+	// |\ |
+	// 0 \2
+
+	vertices[0].posH = float4(-size.x, -size.y, 0.0f, 1.0f);
+	vertices[1].posH = float4(-size.x, size.y, 0.0f, 1.0f);
+	vertices[2].posH = float4(size.x, -size.y, 0.0f, 1.0f);
+	vertices[3].posH = float4(size.x, size.y, 0.0f, 1.0f);
+
+	[unroll]
+	for (int i = 0; i < 4; i++)
+	{
+		vertices[i].texIndex = gObjectData[cbIndex].TextureIndex;
+		vertices[i].posH = mul(vertices[i].posH, gObjectData[cbIndex].World);
+		vertices[i].posH = mul(vertices[i].posH, gViewProj);
+	}
+
+	if (gObjectData[cbIndex].TextureIndex > -1)
+	{
+		vertices[0].color = float4(0.0f, 1.0f, 0.0f, 0.0f);
+		vertices[1].color = float4(0.0f, 0.0f, 0.0f, 0.0f);
+		vertices[2].color = float4(1.0f, 1.0f, 0.0f, 0.0f);
+		vertices[3].color = float4(1.0f, 0.0f, 0.0f, 0.0f);
+	}
+	else
+	{
+		[unroll]
+		for (int i = 0; i < 4; i++)
+		{
+			vertices[i].color = color;
+		}
+	}
+
+	output.Append(vertices[0]);
+	output.Append(vertices[1]);
+	output.Append(vertices[2]);
+	output.Append(vertices[3]);
+}
+
+[maxvertexcount(18)]
 void GS(point VertexIn input[1], inout TriangleStream<VertexOut> output)
 {
 	switch (input[0].type)
 	{
-		switch (it.type)
-		{
-		case 2:
-			break;
-		case 3:
-			break;
-		case 4:
-			break;
-		}
+	case 2: //BOX
+		CreateBox(input[0].cbIndex, input[0].size, input[0].color, output);
+		break;
+	case 3: //PLANE
+	case 4: //TEX_PLANE
+		CreatePlane(input[0].cbIndex, float2(input[0].size.x, input[0].size.y), input[0].color, output);
+		break;
 	}
-
-	output.RestartStrip();
 }
 
 float4 PS(VertexOut pin) : SV_Target
 {
-	float4 litColor = float4(0,0,0,1);
-	int index = gInstanceData[MaterialIndex].DiffuseMapIndex;
+	float4 resultColor= float4(0,0,0,1);
 
-	if (index >= 0)
+	if (pin.texIndex > -1)
 	{
-		litColor = gMainTexture[index].Sample(gsamPointWrap, pin.TexC);
+		resultColor = gMainTexture[pin.texIndex].Sample(gsamPointWrap, float2(pin.color.x, pin.color.y));
+	}
+	else
+	{
+		resultColor = pin.color;
 	}
 
-	litColor.a = 1.0f;
-	return litColor;
+	return resultColor;
 }

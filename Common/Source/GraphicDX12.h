@@ -230,7 +230,7 @@ private:
 private:
 	std::unordered_map<std::string, ComPtr<ID3D12PipelineState>>	m_PSOs;
 	std::vector<D3D12_INPUT_ELEMENT_DESC>							m_NTVertexInputLayout;
-	std::vector<D3D12_INPUT_ELEMENT_DESC>							m_BSPointInputLayout;
+	std::vector<D3D12_INPUT_ELEMENT_DESC>							m_BPPointInputLayout;
 	std::unordered_map<std::string, ComPtr<ID3DBlob>>				m_Shaders;
 	ComPtr<ID3D12RootSignature>										m_RootSignature = nullptr;
 	ComPtr<ID3D12RootSignature>										m_PointRenderRootSignature = nullptr;

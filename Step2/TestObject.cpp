@@ -11,12 +11,14 @@ using namespace physx;
 
 void TestObject::Init()
 {
-	RenderInfo renderInfo(RENDER_MESH);
+	RenderInfo renderInfo(RENDER_TEX_PLANE);
+	renderInfo.texPoint.size = { 5.0f, 3.0f, 0};
+	renderInfo.meshOrTextureName = "ice.dds";
 	AddComponent<ComTransform>();
 	auto mesh = AddComponent<ComMesh>();
 	AddComponent<ComRenderer>()->SetRenderInfo(renderInfo);
 	ani= AddComponent<ComAnimator>();
-	auto rigidCom = AddComponent<ComRigidDynamic>();
+	auto rigidCom = AddComponent<ComRigidStatic>();
 	auto rigidBody = rigidCom->GetRigidBody();
 	auto funcs = new PhysXFunctionalObject();
 
