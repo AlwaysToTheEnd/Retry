@@ -49,7 +49,7 @@ protected:
 	physx::PxMat44		m_ViewMatrix;
 	physx::PxMat44		m_ProjectionMat;
 	HWND			m_MainWndHandle = nullptr;
-	int				m_ClientWidth = 1000;
+	int				m_ClientWidth = 700;
 	int				m_ClientHeight = 700;
 };
 

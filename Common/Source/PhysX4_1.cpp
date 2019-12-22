@@ -134,15 +134,24 @@ std::unique_ptr<IComponent> PhysX4_1::CreateComponent(COMPONENTTYPE type, GameOb
 	UINT id = ComUpdater.GetNextID();
 
 	static PxTransform identityTransform(PxIDENTITY::PxIdentity);
+	identityTransform.p.y = 4;
 	PxRigidActor* rigidBody = nullptr;
 
 	switch (type)
 	{
 	case COMPONENTTYPE::COM_DYNAMIC:
 	{
+		//test code
+		PxShape* shape= m_Physics->createShape(PxBoxGeometry(3.0f, 3.0f, 3.0f), *m_Material, true);
+
 		rigidBody = m_Physics->createRigidDynamic(identityTransform);
+		rigidBody->attachShape(*shape);
+		PxRigidBodyExt::updateMassAndInertia(*reinterpret_cast<PxRigidBody*>(rigidBody), 10.0f);
+		
 		m_Dynamics.AddData(rigidBody);
 		newComponent = new ComRigidDynamic(gameObject, id, reinterpret_cast<PxRigidDynamic*>(rigidBody));
+
+		//shape->release();
 	}
 	break;
 	case COMPONENTTYPE::COM_STATIC:
@@ -181,7 +190,7 @@ void PhysX4_1::ExcuteFuncOfClickedObject(float origin_x, float origin_y, float o
 		PxVec3 origin(origin_x, origin_y, origin_z);
 		PxVec3 ray(ray_x, ray_y, ray_z);
 		PxRaycastBuffer rayBuffer;
-		PxQueryFlags queryFlags= PxQueryFlag::eDYNAMIC | PxQueryFlag::eSTATIC;
+		PxQueryFlags queryFlags= PxQueryFlag::eDYNAMIC;
 		PxQueryFilterData filterData(PxFilterData(), queryFlags);
 
 		m_Scene->raycast(origin, ray, dist, rayBuffer, PxHitFlags(0), filterData);
@@ -193,6 +202,9 @@ void PhysX4_1::ExcuteFuncOfClickedObject(float origin_x, float origin_y, float o
 		{
 			auto hitObject = rayBuffer.getAnyHit(i);
 			
+			/*PxVec3 pos = origin+(hitObject.distance*ray);
+			PxVec3 pos2 = hitObject.actor->getGlobalPose().p;*/
+
 			if (hitObject.distance < hitDistance)
 			{
 				targetActor = hitObject.actor;

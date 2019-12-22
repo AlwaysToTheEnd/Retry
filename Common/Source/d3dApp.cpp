@@ -184,12 +184,12 @@ LRESULT D3DApp::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 				}
 				else if (m_Resizing)
 				{
-
+					m_GDevice->SetClientSize(clientWidth, clientHeight);
+					m_GDevice->OnResize();
 				}
 				else
 				{
-					m_GDevice->SetClientSize(clientWidth, clientHeight);
-					m_GDevice->OnResize();
+				
 				}
 			}
 		}
@@ -204,7 +204,6 @@ LRESULT D3DApp::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	case WM_EXITSIZEMOVE:
 		m_AppPaused = false;
 		m_Resizing = false;
-		m_GDevice->OnResize();
 		return 0;
 
 	case WM_DESTROY:

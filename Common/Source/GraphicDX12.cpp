@@ -250,7 +250,7 @@ void GraphicDX12::OnResize()
 		m_FontManager->Resize(m_ClientWidth, m_ClientHeight);
 	}
 
-	XMMATRIX P = XMMatrixPerspectiveFovLH(0.25f * XM_PI, (float)m_ClientWidth / m_ClientHeight, 1.0f, 1000.0f);
+	XMMATRIX P = XMMatrixPerspectiveFovLH(XM_PIDIV4, (float)m_ClientWidth / m_ClientHeight, 1.0f, 1000.0f);
 	XMStoreFloat4x4(m_ProjectionMat, P);
 }
 

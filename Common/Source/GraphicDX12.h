@@ -107,7 +107,7 @@ struct FrameResource
 
 		passCB = std::make_unique<UploadBuffer<PassConstants>>(device, passCount, true);
 		meshObjectCB = std::make_unique<UploadBuffer<ObjectConstants>>(device, objectCount, true);
-		pointCB =std::make_unique<UploadBuffer<OnlyTexObjectConstants>>(device, objectCount, true);
+		pointCB =std::make_unique<UploadBuffer<OnlyTexObjectConstants>>(device, objectCount, false);
 		aniBoneMatBuffer = std::make_unique<UploadBuffer<AniBoneMat>>(device, aniBoneSetNum, true);
 	}
 

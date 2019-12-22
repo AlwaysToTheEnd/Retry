@@ -16,6 +16,5 @@ public:
 
 	void TextChange();
 private:
-	ComAnimator*	ani;
 	ComFont*		font;
 };

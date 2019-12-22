@@ -83,8 +83,6 @@ void cCamera::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 DirectX::XMVECTOR XM_CALLCONV cCamera::GetViewRay(const physx::PxMat44& projectionMat, unsigned int viewPortWidth, unsigned int viewPortHeight) const
 {
-	return DirectX::XMVectorSet(
-		((m_CurrMouse.x * 2.0f) / viewPortWidth - 1.0f) / projectionMat[0][0],
-		((-m_CurrMouse.y * 2.0f) / viewPortHeight + 1.0f) / projectionMat[1][1],
-		1.0f, 0.0f);
+	return XMVectorSet((2.0f * m_CurrMouse.x / viewPortWidth - 1.0f) / projectionMat[0][0],
+		(-2.0f * m_CurrMouse.y / viewPortHeight + 1.0f) / projectionMat[1][1], 1.0f, 0);
 }

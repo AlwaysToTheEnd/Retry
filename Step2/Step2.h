@@ -3,6 +3,7 @@
 #include "../Common/Source/GraphicDX12.h"
 #include "../Common/Source/d3dApp.h"
 #include "../Common/Source/cCamera.h"
+#include <array>
 #include "TestObject.h"
 
 //using typedef to select core devices.
@@ -27,6 +28,6 @@ private:
 	virtual void InitObjects() override;
 
 private:
-	cCamera					m_Camera;
-	TestObject				m_Test;
+	cCamera					 m_Camera;
+	std::array<TestObject,1>  m_Test;
 };
