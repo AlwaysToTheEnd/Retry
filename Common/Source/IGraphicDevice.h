@@ -21,6 +21,7 @@ public:
 	virtual void* GetDevicePtr() = 0;
 	virtual void OnResize() = 0;
 	virtual void GetWorldRay(DirectX::XMFLOAT3& origin, DirectX::XMFLOAT3& ray) const = 0;
+	virtual void CreateScene(const CGHScene& scene) = 0;
 
 private:
 	void ReadyWorks(const std::vector<std::wstring>& targetTextureFolders,

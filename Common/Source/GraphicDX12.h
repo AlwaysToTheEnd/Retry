@@ -147,6 +147,7 @@ public:
 	virtual void* GetDevicePtr() override { return m_D3dDevice.Get(); }
 	virtual void GetWorldRay(DirectX::XMFLOAT3& origin, DirectX::XMFLOAT3& ray) const override;
 	virtual IComponent* CreateComponent(CGHScene&, COMPONENTTYPE type, unsigned int id, GameObject& gameObject) override;
+	virtual void CreateScene(const CGHScene& scene) override {} //#TODO
 	
 public: // Used Functions
 	virtual void SetCamera(cCamera* camera) { m_CurrCamera = camera; }

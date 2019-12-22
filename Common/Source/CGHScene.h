@@ -10,17 +10,10 @@ class CGHScene
 	friend class GameObject;
 	friend class IComponent;
 public:
-	CGHScene(IGraphicDevice* graphicDevice, IPhysicsDevice* pxDevice, const std::string& name)
-		:m_GraphicDevice(graphicDevice)
-		,m_PhysicsDevice(pxDevice)
-		,m_SceneName(name)
-	{
-
-	}
+	CGHScene(IGraphicDevice* graphicDevice, IPhysicsDevice* pxDevice, const std::string& name);
 	virtual ~CGHScene();
 
 	void Update();
-	void Draw();
 	void AddGameObjects(GameObject* newObject);
 	void DeleteAllObjects() { m_Objects.clear(); }
 	ComponentUpdater& GetComponentUpdater(COMPONENTTYPE type);

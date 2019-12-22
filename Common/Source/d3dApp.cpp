@@ -65,10 +65,8 @@ int D3DApp::Run()
 			{
 				BaseUpdate();
 
-				if (m_CurrScene)
-				{
-					m_CurrScene->Draw();
-				}
+				m_GDevice->Draw();
+				m_GDevice->ReservedWorksClear();
 			}
 			else
 			{

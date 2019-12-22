@@ -2,6 +2,15 @@
 #include "IGraphicDevice.h"
 #include "IPhysicsDevice.h"
 
+CGHScene::CGHScene(IGraphicDevice* graphicDevice, IPhysicsDevice* pxDevice, const std::string& name)
+	:m_GraphicDevice(graphicDevice)
+	, m_PhysicsDevice(pxDevice)
+	, m_SceneName(name)
+{
+	m_GraphicDevice->CreateScene(*this);
+	m_PhysicsDevice->CreateScene(*this);
+}
+
 CGHScene::~CGHScene()
 {
 
@@ -33,12 +42,6 @@ void CGHScene::Update()
 	GetComponentUpdater(COMPONENTTYPE::COM_FONT).Update();
 
 	m_GraphicDevice->Update(*this);
-}
-
-void CGHScene::Draw()
-{
-	m_GraphicDevice->Draw();
-	m_GraphicDevice->ReservedWorksClear();
 }
 
 void CGHScene::ComponentDeleteManaging(COMPONENTTYPE type, int id)

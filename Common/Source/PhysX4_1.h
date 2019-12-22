@@ -73,6 +73,8 @@ public:
 
 	virtual void ExcuteFuncOfClickedObject(float origin_x, float origin_y, float origin_z,
 		float ray_x, float ray_y, float ray_z, float dist) override;
+	virtual void CreateScene(const CGHScene& scene) override;
+
 private: // Only Used by FuncPtr
 	virtual void ComponentDeleteManaging(CGHScene& scene, COMPONENTTYPE type, int id) override;
 
@@ -82,16 +84,17 @@ private:
 		physx::PxPairFlags& pairFlags, const void* constantBlock, physx::PxU32 constantBlockSize);
 
 private:
-	physx::PxDefaultAllocator					m_Allocator;
-	physx::PxDefaultErrorCallback				m_ErrorCallback;
+	physx::PxDefaultAllocator									m_Allocator;
+	physx::PxDefaultErrorCallback								m_ErrorCallback;
+	void*														m_GraphicsDevice;
 	
-	Px1RefPtr<physx::PxFoundation>				m_Foundation;
-	Px1RefPtr<physx::PxPhysics>					m_Physics;
-	Px1RefPtr<physx::PxDefaultCpuDispatcher>	m_Dispatcher;
-	Px1RefPtr<physx::PxCooking>					m_Cooking;
-	Px1RefPtr<physx::PxCudaContextManager>		m_CudaManager;
-	Px1RefPtr<physx::PxScene>					m_Scene;
-	Px1RefPtr<physx::PxPvd>						m_PVD;
+	Px1RefPtr<physx::PxFoundation>								m_Foundation;
+	Px1RefPtr<physx::PxPhysics>									m_Physics;
+	Px1RefPtr<physx::PxDefaultCpuDispatcher>					m_Dispatcher;
+	Px1RefPtr<physx::PxCooking>									m_Cooking;
+	Px1RefPtr<physx::PxCudaContextManager>						m_CudaManager;
+	Px1RefPtr<physx::PxPvd>										m_PVD;
+	std::unordered_map<std::string, Px1RefPtr<physx::PxScene>>	m_Scenes;
 
 private:
 	Px1RefPtr<physx::PxMaterial>					m_Material;
