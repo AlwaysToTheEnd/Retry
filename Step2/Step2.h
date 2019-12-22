@@ -1,9 +1,9 @@
 #pragma once
+#include <array>
 #include "../Common/Source/PhysX4_1.h"
 #include "../Common/Source/GraphicDX12.h"
 #include "../Common/Source/d3dApp.h"
 #include "../Common/Source/cCamera.h"
-#include <array>
 #include "TestObject.h"
 
 //using typedef to select core devices.

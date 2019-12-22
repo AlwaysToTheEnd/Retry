@@ -173,7 +173,7 @@ void ComRenderer::RenderMesh()
 void ComFont::Update()
 {
 	//#TODO
-	RenderFont addedFont(L"baseFont.spritefont", m_Text);
+	RenderFont addedFont(m_FontName, m_Text);
 	addedFont.pos.x = m_OffsetPos.x;
 	addedFont.pos.y = m_OffsetPos.y;
 

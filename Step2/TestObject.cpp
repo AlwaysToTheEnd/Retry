@@ -33,6 +33,7 @@ void TestObject::Init()
 	posx += 9;
 
 	font = AddComponent<ComFont>();
+	font->SetFontName(L"baseFont.spritefont");
 	font->m_Text = L"";
 	font->m_OffsetPos.x = 100;
 	font->m_OffsetPos.y = 150;

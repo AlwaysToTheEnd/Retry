@@ -126,6 +126,7 @@ public:
 	virtual ~ComFont() = default;
 
 	virtual void Update() override;
+	void SetFontName(std::wstring fontName) { m_FontName = fontName; }
 
 public:
 	std::wstring		m_Text;
@@ -133,4 +134,5 @@ public:
 
 private:
 	static std::vector<RenderFont>* m_ReservedFonts;
+	std::wstring		m_FontName;
 };
