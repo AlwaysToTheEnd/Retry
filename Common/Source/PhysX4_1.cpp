@@ -1,5 +1,6 @@
 #include "PhysX4_1.h"
 #include "BaseComponent.h"
+#include "CGHScene.h"
 #include <Windows.h>
 using namespace physx;
 
@@ -120,18 +121,15 @@ bool PhysX4_1::Init(void* graphicDevicePtr)
 	return true;
 }
 
-void PhysX4_1::Update()
+void PhysX4_1::Update(const CGHScene& scene)
 {
 	m_Scene->simulate(1.0f / 60.0f);
 	m_Scene->fetchResults(true);
 }
 
-std::unique_ptr<IComponent> PhysX4_1::CreateComponent(COMPONENTTYPE type, GameObject& gameObject)
+IComponent* PhysX4_1::CreateComponent(CGHScene& scene, COMPONENTTYPE type, unsigned int id, GameObject& gameObject)
 {
 	IComponent* newComponent = nullptr;
-
-	auto& ComUpdater = GetComponentUpdater(type);
-	UINT id = ComUpdater.GetNextID();
 
 	static PxTransform identityTransform(PxIDENTITY::PxIdentity);
 	identityTransform.p.y = 4;
@@ -148,7 +146,6 @@ std::unique_ptr<IComponent> PhysX4_1::CreateComponent(COMPONENTTYPE type, GameOb
 		rigidBody->attachShape(*shape);
 		PxRigidBodyExt::updateMassAndInertia(*reinterpret_cast<PxRigidBody*>(rigidBody), 10.0f);
 		
-		m_Dynamics.AddData(rigidBody);
 		newComponent = new ComRigidDynamic(gameObject, id, reinterpret_cast<PxRigidDynamic*>(rigidBody));
 
 		//shape->release();
@@ -157,7 +154,6 @@ std::unique_ptr<IComponent> PhysX4_1::CreateComponent(COMPONENTTYPE type, GameOb
 	case COMPONENTTYPE::COM_STATIC:
 	{
 		rigidBody = m_Physics->createRigidStatic(identityTransform);
-		m_Statics.AddData(rigidBody);
 		newComponent = new ComRigidStatic(gameObject, id, reinterpret_cast<PxRigidStatic*>(rigidBody));
 	}
 	break;
@@ -169,17 +165,13 @@ std::unique_ptr<IComponent> PhysX4_1::CreateComponent(COMPONENTTYPE type, GameOb
 		break;
 	}
 
-	if (newComponent)
-	{
-		ComUpdater.AddData(newComponent);
-	}
 
 	if (rigidBody)
 	{
 		m_Scene->addActor(*rigidBody);
 	}
 
-	return std::unique_ptr<IComponent>(newComponent);
+	return newComponent;
 }
 
 void PhysX4_1::ExcuteFuncOfClickedObject(float origin_x, float origin_y, float origin_z,
@@ -230,10 +222,9 @@ void PhysX4_1::ExcuteFuncOfClickedObject(float origin_x, float origin_y, float o
 	}
 }
 
-void PhysX4_1::ComponentDeleteManaging(COMPONENTTYPE type, int id)
+void PhysX4_1::ComponentDeleteManaging(CGHScene& scene, COMPONENTTYPE type, int id)
 {
-	auto& ComUpdater = GetComponentUpdater(type);
-	IComponent* deletedComponent = ComUpdater.GetData(id);
+	IComponent* deletedComponent = scene.GetComponentUpdater(type).GetData(id);
 	PxRigidActor* deletedActor = nullptr;
 
 	switch (type)
@@ -241,13 +232,11 @@ void PhysX4_1::ComponentDeleteManaging(COMPONENTTYPE type, int id)
 	case COMPONENTTYPE::COM_DYNAMIC:
 	{
 		deletedActor = reinterpret_cast<ComRigidDynamic*>(deletedComponent)->GetRigidBody();
-		m_Dynamics.SignalDeleted(id);
 	}
 	break;
 	case COMPONENTTYPE::COM_STATIC:
 	{
 		deletedActor = reinterpret_cast<ComRigidStatic*>(deletedComponent)->GetRigidBody();
-		m_Statics.SignalDeleted(id);
 	}
 	break;
 	case COMPONENTTYPE::COM_TRANSFORM:
@@ -271,8 +260,6 @@ void PhysX4_1::ComponentDeleteManaging(COMPONENTTYPE type, int id)
 
 		m_Scene->removeActor(*deletedActor);
 	}
-
-	ComUpdater.SignalDeleted(id);
 }
 
 PxFilterFlags PhysX4_1::ScissorFilter(PxFilterObjectAttributes attributes0,

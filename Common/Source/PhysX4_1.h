@@ -68,13 +68,13 @@ public:
 	virtual ~PhysX4_1();
 
 	virtual bool Init(void* graphicDevicePtr);
-	virtual void Update();
-	virtual std::unique_ptr<IComponent> CreateComponent(COMPONENTTYPE type, GameObject& gameObject) override;
+	virtual void Update(const CGHScene& scene);
+	virtual IComponent* CreateComponent(CGHScene& scene, COMPONENTTYPE type, unsigned int id, GameObject& gameObject) override;
 
 	virtual void ExcuteFuncOfClickedObject(float origin_x, float origin_y, float origin_z,
 		float ray_x, float ray_y, float ray_z, float dist) override;
 private: // Only Used by FuncPtr
-	virtual void ComponentDeleteManaging(COMPONENTTYPE type, int id) override;
+	virtual void ComponentDeleteManaging(CGHScene& scene, COMPONENTTYPE type, int id) override;
 
 private:
 	physx::PxFilterFlags ScissorFilter(physx::PxFilterObjectAttributes attributes0, physx::PxFilterData filterData0,
@@ -95,8 +95,6 @@ private:
 
 private:
 	Px1RefPtr<physx::PxMaterial>					m_Material;
-	InstanceAndIndexManager<physx::PxRigidActor*>	m_Dynamics;
-	InstanceAndIndexManager<physx::PxRigidActor*>	m_Statics;
 	std::vector<PhysXFunctionalObject*>				m_ReservedFunc;
 };
 

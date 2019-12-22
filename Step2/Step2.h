@@ -3,8 +3,6 @@
 #include "../Common/Source/PhysX4_1.h"
 #include "../Common/Source/GraphicDX12.h"
 #include "../Common/Source/d3dApp.h"
-#include "../Common/Source/cCamera.h"
-#include "TestObject.h"
 
 //using typedef to select core devices.
 typedef GraphicDX12	UsingGraphicDevice;
@@ -28,6 +26,4 @@ private:
 	virtual void InitObjects() override;
 
 private:
-	cCamera					 m_Camera;
-	std::array<TestObject,10>  m_Test;
 };

@@ -41,11 +41,6 @@ void TestObject::Init()
 
 void TestObject::Update()
 {
-	if (GMOUSE.leftButton == MOUSEState::RELEASED)
-	{
-		GETAPP->ExcuteFuncOfClickedObjectFromPXDevice(1000.0f);
-	}
-
 	if (GKEYBOARD.IsKeyPressed(KEYState::Right))
 	{
 		GetComponent<ComRigidDynamic>()->GetRigidBody()->addForce(

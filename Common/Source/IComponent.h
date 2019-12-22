@@ -33,15 +33,10 @@ public:
 	int GetID() const { return m_ID; }
 
 protected:
-	GameObject*	const	m_TargetGameObject = nullptr;
+	GameObject& const	m_TargetGameObject;
 
 private:
 	COMPONENTTYPE		m_Type;
 	bool				m_IsActive;
 	const int			m_ID;
-
-private:
-	static void SetInstanceDeleteManagingFunc(std::function<void(COMPONENTTYPE, int)> func);
-
-	static std::function<void(COMPONENTTYPE, int)>	m_InstanceDeleteManagingFunc;
 };

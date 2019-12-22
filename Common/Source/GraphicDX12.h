@@ -24,6 +24,7 @@
 
 class cTextureBuffer;
 
+
 using Microsoft::WRL::ComPtr;
 
 template <typename T>
@@ -138,20 +139,20 @@ public:
 	GraphicDX12();
 	virtual ~GraphicDX12() override;
 
-	virtual void Update() override;
+	virtual void Update(const CGHScene& scene) override;
 	virtual void Draw() override;
 	virtual void ReservedWorksClear() override;
-	virtual bool Init(HWND hWnd) override;
+	virtual bool Init(HWND hWnd, UINT windowWidth, UINT windowHeight) override;
 	virtual void OnResize() override;
 	virtual void* GetDevicePtr() override { return m_D3dDevice.Get(); }
 	virtual void GetWorldRay(DirectX::XMFLOAT3& origin, DirectX::XMFLOAT3& ray) const override;
-	virtual std::unique_ptr<IComponent> CreateComponent(COMPONENTTYPE type, GameObject& gameObject) override;
+	virtual IComponent* CreateComponent(CGHScene&, COMPONENTTYPE type, unsigned int id, GameObject& gameObject) override;
 	
 public: // Used Functions
 	virtual void SetCamera(cCamera* camera) { m_CurrCamera = camera; }
 
 private: // Only Used by FuncPtr
-	virtual void ComponentDeleteManaging(COMPONENTTYPE type, int id) override;
+	virtual void ComponentDeleteManaging(CGHScene&, COMPONENTTYPE type, int id) override;
 
 private: // Used Function by ReadyWorks 
 	virtual void LoadTextureFromFolder(const std::vector<std::wstring>& targetTextureFolders) override;

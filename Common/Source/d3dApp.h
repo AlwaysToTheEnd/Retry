@@ -2,9 +2,10 @@
 #include "IGraphicDevice.h"
 #include "IPhysicsDevice.h"
 #include "IComponent.h"
-#include "ComponentUpdater.h"
+#include "CGHScene.h"
 #include <Mouse.h>
 #include <Keyboard.h>
+#include "cCamera.h"
 
 #define GETAPP D3DApp::GetApp()
 #define GKEYBOARD D3DApp::GetApp()->GetKeyBoard()
@@ -15,7 +16,7 @@ typedef DirectX::Mouse::ButtonStateTracker::ButtonState MOUSEState;
 
 struct MeshObject;
 
-class D3DApp :public ICompnentCreater
+class D3DApp
 {
 public:
 	const std::wstring MainFolderFath = L"./../Common/";
@@ -47,10 +48,6 @@ public:
 	bool Initialize();
 	int Run();
 
-	std::unique_ptr<IComponent> CreateComponent(COMPONENTTYPE type, GameObject& gameObject) override;
-	void ComponentDeleteManaging(COMPONENTTYPE type, int id) override;
-	void ExcuteFuncOfClickedObjectFromPXDevice(float dis);
-
 public:
 	virtual LRESULT MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -65,10 +62,12 @@ protected:
 
 private:
 	void BaseUpdate();
+	void ExcuteFuncOfClickedObjectFromPXDevice(float dis);
 
 protected:
-	static D3DApp* m_App;
+	static D3DApp*						m_App;
 
+	cCamera								m_Camera;
 	DirectX::Mouse						m_Mouse;
 	DirectX::Mouse::ButtonStateTracker	m_MouseTracker;
 	DirectX::Keyboard					m_Keyboard;
@@ -86,6 +85,8 @@ protected:
 
 	std::unique_ptr<IGraphicDevice>	m_GDevice;
 	std::unique_ptr<IPhysicsDevice>	m_PXDevice;
+
+	CGHScene*						m_CurrScene;
 };
 
 template<typename GraphicDeviceClass,typename PhysicsDeviceClass>

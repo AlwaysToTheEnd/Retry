@@ -14,8 +14,8 @@ public:
 	IGraphicDevice() = default;
 	virtual ~IGraphicDevice() = default;
 
-	virtual bool Init(HWND hWnd) = 0;
-	virtual void Update() = 0;
+	virtual bool Init(HWND hWnd, UINT windowWidth, UINT windowHeight) = 0;
+	virtual void Update(const CGHScene& scene) = 0;
 	virtual void Draw() = 0;
 	virtual void ReservedWorksClear() = 0;
 	virtual void* GetDevicePtr() = 0;
@@ -48,6 +48,7 @@ protected:
 protected:
 	physx::PxMat44		m_ViewMatrix;
 	physx::PxMat44		m_ProjectionMat;
+	physx::PxMat44		m_OrthoProjectionMat;
 	HWND			m_MainWndHandle = nullptr;
 	int				m_ClientWidth = 700;
 	int				m_ClientHeight = 700;

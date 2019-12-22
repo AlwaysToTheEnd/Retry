@@ -20,26 +20,31 @@ D3DApp::D3DApp(HINSTANCE hInstance)
 {
 	assert(m_App == nullptr);
 	m_App = this;
+	m_CurrScene = nullptr;
 }
 
 D3DApp::~D3DApp()
 {
+	delete m_CurrScene;
 }
 
 void D3DApp::BaseUpdate()
 {
 	m_MouseTracker.Update(m_Mouse.GetState());
 	m_KeyboardTracker.Update(m_Keyboard.GetState());
-	Update();
-	
-	m_PXDevice->Update();
-	GetComponentUpdater(COMPONENTTYPE::COM_STATIC).Update();
-	GetComponentUpdater(COMPONENTTYPE::COM_DYNAMIC).Update();
 
-	GetComponentUpdater(COMPONENTTYPE::COM_ANIMATOR).Update();
-	GetComponentUpdater(COMPONENTTYPE::COM_RENDERER).Update();
-	GetComponentUpdater(COMPONENTTYPE::COM_FONT).Update();
-	m_GDevice->Update();
+	Update();
+
+	if (m_CurrScene)
+	{
+		if (m_MouseTracker.leftButton == MOUSEState::RELEASED)
+		{
+			ExcuteFuncOfClickedObjectFromPXDevice(500.0f);
+		}
+
+		m_CurrScene->Update();
+	}
+
 	m_GDevice->GetWorldRay(m_RayOrigin, m_Ray);
 }
 
@@ -59,8 +64,11 @@ int D3DApp::Run()
 			if (!m_AppPaused)
 			{
 				BaseUpdate();
-				m_GDevice->Draw();
-				m_GDevice->ReservedWorksClear();
+
+				if (m_CurrScene)
+				{
+					m_CurrScene->Draw();
+				}
 			}
 			else
 			{
@@ -70,37 +78,6 @@ int D3DApp::Run()
 	}
 
 	return (int)msg.wParam;
-}
-
-std::unique_ptr<IComponent> D3DApp::CreateComponent(COMPONENTTYPE type, GameObject& gameObject)
-{
-	assert(type != COMPONENTTYPE::COM_END && "THIS COMPONENT IS NONE USED TYPE");
-
-	if (type > COMPONENTTYPE::COM_TRANSFORM)
-	{
-		return m_GDevice->CreateComponent(type, gameObject);
-	}
-	else
-	{
-		return m_PXDevice->CreateComponent(type, gameObject);
-	}
-}
-
-void D3DApp::ComponentDeleteManaging(COMPONENTTYPE type, int id)
-{
-	if (type == COMPONENTTYPE::COM_END)
-	{
-		assert(false && "THIS COMPONENT IS NONE USED TYPE");
-	}
-
-	if (type > COMPONENTTYPE::COM_TRANSFORM)
-	{
-		m_GDevice->ComponentDeleteManaging(type, id);
-	}
-	else
-	{
-		m_PXDevice->ComponentDeleteManaging(type, id);
-	}
 }
 
 void D3DApp::ExcuteFuncOfClickedObjectFromPXDevice(float dis)
@@ -114,13 +91,14 @@ bool D3DApp::Initialize()
 	if (!InitMainWindow()) return false;
 
 	SelectDevices();
-	IComponent::SetInstanceDeleteManagingFunc(bind(&D3DApp::ComponentDeleteManaging, this, placeholders::_1, placeholders::_2));
 
-	if (!m_GDevice->Init(m_hMainWnd)) return false;
+	if (!m_GDevice->Init(m_hMainWnd, 700, 700)) return false;
 	if (!m_PXDevice->Init(m_GDevice->GetDevicePtr())) return false;
 
 	m_GDevice->ReadyWorks(m_TargetTextureFolders, m_TargetMeshFolders, m_TargetFontFolders);
+	m_GDevice->SetCamera(&m_Camera);
 
+	m_CurrScene = new CGHScene(m_GDevice.get(), m_PXDevice.get(), "base");
 	InitObjects();
 
 	return true;
@@ -131,6 +109,7 @@ LRESULT D3DApp::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	DirectX::Keyboard::ProcessMessage(msg, wParam, lParam);
 	DirectX::Mouse::ProcessMessage(msg, wParam, lParam);
+	m_Camera.WndProc(hwnd, msg, wParam, lParam);
 
 	switch (msg)
 	{
@@ -189,7 +168,7 @@ LRESULT D3DApp::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 				}
 				else
 				{
-				
+
 				}
 			}
 		}

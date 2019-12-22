@@ -1,5 +1,6 @@
 #include "Step2.h"
 #include <random>
+#include "TestObject.h"
 using namespace std;
 
 mt19937_64 g_random(710);
@@ -17,10 +18,15 @@ Step2::~Step2()
 void Step2::Update()
 {
 	m_Camera.Update();
-	
-	for (auto& it : m_Test)
+
+	if (m_KeyboardTracker.IsKeyPressed(KEYState::F1))
 	{
-		it.Update();
+		m_CurrScene->DeleteAllObjects();
+	}
+
+	if (m_KeyboardTracker.IsKeyPressed(KEYState::F2))
+	{
+		m_CurrScene->AddGameObjects(new TestObject(*m_CurrScene));
 	}
 }
 
@@ -31,19 +37,13 @@ void Step2::SelectDevices()
 
 void Step2::InitObjects()
 {
-	m_GDevice->SetCamera(&m_Camera);
-
-	for (auto& it : m_Test)
-	{
-		it.Init();
-	}
+	
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
 LRESULT Step2::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	m_Camera.WndProc(hwnd, msg, wParam, lParam);
 	return D3DApp::MsgProc(hwnd, msg, wParam, lParam);
 }
 

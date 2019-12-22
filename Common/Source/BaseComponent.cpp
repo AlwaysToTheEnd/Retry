@@ -8,7 +8,7 @@
 
 void ComRigidDynamic::Update()
 {
-	auto transform = m_TargetGameObject->GetComponent<ComTransform>();
+	auto transform = m_TargetGameObject.GetComponent<ComTransform>();
 
 	if (transform)
 	{
@@ -18,7 +18,7 @@ void ComRigidDynamic::Update()
 
 void ComRigidStatic::Update()
 {
-	auto transform = m_TargetGameObject->GetComponent<ComTransform>();
+	auto transform = m_TargetGameObject.GetComponent<ComTransform>();
 
 	if (transform)
 	{

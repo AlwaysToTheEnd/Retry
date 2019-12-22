@@ -1,10 +1,9 @@
 #include "IComponent.h"
 #include "GameObject.h"
-
-std::function<void(COMPONENTTYPE, int)> IComponent::m_InstanceDeleteManagingFunc = nullptr;
+#include "CGHScene.h"
 
 IComponent::IComponent(COMPONENTTYPE type, GameObject& gameObject, int ID) 
-	: m_TargetGameObject(&gameObject)
+	: m_TargetGameObject(gameObject)
 	, m_Type(type)
 	, m_ID(ID)
 	, m_IsActive(true)
@@ -14,10 +13,5 @@ IComponent::IComponent(COMPONENTTYPE type, GameObject& gameObject, int ID)
 
 IComponent::~IComponent()
 {
-	m_InstanceDeleteManagingFunc(m_Type, m_ID);
-}
-
-void IComponent::SetInstanceDeleteManagingFunc(std::function<void(COMPONENTTYPE, int)> func)
-{
-	m_InstanceDeleteManagingFunc = func;
+	m_TargetGameObject.GetScene().ComponentDeleteManaging(m_Type, m_ID);
 }

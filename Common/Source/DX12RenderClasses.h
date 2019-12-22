@@ -31,6 +31,7 @@ enum RENDER_TYPE
 	RENDER_BOX,
 	RENDER_PLANE,
 	RENDER_TEX_PLANE,
+	RENDER_UI,
 };
 
 struct RenderMeshInfo
@@ -75,6 +76,7 @@ struct RenderInfo
 			point = info.point;
 			break;
 		case RENDER_TEX_PLANE:
+		case RENDER_UI:
 			texPoint = info.texPoint;
 			break;
 		default:
@@ -105,6 +107,7 @@ struct RenderInfo
 			point = info.point;
 			break;
 		case RENDER_TEX_PLANE:
+		case RENDER_UI:
 			texPoint = info.texPoint;
 			break;
 		default:
@@ -157,7 +160,7 @@ struct PassConstants
 	physx::PxMat44 viewProj;
 	physx::PxMat44 invViewProj;
 	physx::PxMat44 rightViewProj;
-	physx::PxMat44 shadowMapMatrix;
+	physx::PxMat44 orthoMatrix;
 	DirectX::XMFLOAT3 eyePosW = { 0.0f, 0.0f, 0.0f };
 	float cbPerObjectPad1 = 0.0f;
 	DirectX::XMFLOAT2 renderTargetSize = { 0.0f, 0.0f };

@@ -5,20 +5,24 @@
 #include <assert.h>
 #include "IComponent.h"
 
+class CGHScene;
+
 class GameObject
 {
+	friend class CGHScene;
 public:
-	GameObject() = default;
+	GameObject(CGHScene& scene);
 	virtual ~GameObject() = default;
 
-	virtual void Init() = 0;
-	virtual void Update() = 0;
-
+	CGHScene& GetScene() { return m_Scene; }
 	template<typename T> T* GetComponent();
 	template<typename T> std::vector<T*> GetComponents();
 
 	static std::unordered_map<unsigned int, unsigned int> GetComponentTypeIDs();
 protected:
+	virtual void Update() = 0;
+	virtual void Init() = 0;
+
 	template<typename T> T* AddComponent();
 	template<typename T> void DeleteComponent(T* component = nullptr);
 
@@ -28,6 +32,7 @@ private:
 private:
 	static std::unordered_map<unsigned int, unsigned int>	m_TypeIDs;
 	std::vector<std::unique_ptr<IComponent>>				m_Components[IComponent::NUMCOMPONENTTYPE];
+	CGHScene&												m_Scene;
 };
 
 template<typename T>

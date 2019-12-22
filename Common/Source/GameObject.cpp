@@ -1,10 +1,17 @@
 #include "GameObject.h"
 #include "BaseComponent.h"
 #include "GraphicComponent.h"
+#include "CGHScene.h"
 #include "d3dApp.h"
 
 
 std::unordered_map<unsigned int, unsigned int> GameObject::m_TypeIDs = GameObject::GetComponentTypeIDs();
+
+GameObject::GameObject(CGHScene& scene) 
+	:m_Scene(scene)
+{
+
+}
 
 std::unordered_map<unsigned int, unsigned int> GameObject::GetComponentTypeIDs()
 {
@@ -52,7 +59,7 @@ std::unordered_map<unsigned int, unsigned int> GameObject::GetComponentTypeIDs()
 IComponent* GameObject::CreateComponent(COMPONENTTYPE type)
 {
 	unsigned int index = static_cast<unsigned int>(type);
-	m_Components[index].push_back(GETAPP->CreateComponent(type, *this));
+	m_Components[index].push_back(m_Scene.CreateComponent(type, *this));
 
 	return m_Components[index].back().get();
 }

@@ -124,7 +124,7 @@ bool ComAnimator::SelectAnimation(const std::string& name)
 
 void ComRenderer::Update()
 {
-	auto comTransform = m_TargetGameObject->GetComponent<ComTransform>();
+	auto comTransform = m_TargetGameObject.GetComponent<ComTransform>();
 
 	assert(comTransform != nullptr);
 
@@ -141,6 +141,7 @@ void ComRenderer::Update()
 	case RENDER_BOX:
 	case RENDER_PLANE:
 	case RENDER_TEX_PLANE:
+	case RENDER_UI:
 		break;
 	default:
 		assert(false);
@@ -152,8 +153,8 @@ void ComRenderer::Update()
 
 void ComRenderer::RenderMesh()
 {
-	auto comMesh = m_TargetGameObject->GetComponent<ComMesh>();
-	auto comAnimator = m_TargetGameObject->GetComponent<ComAnimator>();
+	auto comMesh = m_TargetGameObject.GetComponent<ComMesh>();
+	auto comAnimator = m_TargetGameObject.GetComponent<ComAnimator>();
 
 	if (comMesh != nullptr )
 	{

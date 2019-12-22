@@ -111,9 +111,6 @@
     <ClCompile Include="..\Common\Source\IComponent.cpp">
       <Filter>Common\CodeResources\Components</Filter>
     </ClCompile>
-    <ClCompile Include="..\Common\Source\IComponentCreater.cpp">
-      <Filter>Common\DeviceInstance\_Interface</Filter>
-    </ClCompile>
     <ClCompile Include="..\Common\Source\ComponentUpdater.cpp">
       <Filter>Common\CodeResources\Components</Filter>
     </ClCompile>
@@ -146,6 +143,9 @@
     </ClCompile>
     <ClCompile Include="..\Common\Source\PhysX4_1.cpp">
       <Filter>Common\DeviceInstance\PXSupporters</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Source\CGHScene.cpp">
+      <Filter>Common\CodeResources\BaseClass</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -232,6 +232,9 @@
     </ClInclude>
     <ClInclude Include="..\Common\Source\PhysXFunctionalObject.h">
       <Filter>Common\DeviceInstance\PXSupporters</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\CGHScene.h">
+      <Filter>Common\CodeResources\BaseClass</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

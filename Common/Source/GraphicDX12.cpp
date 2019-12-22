@@ -15,10 +15,11 @@ GraphicDX12::~GraphicDX12()
 {
 }
 
-bool GraphicDX12::Init(HWND hWnd)
+bool GraphicDX12::Init(HWND hWnd, UINT windowWidth, UINT windowHeight)
 {
 	m_MainWndHandle = hWnd;
-
+	m_ClientWidth = windowWidth;
+	m_ClientHeight = windowHeight;
 	//디버그 세팅. 비주얼 스튜디오 출력창에 디버그 정보를 띠워준다.
 #if defined(DEBUG)||defined(_DEBUG)
 	{
@@ -251,7 +252,10 @@ void GraphicDX12::OnResize()
 	}
 
 	XMMATRIX P = XMMatrixPerspectiveFovLH(XM_PIDIV4, (float)m_ClientWidth / m_ClientHeight, 1.0f, 1000.0f);
+	XMMATRIX OrthoP = XMMatrixOrthographicOffCenterLH(m_ScissorRect.left, m_ScissorRect.right, 
+		m_ScissorRect.bottom, m_ScissorRect.top, -1, 1000.0f);
 	XMStoreFloat4x4(m_ProjectionMat, P);
+	XMStoreFloat4x4(m_OrthoProjectionMat, OrthoP);
 }
 
 void GraphicDX12::GetWorldRay(DirectX::XMFLOAT3& origin, DirectX::XMFLOAT3& ray) const
@@ -260,12 +264,9 @@ void GraphicDX12::GetWorldRay(DirectX::XMFLOAT3& origin, DirectX::XMFLOAT3& ray)
 	ray = m_Ray;
 }
 
-std::unique_ptr<IComponent> GraphicDX12::CreateComponent(COMPONENTTYPE type, GameObject& gameObject)
+IComponent* GraphicDX12::CreateComponent(CGHScene&, COMPONENTTYPE type, unsigned int id, GameObject& gameObject)
 {
 	IComponent* newComponent = nullptr;
-
-	auto& ComUpdater = GetComponentUpdater(type);
-	UINT id = ComUpdater.GetNextID();
 
 	switch (type)
 	{
@@ -294,25 +295,17 @@ std::unique_ptr<IComponent> GraphicDX12::CreateComponent(COMPONENTTYPE type, Gam
 		break;
 	}
 
-	if (newComponent)
-	{
-		ComUpdater.AddData(newComponent);
-	}
-
-	return std::unique_ptr<IComponent>(newComponent);
+	return newComponent;
 }
 
-void GraphicDX12::ComponentDeleteManaging(COMPONENTTYPE type, int id)
+void GraphicDX12::ComponentDeleteManaging(CGHScene&, COMPONENTTYPE type, int id)
 {
-	auto& ComUpdater = GetComponentUpdater(type);
-
 	switch (type)
 	{
 	case COMPONENTTYPE::COM_RENDERER:
 	case COMPONENTTYPE::COM_MESH:
 	case COMPONENTTYPE::COM_ANIMATOR:
 	case COMPONENTTYPE::COM_FONT:
-		ComUpdater.SignalDeleted(id);
 		break;
 	default:
 		assert(false);
@@ -550,7 +543,7 @@ void GraphicDX12::FlushCommandQueue()
 	}
 }
 
-void GraphicDX12::Update()
+void GraphicDX12::Update(const CGHScene& scene)
 {
 	if (m_CurrCamera)
 	{
@@ -854,6 +847,7 @@ void GraphicDX12::UpdateMainPassCB()
 {
 	XMMATRIX view = XMLoadFloat4x4(m_ViewMatrix);
 	XMMATRIX proj = XMLoadFloat4x4(m_ProjectionMat);
+	XMMATRIX orthProj = XMLoadFloat4x4(m_OrthoProjectionMat);
 
 	XMMATRIX viewProj = XMMatrixMultiply(view, proj);
 	XMMATRIX invView = XMMatrixInverse(&XMMatrixDeterminant(view), view);
@@ -866,6 +860,7 @@ void GraphicDX12::UpdateMainPassCB()
 	XMStoreFloat4x4(m_MainPassCB.invProj, XMMatrixTranspose(invProj));
 	XMStoreFloat4x4(m_MainPassCB.viewProj, XMMatrixTranspose(viewProj));
 	XMStoreFloat4x4(m_MainPassCB.invViewProj, XMMatrixTranspose(invViewProj));
+	XMStoreFloat4x4(m_MainPassCB.orthoMatrix, XMMatrixTranspose(orthProj));
 	m_MainPassCB.renderTargetSize = XMFLOAT2((float)m_ClientWidth, (float)m_ClientHeight);
 	m_MainPassCB.invRenderTargetSize = XMFLOAT2(1.0f / m_ClientWidth, 1.0f / m_ClientHeight);
 
@@ -942,6 +937,7 @@ void GraphicDX12::UpdateObjectCB()
 		}
 		break;
 		case RENDER_TEX_PLANE:
+		case RENDER_UI:
 		{
 			B_P_Vertex temp;
 			OnlyTexObjectConstants OTObjectConstnat;
@@ -956,7 +952,7 @@ void GraphicDX12::UpdateObjectCB()
 			pointCB->CopyData(m_NumRenderPointObjects, &OTObjectConstnat);
 			m_NumRenderPointObjects++;
 		}
-		break;
+			break;
 		default:
 			assert(false);
 			break;
