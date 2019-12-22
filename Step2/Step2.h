@@ -29,5 +29,5 @@ private:
 
 private:
 	cCamera					 m_Camera;
-	std::array<TestObject,1>  m_Test;
+	std::array<TestObject,10>  m_Test;
 };

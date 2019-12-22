@@ -33,7 +33,7 @@ void TestObject::Init()
 	posx += 9;
 
 	font = AddComponent<ComFont>();
-	font->m_Text = L"Test Font";
+	font->m_Text = L"";
 	font->m_OffsetPos.x = 100;
 	font->m_OffsetPos.y = 150;
 }
@@ -59,5 +59,5 @@ void TestObject::Update()
 
 void TestObject::TextChange()
 {
-	font->m_Text = L"Changed Text";
+	font->m_Text = L"Changed Text" + std::to_wstring(font->GetID());
 }
