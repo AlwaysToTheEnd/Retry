@@ -44,7 +44,10 @@ public:
 	static D3DApp* GetApp();
 	const DirectX::Mouse::ButtonStateTracker& GetMouse() { return m_MouseTracker; }
 	const DirectX::Keyboard::KeyboardStateTracker& GetKeyBoard() { return m_KeyboardTracker; }
-	
+	void GetMouseRay(DirectX::XMFLOAT3& origin, DirectX::XMFLOAT3& ray) const { origin = m_RayOrigin; ray = m_Ray; }
+	DirectX::XMVECTOR XM_CALLCONV GetMousePos() const { return m_Camera.GetMousePos(); }
+	DirectX::XMVECTOR XM_CALLCONV GetClientSize() const { return m_GDevice->GetClientSize(); }
+
 	bool Initialize();
 	int Run();
 
@@ -56,13 +59,13 @@ protected:
 	virtual void SelectDevices() = 0;
 	virtual void InitObjects() = 0;
 	virtual bool InitMainWindow();
-
+	
 	template<typename GraphicDeviceClass, typename PhysicsDeviceClass>
 	void SelectDeviceByTemplate();
 
+	void SetCurrScene(CGHScene* scene) { m_CurrScene = scene; }
 private:
 	void BaseUpdate();
-	void ExcuteFuncOfClickedObjectFromPXDevice(float dis);
 
 protected:
 	static D3DApp*						m_App;
@@ -86,6 +89,7 @@ protected:
 	std::unique_ptr<IGraphicDevice>	m_GDevice;
 	std::unique_ptr<IPhysicsDevice>	m_PXDevice;
 
+private:
 	CGHScene*						m_CurrScene;
 };
 

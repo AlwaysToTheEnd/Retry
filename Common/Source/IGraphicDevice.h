@@ -36,6 +36,7 @@ private:
 
 public:
 	virtual void SetCamera(cCamera* camera) = 0;
+	DirectX::XMVECTOR XM_CALLCONV GetClientSize() const { return DirectX::XMVectorSet(m_ClientWidth, m_ClientHeight, 0, 0); }
 
 public:
 	void SetClientSize(UINT width, UINT height) { m_ClientWidth = width, m_ClientHeight = height; }

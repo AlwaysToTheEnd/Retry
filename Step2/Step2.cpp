@@ -8,26 +8,17 @@ mt19937_64 g_random(710);
 Step2::Step2(HINSTANCE hInstance)
 	: D3DApp(hInstance)
 {
-
+	testScene = nullptr;
 }
 
 Step2::~Step2()
 {
+	delete testScene;
 }
 
 void Step2::Update()
 {
-	m_Camera.Update();
-
-	if (m_KeyboardTracker.IsKeyPressed(KEYState::F1))
-	{
-		m_CurrScene->DeleteAllObjects();
-	}
-
-	if (m_KeyboardTracker.IsKeyPressed(KEYState::F2))
-	{
-		m_CurrScene->AddGameObjects(new TestObject(*m_CurrScene));
-	}
+	
 }
 
 void Step2::SelectDevices()
@@ -37,7 +28,22 @@ void Step2::SelectDevices()
 
 void Step2::InitObjects()
 {
-	
+	 testScene = new CGHScene(m_GDevice.get(), m_PXDevice.get(), "testScene");
+	 SetCurrScene(testScene);
+	 testScene->SetGetRayFunc([](DirectX::XMFLOAT3& origin, DirectX::XMFLOAT3& ray)
+		 {
+			 DirectX::XMFLOAT2 mousePos;
+			 DirectX::XMFLOAT2 clientSize;
+			 DirectX::XMStoreFloat2(&mousePos, GETAPP->GetMousePos());
+			 DirectX::XMStoreFloat2(&clientSize, GETAPP->GetClientSize());
+			 origin.x = mousePos.x- clientSize.x/2;
+			 origin.y = -mousePos.y + clientSize.y/2;
+			 origin.z = -1;
+
+			 ray = { 0, 0, 1.0f };
+		 });
+
+	 testScene->AddGameObjects(new TestObject(*testScene));
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////

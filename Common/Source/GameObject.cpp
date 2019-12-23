@@ -30,6 +30,9 @@ std::unordered_map<unsigned int, unsigned int> GameObject::GetComponentTypeIDs()
 		case COMPONENTTYPE::COM_STATIC:
 			hash_code = typeid(ComRigidStatic).hash_code();
 			break;
+		case COMPONENTTYPE::COM_UICOLLISTION:
+			hash_code = typeid(ComUICollision).hash_code();
+			break;
 		case COMPONENTTYPE::COM_TRANSFORM:
 			hash_code = typeid(ComTransform).hash_code();
 			break;

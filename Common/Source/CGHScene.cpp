@@ -1,6 +1,7 @@
 #include "CGHScene.h"
 #include "IGraphicDevice.h"
 #include "IPhysicsDevice.h"
+#include "d3dApp.h"
 
 CGHScene::CGHScene(IGraphicDevice* graphicDevice, IPhysicsDevice* pxDevice, const std::string& name)
 	:m_GraphicDevice(graphicDevice)
@@ -32,8 +33,13 @@ void CGHScene::Update()
 		it->Update();
 	}
 
-	m_PhysicsDevice->Update(*this);
+	if (GETAPP->GetMouse().leftButton == MOUSEState::RELEASED)
+	{
+		GetComponentUpdater(COMPONENTTYPE::COM_UICOLLISTION).Update();
+		ExcuteFuncOfClickedObject(500.0f);
+	}
 
+	m_PhysicsDevice->Update(*this);
 	GetComponentUpdater(COMPONENTTYPE::COM_STATIC).Update();
 	GetComponentUpdater(COMPONENTTYPE::COM_DYNAMIC).Update();
 
@@ -75,11 +81,11 @@ std::unique_ptr<IComponent> CGHScene::CreateComponent(COMPONENTTYPE type, GameOb
 
 	if (type > COMPONENTTYPE::COM_TRANSFORM)
 	{
-		newComponent = m_GraphicDevice->CreateComponent(*this, type, nextID,gameObject);
+		newComponent = m_GraphicDevice->CreateComponent(*this, type, nextID, gameObject);
 	}
 	else
 	{
-		newComponent = m_PhysicsDevice->CreateComponent (* this, type, nextID, gameObject);
+		newComponent = m_PhysicsDevice->CreateComponent(*this, type, nextID, gameObject);
 	}
 
 	if (newComponent)
@@ -95,4 +101,14 @@ ComponentUpdater& CGHScene::GetComponentUpdater(COMPONENTTYPE type)
 	unsigned int index = static_cast<unsigned int>(type);
 
 	return m_ComUpdater[index];
+}
+
+void CGHScene::ExcuteFuncOfClickedObject(float dist)
+{
+	DirectX::XMFLOAT3 rayOrigin;
+	DirectX::XMFLOAT3 ray;
+
+	GETAPP->GetMouseRay(rayOrigin, ray);
+	m_PhysicsDevice->ExcuteFuncOfClickedObject(*this, rayOrigin.x, rayOrigin.y, rayOrigin.z,
+		ray.x, ray.y, ray.z, dist);
 }

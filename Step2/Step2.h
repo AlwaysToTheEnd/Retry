@@ -26,4 +26,5 @@ private:
 	virtual void InitObjects() override;
 
 private:
+	CGHScene* testScene;
 };

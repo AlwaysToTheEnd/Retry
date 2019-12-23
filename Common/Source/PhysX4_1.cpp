@@ -67,103 +67,8 @@ void PhysX4_1::Update(const CGHScene& scene)
 {
 	auto currScene = m_Scenes.find(scene.GetSceneName());
 
-	currScene->second->simulate(1.0f / 60.0f);
-	currScene->second->fetchResults(true);
-}
-
-IComponent* PhysX4_1::CreateComponent(CGHScene& scene, COMPONENTTYPE type, unsigned int id, GameObject& gameObject)
-{
-	IComponent* newComponent = nullptr;
-
-	static PxTransform identityTransform(PxIDENTITY::PxIdentity);
-	identityTransform.p.y = 4;
-	PxRigidActor* rigidBody = nullptr;
-
-	switch (type)
-	{
-	case COMPONENTTYPE::COM_DYNAMIC:
-	{
-		//test code
-		PxShape* shape= m_Physics->createShape(PxBoxGeometry(3.0f, 3.0f, 3.0f), *m_Material, true);
-
-		rigidBody = m_Physics->createRigidDynamic(identityTransform);
-		rigidBody->attachShape(*shape);
-		PxRigidBodyExt::updateMassAndInertia(*reinterpret_cast<PxRigidBody*>(rigidBody), 10.0f);
-		
-		newComponent = new ComRigidDynamic(gameObject, id, reinterpret_cast<PxRigidDynamic*>(rigidBody));
-
-		//shape->release();
-	}
-	break;
-	case COMPONENTTYPE::COM_STATIC:
-	{
-		rigidBody = m_Physics->createRigidStatic(identityTransform);
-		newComponent = new ComRigidStatic(gameObject, id, reinterpret_cast<PxRigidStatic*>(rigidBody));
-	}
-	break;
-	case COMPONENTTYPE::COM_TRANSFORM:
-		newComponent = new ComTransform(gameObject, id);
-		break;
-	default:
-		assert(false);
-		break;
-	}
-
-
-	if (rigidBody)
-	{
-		m_Scenes[scene.GetSceneName()]->addActor(*rigidBody);
-	}
-
-	return newComponent;
-}
-
-void PhysX4_1::ExcuteFuncOfClickedObject(float origin_x, float origin_y, float origin_z,
-	float ray_x, float ray_y, float ray_z, float dist)
-{
-	//if (m_Scene.Get())
-	//{
-	//	PxVec3 origin(origin_x, origin_y, origin_z);
-	//	PxVec3 ray(ray_x, ray_y, ray_z);
-	//	PxRaycastBuffer rayBuffer;
-	//	PxQueryFlags queryFlags= PxQueryFlag::eDYNAMIC;
-	//	PxQueryFilterData filterData(PxFilterData(), queryFlags);
-
-	//	m_Scene->raycast(origin, ray, dist, rayBuffer, PxHitFlags(0), filterData);
-	//	
-	//	PxU32 hitNum = rayBuffer.getNbAnyHits();
-	//	PxU32 hitDistance = -1;
-	//	PxRigidActor* targetActor = nullptr;
-	//	for (PxU32 i = 0; i < hitNum; i++)
-	//	{
-	//		auto hitObject = rayBuffer.getAnyHit(i);
-	//		
-	//		/*PxVec3 pos = origin+(hitObject.distance*ray);
-	//		PxVec3 pos2 = hitObject.actor->getGlobalPose().p;*/
-
-	//		if (hitObject.distance < hitDistance)
-	//		{
-	//			targetActor = hitObject.actor;
-	//			hitDistance = hitObject.distance;
-	//		}
-	//	}
-
-	//	if (targetActor)
-	//	{
-	//		if (targetActor->userData)
-	//		{
-	//			auto functionlObject = reinterpret_cast<PhysXFunctionalObject*>(targetActor->userData);
-
-	//			if (functionlObject->IsValideObject())
-	//			{
-	//				for (auto& it : functionlObject->voidFuncs)
-	//				{
-	//					it();
-	//				}
-	//			}
-	//		}
-	//	}
-	//}
+	currScene->second.scene->simulate(1.0f / 60.0f);
+	currScene->second.scene->fetchResults(true);
 }
 
 void PhysX4_1::CreateScene(const CGHScene& scene)
@@ -205,7 +110,56 @@ void PhysX4_1::CreateScene(const CGHScene& scene)
 		}
 	}
 
-	m_Scenes[scene.GetSceneName()] = addedScene;
+	m_Scenes[scene.GetSceneName()].scene = addedScene;
+}
+
+IComponent* PhysX4_1::CreateComponent(CGHScene& scene, COMPONENTTYPE type, unsigned int id, GameObject& gameObject)
+{
+	IComponent* newComponent = nullptr;
+
+	static PxTransform identityTransform(PxIDENTITY::PxIdentity);
+	identityTransform.p.y = 4;
+	PxRigidActor* rigidBody = nullptr;
+
+	switch (type)
+	{
+	case COMPONENTTYPE::COM_DYNAMIC:
+	{
+		//test code
+		PxShape* shape = m_Physics->createShape(PxBoxGeometry(3.0f, 3.0f, 3.0f), *m_Material, true);
+		
+		rigidBody = m_Physics->createRigidDynamic(identityTransform);
+		rigidBody->attachShape(*shape);
+		PxRigidBodyExt::updateMassAndInertia(*reinterpret_cast<PxRigidBody*>(rigidBody), 10.0f);
+
+		newComponent = new ComRigidDynamic(gameObject, id, reinterpret_cast<PxRigidDynamic*>(rigidBody));
+
+		//shape->release();
+	}
+	break;
+	case COMPONENTTYPE::COM_STATIC:
+	{
+		rigidBody = m_Physics->createRigidStatic(identityTransform);
+		newComponent = new ComRigidStatic(gameObject, id, reinterpret_cast<PxRigidStatic*>(rigidBody));
+	}
+	break;
+	case COMPONENTTYPE::COM_TRANSFORM:
+		newComponent = new ComTransform(gameObject, id);
+		break;
+	case COMPONENTTYPE::COM_UICOLLISTION:
+		newComponent = new ComUICollision(gameObject, id, &m_Scenes[scene.GetSceneName()].reservedToCheckUIs);
+		break;
+	default:
+		assert(false);
+		break;
+	}
+
+	if (rigidBody)
+	{
+		m_Scenes[scene.GetSceneName()].scene->addActor(*rigidBody);
+	}
+
+	return newComponent;
 }
 
 void PhysX4_1::ComponentDeleteManaging(CGHScene& scene, COMPONENTTYPE type, int id)
@@ -244,8 +198,57 @@ void PhysX4_1::ComponentDeleteManaging(CGHScene& scene, COMPONENTTYPE type, int 
 			}
 		}
 
-		m_Scenes[scene.GetSceneName()]->removeActor(*deletedActor);
+		m_Scenes[scene.GetSceneName()].scene->removeActor(*deletedActor);
 	}
+}
+
+
+void PhysX4_1::ExcuteFuncOfClickedObject(CGHScene& scene, float origin_x, float origin_y, float origin_z,
+	float ray_x, float ray_y, float ray_z, float dist)
+{
+	auto iter = m_Scenes.find(scene.GetSceneName());
+
+	auto currScene = iter->second.scene.Get();
+
+	PxVec3 origin(origin_x, origin_y, origin_z);
+	PxVec3 ray(ray_x, ray_y, ray_z);
+	PxRaycastBuffer rayBuffer;
+	PxQueryFlags queryFlags = PxQueryFlag::eDYNAMIC| PxQueryFlag::eSTATIC;
+	PxQueryFilterData filterData(PxFilterData(), queryFlags);
+
+	currScene->raycast(origin, ray, dist, rayBuffer, PxHitFlags(0), filterData);
+
+	PxU32 hitNum = rayBuffer.getNbAnyHits();
+	PxU32 hitDistance = -1;
+	PxRigidActor* targetActor = nullptr;
+	for (PxU32 i = 0; i < hitNum; i++)
+	{
+		auto hitObject = rayBuffer.getAnyHit(i);
+
+		if (hitObject.distance < hitDistance)
+		{
+			targetActor = hitObject.actor;
+			hitDistance = hitObject.distance;
+		}
+	}
+
+	if (targetActor)
+	{
+		if (targetActor->userData)
+		{
+			auto functionlObject = reinterpret_cast<PhysXFunctionalObject*>(targetActor->userData);
+
+			if (functionlObject->IsValideObject())
+			{
+				for (auto& it : functionlObject->m_VoidFuncs)
+				{
+					it();
+				}
+			}
+		}
+	}
+
+	iter->second.reservedToCheckUIs.clear();
 }
 
 PxFilterFlags PhysX4_1::ScissorFilter(PxFilterObjectAttributes attributes0,

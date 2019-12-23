@@ -1,6 +1,8 @@
 #pragma once
 #include "ComponentUpdater.h"
 #include "GameObject.h"
+#include <functional>
+#include <DirectXMath.h>
 
 class IGraphicDevice;
 class IPhysicsDevice;
@@ -20,6 +22,7 @@ public:
 	const std::string& GetSceneName() const { return m_SceneName; }
 
 private:
+	void ExcuteFuncOfClickedObject(float dist);
 	void ComponentDeleteManaging(COMPONENTTYPE type, int id);
 	std::unique_ptr<IComponent> CreateComponent(COMPONENTTYPE type, GameObject& gameObject);
 

@@ -25,26 +25,21 @@ D3DApp::D3DApp(HINSTANCE hInstance)
 
 D3DApp::~D3DApp()
 {
-	delete m_CurrScene;
 }
 
 void D3DApp::BaseUpdate()
 {
 	m_MouseTracker.Update(m_Mouse.GetState());
 	m_KeyboardTracker.Update(m_Keyboard.GetState());
+	m_Camera.Update();
 
 	Update();
 
 	if (m_CurrScene)
 	{
-		if (m_MouseTracker.leftButton == MOUSEState::RELEASED)
-		{
-			ExcuteFuncOfClickedObjectFromPXDevice(500.0f);
-		}
-
 		m_CurrScene->Update();
 	}
-
+	
 	m_GDevice->GetWorldRay(m_RayOrigin, m_Ray);
 }
 
@@ -78,12 +73,6 @@ int D3DApp::Run()
 	return (int)msg.wParam;
 }
 
-void D3DApp::ExcuteFuncOfClickedObjectFromPXDevice(float dis)
-{
-	m_PXDevice->ExcuteFuncOfClickedObject(m_RayOrigin.x, m_RayOrigin.y, m_RayOrigin.z,
-		m_Ray.x, m_Ray.y, m_Ray.z, dis);
-}
-
 bool D3DApp::Initialize()
 {
 	if (!InitMainWindow()) return false;
@@ -96,7 +85,6 @@ bool D3DApp::Initialize()
 	m_GDevice->ReadyWorks(m_TargetTextureFolders, m_TargetMeshFolders, m_TargetFontFolders);
 	m_GDevice->SetCamera(&m_Camera);
 
-	m_CurrScene = new CGHScene(m_GDevice.get(), m_PXDevice.get(), "base");
 	InitObjects();
 
 	return true;

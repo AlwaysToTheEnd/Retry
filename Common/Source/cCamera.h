@@ -17,6 +17,7 @@ public:
 	DirectX::XMVECTOR XM_CALLCONV GetViewRay(const physx::PxMat44& projectionMat, unsigned int viewPortWidth, unsigned int viewPortHeight) const;
 	const physx::PxMat44* GetViewMatrix() const { return &m_ViewMat; }
 	const DirectX::XMFLOAT3 GetEyePos() const { return m_EyePos; }
+	DirectX::XMVECTOR XM_CALLCONV GetMousePos() const { return DirectX::XMVectorSet(m_CurrMouse.x, m_CurrMouse.y, 0, 0); }
 private:
 	physx::PxMat44		m_ViewMat;
 	DirectX::XMFLOAT3	m_EyePos;

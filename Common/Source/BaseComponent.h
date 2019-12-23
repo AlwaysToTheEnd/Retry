@@ -1,8 +1,10 @@
 #pragma once
 #include <vector>
 #include <DirectXMath.h>
+#include <functional>
 #include "IComponent.h"
 #include "BaseClass.h"
+#include "PhysXFunctionalObject.h"
 #include "foundation/PxTransform.h"
 
 namespace physx
@@ -49,6 +51,28 @@ private:
 	physx::PxRigidStatic* m_RigidBody;
 };
 
+class ComUICollision :public IComponent
+{
+public:
+	ComUICollision(GameObject& gameObject, int ID,
+		std::vector<UICollisions>* reservedVec)
+		:IComponent(COMPONENTTYPE::COM_UICOLLISTION, gameObject, ID)
+		,m_Size(1,1)
+		,m_ReservedUICol(reservedVec)
+	{
+		
+	}
+	virtual ~ComUICollision() = default;
+
+	virtual void Update() override;
+
+private:
+	std::vector<UICollisions>* const	m_ReservedUICol;
+
+	DirectX::XMFLOAT2					m_Size;
+	std::vector<std::function<void()>>	m_VoidFuncs;
+};
+
 class ComTransform :public IComponent
 {
 public:
@@ -64,6 +88,7 @@ public:
 	void SetTransform(const physx::PxTransform& transform) { m_Transform = transform; }
 
 	physx::PxMat44 GetMatrix() const { return physx::PxMat44(m_Transform); }
+	const physx::PxTransform& GetTransform() const { return m_Transform; }
 
 private:
 	physx::PxTransform m_Transform;

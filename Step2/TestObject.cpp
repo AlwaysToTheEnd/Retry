@@ -24,9 +24,9 @@ void TestObject::Init()
 
 	auto rigidCom = AddComponent<ComRigidDynamic>();
 	auto rigidBody = rigidCom->GetRigidBody();
-	auto funcs = new PhysXFunctionalObject();
+	auto funcs = new PhysXFunctionalObject(rigidCom);
 
-	funcs->voidFuncs.push_back(std::bind(&TestObject::TextChange, this));
+	funcs->m_VoidFuncs.push_back(std::bind(&TestObject::TextChange, this));
 	rigidBody->userData = funcs;
 
 	rigidBody->setGlobalPose(physx::PxTransform(physx::PxVec3(posx, 3, 0)));

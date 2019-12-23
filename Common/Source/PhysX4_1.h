@@ -4,6 +4,13 @@
 #include "PhysXFunctionalObject.h"
 #include "Px1RefPtr.h"
 
+
+struct PhysxSceneObject
+{
+	Px1RefPtr<physx::PxScene>	scene;
+	std::vector<UICollisions>	reservedToCheckUIs;
+};
+
 class PhysX4_1 final : public IPhysicsDevice
 {
 	class SceneSimulationFilterCallBack :public physx::PxSimulationFilterCallback
@@ -48,7 +55,7 @@ class PhysX4_1 final : public IPhysicsDevice
 			{
 				if (it->IsValideObject())
 				{
-					for (auto& it2 : it->voidFuncs)
+					for (auto& it2 : it->m_VoidFuncs)
 					{
 						it2();
 					}
@@ -71,7 +78,7 @@ public:
 	virtual void Update(const CGHScene& scene);
 	virtual IComponent* CreateComponent(CGHScene& scene, COMPONENTTYPE type, unsigned int id, GameObject& gameObject) override;
 
-	virtual void ExcuteFuncOfClickedObject(float origin_x, float origin_y, float origin_z,
+	virtual void ExcuteFuncOfClickedObject(CGHScene& scene, float origin_x, float origin_y, float origin_z,
 		float ray_x, float ray_y, float ray_z, float dist) override;
 	virtual void CreateScene(const CGHScene& scene) override;
 
@@ -94,7 +101,7 @@ private:
 	Px1RefPtr<physx::PxCooking>									m_Cooking;
 	Px1RefPtr<physx::PxCudaContextManager>						m_CudaManager;
 	Px1RefPtr<physx::PxPvd>										m_PVD;
-	std::unordered_map<std::string, Px1RefPtr<physx::PxScene>>	m_Scenes;
+	std::unordered_map<std::string, PhysxSceneObject>			m_Scenes;
 
 private:
 	Px1RefPtr<physx::PxMaterial>					m_Material;
