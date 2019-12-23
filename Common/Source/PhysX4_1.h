@@ -76,14 +76,15 @@ public:
 
 	virtual bool Init(void* graphicDevicePtr);
 	virtual void Update(const CGHScene& scene);
-	virtual IComponent* CreateComponent(CGHScene& scene, COMPONENTTYPE type, unsigned int id, GameObject& gameObject) override;
-
-	virtual void ExcuteFuncOfClickedObject(CGHScene& scene, float origin_x, float origin_y, float origin_z,
-		float ray_x, float ray_y, float ray_z, float dist) override;
 	virtual void CreateScene(const CGHScene& scene) override;
 
-private: // Only Used by FuncPtr
+	virtual IComponent* CreateComponent(CGHScene& scene, COMPONENTTYPE type, unsigned int id, GameObject& gameObject) override;
 	virtual void ComponentDeleteManaging(CGHScene& scene, COMPONENTTYPE type, int id) override;
+	virtual void ExcuteFuncOfClickedObject(CGHScene& scene, float origin_x, float origin_y, float origin_z,
+		float ray_x, float ray_y, float ray_z, float dist) override;
+
+private:
+	bool CheckUIClicked(std::vector<UICollisions>& collisions);
 
 private:
 	physx::PxFilterFlags ScissorFilter(physx::PxFilterObjectAttributes attributes0, physx::PxFilterData filterData0,

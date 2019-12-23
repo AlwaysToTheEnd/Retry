@@ -1,6 +1,7 @@
 #include "PhysX4_1.h"
 #include "BaseComponent.h"
 #include "CGHScene.h"
+#include "d3dApp.h"
 #include <Windows.h>
 using namespace physx;
 
@@ -127,7 +128,7 @@ IComponent* PhysX4_1::CreateComponent(CGHScene& scene, COMPONENTTYPE type, unsig
 	{
 		//test code
 		PxShape* shape = m_Physics->createShape(PxBoxGeometry(3.0f, 3.0f, 3.0f), *m_Material, true);
-		
+
 		rigidBody = m_Physics->createRigidDynamic(identityTransform);
 		rigidBody->attachShape(*shape);
 		PxRigidBodyExt::updateMassAndInertia(*reinterpret_cast<PxRigidBody*>(rigidBody), 10.0f);
@@ -179,6 +180,7 @@ void PhysX4_1::ComponentDeleteManaging(CGHScene& scene, COMPONENTTYPE type, int 
 		deletedActor = reinterpret_cast<ComRigidStatic*>(deletedComponent)->GetRigidBody();
 	}
 	break;
+	case COMPONENTTYPE::COM_UICOLLISTION:
 	case COMPONENTTYPE::COM_TRANSFORM:
 		break;
 	default:
@@ -202,53 +204,112 @@ void PhysX4_1::ComponentDeleteManaging(CGHScene& scene, COMPONENTTYPE type, int 
 	}
 }
 
-
 void PhysX4_1::ExcuteFuncOfClickedObject(CGHScene& scene, float origin_x, float origin_y, float origin_z,
 	float ray_x, float ray_y, float ray_z, float dist)
 {
 	auto iter = m_Scenes.find(scene.GetSceneName());
 
-	auto currScene = iter->second.scene.Get();
-
-	PxVec3 origin(origin_x, origin_y, origin_z);
-	PxVec3 ray(ray_x, ray_y, ray_z);
-	PxRaycastBuffer rayBuffer;
-	PxQueryFlags queryFlags = PxQueryFlag::eDYNAMIC| PxQueryFlag::eSTATIC;
-	PxQueryFilterData filterData(PxFilterData(), queryFlags);
-
-	currScene->raycast(origin, ray, dist, rayBuffer, PxHitFlags(0), filterData);
-
-	PxU32 hitNum = rayBuffer.getNbAnyHits();
-	PxU32 hitDistance = -1;
-	PxRigidActor* targetActor = nullptr;
-	for (PxU32 i = 0; i < hitNum; i++)
+	if (!CheckUIClicked(iter->second.reservedToCheckUIs))
 	{
-		auto hitObject = rayBuffer.getAnyHit(i);
+		auto currScene = iter->second.scene.Get();
 
-		if (hitObject.distance < hitDistance)
+		PxVec3 origin(origin_x, origin_y, origin_z);
+		PxVec3 ray(ray_x, ray_y, ray_z);
+		PxRaycastBuffer rayBuffer;
+		PxQueryFlags queryFlags = PxQueryFlag::eDYNAMIC | PxQueryFlag::eSTATIC;
+		PxQueryFilterData filterData(PxFilterData(), queryFlags);
+
+		currScene->raycast(origin, ray, dist, rayBuffer, PxHitFlags(0), filterData);
+
+		PxU32 hitNum = rayBuffer.getNbAnyHits();
+		PxU32 hitDistance = -1;
+		PxRigidActor* targetActor = nullptr;
+		for (PxU32 i = 0; i < hitNum; i++)
 		{
-			targetActor = hitObject.actor;
-			hitDistance = hitObject.distance;
-		}
-	}
+			auto hitObject = rayBuffer.getAnyHit(i);
 
-	if (targetActor)
-	{
-		if (targetActor->userData)
-		{
-			auto functionlObject = reinterpret_cast<PhysXFunctionalObject*>(targetActor->userData);
-
-			if (functionlObject->IsValideObject())
+			if (hitObject.distance < hitDistance)
 			{
-				for (auto& it : functionlObject->m_VoidFuncs)
+				targetActor = hitObject.actor;
+				hitDistance = hitObject.distance;
+			}
+		}
+
+		if (targetActor)
+		{
+			if (targetActor->userData)
+			{
+				auto functionlObject = reinterpret_cast<PhysXFunctionalObject*>(targetActor->userData);
+
+				if (functionlObject->IsValideObject())
 				{
-					it();
+					for (auto& it : functionlObject->m_VoidFuncs)
+					{
+						it();
+					}
 				}
 			}
 		}
 	}
+}
 
-	iter->second.reservedToCheckUIs.clear();
+bool PhysX4_1::CheckUIClicked(std::vector<UICollisions>& collisions)
+{
+	PxVec3 vec3Pos[4];
+	PxVec2 vec2Pos[4];
+	PxMat44 mat;
+	PxVec2 mousePos;
+	DirectX::XMStoreFloat2(reinterpret_cast<DirectX::XMFLOAT2*>(&mousePos), GETAPP->GetMousePos());
+
+	UICollisions* currUI = nullptr;
+	float lastZ = 1000.0f;
+
+	for (auto& it : collisions)
+	{
+		if (lastZ > it.transform.p.z)
+		{
+			mat = PxMat44(it.transform);
+			vec3Pos[0] = mat.transform(PxVec3(-it.size.x, -it.size.y, it.transform.p.z));
+			vec3Pos[1] = mat.transform(PxVec3(-it.size.x, it.size.y, it.transform.p.z));
+			vec3Pos[2] = mat.transform(PxVec3(it.size.x, it.size.y, it.transform.p.z));
+			vec3Pos[3] = mat.transform(PxVec3(it.size.x, -it.size.y, it.transform.p.z));
+
+
+			for (int i = 0; i < 4; i++)
+			{
+				vec2Pos[i] = { vec3Pos[i].x, vec3Pos[i].y };
+			}
+
+			PxVec2 ltToMouseVec = mousePos - vec2Pos[0];
+			PxVec2 ltToLbVec = vec2Pos[1] - vec2Pos[0];
+			PxVec2 ltToRtVec = vec2Pos[3] - vec2Pos[0];
+
+			PxVec2 rbToMouseVec = mousePos - vec2Pos[2];
+			PxVec2 rbToLbVec = vec2Pos[1] - vec2Pos[2];
+			PxVec2 rbToRtVec = vec2Pos[3] - vec2Pos[2];
+
+			if (ltToLbVec.dot(ltToMouseVec) >= 0
+				&& ltToRtVec.dot(ltToMouseVec) >= 0
+				&& rbToLbVec.dot(rbToMouseVec) >= 0
+				&& rbToRtVec.dot(rbToMouseVec) >= 0)
+			{
+				lastZ = it.transform.p.z;
+				currUI = &it;
+			}
+		}
+	}
+
+	if (currUI)
+	{
+		for (auto& it : currUI->voidFuncs)
+		{
+			it();
+		}
+	}
+
+	collisions.clear();
+
+	return currUI != nullptr;
 }
 
 PxFilterFlags PhysX4_1::ScissorFilter(PxFilterObjectAttributes attributes0,

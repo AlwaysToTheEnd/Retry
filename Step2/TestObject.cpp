@@ -13,24 +13,18 @@ extern std::mt19937_64 g_random;
 
 void TestObject::Init()
 {
-	RenderInfo renderInfo(RENDER_BOX);
-	renderInfo.point.size = { 3.0f, 3.0f, 3.0f};
-	renderInfo.point.color = {0,0,0,1};
+	RenderInfo renderInfo(RENDER_UI);
+	renderInfo.texPoint.size = { 100.0f, 100.0f,0};
+	renderInfo.meshOrTextureName = "ice.dds";
 	auto transform = AddComponent<ComTransform>();
 	AddComponent<ComRenderer>()->SetRenderInfo(renderInfo);
 
-	static float posx = 0;
-	transform->SetTransform(PxTransform(posx, 3, 0));
-
-	auto rigidCom = AddComponent<ComRigidDynamic>();
-	auto rigidBody = rigidCom->GetRigidBody();
-	auto funcs = new PhysXFunctionalObject(rigidCom);
-
-	funcs->m_VoidFuncs.push_back(std::bind(&TestObject::TextChange, this));
-	rigidBody->userData = funcs;
-
-	rigidBody->setGlobalPose(physx::PxTransform(physx::PxVec3(posx, 3, 0)));
-	posx += 9;
+	auto uicol = AddComponent<ComUICollision>();
+	PxTransform pos(150, 150, 0);
+	pos.q = PxQuat(PxPiDivFour/4, PxVec3(0, 0, 1).getNormalized());
+	transform->SetTransform(pos);
+	uicol->SetSize({ 100.0f, 100.0f });
+	uicol->AddFunc(std::bind(&TestObject::TextChange, this));
 
 	font = AddComponent<ComFont>();
 	font->SetFontName(L"baseFont.spritefont");
@@ -41,19 +35,11 @@ void TestObject::Init()
 
 void TestObject::Update()
 {
-	if (GKEYBOARD.IsKeyPressed(KEYState::Right))
-	{
-		GetComponent<ComRigidDynamic>()->GetRigidBody()->addForce(
-			physx::PxVec3(g_random()%10, g_random() % 10, g_random() % 10),PxForceMode::eVELOCITY_CHANGE);
-	}
 
-	if (GKEYBOARD.IsKeyPressed(KEYState::Up))
-	{
-
-	}
 }
 
 void TestObject::TextChange()
 {
-	font->m_Text = L"Changed Text" + std::to_wstring(font->GetID());
+	static int i = 0;
+	font->m_Text = L"Changed Text" + std::to_wstring(i++);
 }

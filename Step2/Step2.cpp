@@ -30,18 +30,6 @@ void Step2::InitObjects()
 {
 	 testScene = new CGHScene(m_GDevice.get(), m_PXDevice.get(), "testScene");
 	 SetCurrScene(testScene);
-	 testScene->SetGetRayFunc([](DirectX::XMFLOAT3& origin, DirectX::XMFLOAT3& ray)
-		 {
-			 DirectX::XMFLOAT2 mousePos;
-			 DirectX::XMFLOAT2 clientSize;
-			 DirectX::XMStoreFloat2(&mousePos, GETAPP->GetMousePos());
-			 DirectX::XMStoreFloat2(&clientSize, GETAPP->GetClientSize());
-			 origin.x = mousePos.x- clientSize.x/2;
-			 origin.y = -mousePos.y + clientSize.y/2;
-			 origin.z = -1;
-
-			 ray = { 0, 0, 1.0f };
-		 });
 
 	 testScene->AddGameObjects(new TestObject(*testScene));
 }

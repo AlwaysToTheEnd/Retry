@@ -65,6 +65,8 @@ public:
 	virtual ~ComUICollision() = default;
 
 	virtual void Update() override;
+	void SetSize(const DirectX::XMFLOAT2& halfSize) { m_Size = halfSize; }
+	void AddFunc(std::function<void()> func) { m_VoidFuncs.push_back(func); }
 
 private:
 	std::vector<UICollisions>* const	m_ReservedUICol;

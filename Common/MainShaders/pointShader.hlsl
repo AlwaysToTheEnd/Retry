@@ -167,10 +167,10 @@ void CreateUIPlane(uint cbIndex, float2 size, float4 color, inout TriangleStream
 	// |\ |
 	// 0 \2
 
-	vertices[0].posH = float4(-size.x, -size.y, 0.0f, 1.0f);
-	vertices[1].posH = float4(-size.x, size.y, 0.0f, 1.0f);
-	vertices[2].posH = float4(size.x, -size.y, 0.0f, 1.0f);
-	vertices[3].posH = float4(size.x, size.y, 0.0f, 1.0f);
+	vertices[0].posH = float4(-size.x, size.y, 0.0f, 1.0f);
+	vertices[1].posH = float4(-size.x, -size.y, 0.0f, 1.0f);
+	vertices[2].posH = float4(size.x, size.y, 0.0f, 1.0f);
+	vertices[3].posH = float4(size.x, -size.y, 0.0f, 1.0f);
 
 	[unroll]
 	for (int i = 0; i < 4; i++)
