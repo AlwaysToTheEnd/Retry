@@ -46,6 +46,7 @@
     <ClCompile Include="..\Common\Source\zlib\inftrees.c" />
     <ClCompile Include="..\Common\Source\zlib\trees.c" />
     <ClCompile Include="..\Common\Source\zlib\zutil.c" />
+    <ClCompile Include="..\Common\UIObjects\UIButton.cpp" />
     <ClCompile Include="Step2.cpp" />
     <ClCompile Include="TestObject.cpp" />
   </ItemGroup>
@@ -77,6 +78,8 @@
     <ClInclude Include="..\Common\Source\Px1RefPtr.h" />
     <ClInclude Include="..\Common\Source\Vertex.h" />
     <ClInclude Include="..\Common\Source\XFileParser.h" />
+    <ClInclude Include="..\Common\UIObjects\UIButton.h" />
+    <ClInclude Include="..\Common\UIObjects\UIPanel.h" />
     <ClInclude Include="Step2.h" />
     <ClInclude Include="TestObject.h" />
   </ItemGroup>

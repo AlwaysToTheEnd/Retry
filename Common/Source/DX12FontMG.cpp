@@ -7,10 +7,10 @@
 using namespace DirectX;
 
 void DX12FontManager::Init(ID3D12Device* device, ID3D12CommandQueue* queue,
-							const std::vector<std::wstring>& filePaths,
-							DXGI_FORMAT rtFormat, DXGI_FORMAT dsForma)
+	const std::vector<std::wstring>& filePaths,
+	DXGI_FORMAT rtFormat, DXGI_FORMAT dsForma)
 {
-	m_Memory=std::make_unique<GraphicsMemory>(device);
+	m_Memory = std::make_unique<GraphicsMemory>(device);
 
 	D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
 	heapDesc.NumDescriptors = filePaths.size();
@@ -18,7 +18,7 @@ void DX12FontManager::Init(ID3D12Device* device, ID3D12CommandQueue* queue,
 	heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 
 	ThrowIfFailed(device->CreateDescriptorHeap(
-		&heapDesc,IID_PPV_ARGS(m_DescriptorHeap.GetAddressOf())));
+		&heapDesc, IID_PPV_ARGS(m_DescriptorHeap.GetAddressOf())));
 
 	ResourceUploadBatch resourceUpload(device);
 	resourceUpload.Begin();
@@ -61,7 +61,7 @@ void DX12FontManager::Resize(unsigned int clientWidth, unsigned clientHeight)
 	}
 }
 
-void DX12FontManager::RenderCommandWrite(ID3D12GraphicsCommandList* cmdList, 
+void DX12FontManager::RenderCommandWrite(ID3D12GraphicsCommandList* cmdList,
 	const std::vector<RenderFont>& renderFonts)
 {
 	ID3D12DescriptorHeap* heaps[] = { m_DescriptorHeap.Get() };
@@ -73,12 +73,31 @@ void DX12FontManager::RenderCommandWrite(ID3D12GraphicsCommandList* cmdList,
 	DirectX::SimpleMath::Vector3 pos;
 	DirectX::SimpleMath::Vector3 scale;
 	DirectX::SimpleMath::Vector4 color;
+	DirectX::SimpleMath::Vector2 size;
 
 	for (auto& it : renderFonts)
 	{
 		pos = it.pos;
-		scale = it.scale;
 		color = it.color;
+		scale = { 1,1,1 };
+
+		size = m_Fonts[it.fontIndex].MeasureString(it.printString.c_str());
+
+		if (it.fontHeight >= 0)
+		{
+			float scalePer = it.fontHeight/ size.y;
+			scale.x = scalePer;
+			scale.y = scalePer;
+
+			pos.x -= (size.x * scale.x) / 2;
+			pos.y -= (size.y * scale.y) / 2;
+
+		}
+		else
+		{
+			pos.x -= size.x / 2;
+			pos.y -= size.y / 2;
+		}
 
 		m_Fonts[it.fontIndex].DrawString(m_SpriteBatch.get(), it.printString.c_str(), pos,
 			color, it.rotation, origin, scale);

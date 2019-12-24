@@ -177,6 +177,8 @@ void ComFont::Update()
 	RenderFont addedFont(m_FontName, m_Text);
 	addedFont.pos.x = m_OffsetPos.x;
 	addedFont.pos.y = m_OffsetPos.y;
+	addedFont.fontHeight = m_FontHeight;
+	addedFont.color = m_Color;
 
 	m_ReservedFonts->push_back(addedFont);
 }

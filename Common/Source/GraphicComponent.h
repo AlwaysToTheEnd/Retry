@@ -101,6 +101,7 @@ public:
 
 	virtual void Update() override;
 	void SetRenderInfo(const RenderInfo& info) { m_RenderInfo = info; }
+	const RenderInfo& GetRenderInfo() { return m_RenderInfo; }
 
 private:
 	void RenderMesh();
@@ -117,6 +118,8 @@ public:
 		std::vector<RenderFont>* reservedFonts)
 		: IComponent(COMPONENTTYPE::COM_FONT, gameObject, ID)
 		, m_OffsetPos(0,0)
+		, m_FontHeight(-1)
+		, m_Color(0,0,0,1)
 	{
 		if (m_ReservedFonts == nullptr)
 		{
@@ -126,11 +129,13 @@ public:
 	virtual ~ComFont() = default;
 
 	virtual void Update() override;
-	void SetFontName(std::wstring fontName) { m_FontName = fontName; }
+	void SetFont(std::wstring fontName) { m_FontName = fontName; }
 
 public:
 	std::wstring		m_Text;
+	int					m_FontHeight;
 	DirectX::XMFLOAT2	m_OffsetPos;
+	DirectX::XMFLOAT4	m_Color;
 
 private:
 	static std::vector<RenderFont>* m_ReservedFonts;

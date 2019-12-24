@@ -58,6 +58,9 @@
     <Filter Include="Common\CodeResources\BaseClass">
       <UniqueIdentifier>{0fcf8d5d-fc37-43be-91ee-fca7b7451f41}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Object\UIObjects">
+      <UniqueIdentifier>{fbeb45be-6909-49dd-97a4-a3c4ffc8b433}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Step2.cpp">
@@ -126,9 +129,6 @@
     <ClCompile Include="..\Common\Source\d3dUtil.cpp">
       <Filter>Common\CodeResources\BaseClass</Filter>
     </ClCompile>
-    <ClCompile Include="TestObject.cpp">
-      <Filter>Step2</Filter>
-    </ClCompile>
     <ClCompile Include="..\Common\Source\DX12FontMG.cpp">
       <Filter>Common\DeviceInstance\DX12Supporters</Filter>
     </ClCompile>
@@ -146,6 +146,12 @@
     </ClCompile>
     <ClCompile Include="..\Common\Source\CGHScene.cpp">
       <Filter>Common\CodeResources\BaseClass</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\UIObjects\UIButton.cpp">
+      <Filter>Object\UIObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="TestObject.cpp">
+      <Filter>Step2</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -218,9 +224,6 @@
     <ClInclude Include="..\Common\Source\Px1RefPtr.h">
       <Filter>Common\CodeResources\BaseClass</Filter>
     </ClInclude>
-    <ClInclude Include="TestObject.h">
-      <Filter>Step2</Filter>
-    </ClInclude>
     <ClInclude Include="..\Common\Source\DX12FontMG.h">
       <Filter>Common\DeviceInstance\DX12Supporters</Filter>
     </ClInclude>
@@ -235,6 +238,15 @@
     </ClInclude>
     <ClInclude Include="..\Common\Source\CGHScene.h">
       <Filter>Common\CodeResources\BaseClass</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\UIObjects\UIButton.h">
+      <Filter>Object\UIObjects</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\UIObjects\UIPanel.h">
+      <Filter>Object\UIObjects</Filter>
+    </ClInclude>
+    <ClInclude Include="TestObject.h">
+      <Filter>Step2</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

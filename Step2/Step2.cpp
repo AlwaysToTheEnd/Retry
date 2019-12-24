@@ -1,6 +1,5 @@
 #include "Step2.h"
 #include <random>
-#include "TestObject.h"
 using namespace std;
 
 mt19937_64 g_random(710);
@@ -30,8 +29,6 @@ void Step2::InitObjects()
 {
 	 testScene = new CGHScene(m_GDevice.get(), m_PXDevice.get(), "testScene");
 	 SetCurrScene(testScene);
-
-	 testScene->AddGameObjects(new TestObject(*testScene));
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
