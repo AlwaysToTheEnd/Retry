@@ -949,6 +949,12 @@ void GraphicDX12::UpdateObjectCB()
 
 			OTObjectConstnat.world = it.world;
 			OTObjectConstnat.textureIndex = m_TextureBuffer->GetTextureIndex(it.meshOrTextureName);
+
+			if (OTObjectConstnat.textureIndex == -1)
+			{
+				temp.color = it.point.color;
+			}
+
 			pointCB->CopyData(m_NumRenderPointObjects, &OTObjectConstnat);
 			m_NumRenderPointObjects++;
 		}

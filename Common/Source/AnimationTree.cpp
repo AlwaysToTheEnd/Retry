@@ -258,9 +258,8 @@ void AniTree::AnimationTree::TriggerReset()
 	}
 }
 
-AniTree::TriggerData::TriggerData(TRIGGER_TYPE type, DATA_TYPE dataType, UnionData standard)
+AniTree::TriggerData::TriggerData(TRIGGER_TYPE type, CGH::UnionData standard)
 	:m_TriggerType(type)
-	, m_DataType(dataType)
 	, m_Standard(standard)
 {
 	m_Trigger._i = 0;
@@ -271,18 +270,18 @@ bool AniTree::TriggerData::IsTriggerOK()
 	bool result = false;
 	TRIGGER_TYPE currFuncTrigger = GetTriggerFuncType();
 
-	switch (m_DataType)
+	switch (m_Standard.type)
 	{
-	case AniTree::TYPE_BOOL:
+	case CGH::DATA_TYPE::TYPE_BOOL:
 		result = CheckData(currFuncTrigger, m_Trigger._b, m_Standard._b);
 		break;
-	case AniTree::TYPE_FLOAT:
+	case CGH::DATA_TYPE::TYPE_FLOAT:
 		result = CheckData(currFuncTrigger, m_Trigger._f, m_Standard._f);
 		break;
-	case AniTree::TYPE_INT:
+	case CGH::DATA_TYPE::TYPE_INT:
 		result = CheckData(currFuncTrigger, m_Trigger._i, m_Standard._i);
 		break;
-	case AniTree::TYPE_UINT:
+	case CGH::DATA_TYPE::TYPE_UINT:
 		result = CheckData(currFuncTrigger, m_Trigger._u, m_Standard._u);
 		break;
 	}

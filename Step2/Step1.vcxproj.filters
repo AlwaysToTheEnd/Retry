@@ -153,6 +153,12 @@
     <ClCompile Include="TestObject.cpp">
       <Filter>Step2</Filter>
     </ClCompile>
+    <ClCompile Include="..\Common\UIObjects\UIParam.cpp">
+      <Filter>Object\UIObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Source\StaticObject.cpp">
+      <Filter>Common\CodeResources\BaseClass</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Common\Source\d3dApp.h">
@@ -247,6 +253,12 @@
     </ClInclude>
     <ClInclude Include="TestObject.h">
       <Filter>Step2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\UIObjects\UIParam.h">
+      <Filter>Object\UIObjects</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\StaticObject.h">
+      <Filter>Common\CodeResources\BaseClass</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

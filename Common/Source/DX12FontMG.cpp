@@ -83,21 +83,25 @@ void DX12FontManager::RenderCommandWrite(ID3D12GraphicsCommandList* cmdList,
 
 		size = m_Fonts[it.fontIndex].MeasureString(it.printString.c_str());
 
+		
+
 		if (it.fontHeight >= 0)
 		{
 			float scalePer = it.fontHeight/ size.y;
 			scale.x = scalePer;
 			scale.y = scalePer;
 
-			pos.x -= (size.x * scale.x) / 2;
-			pos.y -= (size.y * scale.y) / 2;
+			size.x *= scale.x;
+			size.y *= scale.y;
+		}
 
-		}
-		else
+		if (it.drawSize)
 		{
-			pos.x -= size.x / 2;
-			pos.y -= size.y / 2;
+			*it.drawSize = size;
 		}
+		
+		pos.x -= size.x / 2;
+		pos.y -= size.y / 2;
 
 		m_Fonts[it.fontIndex].DrawString(m_SpriteBatch.get(), it.printString.c_str(), pos,
 			color, it.rotation, origin, scale);

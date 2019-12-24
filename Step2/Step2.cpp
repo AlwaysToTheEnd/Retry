@@ -1,5 +1,7 @@
 #include "Step2.h"
 #include <random>
+#include "../Common/UIObjects/UIParam.h"
+#include "BaseComponent.h"
 using namespace std;
 
 mt19937_64 g_random(710);
@@ -29,6 +31,14 @@ void Step2::InitObjects()
 {
 	 testScene = new CGHScene(m_GDevice.get(), m_PXDevice.get(), "testScene");
 	 SetCurrScene(testScene);
+
+	 static float testfloat = 23.67f;
+	 auto test = new UIParam(*testScene);
+	 testScene->AddGameObjects(test);
+
+	 test->SetTargetParam(L"TestParam", &testfloat);
+	 test->SetTextHeight(15);
+	 test->GetComponent<ComTransform>()->SetTransform(physx::PxTransform(150, 150, 0));
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////

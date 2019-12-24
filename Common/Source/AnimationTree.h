@@ -2,17 +2,10 @@
 #include <string>
 #include <vector>
 #include <assert.h>
+#include "BaseClass.h"
 
 namespace AniTree
 {
-	enum DATA_TYPE
-	{
-		TYPE_BOOL,
-		TYPE_FLOAT,
-		TYPE_INT,
-		TYPE_UINT,
-	};
-
 	enum CHANGE_CONDITION_TYPE
 	{
 		CHANGE_CONDITION_TYPE_ANI_END,
@@ -28,21 +21,10 @@ namespace AniTree
 		TRIGGER_TYPE_OFF_AFTER_CHECK = 1 << 8,
 	};
 
-	struct UnionData
-	{
-		union
-		{
-			bool	_b;
-			float	_f;
-			int		_i;
-			unsigned int _u;
-		};
-	};
-
 	class TriggerData
 	{
 	public:
-		TriggerData(TRIGGER_TYPE type, DATA_TYPE dataType, UnionData standard);
+		TriggerData(TRIGGER_TYPE type, CGH::UnionData standard);
 		bool IsTriggerOK();
 
 	private:
@@ -50,10 +32,9 @@ namespace AniTree
 		TRIGGER_TYPE GetTriggerFuncType();
 
 	public:
-		const UnionData m_Standard;
+		const CGH::UnionData m_Standard;
 		const TRIGGER_TYPE m_TriggerType;
-		const DATA_TYPE m_DataType;
-		UnionData m_Trigger;
+		CGH::UnionData m_Trigger;
 	};
 
 	enum TO_ANI_ARROW_TYPE

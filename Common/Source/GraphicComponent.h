@@ -120,6 +120,7 @@ public:
 		, m_OffsetPos(0,0)
 		, m_FontHeight(-1)
 		, m_Color(0,0,0,1)
+		, m_DrawSize(0,0)
 	{
 		if (m_ReservedFonts == nullptr)
 		{
@@ -134,6 +135,7 @@ public:
 public:
 	std::wstring		m_Text;
 	int					m_FontHeight;
+	DirectX::XMFLOAT2	m_DrawSize;
 	DirectX::XMFLOAT2	m_OffsetPos;
 	DirectX::XMFLOAT4	m_Color;
 

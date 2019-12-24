@@ -36,6 +36,7 @@
     <ClCompile Include="..\Common\Source\GraphicDX12.cpp" />
     <ClCompile Include="..\Common\Source\IComponent.cpp" />
     <ClCompile Include="..\Common\Source\PhysX4_1.cpp" />
+    <ClCompile Include="..\Common\Source\StaticObject.cpp" />
     <ClCompile Include="..\Common\Source\XFileParser.cpp" />
     <ClCompile Include="..\Common\Source\zlib\adler32.c" />
     <ClCompile Include="..\Common\Source\zlib\compress.c" />
@@ -47,6 +48,7 @@
     <ClCompile Include="..\Common\Source\zlib\trees.c" />
     <ClCompile Include="..\Common\Source\zlib\zutil.c" />
     <ClCompile Include="..\Common\UIObjects\UIButton.cpp" />
+    <ClCompile Include="..\Common\UIObjects\UIParam.cpp" />
     <ClCompile Include="Step2.cpp" />
     <ClCompile Include="TestObject.cpp" />
   </ItemGroup>
@@ -76,8 +78,10 @@
     <ClInclude Include="..\Common\Source\PhysX4_1.h" />
     <ClInclude Include="..\Common\Source\PhysXFunctionalObject.h" />
     <ClInclude Include="..\Common\Source\Px1RefPtr.h" />
+    <ClInclude Include="..\Common\Source\StaticObject.h" />
     <ClInclude Include="..\Common\Source\Vertex.h" />
     <ClInclude Include="..\Common\Source\XFileParser.h" />
+    <ClInclude Include="..\Common\UIObjects\UIParam.h" />
     <ClInclude Include="..\Common\UIObjects\UIButton.h" />
     <ClInclude Include="..\Common\UIObjects\UIPanel.h" />
     <ClInclude Include="Step2.h" />

@@ -179,6 +179,7 @@ void ComFont::Update()
 	addedFont.pos.y = m_OffsetPos.y;
 	addedFont.fontHeight = m_FontHeight;
 	addedFont.color = m_Color;
+	addedFont.drawSize = &m_DrawSize;
 
 	m_ReservedFonts->push_back(addedFont);
 }

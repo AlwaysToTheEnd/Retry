@@ -211,4 +211,5 @@ struct RenderFont
 	int					fontHeight = -1;
 	DirectX::XMFLOAT3	pos = { 0, 0, 0 };
 	DirectX::XMFLOAT4	color = { 0,0,0,1 };
+	DirectX::XMFLOAT2*	drawSize = nullptr; //Output: If not nullptr, Get font drawSize from Device 
 };

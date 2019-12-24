@@ -8,7 +8,7 @@ void UIButton::Init()
 	m_Font = AddComponent<ComFont>();
 	m_Render = AddComponent<ComRenderer>();
 	m_UICollision = AddComponent<ComUICollision>();
-	m_Font->SetFont(L"baseFont.spritefont");
+	m_Font->SetFont(RenderFont::fontNames.front());
 }
 
 void UIButton::Update()
