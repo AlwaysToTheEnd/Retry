@@ -1,2 +1,3 @@
 # Retry
-누가 죽나 해보자
+
+I am trying to create game engine in my way.
