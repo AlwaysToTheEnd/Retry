@@ -17,7 +17,7 @@ private:
 	{
 	public:
 		ParamController()
-			:m_CurrParam(nullptr)
+			: m_CurrParam(nullptr)
 		{
 
 		}
@@ -27,9 +27,12 @@ private:
 	private:
 		virtual void Init() override;
 		virtual void Update() override;
+		void Clear();
+		void Excute();
 
 	private:
-		UIParam* m_CurrParam;
+		std::string		m_InputData;
+		UIParam*		m_CurrParam;
 
 	} s_ParamController;
 
@@ -40,6 +43,7 @@ public:
 		, m_UICollision(nullptr)
 		, m_ParamPtr(nullptr)
 		, m_DataType(CGH::DATA_TYPE::TYPE_INT)
+		, m_Selected(false)
 	{
 
 	}
@@ -51,7 +55,10 @@ public:
 private:
 	virtual void Init() override;
 	virtual void Update() override;
+	void SetUIParamToController();
+	void Selected(bool value) { m_Selected = value; }
 
+	template<typename T> std::wstring GetStringFromValue();
 private:
 	std::wstring	m_ParamName;
 	ComTransform*	m_Trans;
@@ -59,6 +66,7 @@ private:
 	ComUICollision* m_UICollision;
 	void*			m_ParamPtr;
 	CGH::DATA_TYPE	m_DataType;
+	bool			m_Selected;
 };
 
 template<typename T>
@@ -88,5 +96,37 @@ inline void UIParam::SetTargetParam(const std::wstring& paramName, T* data)
 
 	m_ParamName = paramName;
 	m_ParamPtr = reinterpret_cast<void*>(data);
+}
+
+template<typename T>
+inline std::wstring UIParam::GetStringFromValue()
+{
+	std::wstring result;
+
+	result = std::to_wstring(*reinterpret_cast<T*>(m_ParamPtr));
+	size_t period = result.find(L'.');
+
+	if (period < result.size())
+	{
+		while (result.size())
+		{
+			if (result.back() == L'0')
+			{
+				if (period == result.size() - 2)
+				{
+					break;
+				}
+
+				result.pop_back();
+			}
+			else
+			{
+
+				break;
+			}
+		}
+	}
+
+	return result;
 }
 
