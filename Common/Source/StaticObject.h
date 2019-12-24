@@ -2,33 +2,31 @@
 #include <vector>
 
 class D3DApp;
-class StaticObject
+class StaticGameObjectController
 {
 	friend class D3DApp;
 public:
-	StaticObject()
+	StaticGameObjectController()
 	{
-		m_StaticObjects.push_back(this);
 	}
 
-	virtual ~StaticObject()
+	virtual ~StaticGameObjectController()
 	{
-		for (auto iter = m_StaticObjects.begin(); iter != m_StaticObjects.end(); iter++)
+		if (this == m_CurrObject)
 		{
-			if (*iter == this)
-			{
-				m_StaticObjects.erase(iter);
-				break;
-			}
+			m_CurrObject = nullptr;
 		}
 	}
 	
 protected:
 	virtual void Init() = 0;
 	virtual void Update() = 0;
+	virtual void WorkClear();
+	void WorkStart(); // workStart should be excuted on CGH::ExcuteFuncOfClickedObject.
 
 private:
-	static void StaticsInit();
 	static void StaticsUpdate();
-	static std::vector<StaticObject*> m_StaticObjects;
+
+private:
+	static StaticGameObjectController*	m_CurrObject;
 };

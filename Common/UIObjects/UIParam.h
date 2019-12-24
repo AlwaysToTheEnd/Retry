@@ -13,7 +13,7 @@ class ComTransform;
 class UIParam :public GameObject
 {
 private:
-	static class ParamController:public StaticObject
+	static class ParamController:public StaticGameObjectController
 	{
 	public:
 		ParamController()
@@ -27,7 +27,7 @@ private:
 	private:
 		virtual void Init() override;
 		virtual void Update() override;
-		void Clear();
+		virtual void WorkClear() override;
 		void Excute();
 
 	private:

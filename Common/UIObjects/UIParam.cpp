@@ -82,13 +82,13 @@ void UIParam::ParamController::Update()
 
 		if (keyboard.IsKeyPressed(KEYState::Escape))
 		{
-			Clear();
+			WorkClear();
 			return;
 		}
 		else if (keyboard.IsKeyPressed(KEYState::Enter))
 		{
 			Excute();
-			Clear();
+			WorkClear();
 			return;
 		}
 		else if (keyboard.IsKeyPressed(KEYState::Back))
@@ -126,8 +126,9 @@ void UIParam::ParamController::Update()
 	}
 }
 
-void UIParam::ParamController::Clear()
+void UIParam::ParamController::WorkClear()
 {
+	StaticGameObjectController::WorkClear();
 	m_InputData.clear();
 
 	if (m_CurrParam)
@@ -163,13 +164,15 @@ void UIParam::ParamController::Excute()
 
 void UIParam::ParamController::SetUIParam(UIParam* uiParam)
 {
+	WorkStart();
+
 	if (uiParam && m_CurrParam != uiParam)
 	{
 		if (uiParam->m_ParamPtr)
 		{
 			if (m_CurrParam)
 			{
-				Clear();
+				WorkClear();
 			}
 
 			m_CurrParam = uiParam;

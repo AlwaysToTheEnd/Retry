@@ -34,7 +34,7 @@ void D3DApp::BaseUpdate()
 	m_KeyboardTracker.Update(m_Keyboard.GetState());
 	m_Camera.Update();
 
-	StaticObject::StaticsUpdate();
+	StaticGameObjectController::StaticsUpdate();
 	Update();
 
 	if (m_CurrScene)
@@ -87,7 +87,6 @@ bool D3DApp::Initialize()
 	m_GDevice->ReadyWorks(m_TargetTextureFolders, m_TargetMeshFolders, m_TargetFontFolders);
 	m_GDevice->SetCamera(&m_Camera);
 
-	StaticObject::StaticsInit();
 	InitObjects();
 
 	return true;

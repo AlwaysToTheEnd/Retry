@@ -1,19 +1,26 @@
 #include "StaticObject.h"
 
-std::vector<StaticObject*> StaticObject::m_StaticObjects;
+StaticGameObjectController* StaticGameObjectController::m_CurrObject = nullptr;
 
-void StaticObject::StaticsInit()
+void StaticGameObjectController::WorkClear()
 {
-	for (auto& it : m_StaticObjects)
-	{
-		it->Init();
-	}
+	m_CurrObject = nullptr;
 }
 
-void StaticObject::StaticsUpdate()
+void StaticGameObjectController::WorkStart()
 {
-	for (auto& it : m_StaticObjects)
+	if (m_CurrObject)
 	{
-		it->Update();
+		m_CurrObject->WorkClear();
+	}
+
+	m_CurrObject = this;
+}
+
+void StaticGameObjectController::StaticsUpdate()
+{
+	if (m_CurrObject)
+	{
+		m_CurrObject->Update();
 	}
 }
