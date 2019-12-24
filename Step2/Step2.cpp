@@ -33,7 +33,7 @@ void Step2::InitObjects()
 	 SetCurrScene(testScene);
 
 	 static float testfloat = 23.67f;
-	 static int testInt = 20;
+	 static bool testInt = true;
 	 auto test = new UIParam(*testScene);
 	 auto test2 = new UIParam(*testScene);
 	 testScene->AddGameObjects(test);
