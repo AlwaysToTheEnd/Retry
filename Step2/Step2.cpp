@@ -33,12 +33,19 @@ void Step2::InitObjects()
 	 SetCurrScene(testScene);
 
 	 static float testfloat = 23.67f;
+	 static int testInt = 20;
 	 auto test = new UIParam(*testScene);
+	 auto test2 = new UIParam(*testScene);
 	 testScene->AddGameObjects(test);
+	 testScene->AddGameObjects(test2);
 
 	 test->SetTargetParam(L"TestParam", &testfloat);
 	 test->SetTextHeight(15);
 	 test->GetComponent<ComTransform>()->SetTransform(physx::PxTransform(150, 150, 0));
+
+	 test2->SetTargetParam(L"TestParam2", &testInt);
+	 test2->SetTextHeight(15);
+	 test2->GetComponent<ComTransform>()->SetTransform(physx::PxTransform(150, 170, 0));
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
