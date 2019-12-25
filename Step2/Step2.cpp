@@ -34,8 +34,8 @@ void Step2::InitObjects()
 
 	 static float testfloat = 23.67f;
 	 static bool testInt = true;
-	 auto test = new UIParam(*testScene);
-	 auto test2 = new UIParam(*testScene);
+	 auto test = new UIParam(*testScene, UIParam::UIPARAMTYPE::MODIFIER);
+	 auto test2 = new UIParam(*testScene, UIParam::UIPARAMTYPE::VIEWER);
 	 testScene->AddGameObjects(test);
 	 testScene->AddGameObjects(test2);
 

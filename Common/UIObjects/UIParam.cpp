@@ -14,10 +14,13 @@ void UIParam::Init()
 {
 	m_Trans = AddComponent<ComTransform>();
 	m_Font = AddComponent<ComFont>();
-	m_UICollision = AddComponent<ComUICollision>();
-
 	m_Font->SetFont(RenderFont::fontNames.front());
-	m_UICollision->AddFunc(std::bind(&UIParam::SetUIParamToController, this));
+
+	if (m_Type == UIPARAMTYPE::MODIFIER)
+	{
+		m_UICollision = AddComponent<ComUICollision>();
+		m_UICollision->AddFunc(std::bind(&UIParam::SetUIParamToController, this));
+	}
 }
 
 void UIParam::Update()
@@ -29,35 +32,32 @@ void UIParam::Update()
 		m_Font->m_OffsetPos.x = pos.x;
 		m_Font->m_OffsetPos.y = pos.y;
 
-		DirectX::XMFLOAT2 halfSize = m_Font->m_DrawSize;
-		m_UICollision->SetSize({ halfSize.x / 2, halfSize.y / 2 });
-
 		std::wstring text = m_ParamName + L" : ";
 
-		if (!m_Selected)
+		switch (m_Type)
 		{
-			switch (m_DataType)
+		case UIParam::UIPARAMTYPE::VIEWER:
+		{
+			text += GetDataString();
+		}
+			break;
+		case UIParam::UIPARAMTYPE::MODIFIER:
+		{
+			DirectX::XMFLOAT2 halfSize = m_Font->m_DrawSize;
+			m_UICollision->SetSize({ halfSize.x / 2, halfSize.y / 2 });
+
+			if (!m_Selected)
 			{
-			case CGH::DATA_TYPE::TYPE_BOOL:
-				text += *reinterpret_cast<bool*>(m_ParamPtr) ? L"true" : L"false";
-				break;
-			case CGH::DATA_TYPE::TYPE_FLOAT:
-				text += GetStringFromValue<float>();
-				break;
-			case CGH::DATA_TYPE::TYPE_INT:
-				text += GetStringFromValue<int>();
-				break;
-			case CGH::DATA_TYPE::TYPE_UINT:
-				text += GetStringFromValue<unsigned int>();
-				break;
-			default:
-				assert(false);
-				break;
+				text += GetDataString();
+			}
+			else
+			{
+				text += m_Font->m_Text;
 			}
 		}
-		else
-		{
-			text += m_Font->m_Text;
+			break;
+		default:
+			break;
 		}
 
 		m_Font->m_Text = text;
@@ -67,6 +67,32 @@ void UIParam::Update()
 void UIParam::SetUIParamToController()
 {
 	s_ParamController.SetUIParam(this);
+}
+
+std::wstring UIParam::GetDataString()
+{
+	std::wstring result;
+
+	switch (m_DataType)
+	{
+	case CGH::DATA_TYPE::TYPE_BOOL:
+		result = *reinterpret_cast<bool*>(m_ParamPtr) ? L"true" : L"false";
+		break;
+	case CGH::DATA_TYPE::TYPE_FLOAT:
+		result = GetStringFromValue<float>();
+		break;
+	case CGH::DATA_TYPE::TYPE_INT:
+		result = GetStringFromValue<int>();
+		break;
+	case CGH::DATA_TYPE::TYPE_UINT:
+		result = GetStringFromValue<unsigned int>();
+		break;
+	default:
+		assert(false);
+		break;
+	}
+
+	return result;
 }
 
 void UIParam::ParamController::Init()

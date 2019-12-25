@@ -12,6 +12,13 @@ class ComTransform;
 
 class UIParam :public GameObject
 {
+public:
+	enum class UIPARAMTYPE
+	{
+		VIEWER,
+		MODIFIER,
+	};
+
 private:
 	static class ParamController:public StaticGameObjectController
 	{
@@ -37,8 +44,9 @@ private:
 	} s_ParamController;
 
 public:
-	UIParam(CGHScene& scene)
+	UIParam(CGHScene& scene, UIPARAMTYPE type)
 		: GameObject(scene)
+		, m_Type(type)
 		, m_Font(nullptr)
 		, m_UICollision(nullptr)
 		, m_ParamPtr(nullptr)
@@ -58,15 +66,17 @@ private:
 	void SetUIParamToController();
 	void Selected(bool value) { m_Selected = value; }
 
+	std::wstring GetDataString();
 	template<typename T> std::wstring GetStringFromValue();
 private:
-	std::wstring	m_ParamName;
-	ComTransform*	m_Trans;
-	ComFont*		m_Font;
-	ComUICollision* m_UICollision;
-	void*			m_ParamPtr;
-	CGH::DATA_TYPE	m_DataType;
-	bool			m_Selected;
+	const UIPARAMTYPE	m_Type;
+	std::wstring		m_ParamName;
+	ComTransform*		m_Trans;
+	ComFont*			m_Font;
+	ComUICollision*		m_UICollision;
+	void*				m_ParamPtr;
+	CGH::DATA_TYPE		m_DataType;
+	bool				m_Selected;
 };
 
 template<typename T>
