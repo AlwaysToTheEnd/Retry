@@ -31,6 +31,6 @@ void ComUICollision::Update()
 
 	if (transform)
 	{
-		m_ReservedUICol->push_back(UICollisions(transform->GetTransform(), m_Size, m_VoidFuncs));
+		m_ReservedUICol->push_back(UICollisions(&m_TargetGameObject,transform->GetTransform(), m_Size, m_VoidFuncs));
 	}
 }

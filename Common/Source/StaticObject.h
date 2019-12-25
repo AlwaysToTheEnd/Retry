@@ -1,4 +1,5 @@
 #pragma once
+#include <list>
 #include <vector>
 
 class D3DApp;
@@ -12,21 +13,21 @@ public:
 
 	virtual ~StaticGameObjectController()
 	{
-		if (this == m_CurrObject)
-		{
-			m_CurrObject = nullptr;
-		}
+	
 	}
 	
 protected:
 	virtual void Init() = 0;
 	virtual void Update() = 0;
-	virtual void WorkClear();
-	void WorkStart(); // workStart should be excuted on CGH::ExcuteFuncOfClickedObject.
+	virtual void WorkClear() = 0;
+	static void WorkALLEnd();
+	void WorkStart(bool otherWorksEnd=false); // workStart should be excuted on CGH::ExcuteFuncOfClickedObject.
+	void WorkEnd();
 
 private:
 	static void StaticsUpdate();
 
 private:
-	static StaticGameObjectController*	m_CurrObject;
+	static std::list<StaticGameObjectController*> m_CurrObjects;
+	static std::vector<StaticGameObjectController*> m_EndList;
 };

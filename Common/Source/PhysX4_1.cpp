@@ -126,16 +126,9 @@ IComponent* PhysX4_1::CreateComponent(CGHScene& scene, COMPONENTTYPE type, unsig
 	{
 	case COMPONENTTYPE::COM_DYNAMIC:
 	{
-		//test code
-		PxShape* shape = m_Physics->createShape(PxBoxGeometry(3.0f, 3.0f, 3.0f), *m_Material, true);
-
 		rigidBody = m_Physics->createRigidDynamic(identityTransform);
-		rigidBody->attachShape(*shape);
-		PxRigidBodyExt::updateMassAndInertia(*reinterpret_cast<PxRigidBody*>(rigidBody), 10.0f);
-
 		newComponent = new ComRigidDynamic(gameObject, id, reinterpret_cast<PxRigidDynamic*>(rigidBody));
 
-		//shape->release();
 	}
 	break;
 	case COMPONENTTYPE::COM_STATIC:
@@ -204,12 +197,15 @@ void PhysX4_1::ComponentDeleteManaging(CGHScene& scene, COMPONENTTYPE type, int 
 	}
 }
 
-void PhysX4_1::ExcuteFuncOfClickedObject(CGHScene& scene, float origin_x, float origin_y, float origin_z,
+const void* PhysX4_1::ExcuteFuncOfClickedObject(CGHScene& scene, float origin_x, float origin_y, float origin_z,
 	float ray_x, float ray_y, float ray_z, float dist)
 {
+	const void* result = nullptr;
 	auto iter = m_Scenes.find(scene.GetSceneName());
 
-	if (!CheckUIClicked(iter->second.reservedToCheckUIs))
+	result = CheckUIClicked(iter->second.reservedToCheckUIs);
+
+	if (result==nullptr)
 	{
 		auto currScene = iter->second.scene.Get();
 
@@ -247,14 +243,20 @@ void PhysX4_1::ExcuteFuncOfClickedObject(CGHScene& scene, float origin_x, float 
 					{
 						it();
 					}
+
+					result = functionlObject->m_GameObject;
 				}
 			}
 		}
 	}
+
+	return result;
 }
 
-bool PhysX4_1::CheckUIClicked(std::vector<UICollisions>& collisions)
+const void* PhysX4_1::CheckUIClicked(std::vector<UICollisions>& collisions)
 {
+	const void* result = nullptr;
+
 	PxVec3 vec3Pos[4];
 	PxVec2 vec2Pos[4];
 	PxMat44 mat;
@@ -305,11 +307,13 @@ bool PhysX4_1::CheckUIClicked(std::vector<UICollisions>& collisions)
 		{
 			it();
 		}
+
+		result = currUI->gameObject;
 	}
 
 	collisions.clear();
 
-	return currUI != nullptr;
+	return result;
 }
 
 PxFilterFlags PhysX4_1::ScissorFilter(PxFilterObjectAttributes attributes0,

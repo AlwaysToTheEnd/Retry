@@ -4,8 +4,8 @@
 class PhysXFunctionalObject
 {
 public:
-	PhysXFunctionalObject(IComponent* com)
-		:m_Component(com)
+	PhysXFunctionalObject(const GameObject* object)
+		:m_GameObject(object)
 	{
 
 	}
@@ -20,15 +20,18 @@ private:
 
 public:
 	std::vector<std::function<void()>>	m_VoidFuncs;
-	IComponent*	const					m_Component;
+	const GameObject*					m_GameObject;
 };
 
 
 struct UICollisions
 {
-	UICollisions(const physx::PxTransform& t, const DirectX::XMFLOAT2& s,
+	UICollisions(const GameObject* object, 
+		const physx::PxTransform& t, 
+		const DirectX::XMFLOAT2& s,
 		const std::vector<std::function<void()>>& f)
-		:transform(t)
+		:gameObject(object)
+		,transform(t)
 		,size(s)
 		,voidFuncs(f)
 	{
@@ -38,4 +41,5 @@ struct UICollisions
 	const physx::PxTransform& transform;
 	const DirectX::XMFLOAT2& size;
 	const std::vector<std::function<void()>>& voidFuncs;
+	const void* gameObject;
 };

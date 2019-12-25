@@ -26,17 +26,19 @@ void CGHScene::AddGameObjects(GameObject* newObject)
 	m_Objects.push_back(std::unique_ptr<GameObject>(newObject));
 }
 
-void CGHScene::Update()
+const void* CGHScene::Update(const DirectX::Mouse::ButtonStateTracker& mouse)
 {
+	const void* result = nullptr;
+
 	for (auto& it : m_Objects)
 	{
 		it->Update();
 	}
-
-	if (GETAPP->GetMouse().leftButton == MOUSEState::RELEASED)
+	
+	if (mouse.leftButton == MOUSEState::RELEASED)
 	{
 		GetComponentUpdater(COMPONENTTYPE::COM_UICOLLISTION).Update();
-		ExcuteFuncOfClickedObject(500.0f);
+		result = ExcuteFuncOfClickedObject(500.0f);
 	}
 
 	m_PhysicsDevice->Update(*this);
@@ -48,6 +50,8 @@ void CGHScene::Update()
 	GetComponentUpdater(COMPONENTTYPE::COM_FONT).Update();
 
 	m_GraphicDevice->Update(*this);
+
+	return result;
 }
 
 void CGHScene::ComponentDeleteManaging(COMPONENTTYPE type, int id)
@@ -103,12 +107,12 @@ ComponentUpdater& CGHScene::GetComponentUpdater(COMPONENTTYPE type)
 	return m_ComUpdater[index];
 }
 
-void CGHScene::ExcuteFuncOfClickedObject(float dist)
+const void* CGHScene::ExcuteFuncOfClickedObject(float dist)
 {
 	DirectX::XMFLOAT3 rayOrigin;
 	DirectX::XMFLOAT3 ray;
 
 	GETAPP->GetMouseRay(rayOrigin, ray);
-	m_PhysicsDevice->ExcuteFuncOfClickedObject(*this, rayOrigin.x, rayOrigin.y, rayOrigin.z,
+	return m_PhysicsDevice->ExcuteFuncOfClickedObject(*this, rayOrigin.x, rayOrigin.y, rayOrigin.z,
 		ray.x, ray.y, ray.z, dist);
 }

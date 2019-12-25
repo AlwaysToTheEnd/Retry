@@ -78,47 +78,48 @@ void UIParam::ParamController::Update()
 {
 	if (m_CurrParam)
 	{
-		auto keyboard = GETAPP->GetKeyBoard();
-
-		if (keyboard.IsKeyPressed(KEYState::Escape))
+		if (GETKEY(m_CurrParam))
 		{
-			WorkClear();
-			return;
-		}
-		else if (keyboard.IsKeyPressed(KEYState::Enter))
-		{
-			Excute();
-			WorkClear();
-			return;
-		}
-		else if (keyboard.IsKeyPressed(KEYState::Back))
-		{
-			if (m_InputData.size())
+			m_CurrParam->Selected(true);
+			if (keyboard->IsKeyPressed(KEYState::Enter))
 			{
-				m_InputData.pop_back();
+				Excute();
+				WorkEnd();
+				return;
 			}
-		}
-		else if (keyboard.IsKeyPressed(KEYState::OemMinus))
-		{
-			if (m_InputData.size() == 0)
+			else if (keyboard->IsKeyPressed(KEYState::Back))
 			{
-				m_InputData += '-';
+				if (m_InputData.size())
+				{
+					m_InputData.pop_back();
+				}
 			}
-		}
-		else if (keyboard.IsKeyPressed(KEYState::OemPeriod))
-		{
-			m_InputData += '.';
+			else if (keyboard->IsKeyPressed(KEYState::OemMinus))
+			{
+				if (m_InputData.size() == 0)
+				{
+					m_InputData += '-';
+				}
+			}
+			else if (keyboard->IsKeyPressed(KEYState::OemPeriod))
+			{
+				m_InputData += '.';
+			}
+			else
+			{
+				for (auto key = KEYState::D0; key <= KEYState::D9; key = static_cast<KEYState>(key + 1))
+				{
+					if (keyboard->IsKeyPressed(key))
+					{
+						m_InputData += ('0' + key - KEYState::D0);
+						break;
+					}
+				}
+			}
 		}
 		else
 		{
-			for (auto key = KEYState::D0; key <= KEYState::D9; key = static_cast<KEYState>(key + 1))
-			{
-				if (keyboard.IsKeyPressed(key))
-				{
-					m_InputData += ('0' + key - KEYState::D0);
-					break;
-				}
-			}
+			m_CurrParam->Selected(false);
 		}
 
 		m_CurrParam->m_Font->m_Text.clear();
@@ -128,7 +129,6 @@ void UIParam::ParamController::Update()
 
 void UIParam::ParamController::WorkClear()
 {
-	StaticGameObjectController::WorkClear();
 	m_InputData.clear();
 
 	if (m_CurrParam)

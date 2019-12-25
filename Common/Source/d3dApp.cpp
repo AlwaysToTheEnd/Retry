@@ -16,12 +16,25 @@ D3DApp* D3DApp::GetApp()
 	return m_App;
 }
 
+const DirectX::Keyboard::KeyboardStateTracker* D3DApp::GetKeyBoard(const void* caller)
+{
+	const DirectX::Keyboard::KeyboardStateTracker* result = nullptr;
+
+	if (caller && caller==m_CurrKeyboardHoldObject)
+	{
+		result = &m_KeyboardTracker;
+	}
+
+	return result;
+}
+
 D3DApp::D3DApp(HINSTANCE hInstance)
 	: m_hAppInst(hInstance)
+	, m_CurrKeyboardHoldObject(nullptr)
+	, m_CurrScene(nullptr)
 {
 	assert(m_App == nullptr);
 	m_App = this;
-	m_CurrScene = nullptr;
 }
 
 D3DApp::~D3DApp()
@@ -33,13 +46,28 @@ void D3DApp::BaseUpdate()
 	m_MouseTracker.Update(m_Mouse.GetState());
 	m_KeyboardTracker.Update(m_Keyboard.GetState());
 	m_Camera.Update();
+	
+	if (m_KeyboardTracker.IsKeyPressed(KEYState::Escape))
+	{
+		StaticGameObjectController::WorkALLEnd();
+		m_CurrKeyboardHoldObject = nullptr;
+	}
 
 	StaticGameObjectController::StaticsUpdate();
 	Update();
 
 	if (m_CurrScene)
 	{
-		m_CurrScene->Update();
+		const void* keyboardHolder = m_CurrScene->Update(m_MouseTracker);
+
+		if (keyboardHolder)
+		{
+			m_CurrKeyboardHoldObject = keyboardHolder;
+		}
+		else if(m_MouseTracker.leftButton == MOUSEState::RELEASED)
+		{
+			m_CurrKeyboardHoldObject = nullptr;
+		}
 	}
 	
 	m_GDevice->GetWorldRay(m_RayOrigin, m_Ray);
@@ -183,14 +211,6 @@ LRESULT D3DApp::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	case WM_GETMINMAXINFO:
 		((MINMAXINFO*)lParam)->ptMinTrackSize.x = 200;
 		((MINMAXINFO*)lParam)->ptMinTrackSize.y = 200;
-		return 0;
-
-	case WM_KEYUP:
-		if (wParam == VK_ESCAPE)
-		{
-			PostQuitMessage(0);
-		}
-
 		return 0;
 	}
 

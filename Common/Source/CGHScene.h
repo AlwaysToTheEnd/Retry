@@ -3,6 +3,7 @@
 #include "GameObject.h"
 #include <functional>
 #include <DirectXMath.h>
+#include <Mouse.h>
 
 class IGraphicDevice;
 class IPhysicsDevice;
@@ -15,14 +16,14 @@ public:
 	CGHScene(IGraphicDevice* graphicDevice, IPhysicsDevice* pxDevice, const std::string& name);
 	virtual ~CGHScene();
 
-	void Update();
+	const void* Update(const DirectX::Mouse::ButtonStateTracker& mouse);
 	void AddGameObjects(GameObject* newObject);
 	void DeleteAllObjects() { m_Objects.clear(); }
 	ComponentUpdater& GetComponentUpdater(COMPONENTTYPE type);
 	const std::string& GetSceneName() const { return m_SceneName; }
 
 private:
-	void ExcuteFuncOfClickedObject(float dist);
+	const void* ExcuteFuncOfClickedObject(float dist);
 	void ComponentDeleteManaging(COMPONENTTYPE type, int id);
 	std::unique_ptr<IComponent> CreateComponent(COMPONENTTYPE type, GameObject& gameObject);
 

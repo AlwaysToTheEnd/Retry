@@ -8,8 +8,7 @@
 #include "cCamera.h"
 
 #define GETAPP D3DApp::GetApp()
-#define GKEYBOARD D3DApp::GetApp()->GetKeyBoard()
-#define GMOUSE D3DApp::GetApp()->GetMouse()
+#define GETKEY(T) const DirectX::Keyboard::KeyboardStateTracker* keyboard = (D3DApp::GetApp()->GetKeyBoard(T))
 
 typedef DirectX::Keyboard::Keys KEYState;
 typedef DirectX::Mouse::ButtonStateTracker::ButtonState MOUSEState;
@@ -42,8 +41,7 @@ protected:
 
 public:
 	static D3DApp* GetApp();
-	const DirectX::Mouse::ButtonStateTracker& GetMouse() { return m_MouseTracker; }
-	const DirectX::Keyboard::KeyboardStateTracker& GetKeyBoard() { return m_KeyboardTracker; }
+	const DirectX::Keyboard::KeyboardStateTracker* GetKeyBoard(const void* caller);
 	void GetMouseRay(DirectX::XMFLOAT3& origin, DirectX::XMFLOAT3& ray) const { origin = m_RayOrigin; ray = m_Ray; }
 	DirectX::XMVECTOR XM_CALLCONV GetMousePos() const { return m_Camera.GetMousePos(); }
 	DirectX::XMVECTOR XM_CALLCONV GetClientSize() const { return m_GDevice->GetClientSize(); }
@@ -71,10 +69,13 @@ protected:
 	static D3DApp*						m_App;
 
 	cCamera								m_Camera;
+
 	DirectX::Mouse						m_Mouse;
 	DirectX::Mouse::ButtonStateTracker	m_MouseTracker;
-	DirectX::Keyboard					m_Keyboard;
+
+	DirectX::Keyboard						m_Keyboard;
 	DirectX::Keyboard::KeyboardStateTracker	m_KeyboardTracker;
+	const void*								m_CurrKeyboardHoldObject;
 
 	DirectX::XMFLOAT3	m_RayOrigin = {};
 	DirectX::XMFLOAT3	m_Ray = {};
