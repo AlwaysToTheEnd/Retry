@@ -1,7 +1,8 @@
 #include "Step2.h"
 #include <random>
-#include "../Common/UIObjects/UIParam.h"
+#include "../Common/UIObjects/UIPanel.h"
 #include "BaseComponent.h"
+#include <DirectXColors.h>
 using namespace std;
 
 mt19937_64 g_random(710);
@@ -36,16 +37,22 @@ void Step2::InitObjects()
 	 static bool testInt = true;
 	 auto test = new UIParam(*testScene, UIParam::UIPARAMTYPE::MODIFIER);
 	 auto test2 = new UIParam(*testScene, UIParam::UIPARAMTYPE::VIEWER);
+	 auto testPanel = new UIPanel(*testScene);
 	 testScene->AddGameObjects(test);
 	 testScene->AddGameObjects(test2);
+	 testScene->AddGameObjects(testPanel);
 
 	 test->SetTargetParam(L"TestParam", &testfloat);
 	 test->SetTextHeight(15);
-	 test->GetComponent<ComTransform>()->SetTransform(physx::PxTransform(150, 150, 0));
 
 	 test2->SetTargetParam(L"TestParam2", &testInt);
 	 test2->SetTextHeight(15);
-	 test2->GetComponent<ComTransform>()->SetTransform(physx::PxTransform(150, 170, 0));
+
+	 testPanel->SetPos({ 350,350,0.1f });
+	 testPanel->SetBackGroundTexture("ice.dds");
+	 testPanel->AddUICom(10, 30, test);
+	 testPanel->AddUICom(10, 50, test2);
+	 testPanel->SetSize(150, 150);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////

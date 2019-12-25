@@ -174,12 +174,15 @@ void ComRenderer::RenderMesh()
 void ComFont::Update()
 {
 	//#TODO
-	RenderFont addedFont(m_FontName, m_Text);
-	addedFont.pos.x = m_OffsetPos.x;
-	addedFont.pos.y = m_OffsetPos.y;
-	addedFont.fontHeight = m_FontHeight;
-	addedFont.color = m_Color;
-	addedFont.drawSize = &m_DrawSize;
+	if (m_Text.size())
+	{
+		RenderFont addedFont(m_FontName, m_Text);
+		addedFont.pos.x = m_OffsetPos.x;
+		addedFont.pos.y = m_OffsetPos.y;
+		addedFont.fontHeight = m_FontHeight;
+		addedFont.color = m_Color;
+		addedFont.drawSize = &m_DrawSize;
 
-	m_ReservedFonts->push_back(addedFont);
+		m_ReservedFonts->push_back(addedFont);
+	}
 }

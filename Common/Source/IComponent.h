@@ -30,6 +30,7 @@ public:
 	virtual void Update() {};
 
 	COMPONENTTYPE GetType() const { return m_Type; }
+	void SetActive(bool value) { m_IsActive = value; }
 	bool IsActive() const { return m_IsActive; }
 	int GetID() const { return m_ID; }
 

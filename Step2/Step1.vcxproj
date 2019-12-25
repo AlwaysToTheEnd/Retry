@@ -48,6 +48,7 @@
     <ClCompile Include="..\Common\Source\zlib\trees.c" />
     <ClCompile Include="..\Common\Source\zlib\zutil.c" />
     <ClCompile Include="..\Common\UIObjects\UIButton.cpp" />
+    <ClCompile Include="..\Common\UIObjects\UIPanel.cpp" />
     <ClCompile Include="..\Common\UIObjects\UIParam.cpp" />
     <ClCompile Include="Step2.cpp" />
     <ClCompile Include="TestObject.cpp" />

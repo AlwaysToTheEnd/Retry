@@ -20,7 +20,7 @@ const DirectX::Keyboard::KeyboardStateTracker* D3DApp::GetKeyBoard(const void* c
 {
 	const DirectX::Keyboard::KeyboardStateTracker* result = nullptr;
 
-	if (caller && caller==m_CurrKeyboardHoldObject)
+	if (caller && caller==m_CurrInputDeviceHoldObject)
 	{
 		result = &m_KeyboardTracker;
 	}
@@ -28,9 +28,21 @@ const DirectX::Keyboard::KeyboardStateTracker* D3DApp::GetKeyBoard(const void* c
 	return result;
 }
 
+const DirectX::Mouse::ButtonStateTracker* D3DApp::GetMouse(const void* caller)
+{
+	const DirectX::Mouse::ButtonStateTracker* result = nullptr;
+
+	if (caller && caller == m_CurrInputDeviceHoldObject)
+	{
+		result = &m_MouseTracker;
+	}
+
+	return result;
+}
+
 D3DApp::D3DApp(HINSTANCE hInstance)
 	: m_hAppInst(hInstance)
-	, m_CurrKeyboardHoldObject(nullptr)
+	, m_CurrInputDeviceHoldObject(nullptr)
 	, m_CurrScene(nullptr)
 {
 	assert(m_App == nullptr);
@@ -50,7 +62,7 @@ void D3DApp::BaseUpdate()
 	if (m_KeyboardTracker.IsKeyPressed(KEYState::Escape))
 	{
 		StaticGameObjectController::WorkALLEnd();
-		m_CurrKeyboardHoldObject = nullptr;
+		m_CurrInputDeviceHoldObject = nullptr;
 	}
 
 	StaticGameObjectController::StaticsUpdate();
@@ -62,11 +74,11 @@ void D3DApp::BaseUpdate()
 
 		if (keyboardHolder)
 		{
-			m_CurrKeyboardHoldObject = keyboardHolder;
+			m_CurrInputDeviceHoldObject = keyboardHolder;
 		}
 		else if(m_MouseTracker.leftButton == MOUSEState::RELEASED)
 		{
-			m_CurrKeyboardHoldObject = nullptr;
+			m_CurrInputDeviceHoldObject = nullptr;
 		}
 	}
 	

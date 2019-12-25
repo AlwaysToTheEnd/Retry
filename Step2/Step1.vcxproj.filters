@@ -159,6 +159,9 @@
     <ClCompile Include="..\Common\Source\StaticObject.cpp">
       <Filter>Common\CodeResources\BaseClass</Filter>
     </ClCompile>
+    <ClCompile Include="..\Common\UIObjects\UIPanel.cpp">
+      <Filter>Object\UIObjects</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Common\Source\d3dApp.h">

@@ -7,6 +7,7 @@ CGHScene::CGHScene(IGraphicDevice* graphicDevice, IPhysicsDevice* pxDevice, cons
 	:m_GraphicDevice(graphicDevice)
 	, m_PhysicsDevice(pxDevice)
 	, m_SceneName(name)
+	, m_IsObjectClicked(false)
 {
 	m_GraphicDevice->CreateScene(*this);
 	m_PhysicsDevice->CreateScene(*this);
@@ -35,11 +36,23 @@ const void* CGHScene::Update(const DirectX::Mouse::ButtonStateTracker& mouse)
 		it->Update();
 	}
 	
-	if (mouse.leftButton == MOUSEState::RELEASED)
+	if (mouse.leftButton == MOUSEState::PRESSED)
 	{
 		GetComponentUpdater(COMPONENTTYPE::COM_UICOLLISTION).Update();
-		result = ExcuteFuncOfClickedObject(500.0f);
+		result = CheckFuncOfClickedObject(500.0f);
+		m_IsObjectClicked = result;
 	}
+
+	if (m_IsObjectClicked)
+	{
+		if (mouse.leftButton == MOUSEState::RELEASED)
+		{
+			GetComponentUpdater(COMPONENTTYPE::COM_UICOLLISTION).Update();
+			result = ExcuteFuncOfClickedObject(500.0f, result);
+			m_IsObjectClicked = false;
+		}
+	}
+	
 
 	m_PhysicsDevice->Update(*this);
 	GetComponentUpdater(COMPONENTTYPE::COM_STATIC).Update();
@@ -107,12 +120,22 @@ ComponentUpdater& CGHScene::GetComponentUpdater(COMPONENTTYPE type)
 	return m_ComUpdater[index];
 }
 
-const void* CGHScene::ExcuteFuncOfClickedObject(float dist)
+const void* CGHScene::ExcuteFuncOfClickedObject(float dist, const void* ptr)
 {
 	DirectX::XMFLOAT3 rayOrigin;
 	DirectX::XMFLOAT3 ray;
 
 	GETAPP->GetMouseRay(rayOrigin, ray);
 	return m_PhysicsDevice->ExcuteFuncOfClickedObject(*this, rayOrigin.x, rayOrigin.y, rayOrigin.z,
-		ray.x, ray.y, ray.z, dist);
+		ray.x, ray.y, ray.z, dist, ptr, true);
+}
+
+const void* CGHScene::CheckFuncOfClickedObject(float dist)
+{
+	DirectX::XMFLOAT3 rayOrigin;
+	DirectX::XMFLOAT3 ray;
+
+	GETAPP->GetMouseRay(rayOrigin, ray);
+	return m_PhysicsDevice->ExcuteFuncOfClickedObject(*this, rayOrigin.x, rayOrigin.y, rayOrigin.z,
+		ray.x, ray.y, ray.z, dist, nullptr, false);
 }

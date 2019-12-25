@@ -198,7 +198,7 @@ void PhysX4_1::ComponentDeleteManaging(CGHScene& scene, COMPONENTTYPE type, int 
 }
 
 const void* PhysX4_1::ExcuteFuncOfClickedObject(CGHScene& scene, float origin_x, float origin_y, float origin_z,
-	float ray_x, float ray_y, float ray_z, float dist)
+	float ray_x, float ray_y, float ray_z, float dist, const void* selectedObject, bool isExcute)
 {
 	const void* result = nullptr;
 	auto iter = m_Scenes.find(scene.GetSceneName());
@@ -239,9 +239,12 @@ const void* PhysX4_1::ExcuteFuncOfClickedObject(CGHScene& scene, float origin_x,
 
 				if (functionlObject->IsValideObject())
 				{
-					for (auto& it : functionlObject->m_VoidFuncs)
+					if (isExcute && selectedObject == functionlObject->m_GameObject)
 					{
-						it();
+						for (auto& it : functionlObject->m_VoidFuncs)
+						{
+							it();
+						}
 					}
 
 					result = functionlObject->m_GameObject;

@@ -17,6 +17,7 @@ public:
 	CGHScene& GetScene() { return m_Scene; }
 	template<typename T> T* GetComponent();
 	template<typename T> std::vector<T*> GetComponents();
+	void SetAllComponentActive(bool value);
 
 	static std::unordered_map<unsigned int, unsigned int> GetComponentTypeIDs();
 protected:

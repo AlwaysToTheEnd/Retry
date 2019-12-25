@@ -23,12 +23,14 @@ public:
 	const std::string& GetSceneName() const { return m_SceneName; }
 
 private:
-	const void* ExcuteFuncOfClickedObject(float dist);
+	const void* ExcuteFuncOfClickedObject(float dist, const void* ptr);
+	const void* CheckFuncOfClickedObject(float dist);
 	void ComponentDeleteManaging(COMPONENTTYPE type, int id);
 	std::unique_ptr<IComponent> CreateComponent(COMPONENTTYPE type, GameObject& gameObject);
 
 private:
 	std::string									m_SceneName;
+	bool										m_IsObjectClicked;
 
 	ComponentUpdater							m_ComUpdater[IComponent::NUMCOMPONENTTYPE];
 	std::vector<std::unique_ptr<GameObject>>	m_Objects;

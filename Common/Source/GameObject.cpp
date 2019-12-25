@@ -7,10 +7,21 @@
 
 std::unordered_map<unsigned int, unsigned int> GameObject::m_TypeIDs = GameObject::GetComponentTypeIDs();
 
-GameObject::GameObject(CGHScene& scene) 
+GameObject::GameObject(CGHScene& scene)
 	:m_Scene(scene)
 {
 
+}
+
+void GameObject::SetAllComponentActive(bool value)
+{
+	for (auto& it : m_Components)
+	{
+		for (auto& it2 : it)
+		{
+			it2->SetActive(value);
+		}
+	}
 }
 
 std::unordered_map<unsigned int, unsigned int> GameObject::GetComponentTypeIDs()
