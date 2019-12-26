@@ -22,6 +22,7 @@
     <ClCompile Include="..\Common\Source\AnimationStructs.cpp" />
     <ClCompile Include="..\Common\Source\AnimationTree.cpp" />
     <ClCompile Include="..\Common\Source\AnimationTreeCreator.cpp" />
+    <ClCompile Include="..\Common\Source\AnimationTreeScene\AnimationTreeScene.cpp" />
     <ClCompile Include="..\Common\Source\BaseComponent.cpp" />
     <ClCompile Include="..\Common\Source\cCamera.cpp" />
     <ClCompile Include="..\Common\Source\CGHScene.cpp" />
@@ -51,12 +52,12 @@
     <ClCompile Include="..\Common\UIObjects\UIPanel.cpp" />
     <ClCompile Include="..\Common\UIObjects\UIParam.cpp" />
     <ClCompile Include="Step2.cpp" />
-    <ClCompile Include="TestObject.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Common\Source\AnimationStructs.h" />
     <ClInclude Include="..\Common\Source\AnimationTree.h" />
     <ClInclude Include="..\Common\Source\AnimationTreeCreator.h" />
+    <ClInclude Include="..\Common\Source\AnimationTreeScene\AnimationTreeScene.h" />
     <ClInclude Include="..\Common\Source\BaseClass.h" />
     <ClInclude Include="..\Common\Source\BaseComponent.h" />
     <ClInclude Include="..\Common\Source\cCamera.h" />
@@ -86,7 +87,6 @@
     <ClInclude Include="..\Common\UIObjects\UIButton.h" />
     <ClInclude Include="..\Common\UIObjects\UIPanel.h" />
     <ClInclude Include="Step2.h" />
-    <ClInclude Include="TestObject.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Common\MainShaders\BaseShader.hlsl">

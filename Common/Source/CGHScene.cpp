@@ -17,15 +17,6 @@ CGHScene::~CGHScene()
 
 }
 
-void CGHScene::AddGameObjects(GameObject* newObject)
-{
-	assert(newObject);
-
-	newObject->Init();
-
-	m_Objects.push_back(std::unique_ptr<GameObject>(newObject));
-}
-
 bool CGHScene::Update(const DirectX::Mouse::ButtonStateTracker& mouse)
 {
 	bool result = true;

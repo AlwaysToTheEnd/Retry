@@ -4,9 +4,6 @@
     <Filter Include="Common">
       <UniqueIdentifier>{b91309b7-6ecb-4962-9b80-af21fe39d41d}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Object">
-      <UniqueIdentifier>{101019ee-3020-4bd7-9c52-b82a980d7fbd}</UniqueIdentifier>
-    </Filter>
     <Filter Include="ShaderCollector">
       <UniqueIdentifier>{67348260-40a2-4129-b80e-fab13ec1a6ee}</UniqueIdentifier>
     </Filter>
@@ -49,17 +46,20 @@
     <Filter Include="Common\DeviceInstance\DX12Supporters\Buffer">
       <UniqueIdentifier>{f715426f-ec1b-493c-9c2b-e87a85c6c3ec}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Object\GameObjects">
-      <UniqueIdentifier>{55e480f8-e552-48de-a884-b8b2d8b2518d}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Common\CodeResources\AnimationTree">
       <UniqueIdentifier>{08dd9b4e-5586-45da-8ec8-0c9288782583}</UniqueIdentifier>
     </Filter>
     <Filter Include="Common\CodeResources\BaseClass">
       <UniqueIdentifier>{0fcf8d5d-fc37-43be-91ee-fca7b7451f41}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Object\UIObjects">
+    <Filter Include="Common\UIObjects">
       <UniqueIdentifier>{fbeb45be-6909-49dd-97a4-a3c4ffc8b433}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Common\GameObject">
+      <UniqueIdentifier>{55e480f8-e552-48de-a884-b8b2d8b2518d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AnimationTreeCreateScene">
+      <UniqueIdentifier>{101019ee-3020-4bd7-9c52-b82a980d7fbd}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -106,7 +106,7 @@
       <Filter>Common\CodeResources\Components</Filter>
     </ClCompile>
     <ClCompile Include="..\Common\Source\GameObject.cpp">
-      <Filter>Object\GameObjects</Filter>
+      <Filter>Common\GameObject</Filter>
     </ClCompile>
     <ClCompile Include="..\Common\Source\cTextureBuffer.cpp">
       <Filter>Common\DeviceInstance\DX12Supporters\Buffer</Filter>
@@ -148,19 +148,19 @@
       <Filter>Common\CodeResources\BaseClass</Filter>
     </ClCompile>
     <ClCompile Include="..\Common\UIObjects\UIButton.cpp">
-      <Filter>Object\UIObjects</Filter>
-    </ClCompile>
-    <ClCompile Include="TestObject.cpp">
-      <Filter>Step2</Filter>
+      <Filter>Common\UIObjects</Filter>
     </ClCompile>
     <ClCompile Include="..\Common\UIObjects\UIParam.cpp">
-      <Filter>Object\UIObjects</Filter>
+      <Filter>Common\UIObjects</Filter>
     </ClCompile>
     <ClCompile Include="..\Common\Source\StaticObject.cpp">
       <Filter>Common\CodeResources\BaseClass</Filter>
     </ClCompile>
     <ClCompile Include="..\Common\UIObjects\UIPanel.cpp">
-      <Filter>Object\UIObjects</Filter>
+      <Filter>Common\UIObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Source\AnimationTreeScene\AnimationTreeScene.cpp">
+      <Filter>AnimationTreeCreateScene</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -192,7 +192,7 @@
       <Filter>Common\CodeResources\Components</Filter>
     </ClInclude>
     <ClInclude Include="..\Common\Source\GameObject.h">
-      <Filter>Object\GameObjects</Filter>
+      <Filter>Common\GameObject</Filter>
     </ClInclude>
     <ClInclude Include="..\Common\Source\cCamera.h">
       <Filter>Common\CodeResources\Procedure Class</Filter>
@@ -249,19 +249,19 @@
       <Filter>Common\CodeResources\BaseClass</Filter>
     </ClInclude>
     <ClInclude Include="..\Common\UIObjects\UIButton.h">
-      <Filter>Object\UIObjects</Filter>
+      <Filter>Common\UIObjects</Filter>
     </ClInclude>
     <ClInclude Include="..\Common\UIObjects\UIPanel.h">
-      <Filter>Object\UIObjects</Filter>
-    </ClInclude>
-    <ClInclude Include="TestObject.h">
-      <Filter>Step2</Filter>
+      <Filter>Common\UIObjects</Filter>
     </ClInclude>
     <ClInclude Include="..\Common\UIObjects\UIParam.h">
-      <Filter>Object\UIObjects</Filter>
+      <Filter>Common\UIObjects</Filter>
     </ClInclude>
     <ClInclude Include="..\Common\Source\StaticObject.h">
       <Filter>Common\CodeResources\BaseClass</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\AnimationTreeScene\AnimationTreeScene.h">
+      <Filter>AnimationTreeCreateScene</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
