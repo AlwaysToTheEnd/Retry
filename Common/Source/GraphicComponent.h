@@ -100,7 +100,10 @@ public:
 	virtual ~ComRenderer() = default;
 
 	virtual void Update() override;
-	void SetRenderInfo(const RenderInfo& info) { m_RenderInfo = info; }
+	void SetRenderInfo(const RenderInfo& info) 
+	{ 
+		m_RenderInfo = info; 
+	}
 	const RenderInfo& GetRenderInfo() { return m_RenderInfo; }
 
 private:
@@ -117,7 +120,7 @@ public:
 	ComFont(GameObject& gameObject, int ID, 
 		std::vector<RenderFont>* reservedFonts)
 		: IComponent(COMPONENTTYPE::COM_FONT, gameObject, ID)
-		, m_OffsetPos(0,0)
+		, m_Pos(0,0,0)
 		, m_FontHeight(-1)
 		, m_Color(0,0,0,1)
 		, m_DrawSize(0,0)
@@ -136,7 +139,7 @@ public:
 	std::wstring		m_Text;
 	int					m_FontHeight;
 	DirectX::XMFLOAT2	m_DrawSize;
-	DirectX::XMFLOAT2	m_OffsetPos;
+	DirectX::XMFLOAT3	m_Pos;
 	DirectX::XMFLOAT4	m_Color;
 
 private:

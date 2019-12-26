@@ -24,7 +24,8 @@ private:
 	{
 	public:
 		ParamController()
-			: m_CurrParam(nullptr)
+			: StaticGameObjectController(false)
+			, m_CurrParam(nullptr)
 		{
 
 		}
@@ -32,7 +33,6 @@ private:
 
 		void SetUIParam(UIParam* uiParam);
 	private:
-		virtual void Init() override;
 		virtual void Update() override;
 		virtual void WorkClear() override;
 		void Excute();

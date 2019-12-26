@@ -2,14 +2,42 @@
 #include "UIButton.h"
 #include "UIParam.h"
 #include "foundation/PxVec2.h"
+#include <list>
 
 class UIPanel :public GameObject
 {
 private:
+	static class UIPanelController :public StaticGameObjectController
+	{
+	public:
+		UIPanelController()
+			: StaticGameObjectController(true)
+			, m_CurrPanel(nullptr)
+		{
+
+		}
+		virtual ~UIPanelController() = default;
+
+		void AddPanel(UIPanel* panel);
+		void DeletedPanel(UIPanel* panel);
+
+		virtual void WorkClear() override;
+	private:
+		virtual void Update() override;
+
+	private:
+		UIPanel*			m_CurrPanel;
+		std::list<UIPanel*>	m_Panels;
+		physx::PxVec2		m_PrevMousePos;
+
+	} s_PanelController;
+
+private:
 	enum class UICOMTYPE
 	{
 		UIBUTTON,
-		UIPARAM
+		UIPARAM,
+		UIPANEL,
 	};
 
 	struct UIComObjects
@@ -31,20 +59,22 @@ public:
 		, m_Render(nullptr)
 		, m_UICollision(nullptr)
 		, m_Active(true)
-		, m_Size(10,10)
+		, m_Size(10, 10)
 	{
-
+		s_PanelController.AddPanel(this);
 	}
-	virtual ~UIPanel() = default;
+
+	virtual ~UIPanel() { s_PanelController.DeletedPanel(this); }
 
 	void AddUICom(unsigned int x, unsigned y, UIButton* button);
 	void AddUICom(unsigned int x, unsigned y, UIParam* param);
+	void AddUICom(unsigned int x, unsigned y, UIPanel* panel);
 
-	void SetBackGroundTexture(const std::string & name);
+	void SetBackGroundTexture(const std::string& name);
 	void SetBackGroundColor(DirectX::XMFLOAT4 color);
 	void SetSize(unsigned int x, unsigned y);
 	void SetName(const std::wstring& name);
-	void SetPos(DirectX::XMFLOAT3 pos);
+	void SetPos(DirectX::XMFLOAT2 pos);
 	void UIOn();
 	void UIOff();
 
@@ -58,7 +88,6 @@ private:
 	ComFont*		m_Font;
 	ComRenderer*	m_Render;
 	ComUICollision* m_UICollision;
-	UIButton*		m_UIOffButton;
 
 	physx::PxVec2	m_Size;
 	std::vector<UIComObjects>	m_UIComs;

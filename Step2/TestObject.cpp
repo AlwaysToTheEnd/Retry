@@ -29,13 +29,13 @@ void TestObject::Init()
 	font = AddComponent<ComFont>();
 	font->SetFont(L"baseFont.spritefont");
 	font->m_Text = L"";
-	font->m_OffsetPos.x = 100;
-	font->m_OffsetPos.y = 150;
+	font->m_Pos.x = 100;
+	font->m_Pos.y = 150;
 }
 
 void TestObject::Update()
 {
-
+	
 }
 
 void TestObject::TextChange()

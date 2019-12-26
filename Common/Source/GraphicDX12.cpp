@@ -253,7 +253,7 @@ void GraphicDX12::OnResize()
 
 	XMMATRIX P = XMMatrixPerspectiveFovLH(XM_PIDIV4, (float)m_ClientWidth / m_ClientHeight, 1.0f, 1000.0f);
 	XMMATRIX OrthoP = XMMatrixOrthographicOffCenterLH(m_ScissorRect.left, m_ScissorRect.right, 
-		m_ScissorRect.bottom, m_ScissorRect.top, -1.0f, 1.0f);
+		m_ScissorRect.bottom, m_ScissorRect.top, 0, 1.0f);
 	XMStoreFloat4x4(m_ProjectionMat, P);
 	XMStoreFloat4x4(m_OrthoProjectionMat, OrthoP);
 }
@@ -945,16 +945,20 @@ void GraphicDX12::UpdateObjectCB()
 			temp.type = it.type;
 			temp.cbIndex = m_NumRenderPointObjects;
 			temp.size = it.texPoint.size;
-			m_Box_Plane_Vertices->CopyData(m_NumRenderPointObjects, &temp);
 
 			OTObjectConstnat.world = it.world;
-			OTObjectConstnat.textureIndex = m_TextureBuffer->GetTextureIndex(it.meshOrTextureName);
+
+			if (it.meshOrTextureName.size())
+			{
+				OTObjectConstnat.textureIndex = m_TextureBuffer->GetTextureIndex(it.meshOrTextureName);
+			}
 
 			if (OTObjectConstnat.textureIndex == -1)
 			{
 				temp.color = it.point.color;
 			}
 
+			m_Box_Plane_Vertices->CopyData(m_NumRenderPointObjects, &temp);
 			pointCB->CopyData(m_NumRenderPointObjects, &OTObjectConstnat);
 			m_NumRenderPointObjects++;
 		}

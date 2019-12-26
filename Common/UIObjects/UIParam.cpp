@@ -29,8 +29,9 @@ void UIParam::Update()
 	{
 		physx::PxVec3 pos = m_Trans->GetTransform().p;
 
-		m_Font->m_OffsetPos.x = pos.x;
-		m_Font->m_OffsetPos.y = pos.y;
+		m_Font->m_Pos.x = pos.x;
+		m_Font->m_Pos.y = pos.y;
+		m_Font->m_Pos.z = pos.z;
 
 		std::wstring text = m_ParamName + L" : ";
 
@@ -93,11 +94,6 @@ std::wstring UIParam::GetDataString()
 	}
 
 	return result;
-}
-
-void UIParam::ParamController::Init()
-{
-
 }
 
 void UIParam::ParamController::Update()

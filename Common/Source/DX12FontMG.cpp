@@ -2,6 +2,7 @@
 #include "d3dUtil.h"
 #include <SimpleMath.h>
 #include <ResourceUploadBatch.h>
+#include <d3dx12.h>
 
 
 using namespace DirectX;
@@ -25,6 +26,8 @@ void DX12FontManager::Init(ID3D12Device* device, ID3D12CommandQueue* queue,
 
 	RenderTargetState rtState(rtFormat, dsForma);
 	SpriteBatchPipelineStateDescription pd(rtState);
+	pd.depthStencilDesc = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
+	
 	m_SpriteBatch = std::make_unique<SpriteBatch>(device, resourceUpload, pd);
 
 	UINT descriptorSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
@@ -83,8 +86,6 @@ void DX12FontManager::RenderCommandWrite(ID3D12GraphicsCommandList* cmdList,
 
 		size = m_Fonts[it.fontIndex].MeasureString(it.printString.c_str());
 
-		
-
 		if (it.fontHeight >= 0)
 		{
 			float scalePer = it.fontHeight/ size.y;
@@ -104,7 +105,7 @@ void DX12FontManager::RenderCommandWrite(ID3D12GraphicsCommandList* cmdList,
 		pos.y -= size.y / 2;
 
 		m_Fonts[it.fontIndex].DrawString(m_SpriteBatch.get(), it.printString.c_str(), pos,
-			color, it.rotation, origin, scale);
+			color, it.rotation, origin, scale, DirectX::SpriteEffects_None, pos.z);
 	}
 
 	m_SpriteBatch->End();

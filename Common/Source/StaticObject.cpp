@@ -1,7 +1,9 @@
 #include "StaticObject.h"
+#include <assert.h>
 
 std::list<StaticGameObjectController*> StaticGameObjectController::m_CurrObjects;
 std::vector<StaticGameObjectController*> StaticGameObjectController::m_EndList;
+std::vector<StaticGameObjectController*> StaticGameObjectController::m_Residents;
 
 void StaticGameObjectController::WorkALLEnd()
 {
@@ -15,6 +17,8 @@ void StaticGameObjectController::WorkALLEnd()
 
 void StaticGameObjectController::WorkStart(bool otherWorksEnd)
 {
+	assert(m_isResident == false);
+
 	if (otherWorksEnd)
 	{
 		for (auto& it : m_CurrObjects)
@@ -43,8 +47,8 @@ void StaticGameObjectController::WorkStart(bool otherWorksEnd)
 
 void StaticGameObjectController::WorkEnd()
 {
+	assert(m_isResident == false);
 	WorkClear();
-
 	m_EndList.push_back(this);
 }
 
@@ -63,6 +67,11 @@ void StaticGameObjectController::StaticsUpdate()
 	}
 
 	m_EndList.clear();
+
+	for (auto& it : m_Residents)
+	{
+		it->Update();
+	}
 
 	for (auto iter = m_CurrObjects.begin(); iter != m_CurrObjects.end(); iter++)
 	{

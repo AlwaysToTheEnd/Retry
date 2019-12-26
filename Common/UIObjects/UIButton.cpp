@@ -15,8 +15,8 @@ void UIButton::Update()
 {
 	physx::PxVec3 pos = m_Trans->GetTransform().p;
 	//DirectX::XMFLOAT3 size = m_Render->GetRenderInfo().texPoint.size;
-	m_Font->m_OffsetPos.x = pos.x;
-	m_Font->m_OffsetPos.y = pos.y;
+	m_Font->m_Pos.x = pos.x;
+	m_Font->m_Pos.y = pos.y;
 }
 
 void UIButton::SetTexture(const std::string& name, const DirectX::XMFLOAT2& halfSize, bool colliderSizeIsEqualTexture)

@@ -10,6 +10,7 @@
 #define GETAPP D3DApp::GetApp()
 #define GETKEY(T) const DirectX::Keyboard::KeyboardStateTracker* keyboard = (D3DApp::GetApp()->GetKeyBoard(T))
 #define GETMOUSE(T) const DirectX::Mouse::ButtonStateTracker* mouse = (D3DApp::GetApp()->GetMouse(T))
+#define HOLDCANCLE(T) D3DApp::GetApp()->InputDeviceHoldCancle(T)
 
 typedef DirectX::Keyboard::Keys KEYState;
 typedef DirectX::Mouse::ButtonStateTracker::ButtonState MOUSEState;
@@ -44,6 +45,7 @@ public:
 	static D3DApp* GetApp();
 	const DirectX::Keyboard::KeyboardStateTracker* GetKeyBoard(const void* caller);
 	const DirectX::Mouse::ButtonStateTracker* GetMouse(const void* caller);
+	void InputDeviceHoldCancle(const void* caller);
 	void GetMouseRay(DirectX::XMFLOAT3& origin, DirectX::XMFLOAT3& ray) const { origin = m_RayOrigin; ray = m_Ray; }
 	DirectX::XMVECTOR XM_CALLCONV GetMousePos() const { return m_Camera.GetMousePos(); }
 	DirectX::XMVECTOR XM_CALLCONV GetClientSize() const { return m_GDevice->GetClientSize(); }
@@ -78,6 +80,7 @@ protected:
 	DirectX::Keyboard						m_Keyboard;
 	DirectX::Keyboard::KeyboardStateTracker	m_KeyboardTracker;
 	const void*								m_CurrInputDeviceHoldObject;
+	bool									m_HoldCancled;
 
 	DirectX::XMFLOAT3	m_RayOrigin = {};
 	DirectX::XMFLOAT3	m_Ray = {};

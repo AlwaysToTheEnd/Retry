@@ -58,30 +58,12 @@ struct RenderInfo
 		
 	}
 
-	RenderInfo(const RenderInfo& info)
+	RenderInfo(const RenderInfo& src)
 	{
-		type = info.type;
-		world = info.world;
-		meshOrTextureName = info.meshOrTextureName;
-
-		switch (info.type)
-		{
-		case RENDER_NONE:
-			break;
-		case RENDER_MESH:
-			mesh = info.mesh;
-			break;
-		case RENDER_BOX:
-		case RENDER_PLANE:
-			point = info.point;
-			break;
-		case RENDER_TEX_PLANE:
-		case RENDER_UI:
-			texPoint = info.texPoint;
-			break;
-		default:
-			break;
-		}
+		std::memcpy(&point, &src.point, sizeof(RenderPointInfo));
+		type = src.type;
+		world = src.world;
+		meshOrTextureName = src.meshOrTextureName;
 	}
 
 	~RenderInfo()
@@ -89,30 +71,12 @@ struct RenderInfo
 
 	}
 
-	RenderInfo& operator=(const RenderInfo& info)
+	RenderInfo& operator=(const RenderInfo& src)
 	{
-		type = info.type;
-		world = info.world;
-		meshOrTextureName = info.meshOrTextureName;
-
-		switch (info.type)
-		{
-		case RENDER_NONE:
-			break;
-		case RENDER_MESH:
-			mesh = info.mesh;
-			break;
-		case RENDER_BOX:
-		case RENDER_PLANE:
-			point = info.point;
-			break;
-		case RENDER_TEX_PLANE:
-		case RENDER_UI:
-			texPoint = info.texPoint;
-			break;
-		default:
-			break;
-		}
+		std::memcpy(&point, &src.point, sizeof(RenderPointInfo));
+		type = src.type;
+		world = src.world;
+		meshOrTextureName = src.meshOrTextureName;
 
 		return *this;
 	}

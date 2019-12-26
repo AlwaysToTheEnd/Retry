@@ -38,9 +38,15 @@ void Step2::InitObjects()
 	 auto test = new UIParam(*testScene, UIParam::UIPARAMTYPE::MODIFIER);
 	 auto test2 = new UIParam(*testScene, UIParam::UIPARAMTYPE::VIEWER);
 	 auto testPanel = new UIPanel(*testScene);
+	 auto testPane2 = new UIPanel(*testScene);
+	 auto testPane3 = new UIPanel(*testScene);
+	 auto testPane4 = new UIPanel(*testScene);
 	 testScene->AddGameObjects(test);
 	 testScene->AddGameObjects(test2);
 	 testScene->AddGameObjects(testPanel);
+	 testScene->AddGameObjects(testPane2);
+	 testScene->AddGameObjects(testPane3);
+	 testScene->AddGameObjects(testPane4);
 
 	 test->SetTargetParam(L"TestParam", &testfloat);
 	 test->SetTextHeight(15);
@@ -48,11 +54,23 @@ void Step2::InitObjects()
 	 test2->SetTargetParam(L"TestParam2", &testInt);
 	 test2->SetTextHeight(15);
 
-	 testPanel->SetPos({ 350,350,0.1f });
-	 testPanel->SetBackGroundTexture("ice.dds");
+	 testPanel->SetPos({ 350,350 });
+	 testPanel->SetBackGroundColor({0.0f,0,1.0f,1.0f});
 	 testPanel->AddUICom(10, 30, test);
 	 testPanel->AddUICom(10, 50, test2);
 	 testPanel->SetSize(150, 150);
+
+	 testPane2->SetPos({ 350,350 });
+	 testPane2->SetBackGroundColor({ 1.0f, 1.0f, 1.0f, 1.0f });
+	 testPane2->SetSize(150, 150);
+
+	 testPane3->SetPos({ 350,350 });
+	 testPane3->SetBackGroundColor({ 0.5f, 0.5f, 0.5f, 1.0f });
+	 testPane3->SetSize(150, 150);
+
+	 testPane4->SetPos({ 350,350 });
+	 testPane4->SetBackGroundColor({ 1.0f, 1.0f, 1.0f, 1.0f });
+	 testPane4->SetSize(150, 150);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////

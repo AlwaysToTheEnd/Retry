@@ -2,6 +2,9 @@
 #include "BaseComponent.h"
 #include "GraphicComponent.h"
 #include "CGHScene.h"
+#include "d3dApp.h"
+
+UIPanel::UIPanelController UIPanel::s_PanelController;
 
 void UIPanel::Init()
 {
@@ -15,14 +18,7 @@ void UIPanel::Init()
 	RenderInfo info(RENDER_UI);
 	info.point.size = { 100,100,0 };
 	m_Render->SetRenderInfo(info);
-
-	m_UIOffButton = new UIButton(GetScene());
-	GetScene().AddGameObjects(m_UIOffButton);
-	//#TODO need to add texture of UIcloseButton;
-	m_UIOffButton->SetTexture("ice.dds", { 5.0f, 5.0f });
-	m_UIOffButton->AddFunc(std::bind(&UIPanel::UIOff, this));
 }
-
 
 void UIPanel::AddUICom(unsigned int x, unsigned y, UIButton* button)
 {
@@ -34,6 +30,15 @@ void UIPanel::AddUICom(unsigned int x, unsigned y, UIParam* param)
 {
 	m_UIComs.push_back({ UICOMTYPE::UIPARAM, param });
 	m_UIComOffset.push_back({ static_cast<float>(x),static_cast<float>(y) });
+}
+
+void UIPanel::AddUICom(unsigned int x, unsigned y, UIPanel* panel)
+{
+	m_UIComs.push_back({ UICOMTYPE::UIPANEL, panel });
+	m_UIComOffset.push_back({ static_cast<float>(x),static_cast<float>(y) });
+
+	panel->DeleteComponent(panel->GetComponent<ComUICollision>());
+	s_PanelController.DeletedPanel(panel);
 }
 
 void UIPanel::SetBackGroundTexture(const std::string& name)
@@ -67,12 +72,11 @@ void UIPanel::SetName(const std::wstring& name)
 	m_Font->m_Text = name;
 }
 
-void UIPanel::SetPos(DirectX::XMFLOAT3 pos)
+void UIPanel::SetPos(DirectX::XMFLOAT2 pos)
 {
-	physx::PxTransform wPos = m_Trans->GetTransform();
-	wPos.p = { pos.x, pos.y, pos.z };
-
-	m_Trans->SetTransform(wPos);
+	m_Trans->SetPosX(pos.x);
+	m_Trans->SetPosY(pos.y);
+	
 }
 
 void UIPanel::UIOn()
@@ -80,7 +84,6 @@ void UIPanel::UIOn()
 	m_Active = true;
 
 	SetAllComponentActive(true);
-	m_UIOffButton->SetAllComponentActive(true);
 
 	for (auto& it : m_UIComs)
 	{
@@ -93,7 +96,6 @@ void UIPanel::UIOff()
 	m_Active = false;
 
 	SetAllComponentActive(false);
-	m_UIOffButton->SetAllComponentActive(false);
 
 	for (auto& it : m_UIComs)
 	{
@@ -107,18 +109,121 @@ void UIPanel::Update()
 	{
 		physx::PxTransform panelTransform = m_Trans->GetTransform();
 		auto halfSize = m_Size / 2;
-		m_UIOffButton->GetComponent<ComTransform>()->SetTransform(
-			physx::PxTransform(halfSize.x - 5, -halfSize.y + 5, -0.01f) * panelTransform);
-		m_Font->m_OffsetPos.x = -halfSize.x;
-		m_Font->m_OffsetPos.y = -halfSize.y;
+		m_Font->m_Pos.x = -halfSize.x;
+		m_Font->m_Pos.y = -halfSize.y;
 
 		for (size_t i = 0; i < m_UIComs.size(); i++)
 		{
 			auto transform = m_UIComs[i].object->GetComponent<ComTransform>();
 
-			transform->SetTransform(physx::PxTransform(
-				m_UIComOffset[i].x - halfSize.x, m_UIComOffset[i].y - halfSize.y, -0.01f) *
-				panelTransform);
+			transform->SetTransform(
+				physx::PxTransform(m_UIComOffset[i].x - halfSize.x, m_UIComOffset[i].y - halfSize.y, -0.001f)
+				* panelTransform);
 		}
+	}
+}
+
+void UIPanel::UIPanelController::AddPanel(UIPanel* panel)
+{
+	m_Panels.push_back(panel);
+}
+
+void UIPanel::UIPanelController::DeletedPanel(UIPanel* panel)
+{
+	for (auto iter = m_Panels.begin(); iter != m_Panels.end(); iter++)
+	{
+		if ((*iter) == panel)
+		{
+			iter = m_Panels.erase(iter);
+			break;
+		}
+	}
+}
+
+void UIPanel::UIPanelController::Update()
+{
+	if (m_CurrPanel)
+	{
+		if (GETMOUSE(m_CurrPanel))
+		{
+			auto mouseState = mouse->GetLastState();
+			physx::PxVec2 mousePos = physx::PxVec2(mouseState.x, mouseState.y);
+			static std::vector<UIPanel*> test;
+
+			if (test.size() == 0)
+			{
+				test.push_back(m_CurrPanel);
+			}
+			else
+			{
+				if (test.back() != m_CurrPanel)
+				{
+					test.push_back(m_CurrPanel);
+				}
+			}
+
+
+			if (mouse->leftButton == MOUSEState::PRESSED)
+			{
+				m_PrevMousePos = mousePos;
+			}
+			else if (mouse->leftButton == MOUSEState::HELD)
+			{
+				physx::PxVec2 moveValue =  mousePos - m_PrevMousePos;
+				m_CurrPanel->GetComponent<ComTransform>()->AddVector({ moveValue.x,moveValue.y,0 });
+				m_PrevMousePos = mousePos;
+			}
+			else if (mouse->leftButton == MOUSEState::RELEASED)
+			{
+				physx::PxVec2 moveValue = mousePos - m_PrevMousePos;
+				m_CurrPanel->GetComponent<ComTransform>()->AddVector({ moveValue.x,moveValue.y,0 });
+				m_PrevMousePos = mousePos;
+
+				HOLDCANCLE(m_CurrPanel);
+				WorkClear();
+			}
+		}
+		else
+		{
+			WorkClear();
+		}
+	}
+	else
+	{
+		for (auto it = m_Panels.begin(); it != m_Panels.end(); it++)
+		{
+			if (GETMOUSE(*it))
+			{
+				if (mouse->leftButton == MOUSEState::HELD && m_CurrPanel != *it)
+				{
+					auto mouseState = mouse->GetLastState();
+					m_CurrPanel = *it;
+					m_PrevMousePos = physx::PxVec2(mouseState.x, mouseState.y);
+
+					m_Panels.push_front(*it);
+					it = m_Panels.erase(it);
+				}
+
+				break;
+			}
+		}
+	}
+
+	
+
+	float posZ = 0.1f;
+
+	for (auto& it : m_Panels)
+	{
+		posZ += 0.01f;
+		it->GetComponent<ComTransform>()->SetPosZ(posZ);
+	}
+}
+
+void UIPanel::UIPanelController::WorkClear()
+{
+	if (m_CurrPanel)
+	{
+		m_CurrPanel = nullptr;
 	}
 }

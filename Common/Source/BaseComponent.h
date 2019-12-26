@@ -89,6 +89,11 @@ public:
 
 	virtual void Update() override {}
 	void SetTransform(const physx::PxTransform& transform) { m_Transform = transform; }
+	void SetPosX(float x) { m_Transform.p.x = x; }
+	void SetPosY(float y) { m_Transform.p.y = y; }
+	void SetPosZ(float z) { m_Transform.p.z = z; }
+	void AddVector(DirectX::XMFLOAT3 vec) { m_Transform.p.x += vec.x; m_Transform.p.y += vec.y; m_Transform.p.z += vec.z; }
+	void SetPos(DirectX::XMFLOAT3 pos) { m_Transform.p = physx::PxVec3(pos.x, pos.y, pos.z); }
 
 	physx::PxMat44 GetMatrix() const { return physx::PxMat44(m_Transform); }
 	const physx::PxTransform& GetTransform() const { return m_Transform; }
