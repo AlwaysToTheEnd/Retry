@@ -156,21 +156,20 @@ IComponent* PhysX4_1::CreateComponent(CGHScene& scene, COMPONENTTYPE type, unsig
 	return newComponent;
 }
 
-void PhysX4_1::ComponentDeleteManaging(CGHScene& scene, COMPONENTTYPE type, int id)
+void PhysX4_1::ComponentDeleteManaging(CGHScene& scene, COMPONENTTYPE type, IComponent* deletedCom)
 {
-	IComponent* deletedComponent = scene.GetComponentUpdater(type).GetData(id);
 	PxRigidActor* deletedActor = nullptr;
 
 	switch (type)
 	{
 	case COMPONENTTYPE::COM_DYNAMIC:
 	{
-		deletedActor = reinterpret_cast<ComRigidDynamic*>(deletedComponent)->GetRigidBody();
+		deletedActor = reinterpret_cast<ComRigidDynamic*>(deletedCom)->GetRigidBody();
 	}
 	break;
 	case COMPONENTTYPE::COM_STATIC:
 	{
-		deletedActor = reinterpret_cast<ComRigidStatic*>(deletedComponent)->GetRigidBody();
+		deletedActor = reinterpret_cast<ComRigidStatic*>(deletedCom)->GetRigidBody();
 	}
 	break;
 	case COMPONENTTYPE::COM_UICOLLISTION:
@@ -198,12 +197,12 @@ void PhysX4_1::ComponentDeleteManaging(CGHScene& scene, COMPONENTTYPE type, int 
 }
 
 bool PhysX4_1::ExcuteFuncOfClickedObject(CGHScene& scene, float origin_x, float origin_y, float origin_z,
-	float ray_x, float ray_y, float ray_z, float dist)
+	float ray_x, float ray_y, float ray_z, float dist, bool isExcute)
 {
 	bool result = false;
 	auto iter = m_Scenes.find(scene.GetSceneName());
 
-	result = CheckUIClicked(iter->second.reservedToCheckUIs);
+	result = CheckUIClicked(iter->second.reservedToCheckUIs, isExcute);
 
 	if (result==false)
 	{
@@ -239,13 +238,23 @@ bool PhysX4_1::ExcuteFuncOfClickedObject(CGHScene& scene, float origin_x, float 
 
 				if (functionlObject->IsValideObject())
 				{
-					for (auto& it : functionlObject->m_VoidFuncs)
+					if (isExcute)
 					{
-						it();
+						if (GETMOUSE(functionlObject->m_GameObject)) // Check that this object is same before object.
+						{
+							for (auto& it : functionlObject->m_VoidFuncs)
+							{
+								it();
+							}
+						}
+					}
+					else
+					{
+						GETAPP->InputDeviceHoldRequest(functionlObject->m_GameObject);
 					}
 
-					GETAPP->InputDeviceHoldRequest(functionlObject->m_GameObject);
 					result = true;
+					
 				}
 			}
 		}
@@ -254,7 +263,7 @@ bool PhysX4_1::ExcuteFuncOfClickedObject(CGHScene& scene, float origin_x, float 
 	return result;
 }
 
-bool PhysX4_1::CheckUIClicked(std::vector<UICollisions>& collisions)
+bool PhysX4_1::CheckUIClicked(std::vector<UICollisions>& collisions, bool isExcute)
 {
 	bool result = false;
 
@@ -276,7 +285,6 @@ bool PhysX4_1::CheckUIClicked(std::vector<UICollisions>& collisions)
 			vec3Pos[1] = mat.transform(PxVec3(-it.size.x, it.size.y, it.transform.p.z));
 			vec3Pos[2] = mat.transform(PxVec3(it.size.x, it.size.y, it.transform.p.z));
 			vec3Pos[3] = mat.transform(PxVec3(it.size.x, -it.size.y, it.transform.p.z));
-
 
 			for (int i = 0; i < 4; i++)
 			{
@@ -304,12 +312,21 @@ bool PhysX4_1::CheckUIClicked(std::vector<UICollisions>& collisions)
 
 	if (currUI)
 	{
-		for (auto& it : currUI->voidFuncs)
+		if (isExcute)
 		{
-			it();
+			if (GETMOUSE(currUI->gameObject)) // Check that this object is same before object.
+			{
+				for (auto& it : currUI->voidFuncs)
+				{
+					it();
+				}
+			}
+		}
+		else
+		{
+			GETAPP->InputDeviceHoldRequest(currUI->gameObject);
 		}
 
-		GETAPP->InputDeviceHoldRequest(currUI->gameObject);
 		result = true;
 	}
 

@@ -153,7 +153,7 @@ public: // Used Functions
 	virtual void SetCamera(cCamera* camera) { m_CurrCamera = camera; }
 
 private: // Only Used by FuncPtr
-	virtual void ComponentDeleteManaging(CGHScene&, COMPONENTTYPE type, int id) override;
+	virtual void ComponentDeleteManaging(CGHScene&, COMPONENTTYPE type, IComponent* deletedCom) override;
 
 private: // Used Function by ReadyWorks 
 	virtual void LoadTextureFromFolder(const std::vector<std::wstring>& targetTextureFolders) override;

@@ -20,9 +20,9 @@ public:
 	void AddGameObjects(GameObject* newObject);
 	void DeleteAllObjects() { m_Objects.clear(); }
 	const std::string& GetSceneName() const { return m_SceneName; }
-	ComponentUpdater& GetComponentUpdater(COMPONENTTYPE type);
 
 private:
+	ComponentUpdater& GetComponentUpdater(COMPONENTTYPE type);
 	bool ExcuteFuncOfClickedObject(float dist);
 	void ComponentDeleteManaging(COMPONENTTYPE type, int id);
 	std::unique_ptr<IComponent> CreateComponent(COMPONENTTYPE type, GameObject& gameObject);

@@ -38,7 +38,24 @@ bool CGHScene::Update(const DirectX::Mouse::ButtonStateTracker& mouse)
 	if (mouse.leftButton == MOUSEState::PRESSED)
 	{
 		GetComponentUpdater(COMPONENTTYPE::COM_UICOLLISTION).Update();
-		result = ExcuteFuncOfClickedObject(500.0f);
+
+		DirectX::XMFLOAT3 rayOrigin;
+		DirectX::XMFLOAT3 ray;
+
+		GETAPP->GetMouseRay(rayOrigin, ray);
+		result = m_PhysicsDevice->ExcuteFuncOfClickedObject(*this, rayOrigin.x, rayOrigin.y, rayOrigin.z,
+			ray.x, ray.y, ray.z, 500.0f, false);
+	}
+	else if(mouse.leftButton == MOUSEState::RELEASED)
+	{
+		GetComponentUpdater(COMPONENTTYPE::COM_UICOLLISTION).Update();
+
+		DirectX::XMFLOAT3 rayOrigin;
+		DirectX::XMFLOAT3 ray;
+
+		GETAPP->GetMouseRay(rayOrigin, ray);
+		result = m_PhysicsDevice->ExcuteFuncOfClickedObject(*this, rayOrigin.x, rayOrigin.y, rayOrigin.z,
+			ray.x, ray.y, ray.z, 500.0f);
 	}
 	
 	m_PhysicsDevice->Update(*this);
@@ -65,11 +82,11 @@ void CGHScene::ComponentDeleteManaging(COMPONENTTYPE type, int id)
 
 	if (type > COMPONENTTYPE::COM_TRANSFORM)
 	{
-		m_GraphicDevice->ComponentDeleteManaging(*this, type, id);
+		m_GraphicDevice->ComponentDeleteManaging(*this, type, comUpdater.GetData(id));
 	}
 	else
 	{
-		m_PhysicsDevice->ComponentDeleteManaging(*this, type, id);
+		m_PhysicsDevice->ComponentDeleteManaging(*this, type, comUpdater.GetData(id));
 	}
 
 	comUpdater.SignalDeleted(id);
@@ -105,14 +122,4 @@ ComponentUpdater& CGHScene::GetComponentUpdater(COMPONENTTYPE type)
 	unsigned int index = static_cast<unsigned int>(type);
 
 	return m_ComUpdater[index];
-}
-
-bool CGHScene::ExcuteFuncOfClickedObject(float dist)
-{
-	DirectX::XMFLOAT3 rayOrigin;
-	DirectX::XMFLOAT3 ray;
-
-	GETAPP->GetMouseRay(rayOrigin, ray);
-	return m_PhysicsDevice->ExcuteFuncOfClickedObject(*this, rayOrigin.x, rayOrigin.y, rayOrigin.z,
-		ray.x, ray.y, ray.z, dist);
 }

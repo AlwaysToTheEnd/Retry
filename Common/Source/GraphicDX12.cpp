@@ -298,7 +298,7 @@ IComponent* GraphicDX12::CreateComponent(CGHScene&, COMPONENTTYPE type, unsigned
 	return newComponent;
 }
 
-void GraphicDX12::ComponentDeleteManaging(CGHScene&, COMPONENTTYPE type, int id)
+void GraphicDX12::ComponentDeleteManaging(CGHScene&, COMPONENTTYPE type, IComponent* deletedCom)
 {
 	switch (type)
 	{

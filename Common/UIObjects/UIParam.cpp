@@ -143,7 +143,8 @@ void UIParam::ParamController::Update()
 		}
 		else
 		{
-			m_CurrParam->Selected(false);
+			WorkClear();
+			return;
 		}
 
 		m_CurrParam->m_Font->m_Text.clear();
