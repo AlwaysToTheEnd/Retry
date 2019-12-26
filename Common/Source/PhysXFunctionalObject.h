@@ -38,7 +38,7 @@ struct UICollisions
 	
 	}
 
-	const physx::PxTransform& transform;
+	physx::PxTransform transform;
 	const DirectX::XMFLOAT2& size;
 	const std::vector<std::function<void()>>& voidFuncs;
 	const void* gameObject;

@@ -15,8 +15,8 @@ public:
 
 	virtual bool Init(void* graphicDevicePtr) = 0;
 	virtual void Update(const CGHScene& scene) = 0;
-	virtual const void* ExcuteFuncOfClickedObject(CGHScene& scene, float origin_x, float origin_y, float origin_z,
-		float ray_x, float ray_y, float ray_z, float dist, const void* selectedObject, bool isExcute = true) = 0;
+	virtual bool ExcuteFuncOfClickedObject(CGHScene& scene, float origin_x, float origin_y, float origin_z,
+		float ray_x, float ray_y, float ray_z, float dist) = 0;
 	virtual void CreateScene(const CGHScene& scene) = 0;
 
 protected:

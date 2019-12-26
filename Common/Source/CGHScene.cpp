@@ -7,7 +7,6 @@ CGHScene::CGHScene(IGraphicDevice* graphicDevice, IPhysicsDevice* pxDevice, cons
 	:m_GraphicDevice(graphicDevice)
 	, m_PhysicsDevice(pxDevice)
 	, m_SceneName(name)
-	, m_IsObjectClicked(false)
 {
 	m_GraphicDevice->CreateScene(*this);
 	m_PhysicsDevice->CreateScene(*this);
@@ -27,9 +26,9 @@ void CGHScene::AddGameObjects(GameObject* newObject)
 	m_Objects.push_back(std::unique_ptr<GameObject>(newObject));
 }
 
-const void* CGHScene::Update(const DirectX::Mouse::ButtonStateTracker& mouse)
+bool CGHScene::Update(const DirectX::Mouse::ButtonStateTracker& mouse)
 {
-	const void* result = nullptr;
+	bool result = true;
 
 	for (auto& it : m_Objects)
 	{
@@ -39,21 +38,9 @@ const void* CGHScene::Update(const DirectX::Mouse::ButtonStateTracker& mouse)
 	if (mouse.leftButton == MOUSEState::PRESSED)
 	{
 		GetComponentUpdater(COMPONENTTYPE::COM_UICOLLISTION).Update();
-		result = CheckFuncOfClickedObject(500.0f);
-		m_IsObjectClicked = result;
-	}
-
-	if (m_IsObjectClicked)
-	{
-		if (mouse.leftButton == MOUSEState::RELEASED)
-		{
-			GetComponentUpdater(COMPONENTTYPE::COM_UICOLLISTION).Update();
-			result = ExcuteFuncOfClickedObject(500.0f, result);
-			m_IsObjectClicked = false;
-		}
+		result = ExcuteFuncOfClickedObject(500.0f);
 	}
 	
-
 	m_PhysicsDevice->Update(*this);
 	GetComponentUpdater(COMPONENTTYPE::COM_STATIC).Update();
 	GetComponentUpdater(COMPONENTTYPE::COM_DYNAMIC).Update();
@@ -120,22 +107,12 @@ ComponentUpdater& CGHScene::GetComponentUpdater(COMPONENTTYPE type)
 	return m_ComUpdater[index];
 }
 
-const void* CGHScene::ExcuteFuncOfClickedObject(float dist, const void* ptr)
+bool CGHScene::ExcuteFuncOfClickedObject(float dist)
 {
 	DirectX::XMFLOAT3 rayOrigin;
 	DirectX::XMFLOAT3 ray;
 
 	GETAPP->GetMouseRay(rayOrigin, ray);
 	return m_PhysicsDevice->ExcuteFuncOfClickedObject(*this, rayOrigin.x, rayOrigin.y, rayOrigin.z,
-		ray.x, ray.y, ray.z, dist, ptr, true);
-}
-
-const void* CGHScene::CheckFuncOfClickedObject(float dist)
-{
-	DirectX::XMFLOAT3 rayOrigin;
-	DirectX::XMFLOAT3 ray;
-
-	GETAPP->GetMouseRay(rayOrigin, ray);
-	return m_PhysicsDevice->ExcuteFuncOfClickedObject(*this, rayOrigin.x, rayOrigin.y, rayOrigin.z,
-		ray.x, ray.y, ray.z, dist, nullptr, false);
+		ray.x, ray.y, ray.z, dist);
 }

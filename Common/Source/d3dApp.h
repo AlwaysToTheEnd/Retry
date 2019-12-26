@@ -45,6 +45,7 @@ public:
 	static D3DApp* GetApp();
 	const DirectX::Keyboard::KeyboardStateTracker* GetKeyBoard(const void* caller);
 	const DirectX::Mouse::ButtonStateTracker* GetMouse(const void* caller);
+	void InputDeviceHoldRequest(const void* caller);
 	void InputDeviceHoldCancle(const void* caller);
 	void GetMouseRay(DirectX::XMFLOAT3& origin, DirectX::XMFLOAT3& ray) const { origin = m_RayOrigin; ray = m_Ray; }
 	DirectX::XMVECTOR XM_CALLCONV GetMousePos() const { return m_Camera.GetMousePos(); }
@@ -80,7 +81,6 @@ protected:
 	DirectX::Keyboard						m_Keyboard;
 	DirectX::Keyboard::KeyboardStateTracker	m_KeyboardTracker;
 	const void*								m_CurrInputDeviceHoldObject;
-	bool									m_HoldCancled;
 
 	DirectX::XMFLOAT3	m_RayOrigin = {};
 	DirectX::XMFLOAT3	m_Ray = {};

@@ -159,9 +159,17 @@ struct AniBoneMat
 
 struct RenderFont
 {
+	enum class FONTBENCHMARK
+	{
+		LEFT,
+		CENTER,
+		RIGHT
+	};
+
 	RenderFont(const std::wstring& fontName, const std::wstring& text)
 		: printString(text)
 		, fontIndex(GetFontIndex(fontName))
+		, benchmark(FONTBENCHMARK::LEFT)
 	{
 
 	}
@@ -173,6 +181,7 @@ struct RenderFont
 	const std::wstring& printString;
 	float				rotation = 0;
 	int					fontHeight = -1;
+	FONTBENCHMARK		benchmark;
 	DirectX::XMFLOAT3	pos = { 0, 0, 0 };
 	DirectX::XMFLOAT4	color = { 0,0,0,1 };
 	DirectX::XMFLOAT2*	drawSize = nullptr; //Output: If not nullptr, Get font drawSize from Device 

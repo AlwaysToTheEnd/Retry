@@ -24,9 +24,23 @@ void DX12FontManager::Init(ID3D12Device* device, ID3D12CommandQueue* queue,
 	ResourceUploadBatch resourceUpload(device);
 	resourceUpload.Begin();
 
+	D3D12_RENDER_TARGET_BLEND_DESC transparencyBlendDesc;
+	transparencyBlendDesc.BlendEnable = true;
+	transparencyBlendDesc.LogicOpEnable = false;
+	transparencyBlendDesc.SrcBlend = D3D12_BLEND_SRC_ALPHA;
+	transparencyBlendDesc.DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
+	transparencyBlendDesc.BlendOp = D3D12_BLEND_OP_ADD;
+	transparencyBlendDesc.SrcBlendAlpha = D3D12_BLEND_ONE;
+	transparencyBlendDesc.DestBlendAlpha = D3D12_BLEND_ZERO;
+	transparencyBlendDesc.BlendOpAlpha = D3D12_BLEND_OP_ADD;
+	transparencyBlendDesc.LogicOp = D3D12_LOGIC_OP_NOOP;
+	transparencyBlendDesc.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+
 	RenderTargetState rtState(rtFormat, dsForma);
 	SpriteBatchPipelineStateDescription pd(rtState);
 	pd.depthStencilDesc = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
+	pd.blendDesc = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
+	pd.blendDesc.RenderTarget[0] = transparencyBlendDesc;
 	
 	m_SpriteBatch = std::make_unique<SpriteBatch>(device, resourceUpload, pd);
 
@@ -101,7 +115,20 @@ void DX12FontManager::RenderCommandWrite(ID3D12GraphicsCommandList* cmdList,
 			*it.drawSize = size;
 		}
 		
-		pos.x -= size.x / 2;
+		switch (it.benchmark)
+		{
+		case RenderFont::FONTBENCHMARK::LEFT:
+			break;
+		case RenderFont::FONTBENCHMARK::CENTER:
+			pos.x -= size.x / 2;
+			break;
+		case RenderFont::FONTBENCHMARK::RIGHT:
+			pos.x += size.x / 2;
+			break;
+		default:
+			break;
+		}
+
 		pos.y -= size.y / 2;
 
 		m_Fonts[it.fontIndex].DrawString(m_SpriteBatch.get(), it.printString.c_str(), pos,

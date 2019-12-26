@@ -31,6 +31,9 @@ void ComUICollision::Update()
 
 	if (transform)
 	{
-		m_ReservedUICol->push_back(UICollisions(&m_TargetGameObject,transform->GetTransform(), m_Size, m_VoidFuncs));
+		physx::PxTransform wPos = transform->GetTransform();
+		wPos.p.x += m_Offset.x;
+		wPos.p.y += m_Offset.y;
+		m_ReservedUICol->push_back(UICollisions(&m_TargetGameObject, wPos, m_Size, m_VoidFuncs));
 	}
 }

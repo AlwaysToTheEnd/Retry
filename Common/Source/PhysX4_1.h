@@ -80,11 +80,11 @@ public:
 
 	virtual IComponent* CreateComponent(CGHScene& scene, COMPONENTTYPE type, unsigned int id, GameObject& gameObject) override;
 	virtual void ComponentDeleteManaging(CGHScene& scene, COMPONENTTYPE type, int id) override;
-	virtual const void* ExcuteFuncOfClickedObject(CGHScene& scene, float origin_x, float origin_y, float origin_z,
-		float ray_x, float ray_y, float ray_z, float dist, const void* selectedObject, bool isExcute=true) override;
+	virtual bool ExcuteFuncOfClickedObject(CGHScene& scene, float origin_x, float origin_y, float origin_z,
+		float ray_x, float ray_y, float ray_z, float dist) override;
 
 private:
-	const void* CheckUIClicked(std::vector<UICollisions>& collisions);
+	bool CheckUIClicked(std::vector<UICollisions>& collisions);
 
 private:
 	physx::PxFilterFlags ScissorFilter(physx::PxFilterObjectAttributes attributes0, physx::PxFilterData filterData0,

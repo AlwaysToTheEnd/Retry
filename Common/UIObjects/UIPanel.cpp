@@ -13,6 +13,7 @@ void UIPanel::Init()
 	m_UICollision = AddComponent<ComUICollision>();
 	m_Render = AddComponent<ComRenderer>();
 
+	m_Trans->SetPosZ(0.9f);
 	m_Font->SetFont(RenderFont::fontNames.front());
 	m_Font->m_FontHeight = 10;
 	RenderInfo info(RENDER_UI);
@@ -37,8 +38,7 @@ void UIPanel::AddUICom(unsigned int x, unsigned y, UIPanel* panel)
 	m_UIComs.push_back({ UICOMTYPE::UIPANEL, panel });
 	m_UIComOffset.push_back({ static_cast<float>(x),static_cast<float>(y) });
 
-	panel->DeleteComponent(panel->GetComponent<ComUICollision>());
-	s_PanelController.DeletedPanel(panel);
+	panel->ThisPanalIsStatic();
 }
 
 void UIPanel::SetBackGroundTexture(const std::string& name)
@@ -63,7 +63,10 @@ void UIPanel::SetSize(unsigned int x, unsigned y)
 
 	RenderInfo info = m_Render->GetRenderInfo();
 	info.point.size = { halfSize.x, halfSize.y,0 };
-	m_UICollision->SetSize({ halfSize.x, halfSize.y });
+	if (m_UICollision)
+	{
+		m_UICollision->SetSize({ halfSize.x, halfSize.y });
+	}
 	m_Render->SetRenderInfo(info);
 }
 
@@ -100,6 +103,15 @@ void UIPanel::UIOff()
 	for (auto& it : m_UIComs)
 	{
 		it.object->SetAllComponentActive(false);
+	}
+}
+
+void UIPanel::ThisPanalIsStatic()
+{
+	if (m_UICollision)
+	{
+		DeleteComponent(m_UICollision);
+		m_UICollision = nullptr;
 	}
 }
 
@@ -190,6 +202,8 @@ void UIPanel::UIPanelController::Update()
 	}
 	else
 	{
+		bool isChanged = false;
+
 		for (auto it = m_Panels.begin(); it != m_Panels.end(); it++)
 		{
 			if (GETMOUSE(*it))
@@ -202,22 +216,25 @@ void UIPanel::UIPanelController::Update()
 
 					m_Panels.push_front(*it);
 					it = m_Panels.erase(it);
+					isChanged = true;
 				}
 
 				break;
 			}
 		}
-	}
 
+		if (isChanged)
+		{
+			float posZ = 0.1f;
+
+			for (auto& it : m_Panels)
+			{
+				posZ += 0.01f;
+				it->GetComponent<ComTransform>()->SetPosZ(posZ);
+			}
+		}
+	}
 	
-
-	float posZ = 0.1f;
-
-	for (auto& it : m_Panels)
-	{
-		posZ += 0.01f;
-		it->GetComponent<ComTransform>()->SetPosZ(posZ);
-	}
 }
 
 void UIPanel::UIPanelController::WorkClear()

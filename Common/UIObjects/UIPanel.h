@@ -77,6 +77,7 @@ public:
 	void SetPos(DirectX::XMFLOAT2 pos);
 	void UIOn();
 	void UIOff();
+	void ThisPanalIsStatic();
 
 private:
 	virtual void Init() override;

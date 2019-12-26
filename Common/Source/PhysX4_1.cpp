@@ -197,15 +197,15 @@ void PhysX4_1::ComponentDeleteManaging(CGHScene& scene, COMPONENTTYPE type, int 
 	}
 }
 
-const void* PhysX4_1::ExcuteFuncOfClickedObject(CGHScene& scene, float origin_x, float origin_y, float origin_z,
-	float ray_x, float ray_y, float ray_z, float dist, const void* selectedObject, bool isExcute)
+bool PhysX4_1::ExcuteFuncOfClickedObject(CGHScene& scene, float origin_x, float origin_y, float origin_z,
+	float ray_x, float ray_y, float ray_z, float dist)
 {
-	const void* result = nullptr;
+	bool result = false;
 	auto iter = m_Scenes.find(scene.GetSceneName());
 
 	result = CheckUIClicked(iter->second.reservedToCheckUIs);
 
-	if (result==nullptr)
+	if (result==false)
 	{
 		auto currScene = iter->second.scene.Get();
 
@@ -239,15 +239,13 @@ const void* PhysX4_1::ExcuteFuncOfClickedObject(CGHScene& scene, float origin_x,
 
 				if (functionlObject->IsValideObject())
 				{
-					if (isExcute && selectedObject == functionlObject->m_GameObject)
+					for (auto& it : functionlObject->m_VoidFuncs)
 					{
-						for (auto& it : functionlObject->m_VoidFuncs)
-						{
-							it();
-						}
+						it();
 					}
 
-					result = functionlObject->m_GameObject;
+					GETAPP->InputDeviceHoldRequest(functionlObject->m_GameObject);
+					result = true;
 				}
 			}
 		}
@@ -256,9 +254,9 @@ const void* PhysX4_1::ExcuteFuncOfClickedObject(CGHScene& scene, float origin_x,
 	return result;
 }
 
-const void* PhysX4_1::CheckUIClicked(std::vector<UICollisions>& collisions)
+bool PhysX4_1::CheckUIClicked(std::vector<UICollisions>& collisions)
 {
-	const void* result = nullptr;
+	bool result = false;
 
 	PxVec3 vec3Pos[4];
 	PxVec2 vec2Pos[4];
@@ -311,7 +309,8 @@ const void* PhysX4_1::CheckUIClicked(std::vector<UICollisions>& collisions)
 			it();
 		}
 
-		result = currUI->gameObject;
+		GETAPP->InputDeviceHoldRequest(currUI->gameObject);
+		result = true;
 	}
 
 	collisions.clear();

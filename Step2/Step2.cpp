@@ -54,22 +54,22 @@ void Step2::InitObjects()
 	 test2->SetTargetParam(L"TestParam2", &testInt);
 	 test2->SetTextHeight(15);
 
-	 testPanel->SetPos({ 350,350 });
-	 testPanel->SetBackGroundColor({0.0f,0,1.0f,1.0f});
+	 testPanel->SetPos({ 300,350 });
+	 testPanel->SetBackGroundColor({0.0f,0,1.0f,1});
 	 testPanel->AddUICom(10, 30, test);
 	 testPanel->AddUICom(10, 50, test2);
 	 testPanel->SetSize(150, 150);
 
-	 testPane2->SetPos({ 350,350 });
-	 testPane2->SetBackGroundColor({ 1.0f, 1.0f, 1.0f, 1.0f });
+	 testPane2->SetPos({ 200,350 });
+	 testPane2->SetBackGroundColor({ 1.0f, 1.0f, 1.0f, 1 });
 	 testPane2->SetSize(150, 150);
 
-	 testPane3->SetPos({ 350,350 });
-	 testPane3->SetBackGroundColor({ 0.5f, 0.5f, 0.5f, 1.0f });
+	 testPane3->SetPos({ 100,350 });
+	 testPane3->SetBackGroundColor({ 0.5f, 0.5f, 0.5f, 1 });
 	 testPane3->SetSize(150, 150);
 
-	 testPane4->SetPos({ 350,350 });
-	 testPane4->SetBackGroundColor({ 1.0f, 1.0f, 1.0f, 1.0f });
+	 testPane4->SetPos({ 0,350 });
+	 testPane4->SetBackGroundColor({ 1.0f, 0, 1.0f, 1 });
 	 testPane4->SetSize(150, 150);
 }
 

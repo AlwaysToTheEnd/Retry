@@ -181,6 +181,7 @@ void ComFont::Update()
 		addedFont.fontHeight = m_FontHeight;
 		addedFont.color = m_Color;
 		addedFont.drawSize = &m_DrawSize;
+		addedFont.benchmark = m_Benchmark;
 
 		m_ReservedFonts->push_back(addedFont);
 	}

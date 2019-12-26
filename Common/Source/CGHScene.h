@@ -16,21 +16,19 @@ public:
 	CGHScene(IGraphicDevice* graphicDevice, IPhysicsDevice* pxDevice, const std::string& name);
 	virtual ~CGHScene();
 
-	const void* Update(const DirectX::Mouse::ButtonStateTracker& mouse);
+	bool Update(const DirectX::Mouse::ButtonStateTracker& mouse);
 	void AddGameObjects(GameObject* newObject);
 	void DeleteAllObjects() { m_Objects.clear(); }
-	ComponentUpdater& GetComponentUpdater(COMPONENTTYPE type);
 	const std::string& GetSceneName() const { return m_SceneName; }
+	ComponentUpdater& GetComponentUpdater(COMPONENTTYPE type);
 
 private:
-	const void* ExcuteFuncOfClickedObject(float dist, const void* ptr);
-	const void* CheckFuncOfClickedObject(float dist);
+	bool ExcuteFuncOfClickedObject(float dist);
 	void ComponentDeleteManaging(COMPONENTTYPE type, int id);
 	std::unique_ptr<IComponent> CreateComponent(COMPONENTTYPE type, GameObject& gameObject);
 
 private:
 	std::string									m_SceneName;
-	bool										m_IsObjectClicked;
 
 	ComponentUpdater							m_ComUpdater[IComponent::NUMCOMPONENTTYPE];
 	std::vector<std::unique_ptr<GameObject>>	m_Objects;

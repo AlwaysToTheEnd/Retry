@@ -40,12 +40,16 @@ const DirectX::Mouse::ButtonStateTracker* D3DApp::GetMouse(const void* caller)
 	return result;
 }
 
+void D3DApp::InputDeviceHoldRequest(const void* caller)
+{
+	m_CurrInputDeviceHoldObject = caller;
+}
+
 void D3DApp::InputDeviceHoldCancle(const void* caller)
 {
-	if (caller && caller == m_CurrInputDeviceHoldObject)
+	if (m_CurrInputDeviceHoldObject == caller)
 	{
 		m_CurrInputDeviceHoldObject = nullptr;
-		m_HoldCancled = true;
 	}
 }
 
@@ -53,7 +57,6 @@ D3DApp::D3DApp(HINSTANCE hInstance)
 	: m_hAppInst(hInstance)
 	, m_CurrInputDeviceHoldObject(nullptr)
 	, m_CurrScene(nullptr)
-	, m_HoldCancled(false)
 {
 	assert(m_App == nullptr);
 	m_App = this;
@@ -65,7 +68,6 @@ D3DApp::~D3DApp()
 
 void D3DApp::BaseUpdate()
 {
-	m_HoldCancled = false;
 	m_MouseTracker.Update(m_Mouse.GetState());
 	m_KeyboardTracker.Update(m_Keyboard.GetState());
 	m_Camera.Update();
@@ -81,18 +83,9 @@ void D3DApp::BaseUpdate()
 
 	if (m_CurrScene)
 	{
-		const void* keyboardHolder = m_CurrScene->Update(m_MouseTracker);
-
-		if (!m_HoldCancled)
+		if (!m_CurrScene->Update(m_MouseTracker))
 		{
-			if (keyboardHolder)
-			{
-				m_CurrInputDeviceHoldObject = keyboardHolder;
-			}
-			else if (m_MouseTracker.leftButton == MOUSEState::RELEASED)
-			{
-				m_CurrInputDeviceHoldObject = nullptr;
-			}
+			m_CurrInputDeviceHoldObject = nullptr;
 		}
 	}
 	

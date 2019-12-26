@@ -117,6 +117,9 @@ private:
 class ComFont :public IComponent
 {
 public:
+	
+
+public:
 	ComFont(GameObject& gameObject, int ID, 
 		std::vector<RenderFont>* reservedFonts)
 		: IComponent(COMPONENTTYPE::COM_FONT, gameObject, ID)
@@ -124,6 +127,7 @@ public:
 		, m_FontHeight(-1)
 		, m_Color(0,0,0,1)
 		, m_DrawSize(0,0)
+		, m_Benchmark(RenderFont::FONTBENCHMARK::LEFT)
 	{
 		if (m_ReservedFonts == nullptr)
 		{
@@ -134,6 +138,7 @@ public:
 
 	virtual void Update() override;
 	void SetFont(std::wstring fontName) { m_FontName = fontName; }
+	void SetBenchmark(RenderFont::FONTBENCHMARK mark) { m_Benchmark = mark; }
 
 public:
 	std::wstring		m_Text;
@@ -143,6 +148,7 @@ public:
 	DirectX::XMFLOAT4	m_Color;
 
 private:
-	static std::vector<RenderFont>* m_ReservedFonts;
+	RenderFont::FONTBENCHMARK		m_Benchmark;
+	static std::vector<RenderFont>*	m_ReservedFonts;
 	std::wstring		m_FontName;
 };

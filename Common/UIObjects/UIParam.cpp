@@ -15,6 +15,7 @@ void UIParam::Init()
 	m_Trans = AddComponent<ComTransform>();
 	m_Font = AddComponent<ComFont>();
 	m_Font->SetFont(RenderFont::fontNames.front());
+	m_Font->SetBenchmark(RenderFont::FONTBENCHMARK::LEFT);
 
 	if (m_Type == UIPARAMTYPE::MODIFIER)
 	{
@@ -44,8 +45,9 @@ void UIParam::Update()
 			break;
 		case UIParam::UIPARAMTYPE::MODIFIER:
 		{
-			DirectX::XMFLOAT2 halfSize = m_Font->m_DrawSize;
-			m_UICollision->SetSize({ halfSize.x / 2, halfSize.y / 2 });
+			DirectX::XMFLOAT2 fontDrawSize = m_Font->m_DrawSize;
+			m_UICollision->SetSize({ fontDrawSize.x / 2, fontDrawSize.y / 2 });
+			m_UICollision->SetOffset({ fontDrawSize.x / 2, 0 });
 
 			if (!m_Selected)
 			{
