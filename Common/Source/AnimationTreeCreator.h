@@ -1,38 +1,83 @@
 #pragma once
 #include "GameObject.h"
 #include "AnimationTree.h"
+#include "StaticObject.h"
+#include "CGHScene.h"
 
 class ComAnimator;
+class UIPanel;
 
-class AnimationTreeCreator : public GameObject
+class AniNodeVisual :public GameObject
 {
-private:
-	class AniNodeViewObject :public GameObject
+	class AniTreeArowVisual :public GameObject
 	{
 	public:
-		AniNodeViewObject() = default;
-		virtual ~AniNodeViewObject() = default;
+		AniTreeArowVisual(CGHScene& scene)
+			:GameObject(scene)
+			, m_From(nullptr)
+			, m_To(nullptr)
+		{
 
+		}
+		virtual ~AniTreeArowVisual() = default;
+
+		void SetFromNode(AniNodeVisual* from);
+		void SetCurrMousePos(DirectX::XMFLOAT2 pos);
+		void SetToNode(AniNodeVisual* to);
+	private:
 		virtual void Init() override;
 		virtual void Update() override;
-	private:
 
+	private:
+		std::string m_Name;
+		AniNodeVisual* m_From;
+		AniNodeVisual* m_To;
 	};
 
-public:
-	AnimationTreeCreator() = default;
-	virtual ~AnimationTreeCreator() = default;
+	static class AnimationTreeArrowCreater : public StaticGameObjectController
+	{
+	public:
+		AnimationTreeArrowCreater()
+			:StaticGameObjectController(false)
+			, m_CurrFrom(nullptr)
+			, m_CurrArrow(nullptr)
+		{
 
+		}
+		virtual ~AnimationTreeArrowCreater() = default;
+
+		void Excute(AniNodeVisual* aniNode);
+
+	private:
+		virtual void WorkClear() override;
+		virtual void Update() override;
+
+	private:
+		AniNodeVisual*						m_CurrFrom;
+		AniNodeVisual::AniTreeArowVisual*	m_CurrArrow;
+
+	} s_AnitreeArrowCreater;
+
+public:
+	AniNodeVisual(CGHScene& scene)
+		:GameObject(scene)
+	{
+
+	}
+	virtual ~AniNodeVisual() = default;
+
+	void SetTargetAninode(AniTree::AniNode* aniNode) { m_TargetAninode = aniNode; }
+private:
 	virtual void Init() override;
 	virtual void Update() override;
 
-	bool LoadAniTreeFile(const std::wstring& filePath);
-	std::unique_ptr<AniTree::AnimationTree> GetAniTree() { return std::move(m_CurrAniTree); }
+private:
+	void AddArrow(AniTreeArowVisual* arrow);
+	void StagingToArrowCreater();
 
 private:
-	ComAnimator*					m_Animator = nullptr;
-	std::vector<std::string>		m_SkinNames;
-	std::vector<AniNodeViewObject>	m_ViewObjects;
-	std::unique_ptr<AniTree::AnimationTree> m_CurrAniTree;
+	std::vector<AniTreeArowVisual*> m_Arrows;
+	UIPanel*			m_Panel;
+	AniTree::AniNode*	m_TargetAninode;
 };
 

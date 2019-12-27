@@ -46,9 +46,6 @@
     <Filter Include="Common\DeviceInstance\DX12Supporters\Buffer">
       <UniqueIdentifier>{f715426f-ec1b-493c-9c2b-e87a85c6c3ec}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Common\CodeResources\AnimationTree">
-      <UniqueIdentifier>{08dd9b4e-5586-45da-8ec8-0c9288782583}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Common\CodeResources\BaseClass">
       <UniqueIdentifier>{0fcf8d5d-fc37-43be-91ee-fca7b7451f41}</UniqueIdentifier>
     </Filter>
@@ -58,8 +55,11 @@
     <Filter Include="Common\GameObject">
       <UniqueIdentifier>{55e480f8-e552-48de-a884-b8b2d8b2518d}</UniqueIdentifier>
     </Filter>
-    <Filter Include="AnimationTreeCreateScene">
+    <Filter Include="Step2\AnimationTreeCreateScene">
       <UniqueIdentifier>{101019ee-3020-4bd7-9c52-b82a980d7fbd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Step2\AnimationTree">
+      <UniqueIdentifier>{08dd9b4e-5586-45da-8ec8-0c9288782583}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -118,10 +118,10 @@
       <Filter>Common\CodeResources\Components</Filter>
     </ClCompile>
     <ClCompile Include="..\Common\Source\AnimationTree.cpp">
-      <Filter>Common\CodeResources\AnimationTree</Filter>
+      <Filter>Step2\AnimationTree</Filter>
     </ClCompile>
     <ClCompile Include="..\Common\Source\AnimationTreeCreator.cpp">
-      <Filter>Common\CodeResources\AnimationTree</Filter>
+      <Filter>Step2\AnimationTree</Filter>
     </ClCompile>
     <ClCompile Include="..\Common\Source\AnimationStructs.cpp">
       <Filter>Common\CodeResources\BaseClass</Filter>
@@ -160,7 +160,7 @@
       <Filter>Common\UIObjects</Filter>
     </ClCompile>
     <ClCompile Include="..\Common\Source\AnimationTreeScene\AnimationTreeScene.cpp">
-      <Filter>AnimationTreeCreateScene</Filter>
+      <Filter>Step2\AnimationTreeCreateScene</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -213,10 +213,10 @@
       <Filter>Common\CodeResources\Components</Filter>
     </ClInclude>
     <ClInclude Include="..\Common\Source\AnimationTree.h">
-      <Filter>Common\CodeResources\AnimationTree</Filter>
+      <Filter>Step2\AnimationTree</Filter>
     </ClInclude>
     <ClInclude Include="..\Common\Source\AnimationTreeCreator.h">
-      <Filter>Common\CodeResources\AnimationTree</Filter>
+      <Filter>Step2\AnimationTree</Filter>
     </ClInclude>
     <ClInclude Include="..\Common\Source\BaseClass.h">
       <Filter>Common\CodeResources\BaseClass</Filter>
@@ -261,7 +261,7 @@
       <Filter>Common\CodeResources\BaseClass</Filter>
     </ClInclude>
     <ClInclude Include="..\Common\Source\AnimationTreeScene\AnimationTreeScene.h">
-      <Filter>AnimationTreeCreateScene</Filter>
+      <Filter>Step2\AnimationTreeCreateScene</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

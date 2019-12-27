@@ -19,10 +19,9 @@ public:
 	virtual void Init() = 0;
 	virtual bool Update(const DirectX::Mouse::ButtonStateTracker& mouse);
 	void DeleteAllObjects() { m_Objects.clear(); }
+	void DeleteGameObject(GameObject* object);
 	const std::string& GetSceneName() const { return m_SceneName; }
-
-protected:
-	template<typename T> T* AddGameObjects();
+	template<typename T> T* AddGameObject();
 
 private:
 	ComponentUpdater& GetComponentUpdater(COMPONENTTYPE type);
@@ -41,7 +40,7 @@ protected:
 };
 
 template<typename T>
-inline T* CGHScene::AddGameObjects()
+inline T* CGHScene::AddGameObject()
 {
 	T* newObject = new T(*this);
 

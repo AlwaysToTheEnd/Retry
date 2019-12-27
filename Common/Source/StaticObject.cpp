@@ -48,7 +48,6 @@ void StaticGameObjectController::WorkStart(bool otherWorksEnd)
 void StaticGameObjectController::WorkEnd()
 {
 	assert(m_isResident == false);
-	WorkClear();
 	m_EndList.push_back(this);
 }
 

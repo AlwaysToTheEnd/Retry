@@ -108,6 +108,7 @@ void UIParam::ParamController::Update()
 			if (keyboard->IsKeyPressed(KEYState::Enter))
 			{
 				Excute();
+				WorkClear();
 				WorkEnd();
 				return;
 			}
@@ -144,6 +145,7 @@ void UIParam::ParamController::Update()
 		else
 		{
 			WorkClear();
+			WorkEnd();
 			return;
 		}
 

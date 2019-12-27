@@ -3,6 +3,7 @@
 #include <unordered_map>
 #include <memory>
 #include <assert.h>
+#include <functional>
 #include "IComponent.h"
 
 class CGHScene;

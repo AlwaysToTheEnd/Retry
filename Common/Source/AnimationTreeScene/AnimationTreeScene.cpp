@@ -3,7 +3,7 @@
 
 void AniTreeScene::Init()
 {
-	auto panel = AddGameObjects<UIPanel>();
+	auto panel = AddGameObject<UIPanel>();
 
 	panel->SetBackGroundColor({ 0,0,1,1 });
 	panel->SetSize(150, 150);

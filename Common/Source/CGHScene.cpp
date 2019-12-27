@@ -108,6 +108,18 @@ std::unique_ptr<IComponent> CGHScene::CreateComponent(COMPONENTTYPE type, GameOb
 	return std::unique_ptr<IComponent>(newComponent);
 }
 
+void CGHScene::DeleteGameObject(GameObject* object)
+{
+	for (auto iter = m_Objects.begin(); iter != m_Objects.end(); iter++)
+	{
+		if (iter->get() == object)
+		{
+			m_Objects.erase(iter);
+			break;
+		}
+	}
+}
+
 ComponentUpdater& CGHScene::GetComponentUpdater(COMPONENTTYPE type)
 {
 	unsigned int index = static_cast<unsigned int>(type);

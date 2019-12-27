@@ -68,6 +68,7 @@ namespace AniTree
 
 		void Update(unsigned long long deltaTime);
 		const std::string& GetAniName() const;
+		const std::string& GetNodeName() const { return m_NodeName; }
 		void SetAniName(const std::string& name) { m_TargetAniName = name; }
 		unsigned long long GetCurrTick() const { return m_CurrTick; }
 		unsigned long long GetEndTick() const { return m_AniEndTime; }
@@ -95,8 +96,8 @@ namespace AniTree
 
 		}
 
-		const std::string& from;
-		const std::string& to;
+		std::string	 from;
+		std::string	 to;
 		TriggerData& trigger;
 	};
 

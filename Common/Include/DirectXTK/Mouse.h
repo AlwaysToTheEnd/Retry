@@ -11,6 +11,7 @@
 #pragma once
 
 #include <memory>
+#include <DirectXMath.h>
 
 #if (defined(WINAPI_FAMILY) && (WINAPI_FAMILY == WINAPI_FAMILY_APP)) || (defined(_XBOX_ONE) && defined(_TITLE) && (_XDK_VER >= 0x42D907D1))
 namespace ABI { namespace Windows { namespace UI { namespace Core { struct ICoreWindow; } } } }
@@ -80,6 +81,8 @@ namespace DirectX
             void __cdecl Reset() noexcept;
 
             State __cdecl GetLastState() const noexcept { return lastState; }
+
+            XMFLOAT2 GetMousePos() const noexcept{ return XMFLOAT2(lastState.x,lastState.y); }
 
         private:
             State lastState;
