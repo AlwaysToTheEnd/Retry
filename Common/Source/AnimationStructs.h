@@ -102,7 +102,7 @@ namespace Ani
 		unsigned int				GetClipEndTime(const std::string& clipName) const;
 		void						GetFinalTransforms(const std::string& clipName, unsigned long long timePos, AniBoneMat& finalTransforms) const;
 		unsigned int				GetAnimationNum() const { return static_cast<unsigned int>(m_Animations.size()); }
-		std::vector<std::string>	GetAnimationNames() const;
+		void						GetAnimationNames(std::vector<std::string>& out) const;
 		
 		bool						CheckAnimation(const std::string& key) const;
 

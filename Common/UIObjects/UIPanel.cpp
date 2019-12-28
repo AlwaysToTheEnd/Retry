@@ -21,6 +21,14 @@ void UIPanel::Init()
 	m_Render->SetRenderInfo(info);
 }
 
+void UIPanel::Delete()
+{
+	s_PanelController.DeletedPanel(this);
+	DeleteAllComs();
+
+	GameObject::Delete();
+}
+
 void UIPanel::AddUICom(unsigned int x, unsigned y, UIButton* button)
 {
 	m_UIComs.push_back({ UICOMTYPE::UIBUTTON, button });
@@ -39,6 +47,17 @@ void UIPanel::AddUICom(unsigned int x, unsigned y, UIPanel* panel)
 	m_UIComOffset.push_back({ static_cast<float>(x),static_cast<float>(y) });
 
 	panel->ThisPanalIsStatic();
+}
+
+void UIPanel::DeleteAllComs()
+{
+	for (auto& it : m_UIComs)
+	{
+		it.object->Delete();
+	}
+
+	m_UIComOffset.clear();
+	m_UIComs.clear();
 }
 
 void UIPanel::SetBackGroundTexture(const std::string& name)

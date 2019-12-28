@@ -64,11 +64,13 @@ public:
 		s_PanelController.AddPanel(this);
 	}
 
-	virtual ~UIPanel() { s_PanelController.DeletedPanel(this); }
+	virtual ~UIPanel() = default;
+	virtual void Delete() override;
 
 	void AddUICom(unsigned int x, unsigned y, UIButton* button);
 	void AddUICom(unsigned int x, unsigned y, UIParam* param);
 	void AddUICom(unsigned int x, unsigned y, UIPanel* panel);
+	void DeleteAllComs();
 
 	void SetBackGroundTexture(const std::string& name);
 	void SetBackGroundColor(DirectX::XMFLOAT4 color);

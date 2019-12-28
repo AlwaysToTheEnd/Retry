@@ -106,16 +106,13 @@ void Ani::SkinnedData::GetFinalTransforms(
 	}
 }
 
-std::vector<std::string> Ani::SkinnedData::GetAnimationNames() const
+void Ani::SkinnedData::GetAnimationNames(std::vector<std::string>& out) const
 {
-	std::vector<std::string> result;
-
+	out.clear();
 	for (auto& it : m_Animations)
 	{
-		result.push_back(it.first);
+		out.push_back(it.first);
 	}
-
-	return result;
 }
 
 bool Ani::SkinnedData::CheckAnimation(const std::string& key) const

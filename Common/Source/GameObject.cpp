@@ -24,6 +24,11 @@ void GameObject::SetAllComponentActive(bool value)
 	}
 }
 
+void GameObject::Delete()
+{
+	m_Scene.DeleteGameObject(this);
+}
+
 std::unordered_map<unsigned int, unsigned int> GameObject::GetComponentTypeIDs()
 {
 	std::unordered_map<unsigned int, unsigned int> map;

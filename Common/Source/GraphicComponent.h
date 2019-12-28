@@ -63,6 +63,7 @@ public:
 
 	static void GetSkinNames(std::vector<std::string>& out);
 	unsigned int GetAniEndTime(const std::string& name) const { return m_CurrSkinnedData->GetClipEndTime(name); }
+	const Ani::SkinnedData* GetSkinnedData(const std::string& name) const { return &m_SkinnedDatas->find(name)->second; }
 	int GetBoneMatStoredIndex() const { return m_BoneMatStoredIndex; }
 	void GetAniNames(std::vector<std::string>& out) const;
 	AniTree::AnimationTree* GetAnimationTree() { return m_AniTree.get(); }

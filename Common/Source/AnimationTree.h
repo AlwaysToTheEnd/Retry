@@ -46,11 +46,27 @@ namespace AniTree
 
 	struct NodeArrow
 	{
-		NodeArrow(unsigned int toNodeIndex);
+		NodeArrow(const std::string& toNodeName);
 
 		TO_ANI_ARROW_TYPE type;
-		const unsigned int targetNodeIndex;
-		bool AniEndIsChange;
+		std::string targetNode;
+		bool aniEndIsChange;
+		std::vector<TriggerData> triggers;
+	};
+
+	struct OutputTrigger
+	{
+		OutputTrigger(const std::string& _from, const std::string& _to, TriggerData& _trigger)
+			:trigger(_trigger)
+			, from(_from)
+			, to(_to)
+		{
+
+		}
+
+		std::string	 from;
+		std::string	 to;
+		TriggerData& trigger;
 	};
 
 	class AniNode
@@ -66,15 +82,24 @@ namespace AniTree
 
 		}
 
-		void Update(unsigned long long deltaTime);
+		std::string Update(unsigned long long deltaTime);
 		const std::string& GetAniName() const;
 		const std::string& GetNodeName() const { return m_NodeName; }
 		void SetAniName(const std::string& name) { m_TargetAniName = name; }
 		unsigned long long GetCurrTick() const { return m_CurrTick; }
 		unsigned long long GetEndTick() const { return m_AniEndTime; }
+		void GetTriggers(std::vector<OutputTrigger>& out) const;
+		const std::vector<NodeArrow>& GetArrows() { return m_Arrows; }
 
-		void ResetTick() { m_CurrTick = 0; }
-		bool IsRoofAni() { return m_RoofAni; }
+		void AddArrow(const std::string& to);
+		bool AddTrigger(const std::string& to, TO_ANI_ARROW_TYPE arrowType, CHANGE_CONDITION_TYPE type, const TriggerData* trigger);
+
+		void TriggerReset();
+		bool IsRoofAni() const { return m_RoofAni; }
+
+	private:
+		bool CheckArrowTrigger(NodeArrow& arrow, std::vector<TriggerData>& triggers,
+			unsigned long long currTick, unsigned long long aniEndTick);
 
 	private:
 		const unsigned int	m_Index;
@@ -82,23 +107,9 @@ namespace AniTree
 		const std::string	m_NodeName;
 		std::string			m_TargetAniName;
 
-		bool				m_RoofAni;
-		unsigned long long	m_CurrTick;
-	};
-
-	struct OutputTrigger
-	{
-		OutputTrigger(const std::string& _from,const std::string& _to, TriggerData& _trigger)
-			:trigger(_trigger)
-			,from(_from)
-			,to(_to)
-		{
-
-		}
-
-		std::string	 from;
-		std::string	 to;
-		TriggerData& trigger;
+		bool					m_RoofAni;
+		unsigned long long		m_CurrTick;
+		std::vector<NodeArrow>	m_Arrows;
 	};
 
 	class AnimationTree final
@@ -114,9 +125,9 @@ namespace AniTree
 
 		void GetTriggers(std::vector<OutputTrigger>& out);
 		bool AddAniNode(const std::string& aniName, unsigned int aniClipEndTime, bool roof);
-		bool AddArrow(const std::string& from, const std::string& to,
+		bool AddTrigger(const std::string& from, const std::string& to,
 			TO_ANI_ARROW_TYPE arrowType, CHANGE_CONDITION_TYPE type, const TriggerData* trigger);
-		bool AddArrow(unsigned int from, unsigned int to,
+		bool AddTrigger(unsigned int from, unsigned int to,
 			TO_ANI_ARROW_TYPE arrowType, CHANGE_CONDITION_TYPE type, const TriggerData* trigger);
 		std::string GetCurrAnimationName() const;
 		unsigned long long GetCurrAnimationTick() const;
@@ -125,13 +136,10 @@ namespace AniTree
 	private:
 		bool CheckArrowTrigger(NodeArrow& arrow, std::vector<TriggerData>& triggers, 
 			unsigned long long currTick, unsigned long long aniEndTick);
-		void TriggerReset();
 
 	private:
 		unsigned int										m_CurrAniNodeIndex;
 		std::vector<AniNode>								m_AniNodes;
-		std::vector<std::vector<NodeArrow>>					m_Arrows;
-		std::vector<std::vector<std::vector<TriggerData>>>	m_Triggers;
 	};
 
 
