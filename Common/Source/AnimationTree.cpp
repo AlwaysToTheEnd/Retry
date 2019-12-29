@@ -41,14 +41,11 @@ const std::string& AniTree::AniNode::GetAniName() const
 	}
 }
 
-void AniTree::AniNode::GetTriggers(std::vector<OutputTrigger>& out) const
+void AniTree::AniNode::GetTriggers(std::vector<OutputTrigger>& out)
 {
 	for (auto& it : m_Arrows)
 	{
-		for (auto& it2 : it.triggers)
-		{
-			out.emplace_back(m_NodeName, it.targetNode, &it2);
-		}
+		out.emplace_back(m_NodeName, it.targetNode, it.triggers);
 	}
 }
 
@@ -224,6 +221,19 @@ bool AniTree::AnimationTree::AddAniNode(const std::string& aniName, unsigned int
 
 	m_AniNodes.emplace_back(aniName, aniClipEndTime, roof, m_AniNodes.size());
 	return true;
+}
+
+AniNode* AniTree::AnimationTree::GetAniNode(const std::string aniName)
+{
+	for (auto& it : m_AniNodes)
+	{
+		if (it.GetAniName() == aniName)
+		{
+			return &it;
+		}
+	}
+
+	return nullptr;
 }
 
 bool AniTree::AnimationTree::AddTrigger(const std::string& from, const std::string& to,

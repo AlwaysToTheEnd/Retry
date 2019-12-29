@@ -19,6 +19,7 @@ public:
 	template<typename T> T* GetComponent();
 	template<typename T> std::vector<T*> GetComponents();
 	void SetAllComponentActive(bool value);
+	virtual bool IsSoloInputDeivceHolder() const { return true; }
 	virtual void Delete();
 
 	static std::unordered_map<unsigned int, unsigned int> GetComponentTypeIDs();

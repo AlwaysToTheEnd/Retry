@@ -85,11 +85,9 @@ void ComAnimator::SetAnimationTree(bool value)
 
 void ComAnimator::GetAniNames(std::vector<std::string>& out) const
 {
-	out.clear();
-
 	if (m_CurrSkinnedData)
 	{
-		out = m_CurrSkinnedData->GetAnimationNames();
+		m_CurrSkinnedData->GetAnimationNames(out);
 	}
 }
 

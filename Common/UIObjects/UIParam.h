@@ -32,6 +32,7 @@ private:
 		virtual ~ParamController() = default;
 
 		void SetUIParam(UIParam* uiParam);
+
 	private:
 		virtual void Update() override;
 		virtual void WorkClear() override;
@@ -59,6 +60,7 @@ public:
 
 	template<typename T> void SetTargetParam(const std::wstring& paramName, T* data);
 	void SetTextHeight(int height);
+	virtual bool IsSoloInputDeivceHolder() const override { return false; }
 
 private:
 	virtual void Init() override;

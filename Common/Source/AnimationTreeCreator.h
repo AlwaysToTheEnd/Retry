@@ -8,7 +8,7 @@ class ComAnimator;
 class UIPanel;
 class AniTreeArowVisual;
 class ComRenderer;
-class ComUICollsion;
+class ComUICollision;
 class ComTransform;
 
 namespace Ani
@@ -48,7 +48,7 @@ public:
 		,m_OutputPos(0,0)
 		,m_InputPos(0,0)
 		,m_Panel(nullptr)
-		,m_TargetAninode(nullptr)
+		,m_GetTargetAninodeFunc(nullptr)
 	{
 
 	}
@@ -56,8 +56,8 @@ public:
 	virtual void Delete() override;
 
 	void ArrowVisualDeleted(AniTreeArowVisual* arrow);
-	void SetTargetAninode(AniTree::AniNode* aniNode);
-	const std::string& GetNodeName() const { return m_TargetAninode->GetNodeName(); }
+	void SetTargetAninodeFunc(std::function<AniTree::AniNode*(void)> func);
+	const std::string& GetNodeName() const { return m_GetTargetAninodeFunc()->GetNodeName(); }
 	const DirectX::XMFLOAT2& GetOutputPos() { return m_OutputPos; }
 	const DirectX::XMFLOAT2& GetInputPos() { return m_InputPos; }
 
@@ -74,7 +74,7 @@ private:
 	DirectX::XMFLOAT2				m_OutputPos;
 	DirectX::XMFLOAT2				m_InputPos;
 	UIPanel*						m_Panel;
-	AniTree::AniNode*				m_TargetAninode;
+	std::function<AniTree::AniNode*(void)> m_GetTargetAninodeFunc;
 };
 
 class AniTreeArowVisual :public GameObject
@@ -156,6 +156,7 @@ public:
 private:
 	virtual void Init() override;
 	virtual void Update() override;
+	void AddNode(int aniIndex);
 
 private:
 	std::unique_ptr<AniTree::AnimationTree>	m_Tree;

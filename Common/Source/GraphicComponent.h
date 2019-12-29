@@ -118,9 +118,6 @@ private:
 class ComFont :public IComponent
 {
 public:
-	
-
-public:
 	ComFont(GameObject& gameObject, int ID, 
 		std::vector<RenderFont>* reservedFonts)
 		: IComponent(COMPONENTTYPE::COM_FONT, gameObject, ID)

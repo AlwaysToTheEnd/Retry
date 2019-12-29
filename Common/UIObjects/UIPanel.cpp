@@ -140,8 +140,9 @@ void UIPanel::Update()
 	{
 		physx::PxTransform panelTransform = m_Trans->GetTransform();
 		auto halfSize = m_Size / 2;
-		m_Font->m_Pos.x = -halfSize.x;
-		m_Font->m_Pos.y = -halfSize.y;
+		m_Font->m_Pos.x = panelTransform.p.x -halfSize.x;
+		m_Font->m_Pos.y = panelTransform.p.y -halfSize.y;
+		m_Font->m_Pos.z = panelTransform.p.z - 0.001f;
 
 		for (size_t i = 0; i < m_UIComs.size(); i++)
 		{
@@ -150,6 +151,11 @@ void UIPanel::Update()
 			transform->SetTransform(
 				physx::PxTransform(m_UIComOffset[i].x - halfSize.x, m_UIComOffset[i].y - halfSize.y, -0.001f)
 				* panelTransform);
+		}
+
+		if (GETKEY(this))
+		{
+			
 		}
 	}
 }

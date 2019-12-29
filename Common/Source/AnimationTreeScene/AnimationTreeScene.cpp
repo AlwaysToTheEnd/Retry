@@ -1,12 +1,12 @@
 #include "AnimationTreeScene.h"
 #include "../UIObjects/UIPanel.h"
+#include "AnimationTreeCreator.h"
 
 void AniTreeScene::Init()
 {
-	auto panel = AddGameObject<UIPanel>();
+	auto treeCreater = AddGameObject<VisualizedAniTreeCreater>();
 
-	panel->SetBackGroundColor({ 0,0,1,1 });
-	panel->SetSize(150, 150);
+	treeCreater->SelectSkinnedData("zealot.X");
 }
 
 bool AniTreeScene::Update(const DirectX::Mouse::ButtonStateTracker& mouse)

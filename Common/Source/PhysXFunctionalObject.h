@@ -38,8 +38,17 @@ struct UICollisions
 	
 	}
 
+
+	void ExcuteFuncs()
+	{
+		for (auto& it : voidFuncs)
+		{
+			it();
+		}
+	}
+
 	physx::PxTransform transform;
 	const DirectX::XMFLOAT2& size;
 	const std::vector<std::function<void()>>& voidFuncs;
-	const void* gameObject;
+	const GameObject* gameObject;
 };

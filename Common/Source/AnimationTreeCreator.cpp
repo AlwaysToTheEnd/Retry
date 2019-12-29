@@ -60,12 +60,14 @@ void AniNodeVisual::ArrowVisualDeleted(AniTreeArowVisual* arrow)
 	}
 }
 
-void AniNodeVisual::SetTargetAninode(AniTree::AniNode* aniNode)
+void AniNodeVisual::SetTargetAninodeFunc(std::function<AniTree::AniNode*(void)> func)
 {
-	m_TargetAninode = aniNode;
+	m_GetTargetAninodeFunc = func;
 
-	auto nodeName = m_TargetAninode->GetNodeName();
+	auto nodeName = func()->GetNodeName();
 	auto nameFont = m_Panel->GetComponent<ComFont>();
+	m_Panel->SetSize(150, 150);
+	m_Panel->SetBackGroundColor({ 0,1,0,1 });
 
 	nameFont->m_Text.clear();
 	nameFont->m_Text.insert(nameFont->m_Text.end(), nodeName.begin(), nodeName.end());
@@ -74,7 +76,7 @@ void AniNodeVisual::SetTargetAninode(AniTree::AniNode* aniNode)
 void AniNodeVisual::AddArrow(AniTreeArowVisual* arrow)
 {
 	m_Arrows.push_back(arrow);
-	m_TargetAninode->AddArrow(arrow->GetToNode()->GetNodeName());
+	m_GetTargetAninodeFunc()->AddArrow(arrow->GetToNode()->GetNodeName());
 }
 
 void AniNodeVisual::StagingToArrowCreater()
@@ -209,35 +211,56 @@ void AniTreeArowVisual::AniTreeArrowArttributeEditer::Update()
 
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+//////////////
 void VisualizedAniTreeCreater::SelectSkinnedData(const std::string& name)
 {
 	m_CurrSkin = m_Animator->GetSkinnedData(name);
 	m_CurrSkin->GetAnimationNames(m_AniNames);
+
+	m_Tree = nullptr;
+	m_Tree = std::make_unique<AniTree::AnimationTree>();
+
+	m_WorkPanel->DeleteAllComs();
+
+	std::wstring text;
+	int i = 0;
+	for (auto& it : m_AniNames)
+	{
+		text.clear();
+		text.insert(text.end(), it.begin(), it.end());
+		auto button = GetScene().AddGameObject<UIButton>();
+		button->SetTexture("closeButton.png", { 15,15 });
+		button->SetText(text);
+		button->SetTextHeight(10);
+		button->AddFunc(std::bind(&VisualizedAniTreeCreater::AddNode, this, i));
+		button->GetComponent<ComFont>()->SetBenchmark(RenderFont::FONTBENCHMARK::CENTER);
+		m_WorkPanel->AddUICom(15, 15+i*30, button);
+
+		i++;
+	}
+	
 }
 
 void VisualizedAniTreeCreater::Init()
 {
 	m_Animator = AddComponent<ComAnimator>();
+	m_WorkPanel = GetScene().AddGameObject<UIPanel>();
+	m_WorkPanel->SetSize(100, 100);
+	m_WorkPanel->SetBackGroundColor({ 0,0,1,1 });
 }
 
 void VisualizedAniTreeCreater::Update()
 {
 
+}
+
+void VisualizedAniTreeCreater::AddNode(int aniIndex)
+{
+	std::string aniName = m_AniNames[aniIndex];
+	if (m_Tree->AddAniNode(aniName, m_CurrSkin->GetClipEndTime(aniName), false))
+	{
+		auto newNode = GetScene().AddGameObject<AniNodeVisual>();
+
+		newNode->SetTargetAninodeFunc(std::bind(&AnimationTree::GetAniNode, m_Tree.get(), m_AniNames[aniIndex]));
+	}
 }

@@ -24,6 +24,7 @@ public:
 	void SetTextHeight(int height);
 	void SetColliderSize(const DirectX::XMFLOAT2& halfSize);
 	void AddFunc(std::function<void()> func);
+	virtual bool IsSoloInputDeivceHolder() const override { return false; }
 
 private:
 	virtual void Init() override;

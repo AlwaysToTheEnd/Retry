@@ -66,17 +66,18 @@ public:
 	virtual ~ComUICollision() = default;
 
 	virtual void Update() override;
+
 	void SetSize(const DirectX::XMFLOAT2& halfSize) { m_Size = halfSize; }
 	void SetOffset(const DirectX::XMFLOAT2& offset) { m_Offset = offset; }
 	const DirectX::XMFLOAT2& GetSize() const { return m_Size; }
 	void AddFunc(std::function<void()> func) { m_VoidFuncs.push_back(func); }
 
 private:
-	std::vector<UICollisions>* const	m_ReservedUICol;
+	std::vector<UICollisions>* const		m_ReservedUICol;
 
-	DirectX::XMFLOAT2					m_Size;
-	DirectX::XMFLOAT2					m_Offset;
-	std::vector<std::function<void()>>	m_VoidFuncs;
+	DirectX::XMFLOAT2						m_Size;
+	DirectX::XMFLOAT2						m_Offset;
+	std::vector<std::function<void()>>		m_VoidFuncs;
 };
 
 class ComTransform :public IComponent
