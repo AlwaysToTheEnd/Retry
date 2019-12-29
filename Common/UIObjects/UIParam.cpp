@@ -144,7 +144,6 @@ void UIParam::ParamController::Update()
 		}
 		else
 		{
-			WorkClear();
 			WorkEnd();
 			return;
 		}

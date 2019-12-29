@@ -316,10 +316,7 @@ bool PhysX4_1::CheckUIClicked(std::vector<UICollisions>& collisions, bool isExcu
 		{
 			if (GETMOUSE(currUI->gameObject)) // Check that this object is same before object.
 			{
-				for (auto& it : currUI->voidFuncs)
-				{
-					it();
-				}
+				currUI->ExcuteFuncs();
 			}
 		}
 		else

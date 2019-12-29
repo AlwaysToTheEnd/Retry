@@ -13,6 +13,8 @@ private:
 		UIPanelController()
 			: StaticGameObjectController(true)
 			, m_CurrPanel(nullptr)
+			, m_PressedTime(0)
+			, m_PrevMousePos(0,0)
 		{
 
 		}
@@ -29,6 +31,7 @@ private:
 		UIPanel*			m_CurrPanel;
 		std::list<UIPanel*>	m_Panels;
 		physx::PxVec2		m_PrevMousePos;
+		unsigned long long	m_PressedTime;
 
 	} s_PanelController;
 
@@ -72,6 +75,7 @@ public:
 	void AddUICom(unsigned int x, unsigned y, UIPanel* panel);
 	void DeleteAllComs();
 
+	physx::PxVec2 GetSize() { return m_Size; }
 	void SetBackGroundTexture(const std::string& name);
 	void SetBackGroundColor(DirectX::XMFLOAT4 color);
 	void SetSize(unsigned int x, unsigned y);

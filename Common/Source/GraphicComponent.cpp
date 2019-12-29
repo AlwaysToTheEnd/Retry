@@ -142,7 +142,8 @@ void ComRenderer::Update()
 	case RENDER_UI:
 		break;
 	default:
-		assert(false);
+		return;
+		//assert(false);
 		break;
 	}
 

@@ -13,9 +13,7 @@ void AniNodeVisual::Init()
 {
 	m_Panel = GetScene().AddGameObject<UIPanel>();
 	m_Panel->GetComponent<ComUICollision>()->AddFunc(
-		std::bind(&AniNodeVisual::StagingToArrowCreater, this));
-	m_Panel->SetSize(100, 100);
-
+		std::bind(&AniNodeVisual::AnimationTreeArrowCreater::Excute, &s_AnitreeArrowCreater, this));
 
 #pragma region AddPanel
 	{
@@ -28,11 +26,12 @@ void AniNodeVisual::Update()
 {
 	auto transform = m_Panel->GetComponent<ComTransform>()->GetTransform();
 
-	m_InputPos.x = transform.p.x;
-	m_InputPos.y = transform.p.y - 50;
+	float panelXHalfSize = m_Panel->GetSize().x / 2.0f;
+	m_InputPos.y = transform.p.y;
+	m_InputPos.x = transform.p.x - panelXHalfSize;
 
-	m_OutputPos.x = transform.p.x;
-	m_OutputPos.y = transform.p.y + 50;
+	m_OutputPos.y = transform.p.y;
+	m_OutputPos.x = transform.p.x + panelXHalfSize;
 }
 
 void AniNodeVisual::Delete()
@@ -66,7 +65,7 @@ void AniNodeVisual::SetTargetAninodeFunc(std::function<AniTree::AniNode*(void)> 
 
 	auto nodeName = func()->GetNodeName();
 	auto nameFont = m_Panel->GetComponent<ComFont>();
-	m_Panel->SetSize(150, 150);
+	m_Panel->SetSize(70, 45);
 	m_Panel->SetBackGroundColor({ 0,1,0,1 });
 
 	nameFont->m_Text.clear();
@@ -77,11 +76,6 @@ void AniNodeVisual::AddArrow(AniTreeArowVisual* arrow)
 {
 	m_Arrows.push_back(arrow);
 	m_GetTargetAninodeFunc()->AddArrow(arrow->GetToNode()->GetNodeName());
-}
-
-void AniNodeVisual::StagingToArrowCreater()
-{
-	s_AnitreeArrowCreater.Excute(this);
 }
 
 void AniNodeVisual::AnimationTreeArrowCreater::WorkClear()
@@ -97,16 +91,14 @@ void AniNodeVisual::AnimationTreeArrowCreater::WorkClear()
 
 void AniNodeVisual::AnimationTreeArrowCreater::Update()
 {
-	if (GETMOUSE(m_CurrFrom))
+	if (m_CurrFrom)
 	{
-		assert(m_CurrArrow);
+		if (GETMOUSE(m_CurrFrom->m_Panel))
+		{
+			assert(m_CurrArrow);
 
-		m_CurrArrow->SetCurrMousePos(mouse->GetMousePos());
-	}
-	else
-	{
-		WorkClear();
-		WorkEnd();
+			m_CurrArrow->SetCurrMousePos(mouse->GetMousePos());
+		}
 	}
 }
 
@@ -146,6 +138,7 @@ void AniTreeArowVisual::Update()
 	DirectX::XMFLOAT2 from = m_From->GetOutputPos();
 	DirectX::XMFLOAT2 to;
 	physx::PxVec2 directionVec;
+	physx::PxVec2 halfVec;
 
 	if (m_To)
 	{
@@ -158,14 +151,15 @@ void AniTreeArowVisual::Update()
 
 	directionVec.x = (to.x - from.x);
 	directionVec.y = (to.y - from.y);
+	halfVec = directionVec / 2;
 
 	m_Transform->SetTransform(physx::PxTransform(
-		physx::PxVec3((directionVec.x) / 2 + from.x, (directionVec.y) / 2 + from.y, m_Transform->GetTransform().p.z),
-		physx::PxQuat(physx::PxAtan2(directionVec.x, directionVec.y), physx::PxVec3(0, 0, 1))));
+		physx::PxVec3(halfVec.x + from.x, halfVec.y + from.y, m_Transform->GetTransform().p.z),
+		physx::PxQuat(atan2f(halfVec.y, halfVec.x), physx::PxVec3(0,0,1))));
 
 	renderInfo.meshOrTextureName = "plane.png";
-	renderInfo.texPoint.size.x = directionVec.magnitude();
-	renderInfo.texPoint.size.y = 10;
+	renderInfo.texPoint.size.x = directionVec.magnitude()/2.0f;
+	renderInfo.texPoint.size.y = 5;
 
 	m_Renderer->SetRenderInfo(renderInfo);
 }

@@ -141,7 +141,7 @@ void UIPanel::Update()
 		physx::PxTransform panelTransform = m_Trans->GetTransform();
 		auto halfSize = m_Size / 2;
 		m_Font->m_Pos.x = panelTransform.p.x -halfSize.x;
-		m_Font->m_Pos.y = panelTransform.p.y -halfSize.y;
+		m_Font->m_Pos.y = panelTransform.p.y -halfSize.y+ m_Font->m_FontHeight/2.0f;
 		m_Font->m_Pos.z = panelTransform.p.z - 0.001f;
 
 		for (size_t i = 0; i < m_UIComs.size(); i++)
@@ -151,11 +151,6 @@ void UIPanel::Update()
 			transform->SetTransform(
 				physx::PxTransform(m_UIComOffset[i].x - halfSize.x, m_UIComOffset[i].y - halfSize.y, -0.001f)
 				* panelTransform);
-		}
-
-		if (GETKEY(this))
-		{
-			
 		}
 	}
 }
@@ -199,13 +194,9 @@ void UIPanel::UIPanelController::Update()
 				}
 			}
 
-
-			if (mouse->leftButton == MOUSEState::PRESSED)
+			if (mouse->leftButton == MOUSEState::HELD)
 			{
-				m_PrevMousePos = mousePos;
-			}
-			else if (mouse->leftButton == MOUSEState::HELD)
-			{
+				m_PressedTime += 1;//#TODO GetDELTATIME
 				physx::PxVec2 moveValue =  mousePos - m_PrevMousePos;
 				m_CurrPanel->GetComponent<ComTransform>()->AddVector({ moveValue.x,moveValue.y,0 });
 				m_PrevMousePos = mousePos;
@@ -216,13 +207,13 @@ void UIPanel::UIPanelController::Update()
 				m_CurrPanel->GetComponent<ComTransform>()->AddVector({ moveValue.x,moveValue.y,0 });
 				m_PrevMousePos = mousePos;
 
-				HOLDCANCLE(m_CurrPanel);
+				if (m_PressedTime > 100)
+				{
+					HOLDCANCLE(m_CurrPanel);
+				}
+
 				WorkClear();
 			}
-		}
-		else
-		{
-			WorkClear();
 		}
 	}
 	else
@@ -268,4 +259,6 @@ void UIPanel::UIPanelController::WorkClear()
 	{
 		m_CurrPanel = nullptr;
 	}
+
+	m_PressedTime = 0;
 }

@@ -38,7 +38,6 @@ struct UICollisions
 	
 	}
 
-
 	void ExcuteFuncs()
 	{
 		for (auto& it : voidFuncs)

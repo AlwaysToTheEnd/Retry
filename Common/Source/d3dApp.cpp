@@ -111,6 +111,7 @@ void D3DApp::BaseUpdate()
 		if (!m_CurrScene->Update(m_MouseTracker))
 		{
 			m_CurrInputDeviceHoldObject.clear();
+			StaticGameObjectController::WorkAllClear();
 		}
 	}
 	

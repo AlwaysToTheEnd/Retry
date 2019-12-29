@@ -67,7 +67,6 @@ private:
 
 private:
 	void AddArrow(AniTreeArowVisual* arrow);
-	void StagingToArrowCreater();
 
 private:
 	std::vector<AniTreeArowVisual*>	m_Arrows;

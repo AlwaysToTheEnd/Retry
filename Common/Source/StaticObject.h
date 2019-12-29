@@ -25,6 +25,7 @@ protected:
 	virtual void Update() = 0;
 	virtual void WorkClear() = 0;
 	static void WorkALLEnd();
+	static void WorkAllClear();
 	void WorkStart(bool otherWorksEnd=false); // workStart should be excuted on CGH::ExcuteFuncOfClickedObject.
 	void WorkEnd();
 

@@ -12,7 +12,25 @@ void StaticGameObjectController::WorkALLEnd()
 		it->WorkClear();
 	}
 
+	for (auto& it : m_Residents)
+	{
+		it->WorkClear();
+	}
+
 	m_CurrObjects.clear();
+}
+
+void StaticGameObjectController::WorkAllClear()
+{
+	for (auto& it : m_CurrObjects)
+	{
+		it->WorkClear();
+	}
+
+	for (auto& it : m_Residents)
+	{
+		it->WorkClear();
+	}
 }
 
 void StaticGameObjectController::WorkStart(bool otherWorksEnd)
