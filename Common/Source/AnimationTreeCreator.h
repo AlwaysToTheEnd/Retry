@@ -34,7 +34,7 @@ class AniNodeVisual :public GameObject
 
 	private:
 		virtual void WorkClear() override;
-		virtual void Update() override;
+		virtual void Update(unsigned long long delta) override;
 
 	private:
 		AniNodeVisual*		m_CurrFrom;
@@ -64,7 +64,7 @@ public:
 
 private:
 	virtual void Init() override;
-	virtual void Update() override;
+	virtual void Update(unsigned long long delta) override;
 
 private:
 	void AddArrow(AniTreeArowVisual* arrow);
@@ -96,7 +96,7 @@ private:
 
 	private:
 		virtual void WorkClear() override;
-		virtual void Update() override;
+		virtual void Update(unsigned long long delta) override;
 		void CreateAttributePanel();
 		void AddParam();
 
@@ -132,7 +132,7 @@ public:
 
 private:
 	virtual void Init() override;
-	virtual void Update() override;
+	virtual void Update(unsigned long long delta) override;
 
 private:
 	std::string			m_Name;
@@ -160,7 +160,7 @@ public:
 
 private:
 	virtual void Init() override;
-	virtual void Update() override;
+	virtual void Update(unsigned long long delta) override;
 	void AddNode(int aniIndex);
 
 private:

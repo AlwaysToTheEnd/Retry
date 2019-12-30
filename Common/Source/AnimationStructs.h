@@ -116,7 +116,7 @@ namespace Ani
 	private:
 		std::vector<int>							m_FrameHierarchy;
 		std::vector<unsigned int>					m_BoneOffsetsFrameIndex;
-		std::vector<physx::PxMat44>						m_BoneOffsets;
+		std::vector<physx::PxMat44>					m_BoneOffsets;
 		std::unordered_map<std::string, Animation>	m_Animations;
 	};
 }

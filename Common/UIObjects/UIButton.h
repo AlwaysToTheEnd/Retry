@@ -26,7 +26,7 @@ public:
 
 private:
 	virtual void Init() override;
-	virtual void Update() override;
+	virtual void Update(unsigned long long delta) override;
 
 private:
 	ComTransform*	m_Trans;

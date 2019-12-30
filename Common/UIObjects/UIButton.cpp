@@ -11,7 +11,7 @@ void UIButton::Init()
 	m_Font->SetFont(RenderFont::fontNames.front());
 }
 
-void UIButton::Update()
+void UIButton::Update(unsigned long long delta)
 {
 	physx::PxVec3 pos = m_Trans->GetTransform().p;
 	//DirectX::XMFLOAT3 size = m_Render->GetRenderInfo().texPoint.size;

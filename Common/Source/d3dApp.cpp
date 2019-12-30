@@ -63,6 +63,8 @@ D3DApp::D3DApp(HINSTANCE hInstance)
 	: m_hAppInst(hInstance)
 	, m_CurrScene(nullptr)
 	, m_CurrInputDeviceHoldObject(nullptr)
+	, m_PrevTick(0)
+	, m_DeltaTick(0)
 {
 	assert(m_App == nullptr);
 	m_App = this;
@@ -84,12 +86,12 @@ void D3DApp::BaseUpdate()
 		m_CurrInputDeviceHoldObject = nullptr;
 	}
 
-	StaticGameObjectController::StaticsUpdate();
-	Update();
+	StaticGameObjectController::StaticsUpdate(m_DeltaTick);
+	Update(m_DeltaTick);
 
 	if (m_CurrScene)
 	{
-		if (!m_CurrScene->Update(m_MouseTracker))
+		if (!m_CurrScene->Update(m_MouseTracker, m_DeltaTick))
 		{
 			m_CurrInputDeviceHoldObject = nullptr;
 			StaticGameObjectController::WorkAllClear();
@@ -112,6 +114,9 @@ int D3DApp::Run()
 		}
 		else
 		{
+			UINT64 currTick = GetTickCount64();
+			m_DeltaTick = currTick - m_PrevTick;
+			m_PrevTick = currTick;
 			if (!m_AppPaused)
 			{
 				BaseUpdate();
@@ -143,6 +148,7 @@ bool D3DApp::Initialize()
 
 	InitObjects();
 
+	m_PrevTick = GetTickCount64();
 	return true;
 }
 

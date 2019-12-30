@@ -25,7 +25,7 @@ public:
 	}
 	virtual ~ComRigidDynamic() = default;
 
-	virtual void Update() override;
+	virtual void Update(unsigned long long delta) override;
 	physx::PxRigidDynamic* GetRigidBody() { return m_RigidBody; }
 
 private:
@@ -44,7 +44,7 @@ public:
 	}
 	virtual ~ComRigidStatic() = default;
 
-	virtual void Update() override;
+	virtual void Update(unsigned long long delta) override;
 	physx::PxRigidStatic* GetRigidBody() { return m_RigidBody; }
 
 private:
@@ -65,7 +65,7 @@ public:
 	}
 	virtual ~ComUICollision() = default;
 
-	virtual void Update() override;
+	virtual void Update(unsigned long long delta) override;
 
 	void SetSize(const DirectX::XMFLOAT2& halfSize) { m_Size = halfSize; }
 	void SetOffset(const DirectX::XMFLOAT2& offset) { m_Offset = offset; }
@@ -91,7 +91,7 @@ public:
 	}
 	virtual ~ComTransform() = default;
 
-	virtual void Update() override {}
+	virtual void Update(unsigned long long delta) override {}
 	void SetTransform(const physx::PxTransform& transform) { m_Transform = transform; }
 	void SetPosX(float x) { m_Transform.p.x = x; }
 	void SetPosY(float y) { m_Transform.p.y = y; }

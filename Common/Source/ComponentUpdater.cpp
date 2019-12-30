@@ -1,6 +1,6 @@
 #include "ComponentUpdater.h"
 
-void ComponentUpdater::Update()
+void ComponentUpdater::Update(unsigned long long delta)
 {
 	for (auto& it : m_Datas)
 	{
@@ -8,7 +8,7 @@ void ComponentUpdater::Update()
 		{
 			if (it->IsActive())
 			{
-				it->Update();
+				it->Update(delta);
 			}
 		}
 	}

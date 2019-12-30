@@ -58,7 +58,7 @@ public:
 	virtual LRESULT MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 protected:
-	virtual void Update() = 0;
+	virtual void Update(unsigned long long delta) = 0;
 	virtual void SelectDevices() = 0;
 	virtual void InitObjects() = 0;
 	virtual bool InitMainWindow();
@@ -97,6 +97,8 @@ protected:
 
 private:
 	CGHScene*						m_CurrScene;
+	unsigned long long				m_PrevTick;
+	unsigned long long				m_DeltaTick;
 };
 
 template<typename GraphicDeviceClass,typename PhysicsDeviceClass>

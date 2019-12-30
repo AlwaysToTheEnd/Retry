@@ -24,7 +24,7 @@ void UIParam::Init()
 	}
 }
 
-void UIParam::Update()
+void UIParam::Update(unsigned long long delta)
 {
 	if (m_ParamPtr)
 	{
@@ -98,7 +98,7 @@ std::wstring UIParam::GetDataString()
 	return result;
 }
 
-void UIParam::ParamController::Update()
+void UIParam::ParamController::Update(unsigned long long delta)
 {
 	if (m_CurrParam)
 	{

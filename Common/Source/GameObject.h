@@ -25,7 +25,7 @@ public:
 
 	static std::unordered_map<unsigned int, unsigned int> GetComponentTypeIDs();
 protected:
-	virtual void Update() = 0;
+	virtual void Update(unsigned long long delta) = 0;
 	virtual void Init() = 0;
 
 	template<typename T> T* AddComponent();

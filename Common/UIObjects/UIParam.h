@@ -34,7 +34,7 @@ private:
 		void SetUIParam(UIParam* uiParam);
 
 	private:
-		virtual void Update() override;
+		virtual void Update(unsigned long long delta) override;
 		virtual void WorkClear() override;
 		void Excute();
 
@@ -63,7 +63,7 @@ public:
 
 private:
 	virtual void Init() override;
-	virtual void Update() override;
+	virtual void Update(unsigned long long delta) override;
 	void SetUIParamToController();
 	void Selected(bool value) { m_Selected = value; }
 

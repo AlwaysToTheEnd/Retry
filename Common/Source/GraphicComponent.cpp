@@ -34,10 +34,9 @@ bool ComMesh::SelectMesh(const std::string& name)
 	return true;
 }
 
-void ComAnimator::Update()
+void ComAnimator::Update(unsigned long long delta)
 {
-	//#TODO Input Delta time
-	m_CurrTick += 1;
+	m_CurrTick += delta;
 
 	if (m_AniTree != nullptr)
 	{
@@ -120,7 +119,7 @@ bool ComAnimator::SelectAnimation(const std::string& name)
 	return false;
 }
 
-void ComRenderer::Update()
+void ComRenderer::Update(unsigned long long delta)
 {
 	auto comTransform = m_TargetGameObject.GetComponent<ComTransform>();
 
@@ -170,7 +169,7 @@ void ComRenderer::RenderMesh()
 	}
 }
 
-void ComFont::Update()
+void ComFont::Update(unsigned long long delta)
 {
 	//#TODO
 	if (m_Text.size())

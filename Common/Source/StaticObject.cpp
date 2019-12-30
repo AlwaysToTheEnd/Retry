@@ -69,7 +69,7 @@ void StaticGameObjectController::WorkEnd()
 	m_EndList.push_back(this);
 }
 
-void StaticGameObjectController::StaticsUpdate()
+void StaticGameObjectController::StaticsUpdate(unsigned long long delta)
 {
 	for (auto& it : m_EndList)
 	{
@@ -87,11 +87,11 @@ void StaticGameObjectController::StaticsUpdate()
 
 	for (auto& it : m_Residents)
 	{
-		it->Update();
+		it->Update(delta);
 	}
 
 	for (auto iter = m_CurrObjects.begin(); iter != m_CurrObjects.end(); iter++)
 	{
-		(*iter)->Update();
+		(*iter)->Update(delta);
 	}
 }

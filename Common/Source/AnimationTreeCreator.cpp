@@ -23,7 +23,7 @@ void AniNodeVisual::Init()
 
 }
 
-void AniNodeVisual::Update()
+void AniNodeVisual::Update(unsigned long long delta)
 {
 	auto transform = m_Panel->GetComponent<ComTransform>()->GetTransform();
 
@@ -90,7 +90,7 @@ void AniNodeVisual::AnimationTreeArrowCreator::WorkClear()
 	m_CurrFrom = nullptr;
 }
 
-void AniNodeVisual::AnimationTreeArrowCreator::Update()
+void AniNodeVisual::AnimationTreeArrowCreator::Update(unsigned long long delta)
 {
 	if (m_CurrFrom)
 	{
@@ -138,7 +138,7 @@ void AniTreeArowVisual::Init()
 	m_Renderer = AddComponent<ComRenderer>();
 }
 
-void AniTreeArowVisual::Update()
+void AniTreeArowVisual::Update(unsigned long long delta)
 {
 	RenderInfo renderInfo(RENDER_UI);
 	DirectX::XMFLOAT2 from = m_From->GetOutputPos();
@@ -226,7 +226,7 @@ void AniTreeArowVisual::AniTreeArrowArttributeEditer::WorkClear()
 	m_CurrArrow = nullptr;
 }
 
-void AniTreeArowVisual::AniTreeArrowArttributeEditer::Update()
+void AniTreeArowVisual::AniTreeArrowArttributeEditer::Update(unsigned long long delta)
 {
 
 }
@@ -352,7 +352,7 @@ void VisualizedAniTreeCreator::Init()
 	m_WorkPanel->SetBackGroundTexture(InputTN::Get("AniTreeCreatorWorkPanel"));
 }
 
-void VisualizedAniTreeCreator::Update()
+void VisualizedAniTreeCreator::Update(unsigned long long delta)
 {
 
 }

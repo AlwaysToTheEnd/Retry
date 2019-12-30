@@ -20,18 +20,18 @@ CGHScene::~CGHScene()
 
 }
 
-bool CGHScene::Update(const DirectX::Mouse::ButtonStateTracker& mouse)
+bool CGHScene::Update(const DirectX::Mouse::ButtonStateTracker& mouse, unsigned long long delta)
 {
 	bool result = true;
 
 	for (auto& it : m_Objects)
 	{
-		it->Update();
+		it->Update(delta);
 	}
 	
 	if (mouse.leftButton == MOUSEState::PRESSED)
 	{
-		GetComponentUpdater(COMPONENTTYPE::COM_UICOLLISTION).Update();
+		GetComponentUpdater(COMPONENTTYPE::COM_UICOLLISTION).Update(delta);
 
 		DirectX::XMFLOAT3 rayOrigin;
 		DirectX::XMFLOAT3 ray;
@@ -42,7 +42,7 @@ bool CGHScene::Update(const DirectX::Mouse::ButtonStateTracker& mouse)
 	}
 	else if(mouse.leftButton == MOUSEState::RELEASED)
 	{
-		GetComponentUpdater(COMPONENTTYPE::COM_UICOLLISTION).Update();
+		GetComponentUpdater(COMPONENTTYPE::COM_UICOLLISTION).Update(delta);
 
 		DirectX::XMFLOAT3 rayOrigin;
 		DirectX::XMFLOAT3 ray;
@@ -53,12 +53,12 @@ bool CGHScene::Update(const DirectX::Mouse::ButtonStateTracker& mouse)
 	}
 	
 	m_PhysicsDevice->Update(*this);
-	GetComponentUpdater(COMPONENTTYPE::COM_STATIC).Update();
-	GetComponentUpdater(COMPONENTTYPE::COM_DYNAMIC).Update();
+	GetComponentUpdater(COMPONENTTYPE::COM_STATIC).Update(delta);
+	GetComponentUpdater(COMPONENTTYPE::COM_DYNAMIC).Update(delta);
 
-	GetComponentUpdater(COMPONENTTYPE::COM_ANIMATOR).Update();
-	GetComponentUpdater(COMPONENTTYPE::COM_RENDERER).Update();
-	GetComponentUpdater(COMPONENTTYPE::COM_FONT).Update();
+	GetComponentUpdater(COMPONENTTYPE::COM_ANIMATOR).Update(delta);
+	GetComponentUpdater(COMPONENTTYPE::COM_RENDERER).Update(delta);
+	GetComponentUpdater(COMPONENTTYPE::COM_FONT).Update(delta);
 
 	m_GraphicDevice->Update(*this);
 

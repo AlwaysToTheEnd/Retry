@@ -25,7 +25,7 @@ private:
 
 		virtual void WorkClear() override;
 	private:
-		virtual void Update() override;
+		virtual void Update(unsigned long long delta) override;
 
 	private:
 		UIPanel*			m_CurrPanel;
@@ -88,7 +88,7 @@ public:
 
 private:
 	virtual void Init() override;
-	virtual void Update() override;
+	virtual void Update(unsigned long long delta) override;
 
 private:
 	bool			m_Active;

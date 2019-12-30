@@ -18,7 +18,7 @@ Step2::~Step2()
 	delete testScene;
 }
 
-void Step2::Update()
+void Step2::Update(unsigned long long delta)
 {
 	
 }

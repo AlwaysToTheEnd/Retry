@@ -137,7 +137,7 @@ void UIPanel::ThisPanalIsStatic()
 	}
 }
 
-void UIPanel::Update()
+void UIPanel::Update(unsigned long long delta)
 {
 	if (m_Active)
 	{
@@ -175,7 +175,7 @@ void UIPanel::UIPanelController::DeletedPanel(UIPanel* panel)
 	}
 }
 
-void UIPanel::UIPanelController::Update()
+void UIPanel::UIPanelController::Update(unsigned long long delta)
 {
 	if (m_CurrPanel)
 	{
@@ -199,7 +199,7 @@ void UIPanel::UIPanelController::Update()
 
 			if (mouse->leftButton == MOUSEState::HELD)
 			{
-				m_PressedTime += 1;//#TODO GetDELTATIME
+				m_PressedTime += delta;
 				physx::PxVec2 moveValue =  mousePos - m_PrevMousePos;
 				m_CurrPanel->GetComponent<ComTransform>()->AddVector({ moveValue.x,moveValue.y,0 });
 				m_PrevMousePos = mousePos;
@@ -210,7 +210,7 @@ void UIPanel::UIPanelController::Update()
 				m_CurrPanel->GetComponent<ComTransform>()->AddVector({ moveValue.x,moveValue.y,0 });
 				m_PrevMousePos = mousePos;
 
-				if (m_PressedTime > 100)
+				if (m_PressedTime > 200)
 				{
 					HOLDCANCLE(m_CurrPanel->GetConstructor());
 				}

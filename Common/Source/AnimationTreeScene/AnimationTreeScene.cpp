@@ -9,9 +9,7 @@ void AniTreeScene::Init()
 	treeCreater->SelectSkinnedData("zealot.X");
 }
 
-bool AniTreeScene::Update(const DirectX::Mouse::ButtonStateTracker& mouse)
+bool AniTreeScene::Update(const DirectX::Mouse::ButtonStateTracker& mouse, unsigned long long delta)
 {
-
-
-	return CGHScene::Update(mouse);
+	return CGHScene::Update(mouse, delta);
 }
