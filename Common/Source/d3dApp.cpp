@@ -20,16 +20,9 @@ const DirectX::Keyboard::KeyboardStateTracker* D3DApp::GetKeyBoard(const GameObj
 {
 	const DirectX::Keyboard::KeyboardStateTracker* result = nullptr;
 
-	if (caller)
+	if (caller && caller == m_CurrInputDeviceHoldObject)
 	{
-		for (auto& it : m_CurrInputDeviceHoldObject)
-		{
-			if (caller == it)
-			{
-				result = &m_KeyboardTracker;
-				break;
-			}
-		}
+		result = &m_KeyboardTracker;
 	}
 
 	return result;
@@ -39,16 +32,9 @@ const DirectX::Mouse::ButtonStateTracker* D3DApp::GetMouse(const GameObject* cal
 {
 	const DirectX::Mouse::ButtonStateTracker* result = nullptr;
 
-	if (caller)
+	if (caller && caller == m_CurrInputDeviceHoldObject)
 	{
-		for (auto& it : m_CurrInputDeviceHoldObject)
-		{
-			if (caller == it)
-			{
-				result = &m_MouseTracker;
-				break;
-			}
-		}
+		result = &m_MouseTracker;
 	}
 
 	return result;
@@ -56,25 +42,19 @@ const DirectX::Mouse::ButtonStateTracker* D3DApp::GetMouse(const GameObject* cal
 
 void D3DApp::InputDeviceHoldRequest(const GameObject* caller)
 {
-	if (caller->IsSoloInputDeivceHolder())
+	if (caller)
 	{
-		m_CurrInputDeviceHoldObject.clear();
+		m_CurrInputDeviceHoldObject = caller;
 	}
-
-	m_CurrInputDeviceHoldObject.push_back(caller);
 }
 
 void D3DApp::InputDeviceHoldCancle(const GameObject* caller)
 {
 	if (caller)
 	{
-		for (auto& it : m_CurrInputDeviceHoldObject)
+		if (m_CurrInputDeviceHoldObject == caller)
 		{
-			if (caller == it)
-			{
-				it = nullptr;
-				break;
-			}
+			m_CurrInputDeviceHoldObject = nullptr;
 		}
 	}
 }
@@ -82,6 +62,7 @@ void D3DApp::InputDeviceHoldCancle(const GameObject* caller)
 D3DApp::D3DApp(HINSTANCE hInstance)
 	: m_hAppInst(hInstance)
 	, m_CurrScene(nullptr)
+	, m_CurrInputDeviceHoldObject(nullptr)
 {
 	assert(m_App == nullptr);
 	m_App = this;
@@ -96,11 +77,11 @@ void D3DApp::BaseUpdate()
 	m_MouseTracker.Update(m_Mouse.GetState());
 	m_KeyboardTracker.Update(m_Keyboard.GetState());
 	m_Camera.Update();
-	
+
 	if (m_KeyboardTracker.IsKeyPressed(KEYState::Escape))
 	{
 		StaticGameObjectController::WorkALLEnd();
-		m_CurrInputDeviceHoldObject.clear();
+		m_CurrInputDeviceHoldObject = nullptr;
 	}
 
 	StaticGameObjectController::StaticsUpdate();
@@ -110,11 +91,11 @@ void D3DApp::BaseUpdate()
 	{
 		if (!m_CurrScene->Update(m_MouseTracker))
 		{
-			m_CurrInputDeviceHoldObject.clear();
+			m_CurrInputDeviceHoldObject = nullptr;
 			StaticGameObjectController::WorkAllClear();
 		}
 	}
-	
+
 	m_GDevice->GetWorldRay(m_RayOrigin, m_Ray);
 }
 

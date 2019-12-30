@@ -79,7 +79,7 @@ std::wstring UIParam::GetDataString()
 	switch (m_DataType)
 	{
 	case CGH::DATA_TYPE::TYPE_BOOL:
-		result = *reinterpret_cast<bool*>(m_ParamPtr) ? L"true" : L"false";
+		result = *(reinterpret_cast<bool*>(m_ParamPtr)) ? L"true" : L"false";
 		break;
 	case CGH::DATA_TYPE::TYPE_FLOAT:
 		result = GetStringFromValue<float>();
@@ -102,7 +102,7 @@ void UIParam::ParamController::Update()
 {
 	if (m_CurrParam)
 	{
-		if (GETKEY(m_CurrParam))
+		if (GETKEY(m_CurrParam->GetConstructor()))
 		{
 			m_CurrParam->Selected(true);
 			if (keyboard->IsKeyPressed(KEYState::Enter))
@@ -171,7 +171,7 @@ void UIParam::ParamController::Excute()
 		switch (m_CurrParam->m_DataType)
 		{
 		case CGH::DATA_TYPE::TYPE_BOOL:
-			*reinterpret_cast<bool*>(m_CurrParam->m_ParamPtr) = m_InputData != "0";
+			*reinterpret_cast<bool*>(m_CurrParam->m_ParamPtr) = atoi(m_InputData.c_str());
 			break;
 		case CGH::DATA_TYPE::TYPE_FLOAT:
 			*reinterpret_cast<float*>(m_CurrParam->m_ParamPtr) = atof(m_InputData.c_str());

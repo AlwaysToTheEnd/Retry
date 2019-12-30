@@ -76,6 +76,7 @@ public:
 	void DeleteAllComs();
 
 	physx::PxVec2 GetSize() { return m_Size; }
+	unsigned int GetNumAddedComs() { return m_UIComs.size(); }
 	void SetBackGroundTexture(const std::string& name);
 	void SetBackGroundColor(DirectX::XMFLOAT4 color);
 	void SetSize(unsigned int x, unsigned y);

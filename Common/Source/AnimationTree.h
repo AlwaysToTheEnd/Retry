@@ -32,9 +32,9 @@ namespace AniTree
 		TRIGGER_TYPE GetTriggerFuncType();
 
 	public:
-		const CGH::UnionData m_Standard;
-		const TRIGGER_TYPE m_TriggerType;
-		CGH::UnionData m_Trigger;
+		CGH::UnionData	m_Standard;
+		TRIGGER_TYPE	m_TriggerType;
+		CGH::UnionData	m_Trigger;
 	};
 
 	enum TO_ANI_ARROW_TYPE
@@ -54,19 +54,22 @@ namespace AniTree
 		std::vector<TriggerData> triggers;
 	};
 
-	struct OutputTrigger
+	struct OutputArrow
 	{
-		OutputTrigger(const std::string& _from, const std::string& _to, std::vector<TriggerData>& _trigger)
+		OutputArrow(const std::string& _from, const std::string& _to, 
+			std::vector<TriggerData>& _trigger, bool& endIsChange)
 			:trigger(_trigger)
 			, from(_from)
 			, to(_to)
+			, aniEndIsChange(endIsChange)
 		{
 
 		}
 
-		std::string	 from;
-		std::string	 to;
-		std::vector<TriggerData>& trigger;
+		bool&						aniEndIsChange;
+		std::string					from;
+		std::string					to;
+		std::vector<TriggerData>&	trigger;
 	};
 
 	class AniNode
@@ -88,7 +91,7 @@ namespace AniTree
 		void SetAniName(const std::string& name) { m_TargetAniName = name; }
 		unsigned long long GetCurrTick() const { return m_CurrTick; }
 		unsigned long long GetEndTick() const { return m_AniEndTime; }
-		void GetTriggers(std::vector<OutputTrigger>& out);
+		void GetArrows(std::vector<OutputArrow>& out, const std::string& to="");
 		const std::vector<NodeArrow>& GetArrows() { return m_Arrows; }
 
 		void AddArrow(const std::string& to);
@@ -123,7 +126,7 @@ namespace AniTree
 
 		bool Update(unsigned long long deltaTime);
 
-		void GetTriggers(std::vector<OutputTrigger>& out);
+		void GetArrows(std::vector<OutputArrow>& out);
 		bool AddAniNode(const std::string& aniName, unsigned int aniClipEndTime, bool roof);
 		AniNode* GetAniNode(const std::string aniName);
 		bool AddTrigger(const std::string& from, const std::string& to,

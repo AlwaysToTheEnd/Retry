@@ -178,7 +178,7 @@ struct RenderFont
 	static std::vector<std::wstring> fontNames;
 
 	const unsigned int	fontIndex;
-	const std::wstring& printString;
+	std::wstring		printString;
 	float				rotation = 0;
 	int					fontHeight = -1;
 	FONTBENCHMARK		benchmark;

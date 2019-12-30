@@ -36,6 +36,7 @@
     <ClCompile Include="..\Common\Source\GraphicComponent.cpp" />
     <ClCompile Include="..\Common\Source\GraphicDX12.cpp" />
     <ClCompile Include="..\Common\Source\IComponent.cpp" />
+    <ClCompile Include="..\Common\Source\InputTextureNameList.cpp" />
     <ClCompile Include="..\Common\Source\PhysX4_1.cpp" />
     <ClCompile Include="..\Common\Source\StaticObject.cpp" />
     <ClCompile Include="..\Common\Source\XFileParser.cpp" />
@@ -76,6 +77,7 @@
     <ClInclude Include="..\Common\Source\IGraphicDevice.h" />
     <ClInclude Include="..\Common\Source\GraphicDX12.h" />
     <ClInclude Include="..\Common\Source\cIndexManagementBuffer.h" />
+    <ClInclude Include="..\Common\Source\InputTextureNameList.h" />
     <ClInclude Include="..\Common\Source\IPhysicsDevice.h" />
     <ClInclude Include="..\Common\Source\PhysX4_1.h" />
     <ClInclude Include="..\Common\Source\PhysXFunctionalObject.h" />

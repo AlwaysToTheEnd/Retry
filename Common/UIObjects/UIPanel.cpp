@@ -33,18 +33,21 @@ void UIPanel::AddUICom(unsigned int x, unsigned y, UIButton* button)
 {
 	m_UIComs.push_back({ UICOMTYPE::UIBUTTON, button });
 	m_UIComOffset.push_back({ static_cast<float>(x),static_cast<float>(y) });
+	button->SetConstructor(GetConstructor());
 }
 
 void UIPanel::AddUICom(unsigned int x, unsigned y, UIParam* param)
 {
 	m_UIComs.push_back({ UICOMTYPE::UIPARAM, param });
 	m_UIComOffset.push_back({ static_cast<float>(x),static_cast<float>(y) });
+	param->SetConstructor(GetConstructor());
 }
 
 void UIPanel::AddUICom(unsigned int x, unsigned y, UIPanel* panel)
 {
 	m_UIComs.push_back({ UICOMTYPE::UIPANEL, panel });
 	m_UIComOffset.push_back({ static_cast<float>(x),static_cast<float>(y) });
+	panel->SetConstructor(GetConstructor());
 
 	panel->ThisPanalIsStatic();
 }
@@ -176,7 +179,7 @@ void UIPanel::UIPanelController::Update()
 {
 	if (m_CurrPanel)
 	{
-		if (GETMOUSE(m_CurrPanel))
+		if (GETMOUSE(m_CurrPanel->GetConstructor()))
 		{
 			auto mouseState = mouse->GetLastState();
 			physx::PxVec2 mousePos = physx::PxVec2(mouseState.x, mouseState.y);
@@ -209,7 +212,7 @@ void UIPanel::UIPanelController::Update()
 
 				if (m_PressedTime > 100)
 				{
-					HOLDCANCLE(m_CurrPanel);
+					HOLDCANCLE(m_CurrPanel->GetConstructor());
 				}
 
 				WorkClear();
@@ -222,7 +225,7 @@ void UIPanel::UIPanelController::Update()
 
 		for (auto it = m_Panels.begin(); it != m_Panels.end(); it++)
 		{
-			if (GETMOUSE(*it))
+			if (GETMOUSE((*it)->GetConstructor()))
 			{
 				if (mouse->leftButton == MOUSEState::HELD && m_CurrPanel != *it)
 				{

@@ -4,9 +4,7 @@
 #include <memory>
 #include <assert.h>
 #include <functional>
-#include "IComponent.h"
-
-class CGHScene;
+#include <CGHScene.h>
 
 class GameObject
 {
@@ -16,10 +14,13 @@ public:
 	virtual ~GameObject() = default;
 
 	CGHScene& GetScene() { return m_Scene; }
+
+	template<typename T, typename ...Types> T* CreateGameObject(bool subordinate, Types... args);
 	template<typename T> T* GetComponent();
 	template<typename T> std::vector<T*> GetComponents();
+	const GameObject* GetConstructor() const { return m_Constructor; }
+	void SetConstructor(const GameObject* object) { m_Constructor = object; }
 	void SetAllComponentActive(bool value);
-	virtual bool IsSoloInputDeivceHolder() const { return true; }
 	virtual void Delete();
 
 	static std::unordered_map<unsigned int, unsigned int> GetComponentTypeIDs();
@@ -37,7 +38,23 @@ private:
 	static std::unordered_map<unsigned int, unsigned int>	m_TypeIDs;
 	std::vector<std::unique_ptr<IComponent>>				m_Components[IComponent::NUMCOMPONENTTYPE];
 	CGHScene&												m_Scene;
+	const GameObject*										m_Constructor;
 };
+
+template<typename T, typename ...Types>
+inline T* GameObject::CreateGameObject(bool subordinate, Types ...args)
+{
+	T* result = new T(m_Scene, args...);
+
+	if (subordinate)
+	{
+		result->SetConstructor(m_Constructor);
+	}
+
+	m_Scene.AddGameObject(result);
+
+	return result;
+}
 
 template<typename T>
 inline T* GameObject::GetComponent()

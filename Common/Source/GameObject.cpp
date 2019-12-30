@@ -8,7 +8,8 @@
 std::unordered_map<unsigned int, unsigned int> GameObject::m_TypeIDs = GameObject::GetComponentTypeIDs();
 
 GameObject::GameObject(CGHScene& scene)
-	:m_Scene(scene)
+	: m_Scene(scene)
+	, m_Constructor(this)
 {
 
 }

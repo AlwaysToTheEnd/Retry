@@ -80,7 +80,7 @@ protected:
 
 	DirectX::Keyboard						m_Keyboard;
 	DirectX::Keyboard::KeyboardStateTracker	m_KeyboardTracker;
-	std::vector<const GameObject*>			m_CurrInputDeviceHoldObject;
+	const GameObject*						m_CurrInputDeviceHoldObject;
 
 	DirectX::XMFLOAT3	m_RayOrigin = {};
 	DirectX::XMFLOAT3	m_Ray = {};

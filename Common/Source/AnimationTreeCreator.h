@@ -18,17 +18,17 @@ namespace Ani
 
 class AniNodeVisual :public GameObject
 {
-	static class AnimationTreeArrowCreater : public StaticGameObjectController
+	static class AnimationTreeArrowCreator : public StaticGameObjectController
 	{
 	public:
-		AnimationTreeArrowCreater()
+		AnimationTreeArrowCreator()
 			:StaticGameObjectController(false)
 			, m_CurrFrom(nullptr)
 			, m_CurrArrow(nullptr)
 		{
 
 		}
-		virtual ~AnimationTreeArrowCreater() = default;
+		virtual ~AnimationTreeArrowCreator() = default;
 
 		void Excute(AniNodeVisual* aniNode);
 
@@ -57,6 +57,7 @@ public:
 
 	void ArrowVisualDeleted(AniTreeArowVisual* arrow);
 	void SetTargetAninodeFunc(std::function<AniTree::AniNode*(void)> func);
+	AniTree::AniNode* GetNode() { return m_GetTargetAninodeFunc(); }
 	const std::string& GetNodeName() const { return m_GetTargetAninodeFunc()->GetNodeName(); }
 	const DirectX::XMFLOAT2& GetOutputPos() { return m_OutputPos; }
 	const DirectX::XMFLOAT2& GetInputPos() { return m_InputPos; }
@@ -96,14 +97,19 @@ private:
 	private:
 		virtual void WorkClear() override;
 		virtual void Update() override;
+		void CreateAttributePanel();
+		void AddParam();
 
 	private:
-		AniTreeArowVisual*	m_CurrArrow;
-		UIPanel*			m_AttributePanel;
+		const static int					m_FontSize = 10;
 
-		AniTree::TO_ANI_ARROW_TYPE m_ArrowType;
-		AniTree::TRIGGER_TYPE m_TriggerType;
-		CGH::UnionData m_Standard;
+		AniTreeArowVisual*					m_CurrArrow;
+		UIPanel*							m_AttributePanel;
+
+		AniTree::TO_ANI_ARROW_TYPE			m_ArrowType;
+		AniTree::TRIGGER_TYPE				m_TriggerType;
+		CGH::UnionData						m_Standard;
+		std::vector<AniTree::OutputArrow>	m_Arrows;
 		
 	} s_ArrowArttributeEditer;
 
@@ -120,7 +126,7 @@ public:
 	virtual void Delete() override;
 
 	void SetFromNode(AniNodeVisual* from) { m_From = from; }
-	void SetToNode(AniNodeVisual* to) { m_To = to; }
+	void SetToNode(AniNodeVisual* to);
 	void SetCurrMousePos(DirectX::XMFLOAT2 pos) { m_MousePos = pos; }
 	const AniNodeVisual* GetToNode() const { return m_To; }
 
@@ -138,10 +144,10 @@ private:
 	DirectX::XMFLOAT2	m_MousePos;
 };
 
-class VisualizedAniTreeCreater :public GameObject
+class VisualizedAniTreeCreator :public GameObject
 {
 public:
-	VisualizedAniTreeCreater(CGHScene& scene)
+	VisualizedAniTreeCreator(CGHScene& scene)
 		: GameObject(scene)
 		, m_CurrSkin(nullptr)
 		, m_WorkPanel(nullptr)

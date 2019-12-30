@@ -4,7 +4,7 @@
 
 void AniTreeScene::Init()
 {
-	auto treeCreater = AddGameObject<VisualizedAniTreeCreater>();
+	auto treeCreater = AddGameObject<VisualizedAniTreeCreator>();
 
 	treeCreater->SelectSkinnedData("zealot.X");
 }

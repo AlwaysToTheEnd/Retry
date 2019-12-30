@@ -1,12 +1,17 @@
 #pragma once
 #include "ComponentUpdater.h"
-#include "GameObject.h"
+#include "IComponent.h"
+#include <vector>
+#include <unordered_map>
+#include <memory>
+#include <assert.h>
 #include <functional>
 #include <DirectXMath.h>
 #include <Mouse.h>
 
 class IGraphicDevice;
 class IPhysicsDevice;
+class GameObject;
 
 class CGHScene
 {
@@ -21,13 +26,15 @@ public:
 	void DeleteAllObjects() { m_Objects.clear(); }
 	void DeleteGameObject(GameObject* object);
 	const std::string& GetSceneName() const { return m_SceneName; }
-	template<typename T> T* AddGameObject();
+
+protected:
+	template<typename T, typename ...Types> T* AddGameObject(Types... args);
+	void AddGameObject(GameObject* object);
 
 private:
 	ComponentUpdater& GetComponentUpdater(COMPONENTTYPE type);
 	void ComponentDeleteManaging(COMPONENTTYPE type, int id);
 	std::unique_ptr<IComponent> CreateComponent(COMPONENTTYPE type, GameObject& gameObject);
-
 
 private:
 	ComponentUpdater							m_ComUpdater[IComponent::NUMCOMPONENTTYPE];
@@ -39,10 +46,10 @@ protected:
 	std::vector<std::unique_ptr<GameObject>>	m_Objects;
 };
 
-template<typename T>
-inline T* CGHScene::AddGameObject()
+template<typename T, typename ...Types>
+inline T* CGHScene::AddGameObject(Types... args)
 {
-	T* newObject = new T(*this);
+	T* newObject = new T(*this, args...);
 
 	m_Objects.push_back(std::unique_ptr<GameObject>(newObject));
 	m_Objects.back()->Init();

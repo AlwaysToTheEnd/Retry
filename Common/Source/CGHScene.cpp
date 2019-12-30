@@ -2,6 +2,9 @@
 #include "IGraphicDevice.h"
 #include "IPhysicsDevice.h"
 #include "d3dApp.h"
+#include "GameObject.h"
+
+
 
 CGHScene::CGHScene(IGraphicDevice* graphicDevice, IPhysicsDevice* pxDevice, const std::string& name)
 	:m_GraphicDevice(graphicDevice)
@@ -118,6 +121,14 @@ void CGHScene::DeleteGameObject(GameObject* object)
 			break;
 		}
 	}
+}
+
+void CGHScene::AddGameObject(GameObject* object)
+{
+	assert(object);
+
+	m_Objects.push_back(std::unique_ptr<GameObject>(object));
+	m_Objects.back()->Init();
 }
 
 ComponentUpdater& CGHScene::GetComponentUpdater(COMPONENTTYPE type)

@@ -240,7 +240,7 @@ bool PhysX4_1::ExcuteFuncOfClickedObject(CGHScene& scene, float origin_x, float 
 				{
 					if (isExcute)
 					{
-						if (GETMOUSE(functionlObject->m_GameObject)) // Check that this object is same before object.
+						if (GETMOUSE(functionlObject->m_GameObject->GetConstructor())) // Check that this object is same before object.
 						{
 							for (auto& it : functionlObject->m_VoidFuncs)
 							{
@@ -250,7 +250,7 @@ bool PhysX4_1::ExcuteFuncOfClickedObject(CGHScene& scene, float origin_x, float 
 					}
 					else
 					{
-						GETAPP->InputDeviceHoldRequest(functionlObject->m_GameObject);
+						GETAPP->InputDeviceHoldRequest(functionlObject->m_GameObject->GetConstructor());
 					}
 
 					result = true;
@@ -314,14 +314,14 @@ bool PhysX4_1::CheckUIClicked(std::vector<UICollisions>& collisions, bool isExcu
 	{
 		if (isExcute)
 		{
-			if (GETMOUSE(currUI->gameObject)) // Check that this object is same before object.
+			if (GETMOUSE(currUI->gameObject->GetConstructor())) // Check that this object is same before object.
 			{
 				currUI->ExcuteFuncs();
 			}
 		}
 		else
 		{
-			GETAPP->InputDeviceHoldRequest(currUI->gameObject);
+			GETAPP->InputDeviceHoldRequest(currUI->gameObject->GetConstructor());
 		}
 
 		result = true;

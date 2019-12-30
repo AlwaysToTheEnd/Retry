@@ -41,14 +41,28 @@ const std::string& AniTree::AniNode::GetAniName() const
 	}
 }
 
-void AniTree::AniNode::GetTriggers(std::vector<OutputTrigger>& out)
+void AniTree::AniNode::GetArrows(std::vector<OutputArrow>& out, const std::string& to)
 {
-	for (auto& it : m_Arrows)
+	out.clear();
+	if (to.size() == 0)
 	{
-		out.emplace_back(m_NodeName, it.targetNode, it.triggers);
+		for (auto& it : m_Arrows)
+		{
+			out.emplace_back(m_NodeName, it.targetNode, it.triggers, it.aniEndIsChange);
+		}
+	}
+	else
+	{
+		for (auto& it : m_Arrows)
+		{
+			if (it.targetNode == to)
+			{
+				out.emplace_back(m_NodeName, it.targetNode, it.triggers, it.aniEndIsChange);
+				break;
+			}
+		}
 	}
 }
-
 
 void AniTree::AniNode::AddArrow(const std::string& to)
 {
@@ -202,13 +216,13 @@ bool AniTree::AnimationTree::Update(unsigned long long deltaTime)
 	return false;
 }
 
-void AniTree::AnimationTree::GetTriggers(std::vector<OutputTrigger>& out)
+void AniTree::AnimationTree::GetArrows(std::vector<OutputArrow>& out)
 {
 	out.clear();
 
 	for (size_t nodeIndex = 0; nodeIndex < m_AniNodes.size(); nodeIndex++)
 	{
-		m_AniNodes[nodeIndex].GetTriggers(out);
+		m_AniNodes[nodeIndex].GetArrows(out);
 	}
 }
 
@@ -410,5 +424,5 @@ AniTree::NodeArrow::NodeArrow(const std::string& toNodeName)
 	, aniEndIsChange(false)
 	, type(TO_ANI_NODE_TYPE_ONE_OK)
 {
-
+	triggers.reserve(15);
 }

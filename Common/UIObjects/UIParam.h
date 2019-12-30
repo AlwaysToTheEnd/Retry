@@ -49,18 +49,17 @@ public:
 		: GameObject(scene)
 		, m_Type(type)
 		, m_Font(nullptr)
+		, m_Trans(nullptr)
 		, m_UICollision(nullptr)
 		, m_ParamPtr(nullptr)
 		, m_DataType(CGH::DATA_TYPE::TYPE_INT)
 		, m_Selected(false)
 	{
-
 	}
 	virtual ~UIParam() = default;
 
 	template<typename T> void SetTargetParam(const std::wstring& paramName, T* data);
 	void SetTextHeight(int height);
-	virtual bool IsSoloInputDeivceHolder() const override { return false; }
 
 private:
 	virtual void Init() override;

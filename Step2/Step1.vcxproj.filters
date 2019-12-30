@@ -162,6 +162,9 @@
     <ClCompile Include="..\Common\Source\AnimationTreeScene\AnimationTreeScene.cpp">
       <Filter>Step2\AnimationTreeCreateScene</Filter>
     </ClCompile>
+    <ClCompile Include="..\Common\Source\InputTextureNameList.cpp">
+      <Filter>Step2</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Common\Source\d3dApp.h">
@@ -262,6 +265,9 @@
     </ClInclude>
     <ClInclude Include="..\Common\Source\AnimationTreeScene\AnimationTreeScene.h">
       <Filter>Step2\AnimationTreeCreateScene</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\InputTextureNameList.h">
+      <Filter>Step2</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
