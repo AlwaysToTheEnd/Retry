@@ -25,14 +25,7 @@ void AniNodeVisual::Init()
 
 void AniNodeVisual::Update(unsigned long long delta)
 {
-	auto transform = m_Panel->GetComponent<ComTransform>()->GetTransform();
 
-	float panelXHalfSize = m_Panel->GetSize().x / 2.0f;
-	m_InputPos.y = transform.p.y;
-	m_InputPos.x = transform.p.x - panelXHalfSize;
-
-	m_OutputPos.y = transform.p.y;
-	m_OutputPos.x = transform.p.x + panelXHalfSize;
 }
 
 void AniNodeVisual::Delete()
@@ -73,6 +66,18 @@ void AniNodeVisual::SetTargetAninodeFunc(std::function<AniTree::AniNode * (void)
 	nameFont->m_Text.insert(nameFont->m_Text.end(), nodeName.begin(), nodeName.end());
 }
 
+const DirectX::XMFLOAT2& AniNodeVisual::GetPos() const
+{
+	auto p = m_Panel->GetComponent<ComTransform>()->GetTransform().p;
+
+	return { p.x, p.y };
+}
+
+const DirectX::XMFLOAT3& AniNodeVisual::GetSize() const
+{
+	return m_Panel->GetComponent<ComRenderer>()->GetRenderInfo().point.size;
+}
+
 void AniNodeVisual::AddArrow(AniTreeArowVisual* arrow)
 {
 	m_Arrows.push_back(arrow);
@@ -97,8 +102,12 @@ void AniNodeVisual::AnimationTreeArrowCreator::Update(unsigned long long delta)
 		if (GETMOUSE(m_CurrFrom->GetConstructor()))
 		{
 			assert(m_CurrArrow);
-
+			m_isNextClear = false;
 			m_CurrArrow->SetCurrMousePos(mouse->GetMousePos());
+		}
+		else
+		{
+			WorkClear();
 		}
 	}
 }
@@ -136,20 +145,21 @@ void AniTreeArowVisual::Init()
 {
 	m_Transform = AddComponent<ComTransform>();
 	m_Renderer = AddComponent<ComRenderer>();
-	m_Transform->SetPosZ(0.2f);
+	m_Transform->SetPosZ(0.4f);
 }
 
 void AniTreeArowVisual::Update(unsigned long long delta)
 {
 	RenderInfo renderInfo(RENDER_UI);
-	DirectX::XMFLOAT2 from = m_From->GetOutputPos();
+	DirectX::XMFLOAT2 from = m_From->GetPos();
 	DirectX::XMFLOAT2 to;
 	physx::PxVec2 directionVec;
+	physx::PxVec2 directionNormal;
 	physx::PxVec2 halfVec;
 
 	if (m_To)
 	{
-		to = m_To->GetInputPos();
+		to = m_To->GetPos();
 	}
 	else
 	{
@@ -158,12 +168,56 @@ void AniTreeArowVisual::Update(unsigned long long delta)
 
 	directionVec.x = (to.x - from.x);
 	directionVec.y = (to.y - from.y);
-	halfVec = directionVec / 2;
-	float halfLength = directionVec.magnitude() / 2.0f;
+	float angle = physx::PxAtan2(directionVec.y, directionVec.x);
 
+	{
+		physx::PxVec2 toToVec = directionVec;
+
+		DirectX::XMFLOAT3 size = m_From->GetSize();
+
+		float vecYabs = abs(toToVec.y);
+		if (vecYabs > size.y)
+		{
+			toToVec *= (size.y / vecYabs);
+		}
+
+		float vecXabs = abs(toToVec.x);
+		if (vecXabs > size.x)
+		{
+			toToVec *= (size.x / vecXabs);
+		}
+
+		directionVec -= toToVec;
+		from.x += toToVec.x;
+		from.y += toToVec.y;
+	}
+
+	if (m_To)
+	{
+		physx::PxVec2 toFromVec = -directionVec;
+		
+		DirectX::XMFLOAT3 size = m_To->GetSize();
+		float vecYabs = abs(toFromVec.y);
+
+		if (vecYabs > size.y)
+		{
+			toFromVec *= (size.y / vecYabs);
+		}
+
+		float vecXabs = abs(toFromVec.x);
+		if (vecXabs > size.x)
+		{
+			toFromVec *= (size.x / vecXabs);
+		}
+
+		directionVec += toFromVec;
+	}
+
+	float halfLength = directionVec.magnitude() / 2.0f;
+	halfVec = directionVec / 2;
 	m_Transform->SetTransform(physx::PxTransform(
 		physx::PxVec3(halfVec.x + from.x, halfVec.y + from.y, m_Transform->GetTransform().p.z),
-		physx::PxQuat(atan2f(halfVec.y, halfVec.x), physx::PxVec3(0, 0, 1))));
+		physx::PxQuat(angle, physx::PxVec3(0, 0, 1))));
 
 	renderInfo.meshOrTextureName = InputTN::Get("AniTreeArrowVisual");
 	renderInfo.texPoint.size.x = halfLength;
@@ -350,7 +404,8 @@ void VisualizedAniTreeCreator::Init()
 	m_Animator = AddComponent<ComAnimator>();
 	m_WorkPanel = CreateGameObject<UIPanel>(false);
 	m_WorkPanel->SetSize(100, 100);
-	m_WorkPanel->SetBackGroundTexture(InputTN::Get("AniTreeCreatorWorkPanel"));
+	//m_WorkPanel->SetBackGroundTexture(InputTN::Get("AniTreeCreatorWorkPanel"));
+	m_WorkPanel->SetBackGroundColor({ 1,1,1,0.8f });
 }
 
 void VisualizedAniTreeCreator::Update(unsigned long long delta)
@@ -363,7 +418,7 @@ void VisualizedAniTreeCreator::AddNode(int aniIndex)
 	std::string aniName = m_AniNames[aniIndex];
 	if (m_Tree->AddAniNode(aniName, m_CurrSkin->GetClipEndTime(aniName), false))
 	{
-		auto newNode = CreateGameObject<AniNodeVisual>(false);
+		auto newNode = CreateGameObject<AniNodeVisual>(true);
 
 		newNode->SetTargetAninodeFunc(std::bind(&AnimationTree::GetAniNode, m_Tree.get(), m_AniNames[aniIndex]));
 	}

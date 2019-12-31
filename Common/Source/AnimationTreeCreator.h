@@ -27,6 +27,7 @@ class AniNodeVisual :public GameObject
 			:StaticGameObjectController(false)
 			, m_CurrFrom(nullptr)
 			, m_CurrArrow(nullptr)
+			, m_isNextClear(false)
 		{
 
 		}
@@ -41,14 +42,13 @@ class AniNodeVisual :public GameObject
 	private:
 		AniNodeVisual*		m_CurrFrom;
 		AniTreeArowVisual*	m_CurrArrow;
+		bool				m_isNextClear;
 
 	} s_AnitreeArrowCreater;
 
 public:
 	AniNodeVisual(CGHScene& scene)
 		:GameObject(scene)
-		,m_OutputPos(0,0)
-		,m_InputPos(0,0)
 		,m_Panel(nullptr)
 		,m_GetTargetAninodeFunc(nullptr)
 	{
@@ -61,8 +61,8 @@ public:
 	void SetTargetAninodeFunc(std::function<AniTree::AniNode*(void)> func);
 	AniTree::AniNode* GetNode() { return m_GetTargetAninodeFunc(); }
 	const std::string& GetNodeName() const { return m_GetTargetAninodeFunc()->GetNodeName(); }
-	const DirectX::XMFLOAT2& GetOutputPos() { return m_OutputPos; }
-	const DirectX::XMFLOAT2& GetInputPos() { return m_InputPos; }
+	const DirectX::XMFLOAT2& GetPos() const;
+	const DirectX::XMFLOAT3& GetSize() const;
 
 private:
 	virtual void Init() override;
@@ -73,8 +73,6 @@ private:
 
 private:
 	std::vector<AniTreeArowVisual*>	m_Arrows;
-	DirectX::XMFLOAT2				m_OutputPos;
-	DirectX::XMFLOAT2				m_InputPos;
 	UIPanel*						m_Panel;
 	std::function<AniTree::AniNode*(void)> m_GetTargetAninodeFunc;
 };

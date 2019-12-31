@@ -222,7 +222,7 @@ void GS(point VertexIn input[1], inout TriangleStream<VertexOut> output)
 
 float4 PS(VertexOut pin) : SV_Target
 {
-	float4 resultColor= float4(0,0,0,1);
+	float4 resultColor= float4(0,0,0,0);
 
 	if (pin.texIndex > -1)
 	{

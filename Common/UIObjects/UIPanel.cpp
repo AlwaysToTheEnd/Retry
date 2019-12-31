@@ -260,7 +260,7 @@ void UIPanel::UIPanelController::SortPanels(UIPanel* currPanel)
 
 	if (isChanged)
 	{
-		float posZ = 0.1f;
+		float posZ = 0.5f;
 
 		for (auto& it : m_Panels)
 		{
