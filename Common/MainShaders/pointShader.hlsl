@@ -233,6 +233,5 @@ float4 PS(VertexOut pin) : SV_Target
 		resultColor = pin.color;
 	}
 
-	clip(resultColor.a);
 	return resultColor;
 }

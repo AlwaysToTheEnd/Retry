@@ -140,7 +140,7 @@ bool D3DApp::Initialize()
 
 	SelectDevices();
 
-	if (!m_GDevice->Init(m_hMainWnd, 700, 700)) return false;
+	if (!m_GDevice->Init(m_hMainWnd, 1280, 1024)) return false;
 	if (!m_PXDevice->Init(m_GDevice->GetDevicePtr())) return false;
 
 	m_GDevice->ReadyWorks(m_TargetTextureFolders, m_TargetMeshFolders, m_TargetFontFolders);
@@ -269,7 +269,7 @@ bool D3DApp::InitMainWindow()
 		return false;
 	}
 
-	RECT R = { 0, 0, 700, 700 };
+	RECT R = { 0, 0, 1280, 1024 };
 	AdjustWindowRect(&R, WS_OVERLAPPEDWINDOW, false);
 	int width = R.right - R.left;
 	int height = R.bottom - R.top;

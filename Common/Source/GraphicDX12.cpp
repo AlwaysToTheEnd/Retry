@@ -810,6 +810,7 @@ void GraphicDX12::BuildPSOs()
 	opaquePsoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
 	opaquePsoDesc.RasterizerState.CullMode = D3D12_CULL_MODE_BACK;
 	opaquePsoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
+	opaquePsoDesc.BlendState.AlphaToCoverageEnable = true;
 	opaquePsoDesc.BlendState.RenderTarget[0] = transparencyBlendDesc;
 	opaquePsoDesc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
 	opaquePsoDesc.SampleMask = UINT_MAX;

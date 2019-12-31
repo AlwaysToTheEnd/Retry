@@ -40,6 +40,7 @@ void DX12FontManager::Init(ID3D12Device* device, ID3D12CommandQueue* queue,
 	SpriteBatchPipelineStateDescription pd(rtState);
 	pd.depthStencilDesc = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
 	pd.blendDesc = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
+	pd.blendDesc.AlphaToCoverageEnable = true;
 	pd.blendDesc.RenderTarget[0] = transparencyBlendDesc;
 	
 	m_SpriteBatch = std::make_unique<SpriteBatch>(device, resourceUpload, pd);

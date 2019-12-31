@@ -5,7 +5,7 @@ std::unordered_map<std::string, std::string> InputTN::textures =
 	{"AniTreeCreatorWorkPanel",					"ice.dds"},
 	{"AniTreeCreatorWorkPanel_AddButton",		"closeButton.png"},
 	{"AniNodeVisualPanel",						"ice.dds"},
-	{"AniTreeArrowVisual",						"ice.dds"},
+	{"AniTreeArrowVisual",						"AniTreeArrow.png"},
 	{"AniTreeArrowArttributePanel",				"ice.dds"},
 	{"AniTreeArrowArttributePanel_AddButton",	"closeButton.png"},
 };

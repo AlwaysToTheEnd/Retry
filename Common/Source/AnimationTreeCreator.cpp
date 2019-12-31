@@ -167,7 +167,7 @@ void AniTreeArowVisual::Update(unsigned long long delta)
 
 	renderInfo.meshOrTextureName = InputTN::Get("AniTreeArrowVisual");
 	renderInfo.texPoint.size.x = halfLength;
-	renderInfo.texPoint.size.y = 5;
+	renderInfo.texPoint.size.y = 10;
 
 	if (m_UICollison)
 	{
