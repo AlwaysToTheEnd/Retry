@@ -197,12 +197,12 @@ void PhysX4_1::ComponentDeleteManaging(CGHScene& scene, COMPONENTTYPE type, ICom
 }
 
 bool PhysX4_1::ExcuteFuncOfClickedObject(CGHScene& scene, float origin_x, float origin_y, float origin_z,
-	float ray_x, float ray_y, float ray_z, float dist, bool isExcute)
+	float ray_x, float ray_y, float ray_z, float dist, GameObject::CLICKEDSTATE state)
 {
 	bool result = false;
 	auto iter = m_Scenes.find(scene.GetSceneName());
 
-	result = CheckUIClicked(iter->second.reservedToCheckUIs, isExcute);
+	result = CheckUIClicked(iter->second.reservedToCheckUIs, state);
 
 	if (result==false)
 	{
@@ -238,7 +238,7 @@ bool PhysX4_1::ExcuteFuncOfClickedObject(CGHScene& scene, float origin_x, float 
 
 				if (functionlObject->IsValideObject())
 				{
-					if (isExcute)
+					if (state==GameObject::CLICKEDSTATE::RELEASED)
 					{
 						if (GETMOUSE(functionlObject->m_GameObject->GetConstructor())) // Check that this object is same before object.
 						{
@@ -248,13 +248,14 @@ bool PhysX4_1::ExcuteFuncOfClickedObject(CGHScene& scene, float origin_x, float 
 							}
 						}
 					}
-					else
+					
+					if (state == GameObject::CLICKEDSTATE::RELEASED || state == GameObject::CLICKEDSTATE::PRESSED)
 					{
 						GETAPP->InputDeviceHoldRequest(functionlObject->m_GameObject->GetConstructor());
 					}
 
+					const_cast<GameObject*>(functionlObject->m_GameObject)->SetClickedState(state);
 					result = true;
-					
 				}
 			}
 		}
@@ -263,7 +264,7 @@ bool PhysX4_1::ExcuteFuncOfClickedObject(CGHScene& scene, float origin_x, float 
 	return result;
 }
 
-bool PhysX4_1::CheckUIClicked(std::vector<UICollisions>& collisions, bool isExcute)
+bool PhysX4_1::CheckUIClicked(std::vector<UICollisions>& collisions, GameObject::CLICKEDSTATE state)
 {
 	bool result = false;
 
@@ -312,18 +313,20 @@ bool PhysX4_1::CheckUIClicked(std::vector<UICollisions>& collisions, bool isExcu
 
 	if (currUI)
 	{
-		if (isExcute)
+		if (state == GameObject::CLICKEDSTATE::RELEASED)
 		{
 			if (GETMOUSE(currUI->gameObject->GetConstructor())) // Check that this object is same before object.
 			{
 				currUI->ExcuteFuncs();
 			}
 		}
-		else
+		
+		if (state == GameObject::CLICKEDSTATE::RELEASED || state == GameObject::CLICKEDSTATE::PRESSED)
 		{
 			GETAPP->InputDeviceHoldRequest(currUI->gameObject->GetConstructor());
 		}
 
+		const_cast<GameObject*>(currUI->gameObject)->SetClickedState(state);
 		result = true;
 	}
 

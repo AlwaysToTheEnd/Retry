@@ -27,7 +27,6 @@ private:
 			: StaticGameObjectController(false)
 			, m_CurrParam(nullptr)
 		{
-
 		}
 		virtual ~ParamController() = default;
 
@@ -55,6 +54,7 @@ public:
 		, m_DataType(CGH::DATA_TYPE::TYPE_INT)
 		, m_Selected(false)
 	{
+		
 	}
 	virtual ~UIParam() = default;
 

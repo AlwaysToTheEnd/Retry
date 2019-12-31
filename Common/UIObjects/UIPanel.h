@@ -26,6 +26,7 @@ private:
 		virtual void WorkClear() override;
 	private:
 		virtual void Update(unsigned long long delta) override;
+		void SortPanels(UIPanel* currPanel);
 
 	private:
 		UIPanel*			m_CurrPanel;
@@ -76,6 +77,7 @@ public:
 	void DeleteAllComs();
 
 	physx::PxVec2 GetSize() { return m_Size; }
+	DirectX::XMFLOAT2 GetPos();
 	unsigned int GetNumAddedComs() { return m_UIComs.size(); }
 	void SetBackGroundTexture(const std::string& name);
 	void SetBackGroundColor(DirectX::XMFLOAT4 color);

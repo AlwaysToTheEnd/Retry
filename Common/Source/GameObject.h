@@ -8,6 +8,16 @@
 
 class GameObject
 {
+public:
+	enum class CLICKEDSTATE
+	{
+		NONE,
+		MOUSEOVER,
+		PRESSED,
+		HELD,
+		RELEASED,
+	};
+
 	friend class CGHScene;
 public:
 	GameObject(CGHScene& scene);
@@ -18,6 +28,8 @@ public:
 	template<typename T, typename ...Types> T* CreateGameObject(bool subordinate, Types... args);
 	template<typename T> T* GetComponent();
 	template<typename T> std::vector<T*> GetComponents();
+	CLICKEDSTATE GetClickedState() { return m_State; }
+	void SetClickedState(CLICKEDSTATE state) { m_State = state; }
 	const GameObject* GetConstructor() const { return m_Constructor; }
 	void SetConstructor(const GameObject* object) { m_Constructor = object; }
 	void SetAllComponentActive(bool value);
@@ -39,6 +51,7 @@ private:
 	std::vector<std::unique_ptr<IComponent>>				m_Components[IComponent::NUMCOMPONENTTYPE];
 	CGHScene&												m_Scene;
 	const GameObject*										m_Constructor;
+	CLICKEDSTATE											m_State;
 };
 
 template<typename T, typename ...Types>

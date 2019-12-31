@@ -10,6 +10,7 @@ CGHScene::CGHScene(IGraphicDevice* graphicDevice, IPhysicsDevice* pxDevice, cons
 	:m_GraphicDevice(graphicDevice)
 	, m_PhysicsDevice(pxDevice)
 	, m_SceneName(name)
+	, m_NumNullptr(0)
 {
 	m_GraphicDevice->CreateScene(*this);
 	m_PhysicsDevice->CreateScene(*this);
@@ -24,34 +25,44 @@ bool CGHScene::Update(const DirectX::Mouse::ButtonStateTracker& mouse, unsigned 
 {
 	bool result = true;
 
-	for (auto& it : m_Objects)
+	size_t numObjects = m_Objects.size() - m_NumNullptr;
+	for (size_t i = 0; i < numObjects; i++)
 	{
-		it->Update(delta);
+		m_Objects[i]->Update(delta);
 	}
-	
-	if (mouse.leftButton == MOUSEState::PRESSED)
+
+	for (size_t i = 0; i < numObjects; i++)
 	{
-		GetComponentUpdater(COMPONENTTYPE::COM_UICOLLISTION).Update(delta);
+		m_Objects[i]->SetClickedState(GameObject::CLICKEDSTATE::NONE);
+	}
 
-		DirectX::XMFLOAT3 rayOrigin;
-		DirectX::XMFLOAT3 ray;
+	GetComponentUpdater(COMPONENTTYPE::COM_UICOLLISTION).Update(delta);
+	DirectX::XMFLOAT3 rayOrigin;
+	DirectX::XMFLOAT3 ray;
+	GETAPP->GetMouseRay(rayOrigin, ray);
 
-		GETAPP->GetMouseRay(rayOrigin, ray);
+	if (mouse.leftButton == MOUSEState::UP)
+	{
+		m_PhysicsDevice->ExcuteFuncOfClickedObject(*this, rayOrigin.x, rayOrigin.y, rayOrigin.z,
+			ray.x, ray.y, ray.z,500.0f, GameObject::CLICKEDSTATE::MOUSEOVER);
+	}
+	else if (mouse.leftButton == MOUSEState::PRESSED)
+	{
 		result = m_PhysicsDevice->ExcuteFuncOfClickedObject(*this, rayOrigin.x, rayOrigin.y, rayOrigin.z,
-			ray.x, ray.y, ray.z, 500.0f, false);
+			ray.x, ray.y, ray.z, 500.0f, GameObject::CLICKEDSTATE::PRESSED);
 	}
-	else if(mouse.leftButton == MOUSEState::RELEASED)
+	else if (mouse.leftButton == MOUSEState::HELD)
 	{
-		GetComponentUpdater(COMPONENTTYPE::COM_UICOLLISTION).Update(delta);
-
-		DirectX::XMFLOAT3 rayOrigin;
-		DirectX::XMFLOAT3 ray;
-
-		GETAPP->GetMouseRay(rayOrigin, ray);
-		result = m_PhysicsDevice->ExcuteFuncOfClickedObject(*this, rayOrigin.x, rayOrigin.y, rayOrigin.z,
-			ray.x, ray.y, ray.z, 500.0f);
+		m_PhysicsDevice->ExcuteFuncOfClickedObject(*this, rayOrigin.x, rayOrigin.y, rayOrigin.z,
+			ray.x, ray.y, ray.z, 500.0f, GameObject::CLICKEDSTATE::HELD);
 	}
-	
+	else if (mouse.leftButton == MOUSEState::RELEASED)
+	{
+		result = m_PhysicsDevice->ExcuteFuncOfClickedObject(*this, rayOrigin.x, rayOrigin.y, rayOrigin.z,
+			ray.x, ray.y, ray.z, 500.0f, GameObject::CLICKEDSTATE::RELEASED);
+	}
+
+
 	m_PhysicsDevice->Update(*this);
 	GetComponentUpdater(COMPONENTTYPE::COM_STATIC).Update(delta);
 	GetComponentUpdater(COMPONENTTYPE::COM_DYNAMIC).Update(delta);
@@ -113,12 +124,19 @@ std::unique_ptr<IComponent> CGHScene::CreateComponent(COMPONENTTYPE type, GameOb
 
 void CGHScene::DeleteGameObject(GameObject* object)
 {
-	for (auto iter = m_Objects.begin(); iter != m_Objects.end(); iter++)
+	if (object)
 	{
-		if (iter->get() == object)
+		size_t numObjects = m_Objects.size() - m_NumNullptr;
+
+		for (size_t i = 0; i < numObjects; i++)
 		{
-			m_Objects.erase(iter);
-			break;
+			if (m_Objects[i].get() == object)
+			{
+				m_NumNullptr++;
+				m_Objects[i] = nullptr;
+				m_Objects[i] = std::move(m_Objects[numObjects - 1]);
+				break;
+			}
 		}
 	}
 }
@@ -127,8 +145,17 @@ void CGHScene::AddGameObject(GameObject* object)
 {
 	assert(object);
 
-	m_Objects.push_back(std::unique_ptr<GameObject>(object));
-	m_Objects.back()->Init();
+	if (m_NumNullptr)
+	{
+		m_Objects[m_Objects.size() - m_NumNullptr] = std::unique_ptr<GameObject>(object);
+		m_NumNullptr--;
+	}
+	else
+	{
+		m_Objects.push_back(std::unique_ptr<GameObject>(object));
+	}
+
+	object->Init();
 }
 
 ComponentUpdater& CGHScene::GetComponentUpdater(COMPONENTTYPE type)

@@ -63,6 +63,11 @@ void UIPanel::DeleteAllComs()
 	m_UIComs.clear();
 }
 
+DirectX::XMFLOAT2 UIPanel::GetPos()
+{
+	return { m_Trans->GetTransform().p.x,m_Trans->GetTransform().p.y };
+}
+
 void UIPanel::SetBackGroundTexture(const std::string& name)
 {
 	RenderInfo info = m_Render->GetRenderInfo();
@@ -101,7 +106,7 @@ void UIPanel::SetPos(DirectX::XMFLOAT2 pos)
 {
 	m_Trans->SetPosX(pos.x);
 	m_Trans->SetPosY(pos.y);
-	
+
 }
 
 void UIPanel::UIOn()
@@ -143,8 +148,8 @@ void UIPanel::Update(unsigned long long delta)
 	{
 		physx::PxTransform panelTransform = m_Trans->GetTransform();
 		auto halfSize = m_Size / 2;
-		m_Font->m_Pos.x = panelTransform.p.x -halfSize.x;
-		m_Font->m_Pos.y = panelTransform.p.y -halfSize.y+ m_Font->m_FontHeight/2.0f;
+		m_Font->m_Pos.x = panelTransform.p.x - halfSize.x;
+		m_Font->m_Pos.y = panelTransform.p.y - halfSize.y + m_Font->m_FontHeight / 2.0f;
 		m_Font->m_Pos.z = panelTransform.p.z - 0.001f;
 
 		for (size_t i = 0; i < m_UIComs.size(); i++)
@@ -183,33 +188,29 @@ void UIPanel::UIPanelController::Update(unsigned long long delta)
 		{
 			auto mouseState = mouse->GetLastState();
 			physx::PxVec2 mousePos = physx::PxVec2(mouseState.x, mouseState.y);
-			static std::vector<UIPanel*> test;
+			m_PressedTime += delta;
 
-			if (test.size() == 0)
+			auto state = m_CurrPanel->GetClickedState();
+			switch (state)
 			{
-				test.push_back(m_CurrPanel);
-			}
-			else
-			{
-				if (test.back() != m_CurrPanel)
-				{
-					test.push_back(m_CurrPanel);
-				}
-			}
-
-			if (mouse->leftButton == MOUSEState::HELD)
-			{
-				m_PressedTime += delta;
-				physx::PxVec2 moveValue =  mousePos - m_PrevMousePos;
-				m_CurrPanel->GetComponent<ComTransform>()->AddVector({ moveValue.x,moveValue.y,0 });
-				m_PrevMousePos = mousePos;
-			}
-			else if (mouse->leftButton == MOUSEState::RELEASED)
+			case GameObject::CLICKEDSTATE::HELD:
 			{
 				physx::PxVec2 moveValue = mousePos - m_PrevMousePos;
 				m_CurrPanel->GetComponent<ComTransform>()->AddVector({ moveValue.x,moveValue.y,0 });
 				m_PrevMousePos = mousePos;
+			}
+			break;
+			case GameObject::CLICKEDSTATE::NONE:
+			case GameObject::CLICKEDSTATE::MOUSEOVER:
+			case GameObject::CLICKEDSTATE::RELEASED:
+				WorkClear();
+				break;
+			default:
+				break;
+			}
 
+			if (mouse->leftButton == MOUSEState::RELEASED)
+			{
 				if (m_PressedTime > 200)
 				{
 					HOLDCANCLE(m_CurrPanel->GetConstructor());
@@ -221,39 +222,52 @@ void UIPanel::UIPanelController::Update(unsigned long long delta)
 	}
 	else
 	{
-		bool isChanged = false;
-
-		for (auto it = m_Panels.begin(); it != m_Panels.end(); it++)
+		for (auto& it : m_Panels)
 		{
-			if (GETMOUSE((*it)->GetConstructor()))
+			if (it->GetClickedState() == GameObject::CLICKEDSTATE::PRESSED)
 			{
-				if (mouse->leftButton == MOUSEState::HELD && m_CurrPanel != *it)
+				if (GETMOUSE(it->GetConstructor()))
 				{
 					auto mouseState = mouse->GetLastState();
-					m_CurrPanel = *it;
-					m_PrevMousePos = physx::PxVec2(mouseState.x, mouseState.y);
+					physx::PxVec2 mousePos = physx::PxVec2(mouseState.x, mouseState.y);
 
-					m_Panels.push_front(*it);
-					it = m_Panels.erase(it);
-					isChanged = true;
+					m_PrevMousePos = mousePos;
+					m_PressedTime = 0;
+					m_CurrPanel = it;
+					SortPanels(it);
 				}
-
+				
 				break;
 			}
 		}
+	}
+}
 
-		if (isChanged)
+void UIPanel::UIPanelController::SortPanels(UIPanel* currPanel)
+{
+	bool isChanged = false;
+
+	for (auto it = m_Panels.begin(); it != m_Panels.end(); it++)
+	{
+		if (currPanel == *it)
 		{
-			float posZ = 0.1f;
-
-			for (auto& it : m_Panels)
-			{
-				posZ += 0.01f;
-				it->GetComponent<ComTransform>()->SetPosZ(posZ);
-			}
+			m_Panels.push_front(*it);
+			it = m_Panels.erase(it);
+			isChanged = true;
+			break;
 		}
 	}
-	
+
+	if (isChanged)
+	{
+		float posZ = 0.1f;
+
+		for (auto& it : m_Panels)
+		{
+			posZ += 0.01f;
+			it->GetComponent<ComTransform>()->SetPosZ(posZ);
+		}
+	}
 }
 
 void UIPanel::UIPanelController::WorkClear()

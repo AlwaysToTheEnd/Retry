@@ -1,5 +1,6 @@
 #pragma once
 #include "GameObject.h"
+#include <Keyboard.h>
 #include "AnimationTree.h"
 #include "StaticObject.h"
 #include "CGHScene.h"
@@ -10,6 +11,7 @@ class AniTreeArowVisual;
 class ComRenderer;
 class ComUICollision;
 class ComTransform;
+
 
 namespace Ani
 {
@@ -99,6 +101,7 @@ private:
 		virtual void Update(unsigned long long delta) override;
 		void CreateAttributePanel();
 		void AddParam();
+		void KeyboardWork(const DirectX::Keyboard::KeyboardStateTracker* keyboard);
 
 	private:
 		const static int					m_FontSize = 10;

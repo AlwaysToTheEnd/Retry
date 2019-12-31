@@ -57,16 +57,18 @@ namespace AniTree
 	struct OutputArrow
 	{
 		OutputArrow(const std::string& _from, const std::string& _to, 
-			std::vector<TriggerData>& _trigger, bool& endIsChange)
+			std::vector<TriggerData>& _trigger, bool& endIsChange, TO_ANI_ARROW_TYPE& _type)
 			:trigger(_trigger)
 			, from(_from)
 			, to(_to)
 			, aniEndIsChange(endIsChange)
+			, type(_type)
 		{
 
 		}
 
 		bool&						aniEndIsChange;
+		TO_ANI_ARROW_TYPE&			type;
 		std::string					from;
 		std::string					to;
 		std::vector<TriggerData>&	trigger;

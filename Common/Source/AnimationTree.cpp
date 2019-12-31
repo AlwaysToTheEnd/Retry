@@ -48,7 +48,7 @@ void AniTree::AniNode::GetArrows(std::vector<OutputArrow>& out, const std::strin
 	{
 		for (auto& it : m_Arrows)
 		{
-			out.emplace_back(m_NodeName, it.targetNode, it.triggers, it.aniEndIsChange);
+			out.emplace_back(m_NodeName, it.targetNode, it.triggers, it.aniEndIsChange, it.type);
 		}
 	}
 	else
@@ -57,7 +57,7 @@ void AniTree::AniNode::GetArrows(std::vector<OutputArrow>& out, const std::strin
 		{
 			if (it.targetNode == to)
 			{
-				out.emplace_back(m_NodeName, it.targetNode, it.triggers, it.aniEndIsChange);
+				out.emplace_back(m_NodeName, it.targetNode, it.triggers, it.aniEndIsChange, it.type);
 				break;
 			}
 		}

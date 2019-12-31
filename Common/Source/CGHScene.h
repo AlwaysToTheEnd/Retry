@@ -23,7 +23,7 @@ public:
 	
 	virtual void Init() = 0;
 	virtual bool Update(const DirectX::Mouse::ButtonStateTracker& mouse, unsigned long long delta);
-	void DeleteAllObjects() { m_Objects.clear(); }
+	void DeleteAllObjects() { m_Objects.clear(); m_NumNullptr=0; }
 	void DeleteGameObject(GameObject* object);
 	const std::string& GetSceneName() const { return m_SceneName; }
 
@@ -44,15 +44,14 @@ private:
 protected:
 	std::string									m_SceneName;
 	std::vector<std::unique_ptr<GameObject>>	m_Objects;
+	size_t										m_NumNullptr;
 };
 
 template<typename T, typename ...Types>
 inline T* CGHScene::AddGameObject(Types... args)
 {
 	T* newObject = new T(*this, args...);
-
-	m_Objects.push_back(std::unique_ptr<GameObject>(newObject));
-	m_Objects.back()->Init();
+	AddGameObject(newObject);
 
 	return newObject;
 }

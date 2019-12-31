@@ -10,6 +10,7 @@ namespace CGH
 		TYPE_FLOAT,
 		TYPE_INT,
 		TYPE_UINT,
+		TYPE_ENUM,
 	};
 
 	struct UnionData

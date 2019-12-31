@@ -144,6 +144,7 @@ void UIParam::ParamController::Update(unsigned long long delta)
 		}
 		else
 		{
+			WorkClear();
 			WorkEnd();
 			return;
 		}

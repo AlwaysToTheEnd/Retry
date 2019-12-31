@@ -136,6 +136,7 @@ void AniTreeArowVisual::Init()
 {
 	m_Transform = AddComponent<ComTransform>();
 	m_Renderer = AddComponent<ComRenderer>();
+	m_Transform->SetPosZ(0.2f);
 }
 
 void AniTreeArowVisual::Update(unsigned long long delta)
@@ -219,8 +220,7 @@ void AniTreeArowVisual::AniTreeArrowArttributeEditer::WorkClear()
 {
 	if (m_AttributePanel)
 	{
-		m_AttributePanel->Delete();
-		m_AttributePanel = nullptr;
+		m_AttributePanel->UIOff();
 	}
 
 	m_CurrArrow = nullptr;
@@ -228,32 +228,48 @@ void AniTreeArowVisual::AniTreeArrowArttributeEditer::WorkClear()
 
 void AniTreeArowVisual::AniTreeArrowArttributeEditer::Update(unsigned long long delta)
 {
-
+	if (!m_CurrArrow)
+	{
+		WorkEnd();
+	}
 }
 
 void AniTreeArowVisual::AniTreeArrowArttributeEditer::CreateAttributePanel()
 {
 	m_CurrArrow->m_From->GetNode()->GetArrows(m_Arrows, m_CurrArrow->m_To->GetNodeName());
 
-	m_AttributePanel = m_CurrArrow->CreateGameObject<UIPanel>(false);
-	DirectX::XMFLOAT2 pos;
-	DirectX::XMStoreFloat2(&pos, GETAPP->GetMousePos());
-	m_AttributePanel->SetSize(100, 100);
-	m_AttributePanel->SetPos(pos);
-	m_AttributePanel->SetBackGroundTexture(InputTN::Get("AniTreeArrowArttributePanel"));
+	if (m_AttributePanel == nullptr)
+	{
+		m_AttributePanel = m_CurrArrow->CreateGameObject<UIPanel>(false);
 
-	static bool test = false;
+		DirectX::XMFLOAT2 pos;
+		DirectX::XMStoreFloat2(&pos, GETAPP->GetMousePos());
+		m_AttributePanel->SetPos(pos);
+		m_AttributePanel->SetBackGroundTexture(InputTN::Get("AniTreeArrowArttributePanel"));
+	}
+
+	m_AttributePanel->DeleteAllComs();
+	m_AttributePanel->UIOn();
+
+	const int offsetX = 5;
 	int posY = 5;
 	for (auto& it : m_Arrows)
 	{
 		auto endIsParam = m_AttributePanel->CreateGameObject<UIParam>(true, UIParam::UIPARAMTYPE::MODIFIER);
 		endIsParam->SetTargetParam(L"AniEndIsChange", &it.aniEndIsChange);
 		endIsParam->SetTextHeight(m_FontSize);
-		m_AttributePanel->AddUICom(10, posY, endIsParam);
+		m_AttributePanel->AddUICom(offsetX, posY, endIsParam);
 		posY += m_FontSize + 2;
 
 		for (auto& it2 : it.trigger)
 		{
+			auto funcParam = m_AttributePanel->CreateGameObject<UIParam>(true, UIParam::UIPARAMTYPE::MODIFIER);
+			funcParam->SetTextHeight(m_FontSize);
+			funcParam->SetTargetParam(L"Type", reinterpret_cast<int*>(&it2.m_TriggerType));
+
+			m_AttributePanel->AddUICom(offsetX, posY, funcParam);
+			posY += m_FontSize + 2;
+
 			auto triggerParam = m_AttributePanel->CreateGameObject<UIParam>(true, UIParam::UIPARAMTYPE::MODIFIER);
 			triggerParam->SetTextHeight(m_FontSize);
 
@@ -274,45 +290,30 @@ void AniTreeArowVisual::AniTreeArrowArttributeEditer::CreateAttributePanel()
 			default:
 				break;
 			}
-			m_AttributePanel->AddUICom(10, posY, triggerParam);
-
-			posY += m_FontSize + 2;
-
-			auto funcParam = m_AttributePanel->CreateGameObject<UIParam>(true, UIParam::UIPARAMTYPE::MODIFIER);
-			funcParam->SetTextHeight(m_FontSize);
-			funcParam->SetTargetParam(L"Type", reinterpret_cast<int*>(&it2.m_TriggerType));
-
-			m_AttributePanel->AddUICom(10, posY, funcParam);
-
+			m_AttributePanel->AddUICom(offsetX, posY, triggerParam);
 			posY += m_FontSize + 2;
 		}
-
-		auto addButton = m_AttributePanel->CreateGameObject<UIButton>(true);
-		addButton->SetTexture(
-			InputTN::Get("AniTreeArrowArttributePanel_AddButton"), 
-			{ 50,5 });
-		addButton->AddFunc(std::bind(&AniTreeArowVisual::AniTreeArrowArttributeEditer::AddParam, this));
-
-		m_AttributePanel->AddUICom(m_AttributePanel->GetSize().x/2, posY, addButton);
 	}
+
+	m_AttributePanel->SetSize(100, posY + m_FontSize * 3);
+
+	auto addButton = m_AttributePanel->CreateGameObject<UIButton>(true);
+	addButton->SetTexture(
+		InputTN::Get("AniTreeArrowArttributePanel_AddButton"),
+		{ 5,5 });
+	addButton->AddFunc(std::bind(&AniTreeArowVisual::AniTreeArrowArttributeEditer::AddParam, this));
+
+	m_AttributePanel->AddUICom(m_AttributePanel->GetSize().x / 2, posY, addButton);
 }
 
 void AniTreeArowVisual::AniTreeArrowArttributeEditer::AddParam()
 {
-	auto addedParam = m_AttributePanel->CreateGameObject<UIParam>(true, UIParam::UIPARAMTYPE::MODIFIER);
-	addedParam->SetTextHeight(m_FontSize);
 	CGH::UnionData test;
 	test.type = CGH::DATA_TYPE::TYPE_INT;
 	test._i = 0;
 	m_Arrows.front().trigger.emplace_back(TRIGGER_TYPE::TRIGGER_TYPE_SAME, test);
-	addedParam->SetTargetParam(L"test", &m_Arrows.front().trigger.back().m_Standard._i);
 
-	auto funcParam = m_AttributePanel->CreateGameObject<UIParam>(true, UIParam::UIPARAMTYPE::MODIFIER);
-	funcParam->SetTextHeight(m_FontSize);
-	funcParam->SetTargetParam(L"Type", reinterpret_cast<int*>(&m_Arrows.front().trigger.back().m_TriggerType));
-
-	m_AttributePanel->AddUICom(10, m_AttributePanel->GetNumAddedComs() * (m_FontSize + 2), addedParam);
-	m_AttributePanel->AddUICom(10, m_AttributePanel->GetNumAddedComs() * (m_FontSize + 2), funcParam);
+	CreateAttributePanel();
 }
 
 //////////////
