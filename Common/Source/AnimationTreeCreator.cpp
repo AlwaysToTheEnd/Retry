@@ -59,7 +59,7 @@ void AniNodeVisual::SetTargetAninodeFunc(std::function<AniTree::AniNode * (void)
 
 	auto nodeName = func()->GetNodeName();
 	auto nameFont = m_Panel->GetComponent<ComFont>();
-	m_Panel->SetSize(70, 45);
+	m_Panel->SetSize(100, 60);
 	m_Panel->SetBackGroundTexture(InputTN::Get("AniNodeVisualPanel"));
 
 	nameFont->m_Text.clear();
@@ -215,9 +215,14 @@ void AniTreeArowVisual::Update(unsigned long long delta)
 
 	float halfLength = directionVec.magnitude() / 2.0f;
 	halfVec = directionVec / 2;
-	m_Transform->SetTransform(physx::PxTransform(
-		physx::PxVec3(halfVec.x + from.x, halfVec.y + from.y, m_Transform->GetTransform().p.z),
-		physx::PxQuat(angle, physx::PxVec3(0, 0, 1))));
+
+	physx::PxTransform world(physx::PxVec3(halfVec.x + from.x, halfVec.y + from.y, m_Transform->GetTransform().p.z),
+		physx::PxQuat(angle, physx::PxVec3(0, 0, 1)));
+
+	physx::PxVec3 offset = world.q.rotate(physx::PxVec3(0, 10, 0));
+	world.p += offset;
+
+	m_Transform->SetTransform(world);
 
 	renderInfo.meshOrTextureName = InputTN::Get("AniTreeArrowVisual");
 	renderInfo.texPoint.size.x = halfLength;
@@ -225,7 +230,7 @@ void AniTreeArowVisual::Update(unsigned long long delta)
 
 	if (m_UICollison)
 	{
-		m_UICollison->SetSize({ halfLength ,5.0f });
+		m_UICollison->SetSize({ halfLength ,10.0f });
 	}
 
 	m_Renderer->SetRenderInfo(renderInfo);
