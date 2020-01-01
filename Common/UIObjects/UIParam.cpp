@@ -5,6 +5,16 @@
 
 UIParam::ParamController UIParam::s_ParamController;
 
+void UIParam::Delete()
+{
+	if (m_Selected)
+	{
+		s_ParamController.WorkClear();
+	}
+
+	GameObject::Delete();
+}
+
 void UIParam::SetTextHeight(int height)
 {
 	m_Font->m_FontHeight = height;
@@ -52,10 +62,12 @@ void UIParam::Update(unsigned long long delta)
 			if (!m_Selected)
 			{
 				text += GetDataString();
+				m_Font->m_Color = { 0,0,0,1 };
 			}
 			else
 			{
 				text += m_Font->m_Text;
+				m_Font->m_Color = { 1,0,0,1 };
 			}
 		}
 			break;

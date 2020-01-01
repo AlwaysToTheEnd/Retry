@@ -310,6 +310,8 @@ void AniTreeArowVisual::AniTreeArrowArttributeEditer::CreateAttributePanel()
 	m_AttributePanel->DeleteAllComs();
 	m_AttributePanel->UIOn();
 
+	const int propertyInterval = 2;
+	const int objectSetInterval = 8;
 	const int offsetX = 5;
 	int posY = 5;
 	for (auto& it : m_Arrows)
@@ -318,7 +320,7 @@ void AniTreeArowVisual::AniTreeArrowArttributeEditer::CreateAttributePanel()
 		endIsParam->SetTargetParam(L"AniEndIsChange", &it.aniEndIsChange);
 		endIsParam->SetTextHeight(m_FontSize);
 		m_AttributePanel->AddUICom(offsetX, posY, endIsParam);
-		posY += m_FontSize + 2;
+		posY += m_FontSize + objectSetInterval;
 
 		for (auto& it2 : it.trigger)
 		{
@@ -327,14 +329,14 @@ void AniTreeArowVisual::AniTreeArrowArttributeEditer::CreateAttributePanel()
 			funcParam->SetTargetParam(L"Func", reinterpret_cast<int*>(&it2.m_TriggerType));
 
 			m_AttributePanel->AddUICom(offsetX, posY, funcParam);
-			posY += m_FontSize + 2;
+			posY += m_FontSize + propertyInterval;
 
 			auto triggerType= m_AttributePanel->CreateGameObject<UIParam>(true, UIParam::UIPARAMTYPE::MODIFIER);
 			triggerType->SetTextHeight(m_FontSize);
 			triggerType->SetTargetParam(L"Type", reinterpret_cast<int*>(&it2.m_Standard.type));
 
 			m_AttributePanel->AddUICom(offsetX, posY, triggerType);
-			posY += m_FontSize + 2;
+			posY += m_FontSize + propertyInterval;
 
 			auto triggerParam = m_AttributePanel->CreateGameObject<UIParam>(true, UIParam::UIPARAMTYPE::MODIFIER);
 			triggerParam->SetTextHeight(m_FontSize);
@@ -342,22 +344,22 @@ void AniTreeArowVisual::AniTreeArrowArttributeEditer::CreateAttributePanel()
 			switch (it2.m_Standard.type)
 			{
 			case CGH::DATA_TYPE::TYPE_BOOL:
-				triggerParam->SetTargetParam(L"value", &it2.m_Standard._b);
+				triggerParam->SetTargetParam(L"BOOL", &it2.m_Standard._b);
 				break;
 			case CGH::DATA_TYPE::TYPE_FLOAT:
-				triggerParam->SetTargetParam(L"value", &it2.m_Standard._f);
+				triggerParam->SetTargetParam(L"FLOAT", &it2.m_Standard._f);
 				break;
 			case CGH::DATA_TYPE::TYPE_INT:
-				triggerParam->SetTargetParam(L"value", &it2.m_Standard._i);
+				triggerParam->SetTargetParam(L"INT", &it2.m_Standard._i);
 				break;
 			case CGH::DATA_TYPE::TYPE_UINT:
-				triggerParam->SetTargetParam(L"value", &it2.m_Standard._u);
+				triggerParam->SetTargetParam(L"UINT", &it2.m_Standard._u);
 				break;
 			default:
 				break;
 			}
 			m_AttributePanel->AddUICom(offsetX, posY, triggerParam);
-			posY += m_FontSize + 2;
+			posY += m_FontSize + objectSetInterval;
 		}
 	}
 
@@ -366,16 +368,16 @@ void AniTreeArowVisual::AniTreeArrowArttributeEditer::CreateAttributePanel()
 	auto addButton = m_AttributePanel->CreateGameObject<UIButton>(true);
 	addButton->SetTexture(
 		InputTN::Get("AniTreeArrowArttributePanel_AddButton"),
-		{ 5,5 });
+		{ 10,5 });
 	addButton->AddFunc(std::bind(&AniTreeArowVisual::AniTreeArrowArttributeEditer::AddParam, this));
 
 	m_AttributePanel->AddUICom(m_AttributePanel->GetSize().x / 2, posY, addButton);
-	posY += m_FontSize + 2;
+	posY += m_FontSize + propertyInterval;
 
 	auto deleteButton = m_AttributePanel->CreateGameObject<UIButton>(true);
 	deleteButton->SetTexture(
 		InputTN::Get("AniTreeArrowArttributePanel_DeleteButton"),
-		{ 5,5 });
+		{ 10,5 });
 	deleteButton->AddFunc([this]()
 		{
 			m_CurrArrow->Delete();

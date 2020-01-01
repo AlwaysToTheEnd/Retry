@@ -102,7 +102,7 @@ private:
 		void KeyboardWork(const DirectX::Keyboard::KeyboardStateTracker* keyboard);
 
 	private:
-		const static int					m_FontSize = 10;
+		const static int					m_FontSize = 12;
 
 		AniTreeArowVisual*					m_CurrArrow;
 		UIPanel*							m_AttributePanel;

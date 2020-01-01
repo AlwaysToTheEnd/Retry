@@ -31,10 +31,10 @@ private:
 		virtual ~ParamController() = default;
 
 		void SetUIParam(UIParam* uiParam);
+		virtual void WorkClear() override;
 
 	private:
 		virtual void Update(unsigned long long delta) override;
-		virtual void WorkClear() override;
 		void Excute();
 
 	private:
@@ -57,6 +57,7 @@ public:
 		
 	}
 	virtual ~UIParam() = default;
+	virtual void Delete() override;
 
 	template<typename T> void SetTargetParam(const std::wstring& paramName, T* data);
 	void SetTextHeight(int height);
