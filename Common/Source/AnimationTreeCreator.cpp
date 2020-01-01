@@ -314,6 +314,15 @@ void AniTreeArowVisual::AniTreeArrowArttributeEditer::CreateAttributePanel()
 	const int objectSetInterval = 8;
 	const int offsetX = 5;
 	int posY = 5;
+
+	const static std::vector<ENUM_ELEMENT> triggerTypeNames =
+	{
+		{static_cast<int>(AniTree::TRIGGER_TYPE::TRIGGER_TYPE_GRATER), L"TRIGGER_TYPE_GRATER" },
+		{static_cast<int>(AniTree::TRIGGER_TYPE::TRIGGER_TYPE_LESS), L"TRIGGER_TYPE_GRATER" },
+		{static_cast<int>(AniTree::TRIGGER_TYPE::TRIGGER_TYPE_SAME), L"TRIGGER_TYPE_GRATER" },
+		{static_cast<int>(AniTree::TRIGGER_TYPE::TRIGGER_TYPE_GRATER), L"TRIGGER_TYPE_GRATER" },
+	};
+
 	for (auto& it : m_Arrows)
 	{
 		auto endIsParam = m_AttributePanel->CreateGameObject<UIParam>(true, UIParam::UIPARAMTYPE::MODIFIER);

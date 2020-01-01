@@ -269,6 +269,9 @@
     <ClInclude Include="..\Common\Source\InputTextureNameList.h">
       <Filter>Step2</Filter>
     </ClInclude>
+    <ClInclude Include="..\Common\Source\EnumNameRegister.h">
+      <Filter>Common\CodeResources\BaseClass</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Common\MainShaders\BaseShader.hlsl">

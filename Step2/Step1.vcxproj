@@ -67,6 +67,7 @@
     <ClInclude Include="..\Common\Source\ComponentUpdater.h" />
     <ClInclude Include="..\Common\Source\DX12FontMG.h" />
     <ClInclude Include="..\Common\Source\DX12RenderClasses.h" />
+    <ClInclude Include="..\Common\Source\EnumNameRegister.h" />
     <ClInclude Include="..\Common\Source\GameObject.h" />
     <ClInclude Include="..\Common\Source\GraphicComponent.h" />
     <ClInclude Include="..\Common\Source\IComponent.h" />

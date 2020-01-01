@@ -18,7 +18,7 @@ namespace AniTree
 		TRIGGER_TYPE_LESS = 0x1,
 		TRIGGER_TYPE_SAME = 0x2,
 
-		TRIGGER_TYPE_OFF_AFTER_CHECK = 1 << 8,
+		TRIGGER_TYPE_OFF_AFTER_CHECK = 1 << 6,
 	};
 
 	class TriggerData

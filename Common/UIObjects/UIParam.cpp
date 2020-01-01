@@ -1,4 +1,5 @@
 #include "UIParam.h"
+#include "UIPanel.h"
 #include "GraphicComponent.h"
 #include "BaseComponent.h"
 #include "d3dApp.h"
@@ -13,6 +14,13 @@ void UIParam::Delete()
 	}
 
 	GameObject::Delete();
+}
+
+void UIParam::SetEnumParam(const std::wstring& paramName, const std::vector<ENUM_ELEMENT>* elementInfo, int* data)
+{
+	m_ParamName = paramName;
+	m_ParamPtr = reinterpret_cast<void*>(data);
+	m_EnumElementInfo = elementInfo;
 }
 
 void UIParam::SetTextHeight(int height)
@@ -52,7 +60,7 @@ void UIParam::Update(unsigned long long delta)
 		{
 			text += GetDataString();
 		}
-			break;
+		break;
 		case UIParam::UIPARAMTYPE::MODIFIER:
 		{
 			DirectX::XMFLOAT2 fontDrawSize = m_Font->m_DrawSize;
@@ -70,7 +78,7 @@ void UIParam::Update(unsigned long long delta)
 				m_Font->m_Color = { 1,0,0,1 };
 			}
 		}
-			break;
+		break;
 		default:
 			break;
 		}
@@ -88,23 +96,48 @@ std::wstring UIParam::GetDataString()
 {
 	std::wstring result;
 
-	switch (m_DataType)
+	if (m_EnumElementInfo)
 	{
-	case CGH::DATA_TYPE::TYPE_BOOL:
-		result = *(reinterpret_cast<bool*>(m_ParamPtr)) ? L"true" : L"false";
-		break;
-	case CGH::DATA_TYPE::TYPE_FLOAT:
-		result = GetStringFromValue<float>();
-		break;
-	case CGH::DATA_TYPE::TYPE_INT:
-		result = GetStringFromValue<int>();
-		break;
-	case CGH::DATA_TYPE::TYPE_UINT:
-		result = GetStringFromValue<unsigned int>();
-		break;
-	default:
-		assert(false);
-		break;
+		int paramValue = *reinterpret_cast<int*>(m_ParamPtr);
+		bool isNotValidValue = true;
+
+		for (auto& it : *m_EnumElementInfo)
+		{
+			if (it.value == paramValue)
+			{
+				result = it.elementName + L"(" + std::to_wstring(paramValue) + L")";
+				isNotValidValue = false;
+				break;
+			}
+		}
+
+		if (isNotValidValue)
+		{
+			auto& element = m_EnumElementInfo->front();
+			*reinterpret_cast<int*>(m_ParamPtr) = element.value;
+			result = element.elementName + L"(" + std::to_wstring(element.value) + L")";
+		}
+	}
+	else
+	{
+		switch (m_DataType)
+		{
+		case CGH::DATA_TYPE::TYPE_BOOL:
+			result = *(reinterpret_cast<bool*>(m_ParamPtr)) ? L"true" : L"false";
+			break;
+		case CGH::DATA_TYPE::TYPE_FLOAT:
+			result = GetStringFromValue<float>();
+			break;
+		case CGH::DATA_TYPE::TYPE_INT:
+			result = GetStringFromValue<int>();
+			break;
+		case CGH::DATA_TYPE::TYPE_UINT:
+			result = GetStringFromValue<unsigned int>();
+			break;
+		default:
+			assert(false);
+			break;
+		}
 	}
 
 	return result;
@@ -117,39 +150,47 @@ void UIParam::ParamController::Update(unsigned long long delta)
 		if (GETKEY(m_CurrParam->GetConstructor()))
 		{
 			m_CurrParam->Selected(true);
-			if (keyboard->IsKeyPressed(KEYState::Enter))
+
+			if (m_CurrParam->m_EnumElementInfo)
 			{
-				Excute();
-				WorkClear();
-				WorkEnd();
-				return;
-			}
-			else if (keyboard->IsKeyPressed(KEYState::Back))
-			{
-				if (m_InputData.size())
-				{
-					m_InputData.pop_back();
-				}
-			}
-			else if (keyboard->IsKeyPressed(KEYState::OemMinus))
-			{
-				if (m_InputData.size() == 0)
-				{
-					m_InputData += '-';
-				}
-			}
-			else if (keyboard->IsKeyPressed(KEYState::OemPeriod))
-			{
-				m_InputData += '.';
+
 			}
 			else
 			{
-				for (auto key = KEYState::D0; key <= KEYState::D9; key = static_cast<KEYState>(key + 1))
+				if (keyboard->IsKeyPressed(KEYState::Enter))
 				{
-					if (keyboard->IsKeyPressed(key))
+					Excute();
+					WorkClear();
+					WorkEnd();
+					return;
+				}
+				else if (keyboard->IsKeyPressed(KEYState::Back))
+				{
+					if (m_InputData.size())
 					{
-						m_InputData += ('0' + key - KEYState::D0);
-						break;
+						m_InputData.pop_back();
+					}
+				}
+				else if (keyboard->IsKeyPressed(KEYState::OemMinus))
+				{
+					if (m_InputData.size() == 0)
+					{
+						m_InputData += '-';
+					}
+				}
+				else if (keyboard->IsKeyPressed(KEYState::OemPeriod))
+				{
+					m_InputData += '.';
+				}
+				else
+				{
+					for (auto key = KEYState::D0; key <= KEYState::D9; key = static_cast<KEYState>(key + 1))
+					{
+						if (keyboard->IsKeyPressed(key))
+						{
+							m_InputData += ('0' + key - KEYState::D0);
+							break;
+						}
 					}
 				}
 			}
@@ -217,6 +258,11 @@ void UIParam::ParamController::SetUIParam(UIParam* uiParam)
 			m_CurrParam = uiParam;
 			m_CurrParam->Selected(true);
 			m_InputData.clear();
+
+			if (m_CurrParam->m_EnumElementInfo)
+			{
+
+			}
 		}
 	}
 }

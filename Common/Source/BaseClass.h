@@ -2,6 +2,12 @@
 #include <DirectXMath.h>
 #include <foundation/PxMat44.h>
 
+struct ENUM_ELEMENT
+{
+	int value = 0;
+	std::wstring elementName;
+};
+
 namespace CGH
 {
 	enum class DATA_TYPE
@@ -10,7 +16,6 @@ namespace CGH
 		TYPE_FLOAT,
 		TYPE_INT,
 		TYPE_UINT,
-		TYPE_ENUM,
 	};
 
 	struct UnionData

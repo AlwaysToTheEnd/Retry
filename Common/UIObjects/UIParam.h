@@ -9,6 +9,7 @@
 class ComFont;
 class ComUICollision;
 class ComTransform;
+class UIPanel;
 
 class UIParam :public GameObject
 {
@@ -26,6 +27,7 @@ private:
 		ParamController()
 			: StaticGameObjectController(false)
 			, m_CurrParam(nullptr)
+			, m_EnumSelectPanel(nullptr)
 		{
 		}
 		virtual ~ParamController() = default;
@@ -40,6 +42,7 @@ private:
 	private:
 		std::string		m_InputData;
 		UIParam*		m_CurrParam;
+		UIPanel*		m_EnumSelectPanel;
 
 	} s_ParamController;
 
@@ -53,6 +56,7 @@ public:
 		, m_ParamPtr(nullptr)
 		, m_DataType(CGH::DATA_TYPE::TYPE_INT)
 		, m_Selected(false)
+		, m_EnumElementInfo(nullptr)
 	{
 		
 	}
@@ -60,6 +64,7 @@ public:
 	virtual void Delete() override;
 
 	template<typename T> void SetTargetParam(const std::wstring& paramName, T* data);
+	void SetEnumParam(const std::wstring& paramName, const std::vector<ENUM_ELEMENT>* elementInfo, int* data);
 	void SetTextHeight(int height);
 
 private:
@@ -79,6 +84,8 @@ private:
 	void*				m_ParamPtr;
 	CGH::DATA_TYPE		m_DataType;
 	bool				m_Selected;
+
+	const std::vector<ENUM_ELEMENT>* m_EnumElementInfo;
 };
 
 template<typename T>
@@ -108,6 +115,7 @@ inline void UIParam::SetTargetParam(const std::wstring& paramName, T* data)
 
 	m_ParamName = paramName;
 	m_ParamPtr = reinterpret_cast<void*>(data);
+	m_EnumElementInfo = nullptr;
 }
 
 template<typename T>
