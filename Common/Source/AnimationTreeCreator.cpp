@@ -324,9 +324,16 @@ void AniTreeArowVisual::AniTreeArrowArttributeEditer::CreateAttributePanel()
 		{
 			auto funcParam = m_AttributePanel->CreateGameObject<UIParam>(true, UIParam::UIPARAMTYPE::MODIFIER);
 			funcParam->SetTextHeight(m_FontSize);
-			funcParam->SetTargetParam(L"Type", reinterpret_cast<int*>(&it2.m_TriggerType));
+			funcParam->SetTargetParam(L"Func", reinterpret_cast<int*>(&it2.m_TriggerType));
 
 			m_AttributePanel->AddUICom(offsetX, posY, funcParam);
+			posY += m_FontSize + 2;
+
+			auto triggerType= m_AttributePanel->CreateGameObject<UIParam>(true, UIParam::UIPARAMTYPE::MODIFIER);
+			triggerType->SetTextHeight(m_FontSize);
+			triggerType->SetTargetParam(L"Type", reinterpret_cast<int*>(&it2.m_Standard.type));
+
+			m_AttributePanel->AddUICom(offsetX, posY, triggerType);
 			posY += m_FontSize + 2;
 
 			auto triggerParam = m_AttributePanel->CreateGameObject<UIParam>(true, UIParam::UIPARAMTYPE::MODIFIER);
@@ -363,16 +370,32 @@ void AniTreeArowVisual::AniTreeArrowArttributeEditer::CreateAttributePanel()
 	addButton->AddFunc(std::bind(&AniTreeArowVisual::AniTreeArrowArttributeEditer::AddParam, this));
 
 	m_AttributePanel->AddUICom(m_AttributePanel->GetSize().x / 2, posY, addButton);
+	posY += m_FontSize + 2;
+
+	auto deleteButton = m_AttributePanel->CreateGameObject<UIButton>(true);
+	deleteButton->SetTexture(
+		InputTN::Get("AniTreeArrowArttributePanel_DeleteButton"),
+		{ 5,5 });
+	deleteButton->AddFunc([this]()
+		{
+			m_CurrArrow->Delete();
+			this->WorkClear();
+		});
+
+	m_AttributePanel->AddUICom(m_AttributePanel->GetSize().x / 2, posY, deleteButton);
 }
 
 void AniTreeArowVisual::AniTreeArrowArttributeEditer::AddParam()
 {
-	CGH::UnionData test;
-	test.type = CGH::DATA_TYPE::TYPE_INT;
-	test._i = 0;
-	m_Arrows.front().trigger.emplace_back(TRIGGER_TYPE::TRIGGER_TYPE_SAME, test);
+	if (m_Arrows.front().trigger.size() < 10)
+	{
+		CGH::UnionData test;
+		test.type = CGH::DATA_TYPE::TYPE_INT;
+		test._i = 0;
+		m_Arrows.front().trigger.emplace_back(TRIGGER_TYPE::TRIGGER_TYPE_SAME, test);
 
-	CreateAttributePanel();
+		CreateAttributePanel();
+	}
 }
 
 //////////////

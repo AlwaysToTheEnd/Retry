@@ -424,5 +424,5 @@ AniTree::NodeArrow::NodeArrow(const std::string& toNodeName)
 	, aniEndIsChange(false)
 	, type(TO_ANI_NODE_TYPE_ONE_OK)
 {
-	triggers.reserve(15);
+	triggers.reserve(10);
 }
