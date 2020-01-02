@@ -18,8 +18,8 @@ public:
 	physx::PxVec2 GetMousePos() const { return m_CurrMouse; }
 private:
 	physx::PxMat44		m_ViewMat;
-	physx::PxQuat		m_Rot;
 	physx::PxVec3		m_EyePos;
+	physx::PxVec2		m_Angles;
 	physx::PxVec2		m_CurrMouse;
 	physx::PxVec2		m_PrevMouse;
 	bool				m_IsRButtonDown;

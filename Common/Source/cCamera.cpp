@@ -1,15 +1,17 @@
 #include "cCamera.h"
 #include "foundation/PxMathUtils.h"
+#include <DirectXMath.h>
 
 using namespace physx;
+using namespace DirectX;
 
 cCamera::cCamera()
 	: m_ViewMat(physx::PxIDENTITY::PxIdentity)
-	, m_Rot(PxIdentity)
+	, m_Angles(0,0)
 	, m_EyePos(PxIdentity)
 	, m_CurrMouse(PxIdentity)
 	, m_PrevMouse(PxIdentity)
-	, m_Distance(100)
+	, m_Distance(10)
 	, m_IsRButtonDown(false)
 {
 }
@@ -22,15 +24,20 @@ cCamera::~cCamera()
 
 void cCamera::Update()
 {
-	PxVec3 eyePos(0, 0, -m_Distance);
+	XMVECTOR eyePos = XMVectorSet(0, 0, -m_Distance, 1);
 
-	eyePos = m_Rot.rotate(eyePos);
-	PxVec3 lookAt(PxIdentity);
+	eyePos = XMVector3TransformCoord(eyePos, XMMatrixRotationRollPitchYawFromVector(XMVectorSet(m_Angles.y, m_Angles.x,0,0)));
+	XMVECTOR lookAt = XMVectorZero();
 
-	m_ViewMat = PxMat44(PxTransform(eyePos, PxShortestRotation(eyePos, lookAt)));
-	m_EyePos = eyePos;
+	/*if (pTarget)
+	{
+		lookAt = XMLoadFloat3(pTarget);
+		eyePos = XMLoadFloat3(pTarget) + eyePos;
+	}*/
+
+	XMStoreFloat3(reinterpret_cast<XMFLOAT3*>(&m_EyePos), eyePos);
+	XMStoreFloat4x4(m_ViewMat, XMMatrixLookAtLH(eyePos, lookAt, { 0,1,0,0 }));
 }
-
 
 void cCamera::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -56,12 +63,12 @@ void cCamera::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		if (m_IsRButtonDown)
 		{
 			PxVec2 movement = m_CurrMouse - m_PrevMouse;
+			m_Angles += movement / 100.0f;
 
-			PxQuat qx(PxPi * movement.x / 100.0f, PxVec3(0, 1, 0));
-			PxQuat qy(PxPi * movement.y / 100.0f, PxVec3(1, 0, 0));
-
-			m_Rot *= qx;
-			m_Rot *= qy;
+			if (m_Angles.y <= -PxPi * 0.5f + FLT_EPSILON)
+				m_Angles.y = -PxPi * 0.5f + FLT_EPSILON;
+			else if (m_Angles.y >= PxPi * 0.5f - FLT_EPSILON)
+				m_Angles.y = PxPi * 0.5f - FLT_EPSILON;
 
 			m_PrevMouse = m_CurrMouse;
 		}

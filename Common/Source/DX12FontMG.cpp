@@ -86,7 +86,7 @@ void DX12FontManager::RenderCommandWrite(ID3D12GraphicsCommandList* cmdList,
 	cmdList->SetDescriptorHeaps(_countof(heaps), heaps);
 
 	m_SpriteBatch->Begin(cmdList);
-
+	
 	DirectX::SimpleMath::Vector2 origin = { 0,0 };
 	DirectX::SimpleMath::Vector3 pos;
 	DirectX::SimpleMath::Vector3 scale;

@@ -59,10 +59,12 @@ public:
 
 	void ArrowVisualDeleted(AniTreeArowVisual* arrow);
 	void SetTargetAninodeFunc(std::function<AniTree::AniNode*(void)> func);
-	AniTree::AniNode* GetNode() { return m_GetTargetAninodeFunc(); }
-	const std::string& GetNodeName() const { return m_GetTargetAninodeFunc()->GetNodeName(); }
-	physx::PxVec2 GetPos() const;
-	const physx::PxVec3& GetSize() const;
+	void SetPos(const physx::PxVec2& pos);
+
+	AniTree::AniNode*		GetNode() { return m_GetTargetAninodeFunc(); }
+	const std::string&		GetNodeName() const { return m_GetTargetAninodeFunc()->GetNodeName(); }
+	physx::PxVec2			GetPos() const;
+	const physx::PxVec3&	GetSize() const;
 
 private:
 	virtual void Init() override;
@@ -165,9 +167,10 @@ private:
 	void AddNode(int aniIndex);
 
 private:
-	std::unique_ptr<AniTree::AnimationTree>	m_Tree;
+	AniTree::AnimationTree*					m_Tree;
 	UIPanel*								m_WorkPanel;
 	ComAnimator*							m_Animator;
+	ComRenderer*							m_Renderer;
 	const Ani::SkinnedData*					m_CurrSkin;
 	std::vector<std::string>				m_AniNames;
 };

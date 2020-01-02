@@ -84,6 +84,39 @@ void AniTree::AniNode::AddArrow(const std::string& to)
 	}
 }
 
+void AniTree::AniNode::DeleteArrow(const std::string& to)
+{
+	for (auto iter = m_Arrows.begin(); iter != m_Arrows.end(); iter++)
+	{
+		if (iter->targetNode == to)
+		{
+			m_Arrows.erase(iter);
+			break;
+		}
+	}
+}
+
+void AniTree::AniNode::DeleteTrigger(const std::string& to, int index)
+{
+	for (size_t i = 0; i < m_Arrows.size(); i++)
+	{
+		if (m_Arrows[i].targetNode == to)
+		{
+			int currIndex = 0;
+			for (auto iter = m_Arrows[i].triggers.begin(); iter != m_Arrows[i].triggers.end(); iter++, currIndex++)
+			{
+				if (index == currIndex)
+				{
+					m_Arrows[i].triggers.erase(iter);
+					break;
+				}
+			}
+
+			break;
+		}
+	}
+}
+
 bool AniTree::AniNode::AddTrigger(const std::string& to, TO_ANI_ARROW_TYPE arrowType, CHANGE_CONDITION_TYPE type, const TriggerData* trigger)
 {
 	assert((type == CHANGE_CONDITION_TYPE_ANI_END) ? (trigger == nullptr) : (trigger != nullptr));

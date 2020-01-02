@@ -569,7 +569,7 @@ void GraphicDX12::Draw()
 	m_CommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(),
 		D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
 
-	m_CommandList->ClearRenderTargetView(CurrentBackBufferView(), Colors::Aqua, 0, nullptr);
+	m_CommandList->ClearRenderTargetView(CurrentBackBufferView(), Colors::Gray, 0, nullptr);
 	m_CommandList->ClearDepthStencilView(DepthStencilView(), D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
 
 	m_CommandList->SetPipelineState(m_PSOs["base"].Get());
@@ -808,7 +808,7 @@ void GraphicDX12::BuildPSOs()
 		m_Shaders["basePS"]->GetBufferSize()
 	};
 	opaquePsoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
-	opaquePsoDesc.RasterizerState.CullMode = D3D12_CULL_MODE_BACK;
+	opaquePsoDesc.RasterizerState.CullMode = D3D12_CULL_MODE_NONE;
 	opaquePsoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
 	opaquePsoDesc.BlendState.RenderTarget[0] = transparencyBlendDesc;
 	opaquePsoDesc.BlendState.AlphaToCoverageEnable = true;
@@ -850,11 +850,16 @@ void GraphicDX12::UpdateMainPassCB()
 	physx::PxMat44 view = m_ViewMatrix;
 	physx::PxMat44 proj = m_ProjectionMat;
 
-	physx::PxMat44 viewProj = view * proj;
+	physx::PxMat44 viewProj;
+
+	XMMATRIX xmView = XMLoadFloat4x4(view);
+	XMMATRIX xmProj = XMLoadFloat4x4(proj);
+	XMStoreFloat4x4(viewProj, XMMatrixMultiply(xmView, xmProj));
+
 	physx::PxMat44 invView = view.inverseRT();
 	physx::PxMat44 invProj = proj.inverseRT();
 	physx::PxMat44 invViewProj = viewProj.inverseRT();
-
+	
 	m_MainPassCB.view = view.getTranspose();
 	m_MainPassCB.invView = invView.getTranspose();
 	m_MainPassCB.proj = proj.getTranspose();

@@ -97,6 +97,8 @@ namespace AniTree
 		const std::vector<NodeArrow>& GetArrows() { return m_Arrows; }
 
 		void AddArrow(const std::string& to);
+		void DeleteArrow(const std::string& to);
+		void DeleteTrigger(const std::string& to, int index);
 		bool AddTrigger(const std::string& to, TO_ANI_ARROW_TYPE arrowType, CHANGE_CONDITION_TYPE type, const TriggerData* trigger);
 
 		void TriggerReset();

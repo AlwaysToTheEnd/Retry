@@ -73,6 +73,11 @@ physx::PxVec2 AniNodeVisual::GetPos() const
 	return { p.x, p.y };
 }
 
+void AniNodeVisual::SetPos(const physx::PxVec2& pos)
+{
+	m_Panel->SetPos(pos);
+}
+
 const physx::PxVec3& AniNodeVisual::GetSize() const
 {
 	return m_Panel->GetComponent<ComRenderer>()->GetRenderInfo().point.size;
@@ -240,6 +245,11 @@ void AniTreeArowVisual::Delete()
 {
 	if (m_From)
 	{
+		if (m_To)
+		{
+			m_From->GetNode()->DeleteArrow(m_To->GetNodeName());
+		}
+
 		m_From->ArrowVisualDeleted(this);
 	}
 
@@ -447,8 +457,12 @@ void VisualizedAniTreeCreator::SelectSkinnedData(const std::string& name)
 	m_CurrSkin = m_Animator->GetSkinnedData(name);
 	m_CurrSkin->GetAnimationNames(m_AniNames);
 
-	m_Tree = nullptr;
-	m_Tree = std::make_unique<AniTree::AnimationTree>();
+	GetComponent<ComMesh>()->SelectMesh(name);
+	m_Renderer->SetActive(true);
+	m_Animator->SelectSkin(name);
+	m_Animator->SetAnimationTree(true);
+
+	m_Tree = m_Animator->GetAnimationTree();
 
 	m_WorkPanel->DeleteAllComs();
 
@@ -459,12 +473,11 @@ void VisualizedAniTreeCreator::SelectSkinnedData(const std::string& name)
 		text.clear();
 		text.insert(text.end(), it.begin(), it.end());
 		auto button = CreateGameObject<UIButton>(true);
-		button->SetTexture(InputTN::Get("AniTreeCreatorWorkPanel_AddButton"), { 15,15 });
 		button->SetText(text);
-		button->SetTextHeight(10);
+		button->OnlyFontMode();
+		button->SetTextHeight(15);
 		button->AddFunc(std::bind(&VisualizedAniTreeCreator::AddNode, this, i));
-		button->GetComponent<ComFont>()->SetBenchmark(RenderFont::FONTBENCHMARK::CENTER);
-		m_WorkPanel->AddUICom(15, 15 + i * 30, button);
+		m_WorkPanel->AddUICom(50, 15 + i * 15, button);
 
 		i++;
 	}
@@ -472,16 +485,23 @@ void VisualizedAniTreeCreator::SelectSkinnedData(const std::string& name)
 
 void VisualizedAniTreeCreator::Init()
 {
+	auto trans = AddComponent<ComTransform>();
+	AddComponent<ComMesh>();
+	m_Renderer = AddComponent<ComRenderer>();
 	m_Animator = AddComponent<ComAnimator>();
+
+	m_Renderer->SetRenderInfo(RenderInfo(RENDER_MESH));
+	m_Renderer->SetActive(false);
+
 	m_WorkPanel = CreateGameObject<UIPanel>(false);
 	m_WorkPanel->SetSize(100, 100);
-	//m_WorkPanel->SetBackGroundTexture(InputTN::Get("AniTreeCreatorWorkPanel"));
-	m_WorkPanel->SetBackGroundColor({ 1,1,1,0.8f });
+	m_WorkPanel->SetBackGroundTexture(InputTN::Get("AniTreeCreatorWorkPanel"));
+	m_WorkPanel->SetPos({ 50,50 });
 }
 
 void VisualizedAniTreeCreator::Update(unsigned long long delta)
 {
-
+	
 }
 
 void VisualizedAniTreeCreator::AddNode(int aniIndex)
@@ -491,6 +511,7 @@ void VisualizedAniTreeCreator::AddNode(int aniIndex)
 	{
 		auto newNode = CreateGameObject<AniNodeVisual>(true);
 
-		newNode->SetTargetAninodeFunc(std::bind(&AnimationTree::GetAniNode, m_Tree.get(), m_AniNames[aniIndex]));
+		newNode->SetTargetAninodeFunc(std::bind(&AnimationTree::GetAniNode, m_Tree, m_AniNames[aniIndex]));
+		newNode->SetPos({ 300,100 });
 	}
 }

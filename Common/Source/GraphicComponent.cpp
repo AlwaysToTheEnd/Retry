@@ -40,7 +40,7 @@ void ComAnimator::Update(unsigned long long delta)
 
 	if (m_AniTree != nullptr)
 	{
-		if (m_AniTree->Update(10))
+		if (m_AniTree->Update(delta))
 		{
 			m_CurrTick = m_AniTree->GetCurrAnimationTick();
 			m_CurrAniName = m_AniTree->GetCurrAnimationName();
