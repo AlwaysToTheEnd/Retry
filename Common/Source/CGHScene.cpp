@@ -37,8 +37,8 @@ bool CGHScene::Update(const DirectX::Mouse::ButtonStateTracker& mouse, unsigned 
 	}
 
 	GetComponentUpdater(COMPONENTTYPE::COM_UICOLLISTION).Update(delta);
-	DirectX::XMFLOAT3 rayOrigin;
-	DirectX::XMFLOAT3 ray;
+	physx::PxVec3 rayOrigin;
+	physx::PxVec3 ray;
 	GETAPP->GetMouseRay(rayOrigin, ray);
 
 	if (mouse.leftButton == MOUSEState::UP)

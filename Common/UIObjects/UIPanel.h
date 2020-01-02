@@ -77,13 +77,13 @@ public:
 	void DeleteAllComs();
 
 	physx::PxVec2 GetSize() { return m_Size; }
-	DirectX::XMFLOAT2 GetPos();
+	physx::PxVec2 GetPos();
 	unsigned int GetNumAddedComs() { return m_UIComs.size(); }
 	void SetBackGroundTexture(const std::string& name);
-	void SetBackGroundColor(DirectX::XMFLOAT4 color);
+	void SetBackGroundColor(const physx::PxVec4& color);
 	void SetSize(unsigned int x, unsigned y);
 	void SetName(const std::wstring& name);
-	void SetPos(DirectX::XMFLOAT2 pos);
+	void SetPos(const physx::PxVec2& pos);
 	void UIOn();
 	void UIOff();
 	void ThisPanalIsStatic();

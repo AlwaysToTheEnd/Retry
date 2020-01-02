@@ -141,12 +141,12 @@ public:
 public:
 	std::wstring		m_Text;
 	int					m_FontHeight;
-	DirectX::XMFLOAT2	m_DrawSize;
-	DirectX::XMFLOAT3	m_Pos;
-	DirectX::XMFLOAT4	m_Color;
+	physx::PxVec2		m_DrawSize;
+	physx::PxVec3		m_Pos;
+	physx::PxVec4		m_Color;
 
 private:
 	RenderFont::FONTBENCHMARK		m_Benchmark;
 	static std::vector<RenderFont>*	m_ReservedFonts;
-	std::wstring		m_FontName;
+	std::wstring					m_FontName;
 };

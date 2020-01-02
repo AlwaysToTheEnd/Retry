@@ -7,11 +7,11 @@
 
 class ComAnimator;
 class UIPanel;
+class UIParam;
 class AniTreeArowVisual;
 class ComRenderer;
 class ComUICollision;
 class ComTransform;
-
 
 namespace Ani
 {
@@ -61,8 +61,8 @@ public:
 	void SetTargetAninodeFunc(std::function<AniTree::AniNode*(void)> func);
 	AniTree::AniNode* GetNode() { return m_GetTargetAninodeFunc(); }
 	const std::string& GetNodeName() const { return m_GetTargetAninodeFunc()->GetNodeName(); }
-	const DirectX::XMFLOAT2& GetPos() const;
-	const DirectX::XMFLOAT3& GetSize() const;
+	physx::PxVec2 GetPos() const;
+	const physx::PxVec3& GetSize() const;
 
 private:
 	virtual void Init() override;
@@ -99,7 +99,7 @@ private:
 		virtual void Update(unsigned long long delta) override;
 		void CreateAttributePanel();
 		void AddParam();
-		void KeyboardWork(const DirectX::Keyboard::KeyboardStateTracker* keyboard);
+		void ChangeType(UIParam* target, CGH::UnionData* data);
 
 	private:
 		const static int					m_FontSize = 12;
@@ -128,7 +128,7 @@ public:
 
 	void SetFromNode(AniNodeVisual* from) { m_From = from; }
 	void SetToNode(AniNodeVisual* to);
-	void SetCurrMousePos(DirectX::XMFLOAT2 pos) { m_MousePos = pos; }
+	void SetCurrMousePos(const physx::PxVec2& pos) { m_MousePos = pos; }
 	const AniNodeVisual* GetToNode() const { return m_To; }
 
 private:
@@ -142,7 +142,7 @@ private:
 	ComRenderer*		m_Renderer;
 	AniNodeVisual*		m_From;
 	AniNodeVisual*		m_To;
-	DirectX::XMFLOAT2	m_MousePos;
+	physx::PxVec2		m_MousePos;
 };
 
 class VisualizedAniTreeCreator :public GameObject

@@ -106,10 +106,10 @@ private:
 	unsigned int ReadBinDWord();
 	unsigned int ReadInt();
 	float ReadFloat();
-	DirectX::XMFLOAT2 ReadVector2();
-	DirectX::XMFLOAT3 ReadVector3();
-	DirectX::XMFLOAT3 ReadRGB();
-	DirectX::XMFLOAT4 ReadRGBA();
+	physx::PxVec2 ReadVector2();
+	physx::PxVec3 ReadVector3();
+	physx::PxVec3 ReadRGB();
+	physx::PxVec4 ReadRGBA();
 
 	/** Throws an exception with a line number and the given text. */
 	void ThrowException(const std::string& pText);

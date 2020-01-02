@@ -60,10 +60,10 @@ namespace Ani
 	{
 		std::string name;
 		bool isReference = false; // if true, mName holds a name by which the actual material can be found in the material list
-		DirectX::XMFLOAT4 diffuse;
+		physx::PxVec4 diffuse;
 		float specularExponent;
-		DirectX::XMFLOAT3 specular;
-		DirectX::XMFLOAT3 emissive;
+		physx::PxVec3 specular;
+		physx::PxVec3 emissive;
 		std::vector<TexEntry> textures;
 	};
 
@@ -80,9 +80,9 @@ namespace Ani
 	{
 		std::string name;
 		unsigned int localMatIndex=0;
-		std::vector<TimeValue<DirectX::XMFLOAT3>> posKeys;
-		std::vector<TimeValue<DirectX::XMFLOAT4>> rotKeys;
-		std::vector<TimeValue<DirectX::XMFLOAT3>> scaleKeys;
+		std::vector<TimeValue<physx::PxVec3>> posKeys;
+		std::vector<TimeValue<physx::PxVec3>> scaleKeys;
+		std::vector<TimeValue<physx::PxVec4>> rotKeys;
 		std::vector<TimeValue<physx::PxMat44>> trafoKeys;
 	};
 

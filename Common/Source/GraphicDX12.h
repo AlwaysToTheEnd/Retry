@@ -21,9 +21,7 @@
 #pragma comment(lib, "D3D12.lib")
 #pragma comment(lib, "dxgi.lib")
 
-
 class cTextureBuffer;
-
 
 using Microsoft::WRL::ComPtr;
 
@@ -145,7 +143,7 @@ public:
 	virtual bool Init(HWND hWnd, UINT windowWidth, UINT windowHeight) override;
 	virtual void OnResize() override;
 	virtual void* GetDevicePtr() override { return m_D3dDevice.Get(); }
-	virtual void GetWorldRay(DirectX::XMFLOAT3& origin, DirectX::XMFLOAT3& ray) const override;
+	virtual void GetWorldRay(physx::PxVec3& origin, physx::PxVec3& ray) const override;
 	virtual IComponent* CreateComponent(CGHScene&, COMPONENTTYPE type, unsigned int id, GameObject& gameObject) override;
 	virtual void CreateScene(const CGHScene& scene) override {} //#TODO
 	
@@ -226,8 +224,8 @@ private:
 	UINT							m_4xmsaaQuality = 0;
 
 	cCamera*						m_CurrCamera = nullptr;
-	DirectX::XMFLOAT3				m_RayOrigin;
-	DirectX::XMFLOAT3				m_Ray;
+	physx::PxVec3					m_RayOrigin;
+	physx::PxVec3					m_Ray;
 
 private:
 	std::unordered_map<std::string, ComPtr<ID3D12PipelineState>>	m_PSOs;

@@ -66,14 +66,14 @@ void AniNodeVisual::SetTargetAninodeFunc(std::function<AniTree::AniNode * (void)
 	nameFont->m_Text.insert(nameFont->m_Text.end(), nodeName.begin(), nodeName.end());
 }
 
-const DirectX::XMFLOAT2& AniNodeVisual::GetPos() const
+physx::PxVec2 AniNodeVisual::GetPos() const
 {
 	auto p = m_Panel->GetComponent<ComTransform>()->GetTransform().p;
 
 	return { p.x, p.y };
 }
 
-const DirectX::XMFLOAT3& AniNodeVisual::GetSize() const
+const physx::PxVec3& AniNodeVisual::GetSize() const
 {
 	return m_Panel->GetComponent<ComRenderer>()->GetRenderInfo().point.size;
 }
@@ -151,8 +151,8 @@ void AniTreeArowVisual::Init()
 void AniTreeArowVisual::Update(unsigned long long delta)
 {
 	RenderInfo renderInfo(RENDER_UI);
-	DirectX::XMFLOAT2 from = m_From->GetPos();
-	DirectX::XMFLOAT2 to;
+	physx::PxVec2 from = m_From->GetPos();
+	physx::PxVec2 to;
 	physx::PxVec2 directionVec;
 	physx::PxVec2 directionNormal;
 	physx::PxVec2 halfVec;
@@ -172,10 +172,10 @@ void AniTreeArowVisual::Update(unsigned long long delta)
 
 	{
 		physx::PxVec2 toToVec = directionVec;
-
-		DirectX::XMFLOAT3 size = m_From->GetSize();
+		physx::PxVec3 size = m_From->GetSize();
 
 		float vecYabs = abs(toToVec.y);
+
 		if (vecYabs > size.y)
 		{
 			toToVec *= (size.y / vecYabs);
@@ -195,8 +195,8 @@ void AniTreeArowVisual::Update(unsigned long long delta)
 	if (m_To)
 	{
 		physx::PxVec2 toFromVec = -directionVec;
-		
-		DirectX::XMFLOAT3 size = m_To->GetSize();
+		physx::PxVec3 size = m_To->GetSize();
+
 		float vecYabs = abs(toFromVec.y);
 
 		if (vecYabs > size.y)
@@ -301,9 +301,7 @@ void AniTreeArowVisual::AniTreeArrowArttributeEditer::CreateAttributePanel()
 	{
 		m_AttributePanel = m_CurrArrow->CreateGameObject<UIPanel>(false);
 
-		DirectX::XMFLOAT2 pos;
-		DirectX::XMStoreFloat2(&pos, GETAPP->GetMousePos());
-		m_AttributePanel->SetPos(pos);
+		m_AttributePanel->SetPos(GETAPP->GetMousePos());
 		m_AttributePanel->SetBackGroundTexture(InputTN::Get("AniTreeArrowArttributePanel"));
 	}
 
@@ -318,9 +316,19 @@ void AniTreeArowVisual::AniTreeArrowArttributeEditer::CreateAttributePanel()
 	const static std::vector<ENUM_ELEMENT> triggerTypeNames =
 	{
 		{static_cast<int>(AniTree::TRIGGER_TYPE::TRIGGER_TYPE_GRATER), L"TRIGGER_TYPE_GRATER" },
-		{static_cast<int>(AniTree::TRIGGER_TYPE::TRIGGER_TYPE_LESS), L"TRIGGER_TYPE_GRATER" },
-		{static_cast<int>(AniTree::TRIGGER_TYPE::TRIGGER_TYPE_SAME), L"TRIGGER_TYPE_GRATER" },
-		{static_cast<int>(AniTree::TRIGGER_TYPE::TRIGGER_TYPE_GRATER), L"TRIGGER_TYPE_GRATER" },
+		{static_cast<int>(AniTree::TRIGGER_TYPE::TRIGGER_TYPE_LESS), L"TRIGGER_TYPE_LESS" },
+		{static_cast<int>(AniTree::TRIGGER_TYPE::TRIGGER_TYPE_SAME), L"TRIGGER_TYPE_SAME" },
+		{static_cast<int>(AniTree::TRIGGER_TYPE::TRIGGER_TYPE_GRATER | TRIGGER_TYPE_OFF_AFTER_CHECK), L"TRIGGER_TYPE_GRATER_OFF" },
+		{static_cast<int>(AniTree::TRIGGER_TYPE::TRIGGER_TYPE_LESS | TRIGGER_TYPE_OFF_AFTER_CHECK), L"TRIGGER_TYPE_LESS_OFF" },
+		{static_cast<int>(AniTree::TRIGGER_TYPE::TRIGGER_TYPE_SAME | TRIGGER_TYPE_OFF_AFTER_CHECK), L"TRIGGER_TYPE_SAME_OFF" },
+	};
+
+	const static std::vector<ENUM_ELEMENT> dataTypeNames =
+	{
+		{static_cast<int>(CGH::DATA_TYPE::TYPE_BOOL), L"TYPE_BOOL" },
+		{static_cast<int>(CGH::DATA_TYPE::TYPE_FLOAT), L"TYPE_FLOAT" },
+		{static_cast<int>(CGH::DATA_TYPE::TYPE_INT), L"TYPE_INT" },
+		{static_cast<int>(CGH::DATA_TYPE::TYPE_UINT), L"TYPE_UINT" },
 	};
 
 	for (auto& it : m_Arrows)
@@ -335,15 +343,14 @@ void AniTreeArowVisual::AniTreeArrowArttributeEditer::CreateAttributePanel()
 		{
 			auto funcParam = m_AttributePanel->CreateGameObject<UIParam>(true, UIParam::UIPARAMTYPE::MODIFIER);
 			funcParam->SetTextHeight(m_FontSize);
-			funcParam->SetTargetParam(L"Func", reinterpret_cast<int*>(&it2.m_TriggerType));
+			funcParam->SetEnumParam(L"Func", &triggerTypeNames, reinterpret_cast<int*>(&it2.m_TriggerType));
 
 			m_AttributePanel->AddUICom(offsetX, posY, funcParam);
 			posY += m_FontSize + propertyInterval;
 
 			auto triggerType= m_AttributePanel->CreateGameObject<UIParam>(true, UIParam::UIPARAMTYPE::MODIFIER);
 			triggerType->SetTextHeight(m_FontSize);
-			triggerType->SetTargetParam(L"Type", reinterpret_cast<int*>(&it2.m_Standard.type));
-
+			triggerType->SetEnumParam(L"DataType", &dataTypeNames,reinterpret_cast<int*>(&it2.m_Standard.type));
 			m_AttributePanel->AddUICom(offsetX, posY, triggerType);
 			posY += m_FontSize + propertyInterval;
 
@@ -367,12 +374,16 @@ void AniTreeArowVisual::AniTreeArrowArttributeEditer::CreateAttributePanel()
 			default:
 				break;
 			}
+
+			triggerParam->GetComponent<ComUICollision>()->AddFunc(std::bind(
+				&AniTreeArowVisual::AniTreeArrowArttributeEditer::ChangeType, this, triggerParam, &it2.m_Standard));
+
 			m_AttributePanel->AddUICom(offsetX, posY, triggerParam);
 			posY += m_FontSize + objectSetInterval;
 		}
 	}
 
-	m_AttributePanel->SetSize(100, posY + m_FontSize * 3);
+	m_AttributePanel->SetSize(230, posY + m_FontSize * 3);
 
 	auto addButton = m_AttributePanel->CreateGameObject<UIButton>(true);
 	addButton->SetTexture(
@@ -406,6 +417,27 @@ void AniTreeArowVisual::AniTreeArrowArttributeEditer::AddParam()
 		m_Arrows.front().trigger.emplace_back(TRIGGER_TYPE::TRIGGER_TYPE_SAME, test);
 
 		CreateAttributePanel();
+	}
+}
+
+void AniTreeArowVisual::AniTreeArrowArttributeEditer::ChangeType(UIParam* target, CGH::UnionData* data)
+{
+	switch (data->type)
+	{
+	case CGH::DATA_TYPE::TYPE_BOOL:
+		target->SetTargetParam(L"BOOL", &data->_b);
+		break;
+	case CGH::DATA_TYPE::TYPE_FLOAT:
+		target->SetTargetParam(L"FLOAT", &data->_f);
+		break;
+	case CGH::DATA_TYPE::TYPE_INT:
+		target->SetTargetParam(L"INT", &data->_i);
+		break;
+	case CGH::DATA_TYPE::TYPE_UINT:
+		target->SetTargetParam(L"UINT", &data->_u);
+		break;
+	default:
+		break;
 	}
 }
 

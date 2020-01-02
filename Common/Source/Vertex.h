@@ -1,28 +1,28 @@
 #pragma once
-#include <DirectXMath.h>
+#include "BaseClass.h"
 
 struct Vertex
 {
-	Vertex(DirectX::XMFLOAT3 _pos, DirectX::XMFLOAT3 _normal, DirectX::XMFLOAT2 _uv)
+	Vertex(physx::PxVec3 _pos, physx::PxVec3 _normal, physx::PxVec2 _uv)
 	{
 		position = _pos;
 		normal = normal;
 		uv = _uv;
 	}
 
-	DirectX::XMFLOAT3 position = { 0,0,0 };
-	DirectX::XMFLOAT3 normal = { 0,0,-1 };
-	DirectX::XMFLOAT2 uv = { 0,0 };
+	physx::PxVec3 position = { 0,0,0 };
+	physx::PxVec3 normal = { 0,0,-1 };
+	physx::PxVec2 uv = { 0,0 };
 };
 
 
 struct SkinnedVertex
 {
-	DirectX::XMFLOAT3	position;
-	DirectX::XMFLOAT3	normal;
-	DirectX::XMFLOAT2	uv;
-	DirectX::XMFLOAT3	boneWeights;
-	unsigned char		boneIndices[4];
+	physx::PxVec3	position;
+	physx::PxVec3	normal;
+	physx::PxVec2	uv;
+	physx::PxVec3	boneWeights;
+	unsigned char	boneIndices[4];
 };
 
 
@@ -30,6 +30,6 @@ struct B_P_Vertex
 {
 	unsigned int		type = 0;
 	unsigned int		cbIndex = 0;
-	DirectX::XMFLOAT3	size = { 0,0,0 };
-	DirectX::XMFLOAT4	color = { 0,0,0,0 };
+	physx::PxVec3		size = { 0,0,0 };
+	physx::PxVec4		color = { 0,0,0,0 };
 };

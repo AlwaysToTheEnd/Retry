@@ -1,6 +1,9 @@
 #pragma once
-#include <DirectXMath.h>
 #include <foundation/PxMat44.h>
+#include <foundation/PxVec2.h>
+#include <foundation/PxVec3.h>
+#include "InputTextureNameList.h"
+#include <string>
 
 struct ENUM_ELEMENT
 {

@@ -1,40 +1,34 @@
 #include "cCamera.h"
-using namespace DirectX;
+#include "foundation/PxMathUtils.h"
+
+using namespace physx;
 
 cCamera::cCamera()
-	: m_RotX(0)
-	, m_RotY(0)
+	: m_ViewMat(physx::PxIDENTITY::PxIdentity)
+	, m_Rot(PxIdentity)
+	, m_EyePos(PxIdentity)
+	, m_CurrMouse(PxIdentity)
+	, m_PrevMouse(PxIdentity)
 	, m_Distance(100)
-	, m_EyePos(0,0,0)
-	, m_ViewMat(physx::PxIDENTITY::PxIdentity)
+	, m_IsRButtonDown(false)
 {
 }
 
 
 cCamera::~cCamera()
 {
+
 }
 
 void cCamera::Update()
 {
-	XMMATRIX matRot = XMMatrixRotationRollPitchYaw(m_RotX, m_RotY, 0);
-	XMVECTOR eyePos = XMVectorSet(0, 0, -m_Distance, 1);
+	PxVec3 eyePos(0, 0, -m_Distance);
 
-	eyePos = XMVector3TransformNormal(eyePos, matRot);
-	XMVECTOR lookAt = XMVectorZero();
-	XMVECTOR up = { 0,1,0,0 };
+	eyePos = m_Rot.rotate(eyePos);
+	PxVec3 lookAt(PxIdentity);
 
-	//if (m_target)
-	//{
-	//	XMMATRIX targetRotation = XMMatrixRotationQuaternion(XMLoadFloat4(&m_target->GetQuaternionInstance()));
-	//	up = XMVector3TransformNormal(up, targetRotation);
-	//	eyePos = XMVector3TransformNormal(eyePos, targetRotation);
-	//	lookAt = XMLoadFloat3(&m_target->GetWorldPos());
-	//	eyePos = XMLoadFloat3(&m_target->GetWorldPos()) + eyePos;
-	//}
-
-	XMStoreFloat3(&m_EyePos, eyePos);
-	XMStoreFloat4x4(m_ViewMat, XMMatrixLookAtLH(eyePos, lookAt, up));
+	m_ViewMat = PxMat44(PxTransform(eyePos, PxShortestRotation(eyePos, lookAt)));
+	m_EyePos = eyePos;
 }
 
 
@@ -61,13 +55,13 @@ void cCamera::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 		if (m_IsRButtonDown)
 		{
-			m_RotX += (m_CurrMouse.y - m_PrevMouse.y) / 100.0f;
-			m_RotY += (m_CurrMouse.x - m_PrevMouse.x) / 100.0f;
+			PxVec2 movement = m_CurrMouse - m_PrevMouse;
 
-			if (m_RotX >= XM_PI * 0.5f - 0.1f)
-				m_RotX = XM_PI * 0.5f - 0.1f;
-			else if (m_RotX <= -XM_PI * 0.5f + 0.1f)
-				m_RotX = -XM_PI * 0.5f + 0.1f;
+			PxQuat qx(PxPi * movement.x / 100.0f, PxVec3(0, 1, 0));
+			PxQuat qy(PxPi * movement.y / 100.0f, PxVec3(1, 0, 0));
+
+			m_Rot *= qx;
+			m_Rot *= qy;
 
 			m_PrevMouse = m_CurrMouse;
 		}
@@ -81,8 +75,8 @@ void cCamera::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	}
 }
 
-DirectX::XMVECTOR XM_CALLCONV cCamera::GetViewRay(const physx::PxMat44& projectionMat, unsigned int viewPortWidth, unsigned int viewPortHeight) const
+PxVec3 cCamera::GetViewRay(const physx::PxMat44& projectionMat, unsigned int viewPortWidth, unsigned int viewPortHeight) const
 {
-	return XMVectorSet((2.0f * m_CurrMouse.x / viewPortWidth - 1.0f) / projectionMat[0][0],
-		(-2.0f * m_CurrMouse.y / viewPortHeight + 1.0f) / projectionMat[1][1], 1.0f, 0);
+	return PxVec3((2.0f * m_CurrMouse.x / viewPortWidth - 1.0f) / projectionMat[0][0],
+		(-2.0f * m_CurrMouse.y / viewPortHeight + 1.0f) / projectionMat[1][1], 1.0f);
 }

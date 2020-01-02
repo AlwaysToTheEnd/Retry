@@ -42,7 +42,7 @@ void DX12FontManager::Init(ID3D12Device* device, ID3D12CommandQueue* queue,
 	pd.blendDesc = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
 	pd.blendDesc.AlphaToCoverageEnable = true;
 	pd.blendDesc.RenderTarget[0] = transparencyBlendDesc;
-	
+
 	m_SpriteBatch = std::make_unique<SpriteBatch>(device, resourceUpload, pd);
 
 	UINT descriptorSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
@@ -95,15 +95,15 @@ void DX12FontManager::RenderCommandWrite(ID3D12GraphicsCommandList* cmdList,
 
 	for (auto& it : renderFonts)
 	{
-		pos = it.pos;
-		color = it.color;
+		pos = { it.pos.x,it.pos.y,it.pos.z };
+		color = { it.color.x, it.color.y, it.color.z, it.color.w };
 		scale = { 1,1,1 };
 
 		size = m_Fonts[it.fontIndex].MeasureString(it.printString.c_str());
 
 		if (it.fontHeight >= 0)
 		{
-			float scalePer = it.fontHeight/ size.y;
+			float scalePer = it.fontHeight / size.y;
 			scale.x = scalePer;
 			scale.y = scalePer;
 
@@ -113,9 +113,9 @@ void DX12FontManager::RenderCommandWrite(ID3D12GraphicsCommandList* cmdList,
 
 		if (it.drawSize)
 		{
-			*it.drawSize = size;
+			*it.drawSize = { size.x, size.y };
 		}
-		
+
 		switch (it.benchmark)
 		{
 		case RenderFont::FONTBENCHMARK::LEFT:

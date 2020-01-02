@@ -272,7 +272,7 @@ bool PhysX4_1::CheckUIClicked(std::vector<UICollisions>& collisions, GameObject:
 	PxVec2 vec2Pos[4];
 	PxMat44 mat;
 	PxVec2 mousePos;
-	DirectX::XMStoreFloat2(reinterpret_cast<DirectX::XMFLOAT2*>(&mousePos), GETAPP->GetMousePos());
+	mousePos = GETAPP->GetMousePos();
 
 	UICollisions* currUI = nullptr;
 	float lastZ = 1000.0f;

@@ -47,9 +47,9 @@ public:
 	const DirectX::Mouse::ButtonStateTracker* GetMouse(const GameObject* caller);
 	void InputDeviceHoldRequest(const GameObject* caller);
 	void InputDeviceHoldCancle(const GameObject* caller);
-	void GetMouseRay(DirectX::XMFLOAT3& origin, DirectX::XMFLOAT3& ray) const { origin = m_RayOrigin; ray = m_Ray; }
-	DirectX::XMVECTOR XM_CALLCONV GetMousePos() const { return m_Camera.GetMousePos(); }
-	DirectX::XMVECTOR XM_CALLCONV GetClientSize() const { return m_GDevice->GetClientSize(); }
+	void GetMouseRay(physx::PxVec3& origin, physx::PxVec3& ray) const { origin = m_RayOrigin; ray = m_Ray; }
+	physx::PxVec2 GetMousePos() const { return m_Camera.GetMousePos(); }
+	physx::PxVec2 GetClientSize() const { return m_GDevice->GetClientSize(); }
 
 	bool Initialize();
 	int Run();
@@ -71,19 +71,19 @@ private:
 	void BaseUpdate();
 
 protected:
-	static D3DApp*						m_App;
+	static D3DApp*							m_App;
 
-	cCamera								m_Camera;
+	cCamera									m_Camera;
 
-	DirectX::Mouse						m_Mouse;
-	DirectX::Mouse::ButtonStateTracker	m_MouseTracker;
+	DirectX::Mouse							m_Mouse;
+	DirectX::Mouse::ButtonStateTracker		m_MouseTracker;
 
 	DirectX::Keyboard						m_Keyboard;
 	DirectX::Keyboard::KeyboardStateTracker	m_KeyboardTracker;
 	const GameObject*						m_CurrInputDeviceHoldObject;
 
-	DirectX::XMFLOAT3	m_RayOrigin = {};
-	DirectX::XMFLOAT3	m_Ray = {};
+	physx::PxVec3							m_RayOrigin;
+	physx::PxVec3							m_Ray;
 
 	HINSTANCE	m_hAppInst = nullptr;
 	HWND		m_hMainWnd = nullptr;

@@ -1,6 +1,4 @@
 #pragma once
-
-#include <DirectXMath.h>
 #include <string>
 #include <unordered_map>
 #include "BaseClass.h"
@@ -41,13 +39,13 @@ struct RenderMeshInfo
 
 struct RenderPointInfo
 {
-	DirectX::XMFLOAT3 size;
-	DirectX::XMFLOAT4 color;
+	physx::PxVec3 size;
+	physx::PxVec4 color;
 };
 
 struct RenderTexturePointInfo
 {
-	DirectX::XMFLOAT3 size;
+	physx::PxVec3 size;
 };
 
 struct RenderInfo
@@ -95,23 +93,23 @@ struct RenderInfo
 
 struct Material
 {
-	DirectX::XMFLOAT4	diffuseAlbedo = { 1,1,1,1 };
-	DirectX::XMFLOAT3	fresnel0 = { 0.01f,0.01f,0.01f };
-	float		roughness = 0.25f;
+	physx::PxVec4	diffuseAlbedo = { 1,1,1,1 };
+	physx::PxVec3	fresnel0 = { 0.01f,0.01f,0.01f };
+	float			roughness = 0.25f;
 
-	int			diffuseMapIndex = -1;
-	int			normalMapIndex = -1;
-	int			materialPad1;
-	int			materialPad2;
+	int				diffuseMapIndex = -1;
+	int				normalMapIndex = -1;
+	int				materialPad1;
+	int				materialPad2;
 };
 
 struct Light
 {
-	DirectX::XMFLOAT3 strength = { 0.5f,0.5f,0.5f };
+	physx::PxVec3 strength = { 0.5f,0.5f,0.5f };
 	float falloffStart = 1.0f;
-	DirectX::XMFLOAT3 direction = { 0,-1.0f,0 };
+	physx::PxVec3 direction = { 0,-1.0f,0 };
 	float falloffEnd = 10.0f;
-	DirectX::XMFLOAT3 position = { 0,0,0 };
+	physx::PxVec3 position = { 0,0,0 };
 	float spotPower = 64.0f;
 };
 
@@ -125,12 +123,12 @@ struct PassConstants
 	physx::PxMat44 invViewProj;
 	physx::PxMat44 rightViewProj;
 	physx::PxMat44 orthoMatrix;
-	DirectX::XMFLOAT3 eyePosW = { 0.0f, 0.0f, 0.0f };
+	physx::PxVec3 eyePosW = { 0.0f, 0.0f, 0.0f };
 	float cbPerObjectPad1 = 0.0f;
-	DirectX::XMFLOAT2 renderTargetSize = { 0.0f, 0.0f };
-	DirectX::XMFLOAT2 invRenderTargetSize = { 0.0f, 0.0f };
+	physx::PxVec2 renderTargetSize = { 0.0f, 0.0f };
+	physx::PxVec2 invRenderTargetSize = { 0.0f, 0.0f };
 
-	DirectX::XMFLOAT4 ambientLight = { 0.0f, 0.0f, 0.0f, 1.0f };
+	physx::PxVec4 ambientLight = { 0.0f, 0.0f, 0.0f, 1.0f };
 
 	//Light Lights[16];
 };
@@ -182,7 +180,7 @@ struct RenderFont
 	float				rotation = 0;
 	int					fontHeight = -1;
 	FONTBENCHMARK		benchmark;
-	DirectX::XMFLOAT3	pos = { 0, 0, 0 };
-	DirectX::XMFLOAT4	color = { 0,0,0,1 };
-	DirectX::XMFLOAT2*	drawSize = nullptr; //Output: If not nullptr, Get font drawSize from Device 
+	physx::PxVec3		pos = { 0, 0, 0 };
+	physx::PxVec4		color = { 0,0,0,1 };
+	physx::PxVec2*		drawSize = nullptr; //Output: If not nullptr, Get font drawSize from Device 
 };

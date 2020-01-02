@@ -132,9 +132,9 @@ void Ani::SkinnedData::CalLocalTransformFromAnimation(const std::string& clipNam
 
 		if (it.posKeys.size())
 		{
-			XMVECTOR s = GetAnimationKeyOnTick(it.scaleKeys, timePos);
-			XMVECTOR t = GetAnimationKeyOnTick(it.posKeys, timePos);
-			XMVECTOR r = GetAnimationKeyOnTick(it.rotKeys, timePos);
+			XMVECTOR s =  GetAnimationKeyOnTick(reinterpret_cast<const std::vector<TimeValue<DirectX::XMFLOAT3>>&>(it.scaleKeys), timePos);
+			XMVECTOR t = GetAnimationKeyOnTick(reinterpret_cast<const std::vector<TimeValue<DirectX::XMFLOAT3>>&>(it.posKeys), timePos);
+			XMVECTOR r = GetAnimationKeyOnTick(reinterpret_cast<const std::vector<TimeValue<DirectX::XMFLOAT4>>&>(it.rotKeys), timePos);
 
 			mat = XMMatrixAffineTransformation(s, zero, r, t);
 			XMStoreFloat4x4(LocalTransforms[it.localMatIndex], mat);

@@ -1,5 +1,6 @@
 #pragma once
-#include "d3dUtil.h"
+#include <windows.h>
+#include "BaseClass.h"
 #include "IComponentCreater.h"
 #include "Vertex.h"
 
@@ -20,7 +21,7 @@ public:
 	virtual void ReservedWorksClear() = 0;
 	virtual void* GetDevicePtr() = 0;
 	virtual void OnResize() = 0;
-	virtual void GetWorldRay(DirectX::XMFLOAT3& origin, DirectX::XMFLOAT3& ray) const = 0;
+	virtual void GetWorldRay(physx::PxVec3& origin, physx::PxVec3& ray) const = 0;
 	virtual void CreateScene(const CGHScene& scene) = 0;
 
 private:
@@ -36,7 +37,7 @@ private:
 
 public:
 	virtual void SetCamera(cCamera* camera) = 0;
-	DirectX::XMVECTOR XM_CALLCONV GetClientSize() const { return DirectX::XMVectorSet(m_ClientWidth, m_ClientHeight, 0, 0); }
+	physx::PxVec2 GetClientSize() const { return physx::PxVec2(m_ClientWidth, m_ClientHeight); }
 
 public:
 	void SetClientSize(UINT width, UINT height) { m_ClientWidth = width, m_ClientHeight = height; }
@@ -51,8 +52,8 @@ protected:
 	physx::PxMat44		m_ViewMatrix;
 	physx::PxMat44		m_ProjectionMat;
 	physx::PxMat44		m_OrthoProjectionMat;
-	HWND			m_MainWndHandle = nullptr;
-	int				m_ClientWidth = 700;
-	int				m_ClientHeight = 700;
+	HWND				m_MainWndHandle = nullptr;
+	int					m_ClientWidth = 700;
+	int					m_ClientHeight = 700;
 };
 

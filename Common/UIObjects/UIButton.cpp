@@ -6,21 +6,31 @@ void UIButton::Init()
 {
 	m_Trans = AddComponent<ComTransform>();
 	m_Font = AddComponent<ComFont>();
-	m_Render = AddComponent<ComRenderer>();
 	m_UICollision = AddComponent<ComUICollision>();
+
 	m_Font->SetFont(RenderFont::fontNames.front());
+	m_Font->SetBenchmark(RenderFont::FONTBENCHMARK::CENTER);
 }
 
 void UIButton::Update(unsigned long long delta)
 {
-	physx::PxVec3 pos = m_Trans->GetTransform().p;
-	//DirectX::XMFLOAT3 size = m_Render->GetRenderInfo().texPoint.size;
-	m_Font->m_Pos.x = pos.x;
-	m_Font->m_Pos.y = pos.y;
+	m_Font->m_Pos = m_Trans->GetTransform().p;
+
+	m_Font->m_Pos.z -= 0.001f;
+
+	if (m_isOnlyFontMode)
+	{
+		m_UICollision->SetSize({ m_Font->m_DrawSize.x / 2, m_Font->m_DrawSize.y / 2 });
+	}
 }
 
-void UIButton::SetTexture(const std::string& name, const DirectX::XMFLOAT2& halfSize, bool colliderSizeIsEqualTexture)
+void UIButton::SetTexture(const std::string& name, const physx::PxVec2& halfSize, bool colliderSizeIsEqualTexture)
 {
+	if (!m_Render)
+	{
+		m_Render = AddComponent<ComRenderer>();
+	}
+
 	RenderInfo info(RENDER_TYPE::RENDER_UI);
 	info.meshOrTextureName = name;
 	info.texPoint.size = { halfSize.x, halfSize.y, 0.0f };
@@ -30,6 +40,8 @@ void UIButton::SetTexture(const std::string& name, const DirectX::XMFLOAT2& half
 	{
 		m_UICollision->SetSize(halfSize);
 	}
+
+	m_isOnlyFontMode = false;
 }
 
 void UIButton::SetText(const std::wstring& text)
@@ -37,12 +49,23 @@ void UIButton::SetText(const std::wstring& text)
 	m_Font->m_Text = text;
 }
 
+void UIButton::OnlyFontMode()
+{
+	if (m_Render)
+	{
+		DeleteComponent(m_Render);
+	}
+
+	m_Render = nullptr;
+	m_isOnlyFontMode = true;
+}
+
 void UIButton::SetTextHeight(int height)
 {
 	m_Font->m_FontHeight = height;
 }
 
-void UIButton::SetColliderSize(const DirectX::XMFLOAT2& halfSize)
+void UIButton::SetColliderSize(const physx::PxVec2& halfSize)
 {
 	m_UICollision->SetSize(halfSize);
 }

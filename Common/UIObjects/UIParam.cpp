@@ -1,5 +1,6 @@
 #include "UIParam.h"
 #include "UIPanel.h"
+#include "UIButton.h"
 #include "GraphicComponent.h"
 #include "BaseComponent.h"
 #include "d3dApp.h"
@@ -63,7 +64,7 @@ void UIParam::Update(unsigned long long delta)
 		break;
 		case UIParam::UIPARAMTYPE::MODIFIER:
 		{
-			DirectX::XMFLOAT2 fontDrawSize = m_Font->m_DrawSize;
+			physx::PxVec2 fontDrawSize = m_Font->m_DrawSize;
 			m_UICollision->SetSize({ fontDrawSize.x / 2, fontDrawSize.y / 2 });
 			m_UICollision->SetOffset({ fontDrawSize.x / 2, 0 });
 
@@ -207,6 +208,8 @@ void UIParam::ParamController::Update(unsigned long long delta)
 	}
 }
 
+
+
 void UIParam::ParamController::WorkClear()
 {
 	m_InputData.clear();
@@ -215,6 +218,11 @@ void UIParam::ParamController::WorkClear()
 	{
 		m_CurrParam->Selected(false);
 		m_CurrParam = nullptr;
+	}
+
+	if (m_EnumSelectPanel)
+	{
+		m_EnumSelectPanel->UIOff();
 	}
 }
 
@@ -261,8 +269,46 @@ void UIParam::ParamController::SetUIParam(UIParam* uiParam)
 
 			if (m_CurrParam->m_EnumElementInfo)
 			{
-
+				CreateEnumPanel(m_CurrParam);
 			}
 		}
 	}
+}
+
+
+void UIParam::ParamController::CreateEnumPanel(UIParam* param)
+{
+	if (m_EnumSelectPanel == nullptr)
+	{
+		m_EnumSelectPanel = param->CreateGameObject<UIPanel>(true);
+		m_EnumSelectPanel->SetBackGroundTexture(InputTN::Get("UIParamEnumPanel"));
+	}
+
+	m_EnumSelectPanel->DeleteAllComs();
+	m_EnumSelectPanel->UIOn();
+	m_EnumSelectPanel->SetPos(GETAPP->GetMousePos());
+	m_EnumSelectPanel->GetComponent<ComTransform>()->SetPosZ(0.1f);
+
+	const int propertyIntervale = 15;
+	int posY = 10;
+
+	for (auto& it : *param->m_EnumElementInfo)
+	{
+		auto button = m_EnumSelectPanel->CreateGameObject<UIButton>(true);
+		button->SetText(it.elementName);
+		button->SetTextHeight(10);
+		button->OnlyFontMode();
+		button->AddFunc(std::bind(&UIParam::ParamController::SetEnumData, this, it.value));
+
+		m_EnumSelectPanel->AddUICom(60, posY, button);
+		posY += propertyIntervale;
+	}
+
+	m_EnumSelectPanel->SetSize(120, posY + propertyIntervale);
+}
+
+void UIParam::ParamController::SetEnumData(int value)
+{
+	*reinterpret_cast<int*>(m_CurrParam->m_ParamPtr) = value;
+	WorkClear();
 }

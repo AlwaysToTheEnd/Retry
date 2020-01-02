@@ -63,7 +63,7 @@ void UIPanel::DeleteAllComs()
 	m_UIComs.clear();
 }
 
-DirectX::XMFLOAT2 UIPanel::GetPos()
+physx::PxVec2 UIPanel::GetPos()
 {
 	return { m_Trans->GetTransform().p.x,m_Trans->GetTransform().p.y };
 }
@@ -75,7 +75,7 @@ void UIPanel::SetBackGroundTexture(const std::string& name)
 	m_Render->SetRenderInfo(info);
 }
 
-void UIPanel::SetBackGroundColor(DirectX::XMFLOAT4 color)
+void UIPanel::SetBackGroundColor(const physx::PxVec4& color)
 {
 	RenderInfo info = m_Render->GetRenderInfo();
 	info.meshOrTextureName = "";
@@ -102,7 +102,7 @@ void UIPanel::SetName(const std::wstring& name)
 	m_Font->m_Text = name;
 }
 
-void UIPanel::SetPos(DirectX::XMFLOAT2 pos)
+void UIPanel::SetPos(const physx::PxVec2& pos)
 {
 	m_Trans->SetPosX(pos.x);
 	m_Trans->SetPosY(pos.y);
@@ -211,7 +211,7 @@ void UIPanel::UIPanelController::Update(unsigned long long delta)
 
 			if (mouse->leftButton == MOUSEState::RELEASED)
 			{
-				if (m_PressedTime > 200)
+				if (m_PressedTime > 100)
 				{
 					HOLDCANCLE(m_CurrPanel->GetConstructor());
 				}

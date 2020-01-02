@@ -3,6 +3,7 @@
 #include "zlib/zlib.h"
 #include "fast_atof.h"
 #include "ByteSwap.h"
+#include "BaseClass.h"
 #include "AnimationStructs.h"
 
 using namespace Ani;
@@ -891,7 +892,7 @@ void XFileParser::ParseDataObjectAnimationKey(Ani::AnimBone& pAnimBone)
 				ThrowException("Invalid number of arguments for quaternion key in animation");
 			}
 
-			TimeValue<XMFLOAT4> key;
+			TimeValue<physx::PxVec4> key;
 			key.time = time;
 			key.value.w = -ReadFloat();
 			key.value.x = ReadFloat();
@@ -909,7 +910,7 @@ void XFileParser::ParseDataObjectAnimationKey(Ani::AnimBone& pAnimBone)
 			if (ReadInt() != 3)
 				ThrowException("Invalid number of arguments for vector key in animation");
 
-			TimeValue<XMFLOAT3> key;
+			TimeValue<physx::PxVec3> key;
 			key.time = time;
 			key.value = ReadVector3();
 
@@ -1443,9 +1444,9 @@ float XFileParser::ReadFloat()
 	return result;
 }
 
-DirectX::XMFLOAT2 XFileParser::ReadVector2()
+physx::PxVec2 XFileParser::ReadVector2()
 {
-	XMFLOAT2 vector;
+	physx::PxVec2 vector;
 	vector.x = ReadFloat();
 	vector.y = ReadFloat();
 	TestForSeparator();
@@ -1453,9 +1454,9 @@ DirectX::XMFLOAT2 XFileParser::ReadVector2()
 	return vector;
 }
 
-DirectX::XMFLOAT3 XFileParser::ReadVector3()
+physx::PxVec3 XFileParser::ReadVector3()
 {
-	XMFLOAT3 vector;
+	physx::PxVec3 vector;
 	vector.x = ReadFloat();
 	vector.y = ReadFloat();
 	vector.z = ReadFloat();
@@ -1464,9 +1465,9 @@ DirectX::XMFLOAT3 XFileParser::ReadVector3()
 	return vector;
 }
 
-DirectX::XMFLOAT3 XFileParser::ReadRGB()
+physx::PxVec3 XFileParser::ReadRGB()
 {
-	XMFLOAT3 color;
+	physx::PxVec3 color;
 	color.x = ReadFloat();
 	color.y = ReadFloat();
 	color.z = ReadFloat();
@@ -1475,9 +1476,9 @@ DirectX::XMFLOAT3 XFileParser::ReadRGB()
 	return color;
 }
 
-DirectX::XMFLOAT4 XFileParser::ReadRGBA()
+physx::PxVec4 XFileParser::ReadRGBA()
 {
-	XMFLOAT4 color;
+	physx::PxVec4 color;
 	color.x = ReadFloat();
 	color.y = ReadFloat();
 	color.z = ReadFloat();

@@ -28,7 +28,7 @@ struct UICollisions
 {
 	UICollisions(const GameObject* object, 
 		const physx::PxTransform& t, 
-		const DirectX::XMFLOAT2& s,
+		const physx::PxVec2& s,
 		const std::vector<std::function<void()>>& f)
 		:gameObject(object)
 		,transform(t)
@@ -46,8 +46,9 @@ struct UICollisions
 		}
 	}
 
-	physx::PxTransform transform;
-	const DirectX::XMFLOAT2& size;
+	physx::PxTransform		transform;
+	const physx::PxVec2&	size;
+	const GameObject*		gameObject;
+
 	const std::vector<std::function<void()>>& voidFuncs;
-	const GameObject* gameObject;
 };

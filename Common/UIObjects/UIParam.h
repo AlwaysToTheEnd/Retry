@@ -37,6 +37,8 @@ private:
 
 	private:
 		virtual void Update(unsigned long long delta) override;
+		void CreateEnumPanel(UIParam* param);
+		void SetEnumData(int value);
 		void Excute();
 
 	private:

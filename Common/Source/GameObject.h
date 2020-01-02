@@ -5,6 +5,7 @@
 #include <assert.h>
 #include <functional>
 #include <CGHScene.h>
+#include "BaseClass.h"
 
 class GameObject
 {

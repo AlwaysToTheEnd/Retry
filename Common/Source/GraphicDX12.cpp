@@ -252,13 +252,13 @@ void GraphicDX12::OnResize()
 	}
 
 	XMMATRIX P = XMMatrixPerspectiveFovLH(XM_PIDIV4, (float)m_ClientWidth / m_ClientHeight, 1.0f, 1000.0f);
-	XMMATRIX OrthoP = XMMatrixOrthographicOffCenterLH(m_ScissorRect.left, m_ScissorRect.right, 
+	XMMATRIX OrthoP = XMMatrixOrthographicOffCenterLH(m_ScissorRect.left, m_ScissorRect.right,
 		m_ScissorRect.bottom, m_ScissorRect.top, 0, 1.0f);
 	XMStoreFloat4x4(m_ProjectionMat, P);
 	XMStoreFloat4x4(m_OrthoProjectionMat, OrthoP);
 }
 
-void GraphicDX12::GetWorldRay(DirectX::XMFLOAT3& origin, DirectX::XMFLOAT3& ray) const
+void GraphicDX12::GetWorldRay(physx::PxVec3& origin, physx::PxVec3& ray) const
 {
 	origin = m_RayOrigin;
 	ray = m_Ray;
@@ -756,7 +756,7 @@ void GraphicDX12::BuildShadersAndInputLayout()
 
 	m_Shaders["baseVS"] = CompileShader(L"../Common/MainShaders/BaseShader.hlsl", macros, "VS", "vs_5_1");
 	m_Shaders["basePS"] = CompileShader(L"../Common/MainShaders/BaseShader.hlsl", macros, "PS", "ps_5_1");
-	
+
 	m_Shaders["pointVS"] = CompileShader(L"../Common/MainShaders/pointShader.hlsl", macros, "VS", "vs_5_1");
 	m_Shaders["pointPS"] = CompileShader(L"../Common/MainShaders/pointShader.hlsl", macros, "PS", "ps_5_1");
 	m_Shaders["pointGS"] = CompileShader(L"../Common/MainShaders/pointShader.hlsl", macros, "GS", "gs_5_1");
@@ -847,24 +847,23 @@ void GraphicDX12::BuildPSOs()
 
 void GraphicDX12::UpdateMainPassCB()
 {
-	XMMATRIX view = XMLoadFloat4x4(m_ViewMatrix);
-	XMMATRIX proj = XMLoadFloat4x4(m_ProjectionMat);
-	XMMATRIX orthProj = XMLoadFloat4x4(m_OrthoProjectionMat);
+	physx::PxMat44 view = m_ViewMatrix;
+	physx::PxMat44 proj = m_ProjectionMat;
 
-	XMMATRIX viewProj = XMMatrixMultiply(view, proj);
-	XMMATRIX invView = XMMatrixInverse(&XMMatrixDeterminant(view), view);
-	XMMATRIX invProj = XMMatrixInverse(&XMMatrixDeterminant(proj), proj);
-	XMMATRIX invViewProj = XMMatrixInverse(&XMMatrixDeterminant(viewProj), viewProj);
+	physx::PxMat44 viewProj = view * proj;
+	physx::PxMat44 invView = view.inverseRT();
+	physx::PxMat44 invProj = proj.inverseRT();
+	physx::PxMat44 invViewProj = viewProj.inverseRT();
 
-	XMStoreFloat4x4(m_MainPassCB.view, XMMatrixTranspose(view));
-	XMStoreFloat4x4(m_MainPassCB.invView, XMMatrixTranspose(invView));
-	XMStoreFloat4x4(m_MainPassCB.proj, XMMatrixTranspose(proj));
-	XMStoreFloat4x4(m_MainPassCB.invProj, XMMatrixTranspose(invProj));
-	XMStoreFloat4x4(m_MainPassCB.viewProj, XMMatrixTranspose(viewProj));
-	XMStoreFloat4x4(m_MainPassCB.invViewProj, XMMatrixTranspose(invViewProj));
-	XMStoreFloat4x4(m_MainPassCB.orthoMatrix, XMMatrixTranspose(orthProj));
-	m_MainPassCB.renderTargetSize = XMFLOAT2((float)m_ClientWidth, (float)m_ClientHeight);
-	m_MainPassCB.invRenderTargetSize = XMFLOAT2(1.0f / m_ClientWidth, 1.0f / m_ClientHeight);
+	m_MainPassCB.view = view.getTranspose();
+	m_MainPassCB.invView = invView.getTranspose();
+	m_MainPassCB.proj = proj.getTranspose();
+	m_MainPassCB.invProj = invProj.getTranspose();
+	m_MainPassCB.viewProj = viewProj.getTranspose();
+	m_MainPassCB.invViewProj = invViewProj.getTranspose();
+	m_MainPassCB.orthoMatrix = m_OrthoProjectionMat.getTranspose();
+	m_MainPassCB.renderTargetSize = physx::PxVec2((float)m_ClientWidth, (float)m_ClientHeight);
+	m_MainPassCB.invRenderTargetSize = physx::PxVec2(1.0f / m_ClientWidth, 1.0f / m_ClientHeight);
 
 	m_MainPassCB.ambientLight = { 0.25f, 0.25f, 0.35f, 1.0f };
 	//m_MainPassCB.Lights[0].direction = { 0.57735f, -0.57735f, 0.57735f };
@@ -876,19 +875,19 @@ void GraphicDX12::UpdateMainPassCB()
 
 	m_FrameResource->passCB->CopyData(0, m_MainPassCB);
 
-	XMVECTOR rayOrigin = XMVectorSet(0, 0, 0, 1);
-	XMVECTOR ray = XMVectorSet(0, 0, 1, 0);
+	physx::PxVec3 rayOrigin(0, 0, 0);
+	physx::PxVec3 ray(0, 0, 1);
 
 	if (m_CurrCamera)
 	{
 		ray = m_CurrCamera->GetViewRay(m_ProjectionMat, m_ClientWidth, m_ClientHeight);
 	}
 
-	rayOrigin = XMVector3TransformCoord(rayOrigin, invView);
-	ray = XMVector3Normalize(XMVector3TransformNormal(ray, invView));
+	rayOrigin = invView.transform(rayOrigin);
+	ray = invView.transform(ray).getNormalized();
 
-	XMStoreFloat3(&m_RayOrigin, rayOrigin);
-	XMStoreFloat3(&m_Ray, ray);
+	m_RayOrigin = rayOrigin;
+	m_Ray = ray;
 }
 
 void GraphicDX12::UpdateObjectCB()
@@ -964,7 +963,7 @@ void GraphicDX12::UpdateObjectCB()
 			pointCB->CopyData(m_NumRenderPointObjects, &OTObjectConstnat);
 			m_NumRenderPointObjects++;
 		}
-			break;
+		break;
 		default:
 			assert(false);
 			break;

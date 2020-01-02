@@ -67,16 +67,16 @@ public:
 
 	virtual void Update(unsigned long long delta) override;
 
-	void SetSize(const DirectX::XMFLOAT2& halfSize) { m_Size = halfSize; }
-	void SetOffset(const DirectX::XMFLOAT2& offset) { m_Offset = offset; }
-	const DirectX::XMFLOAT2& GetSize() const { return m_Size; }
+	void SetSize(const physx::PxVec2& halfSize) { m_Size = halfSize; }
+	void SetOffset(const physx::PxVec2& offset) { m_Offset = offset; }
+	const physx::PxVec2& GetSize() const { return m_Size; }
 	void AddFunc(std::function<void()> func) { m_VoidFuncs.push_back(func); }
 
 private:
 	std::vector<UICollisions>* const		m_ReservedUICol;
 
-	DirectX::XMFLOAT2						m_Size;
-	DirectX::XMFLOAT2						m_Offset;
+	physx::PxVec2							m_Size;
+	physx::PxVec2							m_Offset;
 	std::vector<std::function<void()>>		m_VoidFuncs;
 };
 
@@ -96,8 +96,8 @@ public:
 	void SetPosX(float x) { m_Transform.p.x = x; }
 	void SetPosY(float y) { m_Transform.p.y = y; }
 	void SetPosZ(float z) { m_Transform.p.z = z; }
-	void AddVector(DirectX::XMFLOAT3 vec) { m_Transform.p.x += vec.x; m_Transform.p.y += vec.y; m_Transform.p.z += vec.z; }
-	void SetPos(DirectX::XMFLOAT3 pos) { m_Transform.p = physx::PxVec3(pos.x, pos.y, pos.z); }
+	void AddVector(physx::PxVec3 vec) { m_Transform.p += vec; }
+	void SetPos(physx::PxVec3 pos) { m_Transform.p = pos; }
 
 	physx::PxMat44 GetMatrix() const { return physx::PxMat44(m_Transform); }
 	const physx::PxTransform& GetTransform() const { return m_Transform; }

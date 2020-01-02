@@ -125,8 +125,7 @@ void ComRenderer::Update(unsigned long long delta)
 
 	assert(comTransform != nullptr);
 
-	DirectX::XMMATRIX mat = DirectX::XMLoadFloat4x4(comTransform->GetMatrix());
-	DirectX::XMStoreFloat4x4(m_RenderInfo.world, DirectX::XMMatrixTranspose(mat));
+	m_RenderInfo.world = comTransform->GetMatrix().getTranspose();
 
 	switch (m_RenderInfo.type)
 	{
