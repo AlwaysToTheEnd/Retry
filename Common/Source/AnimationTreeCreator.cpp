@@ -348,7 +348,7 @@ void AniTreeArowVisual::AniTreeArrowArttributeEditer::CreateAttributePanel()
 	{
 		m_AttributePanel = m_CurrArrow->CreateGameObject<UIPanel>(false);
 
-		m_AttributePanel->SetPos(GETAPP->GetMousePos());
+		m_AttributePanel->SetPos(physx::PxVec2(GETAPP->GetClientSize().x - 230, 200));
 		m_AttributePanel->SetBackGroundTexture(InputTN::Get("AniTreeArrowArttributePanel"));
 	}
 
@@ -378,12 +378,24 @@ void AniTreeArowVisual::AniTreeArrowArttributeEditer::CreateAttributePanel()
 		{static_cast<int>(CGH::DATA_TYPE::TYPE_UINT), L"TYPE_UINT" },
 	};
 
+	const static std::vector<ENUM_ELEMENT> arrowTypeNames =
+	{
+		{static_cast<int>(AniTree::TO_ANI_ARROW_TYPE::TO_ANI_NODE_TYPE_ALL_OK), L"ALL_OK" },
+		{static_cast<int>(AniTree::TO_ANI_ARROW_TYPE::TO_ANI_NODE_TYPE_ONE_OK), L"ONE_OK" },
+	};
+
 	for (auto& it : m_Arrows)
 	{
 		auto endIsParam = m_AttributePanel->CreateGameObject<UIParam>(true, UIParam::UIPARAMTYPE::MODIFIER);
 		endIsParam->SetTargetParam(L"AniEndIsChange", &it.aniEndIsChange);
 		endIsParam->SetTextHeight(m_FontSize);
 		m_AttributePanel->AddUICom(offsetX, posY, endIsParam);
+		posY += m_FontSize + propertyInterval;
+
+		auto arrowTypeParam = m_AttributePanel->CreateGameObject<UIParam>(true, UIParam::UIPARAMTYPE::MODIFIER);
+		arrowTypeParam->SetEnumParam(L"ArrowType", &arrowTypeNames, reinterpret_cast<int*>(&it.type));
+		arrowTypeParam->SetTextHeight(m_FontSize);
+		m_AttributePanel->AddUICom(offsetX, posY, arrowTypeParam);
 		posY += m_FontSize + objectSetInterval;
 
 		for (auto& it2 : it.trigger)
