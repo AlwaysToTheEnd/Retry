@@ -5,7 +5,7 @@
 #include "PxScene.h"
 #include "foundation/PxMat44.h"
 
-void ComRigidDynamic::Update(unsigned long long delta)
+void ComRigidDynamic::Update(float delta)
 {
 	auto transform = m_TargetGameObject.GetComponent<ComTransform>();
 
@@ -15,7 +15,7 @@ void ComRigidDynamic::Update(unsigned long long delta)
 	}
 }
 
-void ComRigidStatic::Update(unsigned long long delta)
+void ComRigidStatic::Update(float delta)
 {
 	auto transform = m_TargetGameObject.GetComponent<ComTransform>();
 
@@ -25,7 +25,7 @@ void ComRigidStatic::Update(unsigned long long delta)
 	}
 }
 
-void ComUICollision::Update(unsigned long long delta)
+void ComUICollision::Update(float delta)
 {
 	auto transform = m_TargetGameObject.GetComponent<ComTransform>();
 

@@ -9,7 +9,7 @@ public:
 	{ }
 
 	virtual void Init() override;
-	virtual bool Update(const DirectX::Mouse::ButtonStateTracker& mouse, unsigned long long delta) override;
+	virtual bool Update(const DirectX::Mouse::ButtonStateTracker& mouse, float delta) override;
 
 private:
 

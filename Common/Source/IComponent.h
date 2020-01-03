@@ -27,7 +27,7 @@ public:
 public:
 	IComponent(COMPONENTTYPE type, GameObject& gameObject, int ID);
 	virtual ~IComponent();
-	virtual void Update(unsigned long long delta) {};
+	virtual void Update(float delta) {};
 
 	COMPONENTTYPE GetType() const { return m_Type; }
 	void SetActive(bool value) { m_IsActive = value; }

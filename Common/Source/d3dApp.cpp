@@ -63,8 +63,6 @@ D3DApp::D3DApp(HINSTANCE hInstance)
 	: m_hAppInst(hInstance)
 	, m_CurrScene(nullptr)
 	, m_CurrInputDeviceHoldObject(nullptr)
-	, m_PrevTick(0)
-	, m_DeltaTick(0)
 {
 	assert(m_App == nullptr);
 	m_App = this;
@@ -86,12 +84,12 @@ void D3DApp::BaseUpdate()
 		m_CurrInputDeviceHoldObject = nullptr;
 	}
 
-	StaticGameObjectController::StaticsUpdate(m_DeltaTick);
-	Update(m_DeltaTick);
+	StaticGameObjectController::StaticsUpdate(m_Timer.DeltaTime());
+	Update(m_Timer.DeltaTime());
 
 	if (m_CurrScene)
 	{
-		if (!m_CurrScene->Update(m_MouseTracker, m_DeltaTick))
+		if (!m_CurrScene->Update(m_MouseTracker, m_Timer.DeltaTime()))
 		{
 			m_CurrInputDeviceHoldObject = nullptr;
 			StaticGameObjectController::WorkAllClear();
@@ -114,11 +112,10 @@ int D3DApp::Run()
 		}
 		else
 		{
-			UINT64 currTick = GetTickCount64();
-			m_DeltaTick = currTick - m_PrevTick;
-			m_PrevTick = currTick;
 			if (!m_AppPaused)
 			{
+				m_Timer.Tick();
+
 				BaseUpdate();
 
 				m_GDevice->Draw();
@@ -148,7 +145,7 @@ bool D3DApp::Initialize()
 
 	InitObjects();
 
-	m_PrevTick = GetTickCount64();
+	m_Timer.Start();
 	return true;
 }
 
@@ -165,10 +162,12 @@ LRESULT D3DApp::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		if (LOWORD(wParam) == WA_INACTIVE)
 		{
 			m_AppPaused = true;
+			m_Timer.Stop();
 		}
 		else
 		{
 			m_AppPaused = false;
+			m_Timer.Start();
 		}
 		return 0;
 

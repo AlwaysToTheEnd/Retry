@@ -142,7 +142,7 @@ void UIPanel::ThisPanalIsStatic()
 	}
 }
 
-void UIPanel::Update(unsigned long long delta)
+void UIPanel::Update(float delta)
 {
 	if (m_Active)
 	{
@@ -180,7 +180,7 @@ void UIPanel::UIPanelController::DeletedPanel(UIPanel* panel)
 	}
 }
 
-void UIPanel::UIPanelController::Update(unsigned long long delta)
+void UIPanel::UIPanelController::Update(float delta)
 {
 	if (m_CurrPanel)
 	{
@@ -211,7 +211,7 @@ void UIPanel::UIPanelController::Update(unsigned long long delta)
 
 			if (mouse->leftButton == MOUSEState::RELEASED)
 			{
-				if (m_PressedTime > 100)
+				if (m_PressedTime > 1.0f)
 				{
 					HOLDCANCLE(m_CurrPanel->GetConstructor());
 				}

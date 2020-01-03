@@ -21,7 +21,7 @@ CGHScene::~CGHScene()
 
 }
 
-bool CGHScene::Update(const DirectX::Mouse::ButtonStateTracker& mouse, unsigned long long delta)
+bool CGHScene::Update(const DirectX::Mouse::ButtonStateTracker& mouse, float delta)
 {
 	bool result = true;
 

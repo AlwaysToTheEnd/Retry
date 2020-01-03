@@ -69,7 +69,7 @@ void StaticGameObjectController::WorkEnd()
 	m_EndList.push_back(this);
 }
 
-void StaticGameObjectController::StaticsUpdate(unsigned long long delta)
+void StaticGameObjectController::StaticsUpdate(float delta)
 {
 	for (auto& it : m_EndList)
 	{

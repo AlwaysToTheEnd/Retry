@@ -23,7 +23,7 @@ void AniNodeVisual::Init()
 
 }
 
-void AniNodeVisual::Update(unsigned long long delta)
+void AniNodeVisual::Update(float delta)
 {
 
 }
@@ -100,7 +100,7 @@ void AniNodeVisual::AnimationTreeArrowCreator::WorkClear()
 	m_CurrFrom = nullptr;
 }
 
-void AniNodeVisual::AnimationTreeArrowCreator::Update(unsigned long long delta)
+void AniNodeVisual::AnimationTreeArrowCreator::Update(float delta)
 {
 	if (m_CurrFrom)
 	{
@@ -153,7 +153,7 @@ void AniTreeArowVisual::Init()
 	m_Transform->SetPosZ(0.4f);
 }
 
-void AniTreeArowVisual::Update(unsigned long long delta)
+void AniTreeArowVisual::Update(float delta)
 {
 	RenderInfo renderInfo(RENDER_UI);
 	physx::PxVec2 from = m_From->GetPos();
@@ -295,7 +295,7 @@ void AniTreeArowVisual::AniTreeArrowArttributeEditer::WorkClear()
 	m_CurrArrow = nullptr;
 }
 
-void AniTreeArowVisual::AniTreeArrowArttributeEditer::Update(unsigned long long delta)
+void AniTreeArowVisual::AniTreeArrowArttributeEditer::Update(float delta)
 {
 	if (!m_CurrArrow)
 	{
@@ -499,7 +499,7 @@ void VisualizedAniTreeCreator::Init()
 	m_WorkPanel->SetPos({ 50,50 });
 }
 
-void VisualizedAniTreeCreator::Update(unsigned long long delta)
+void VisualizedAniTreeCreator::Update(float delta)
 {
 	
 }

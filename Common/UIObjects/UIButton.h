@@ -26,7 +26,7 @@ public:
 
 private:
 	virtual void Init() override;
-	virtual void Update(unsigned long long delta) override;
+	virtual void Update(float delta) override;
 
 private:
 	bool			m_isOnlyFontMode;

@@ -87,7 +87,7 @@ namespace AniTree
 
 		}
 
-		std::string Update(unsigned long long deltaTime);
+		std::string Update(float deltaTime);
 		const std::string& GetAniName() const;
 		const std::string& GetNodeName() const { return m_NodeName; }
 		void SetAniName(const std::string& name) { m_TargetAniName = name; }
@@ -128,7 +128,7 @@ namespace AniTree
 
 		}
 
-		bool Update(unsigned long long deltaTime);
+		bool Update(float deltaTime);
 
 		void GetArrows(std::vector<OutputArrow>& out);
 		bool AddAniNode(const std::string& aniName, unsigned int aniClipEndTime, bool roof);

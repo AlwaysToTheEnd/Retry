@@ -165,6 +165,9 @@
     <ClCompile Include="..\Common\Source\InputTextureNameList.cpp">
       <Filter>Step2</Filter>
     </ClCompile>
+    <ClCompile Include="..\Common\Source\GameTimer.cpp">
+      <Filter>Common\CodeResources\Procedure Class</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Common\Source\d3dApp.h">
@@ -268,6 +271,9 @@
     </ClInclude>
     <ClInclude Include="..\Common\Source\InputTextureNameList.h">
       <Filter>Step2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\GameTimer.h">
+      <Filter>Common\CodeResources\Procedure Class</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

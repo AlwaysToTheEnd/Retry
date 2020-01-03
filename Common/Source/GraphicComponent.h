@@ -27,7 +27,7 @@ public:
 	}
 	virtual ~ComMesh() = default;
 
-	virtual void Update(unsigned long long delta) override {};
+	virtual void Update(float delta) override {};
 
 	static void GetMeshNames(std::vector<std::string>& out);
 	bool SelectMesh(const std::string& name);
@@ -59,7 +59,7 @@ public:
 	}
 	virtual ~ComAnimator() = default;
 
-	virtual void Update(unsigned long long delta) override;
+	virtual void Update(float delta) override;
 
 	static void GetSkinNames(std::vector<std::string>& out);
 	unsigned int GetAniEndTime(const std::string& name) const { return m_CurrSkinnedData->GetClipEndTime(name); }
@@ -100,7 +100,7 @@ public:
 	}
 	virtual ~ComRenderer() = default;
 
-	virtual void Update(unsigned long long delta) override;
+	virtual void Update(float delta) override;
 	void SetRenderInfo(const RenderInfo& info) 
 	{ 
 		m_RenderInfo = info; 
@@ -134,7 +134,7 @@ public:
 	}
 	virtual ~ComFont() = default;
 
-	virtual void Update(unsigned long long delta) override;
+	virtual void Update(float delta) override;
 	void SetFont(std::wstring fontName) { m_FontName = fontName; }
 	void SetBenchmark(RenderFont::FONTBENCHMARK mark) { m_Benchmark = mark; }
 

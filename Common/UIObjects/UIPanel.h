@@ -25,14 +25,14 @@ private:
 
 		virtual void WorkClear() override;
 	private:
-		virtual void Update(unsigned long long delta) override;
+		virtual void Update(float delta) override;
 		void SortPanels(UIPanel* currPanel);
 
 	private:
 		UIPanel*			m_CurrPanel;
 		std::list<UIPanel*>	m_Panels;
 		physx::PxVec2		m_PrevMousePos;
-		unsigned long long	m_PressedTime;
+		float				m_PressedTime;
 
 	} s_PanelController;
 
@@ -90,7 +90,7 @@ public:
 
 private:
 	virtual void Init() override;
-	virtual void Update(unsigned long long delta) override;
+	virtual void Update(float delta) override;
 
 private:
 	bool			m_Active;

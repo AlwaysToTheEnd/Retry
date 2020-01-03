@@ -21,7 +21,7 @@ protected:
 class ComponentUpdater : public InstanceAndIndexManager<IComponent*>
 {
 public:
-	void Update(unsigned long long delta);
+	void Update(float delta);
 	virtual void SignalDeleted(unsigned int id) override;
 };
 

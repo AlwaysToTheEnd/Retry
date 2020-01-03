@@ -6,10 +6,10 @@ void AniTreeScene::Init()
 {
 	auto treeCreater = AddGameObject<VisualizedAniTreeCreator>();
 
-	treeCreater->SelectSkinnedData("zealot.X");
+	treeCreater->SelectSkinnedData("poporiClass03.X");
 }
 
-bool AniTreeScene::Update(const DirectX::Mouse::ButtonStateTracker& mouse, unsigned long long delta)
+bool AniTreeScene::Update(const DirectX::Mouse::ButtonStateTracker& mouse, float delta)
 {
 	return CGHScene::Update(mouse, delta);
 }

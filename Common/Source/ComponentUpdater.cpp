@@ -1,6 +1,6 @@
 #include "ComponentUpdater.h"
 
-void ComponentUpdater::Update(unsigned long long delta)
+void ComponentUpdater::Update(float delta)
 {
 	for (auto& it : m_Datas)
 	{

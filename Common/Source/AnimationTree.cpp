@@ -2,11 +2,11 @@
 
 using namespace AniTree;
 
-std::string AniTree::AniNode::Update(unsigned long long deltaTime)
+std::string AniTree::AniNode::Update(float deltaTime)
 {
 	std::string result = m_NodeName;
 
-	m_CurrTick += deltaTime;
+	m_CurrTick += deltaTime*1000;
 
 	if (m_RoofAni && m_CurrTick > m_AniEndTime)
 	{
@@ -227,7 +227,7 @@ bool AniTree::AniNode::CheckArrowTrigger(NodeArrow& arrow, std::vector<TriggerDa
 	}
 }
 
-bool AniTree::AnimationTree::Update(unsigned long long deltaTime)
+bool AniTree::AnimationTree::Update(float deltaTime)
 {
 	if (m_AniNodes.size())
 	{

@@ -12,7 +12,7 @@ void UIButton::Init()
 	m_Font->SetBenchmark(RenderFont::FONTBENCHMARK::CENTER);
 }
 
-void UIButton::Update(unsigned long long delta)
+void UIButton::Update(float delta)
 {
 	m_Font->m_Pos = m_Trans->GetTransform().p;
 

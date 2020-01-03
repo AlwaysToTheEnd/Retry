@@ -22,7 +22,7 @@ public:
 	}
 	
 protected:
-	virtual void Update(unsigned long long delta) = 0;
+	virtual void Update(float delta) = 0;
 	virtual void WorkClear() = 0;
 	static void WorkALLEnd();
 	static void WorkAllClear();
@@ -30,7 +30,7 @@ protected:
 	void WorkEnd();
 
 private:
-	static void StaticsUpdate(unsigned long long delta);
+	static void StaticsUpdate(float delta);
 
 private:
 	bool	m_isResident;

@@ -19,7 +19,7 @@ public:
 	virtual LRESULT MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) override;
 
 private:
-	virtual void Update(unsigned long long delta) override;
+	virtual void Update(float delta) override;
 	virtual void SelectDevices() override;
 
 private:

@@ -22,7 +22,7 @@ public:
 	virtual ~CGHScene();
 	
 	virtual void Init() = 0;
-	virtual bool Update(const DirectX::Mouse::ButtonStateTracker& mouse, unsigned long long delta);
+	virtual bool Update(const DirectX::Mouse::ButtonStateTracker& mouse, float delta);
 	void DeleteAllObjects() { m_Objects.clear(); m_NumNullptr=0; }
 	void DeleteGameObject(GameObject* object);
 	const std::string& GetSceneName() const { return m_SceneName; }

@@ -36,7 +36,7 @@ private:
 		virtual void WorkClear() override;
 
 	private:
-		virtual void Update(unsigned long long delta) override;
+		virtual void Update(float delta) override;
 		void CreateEnumPanel(UIParam* param);
 		void SetEnumData(int value);
 		void Excute();
@@ -71,7 +71,7 @@ public:
 
 private:
 	virtual void Init() override;
-	virtual void Update(unsigned long long delta) override;
+	virtual void Update(float delta) override;
 	void SetUIParamToController();
 	void Selected(bool value) { m_Selected = value; }
 
