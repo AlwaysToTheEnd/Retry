@@ -19,9 +19,18 @@ void UIParam::Delete()
 
 void UIParam::SetEnumParam(const std::wstring& paramName, const std::vector<ENUM_ELEMENT>* elementInfo, int* data)
 {
+	m_ControlType = UICONTROLTYPE::ENUM_DATA;
 	m_ParamName = paramName;
 	m_ParamPtr = reinterpret_cast<void*>(data);
 	m_EnumElementInfo = elementInfo;
+}
+
+void UIParam::SetStringParam(const std::wstring& paramName, const std::vector<std::string>* strings, std::string* data)
+{
+	m_ControlType = UICONTROLTYPE::STRING_DATA;
+	m_ParamName = paramName;
+	m_ParamPtr = reinterpret_cast<void*>(data);
+	m_Strings = strings;
 }
 
 void UIParam::SetTextHeight(int height)
@@ -97,7 +106,31 @@ std::wstring UIParam::GetDataString()
 {
 	std::wstring result;
 
-	if (m_EnumElementInfo)
+	switch (m_ControlType)
+	{
+	case UIParam::UICONTROLTYPE::ORIGIN_DATA:
+	{
+		switch (m_DataType)
+		{
+		case CGH::DATA_TYPE::TYPE_BOOL:
+			result = *(reinterpret_cast<bool*>(m_ParamPtr)) ? L"true" : L"false";
+			break;
+		case CGH::DATA_TYPE::TYPE_FLOAT:
+			result = GetStringFromValue<float>();
+			break;
+		case CGH::DATA_TYPE::TYPE_INT:
+			result = GetStringFromValue<int>();
+			break;
+		case CGH::DATA_TYPE::TYPE_UINT:
+			result = GetStringFromValue<unsigned int>();
+			break;
+		default:
+			assert(false);
+			break;
+		}
+	}
+		break;
+	case UIParam::UICONTROLTYPE::ENUM_DATA:
 	{
 		int paramValue = *reinterpret_cast<int*>(m_ParamPtr);
 		bool isNotValidValue = true;
@@ -119,26 +152,15 @@ std::wstring UIParam::GetDataString()
 			result = element.elementName + L"(" + std::to_wstring(element.value) + L")";
 		}
 	}
-	else
+		break;
+	case UIParam::UICONTROLTYPE::STRING_DATA:
 	{
-		switch (m_DataType)
-		{
-		case CGH::DATA_TYPE::TYPE_BOOL:
-			result = *(reinterpret_cast<bool*>(m_ParamPtr)) ? L"true" : L"false";
-			break;
-		case CGH::DATA_TYPE::TYPE_FLOAT:
-			result = GetStringFromValue<float>();
-			break;
-		case CGH::DATA_TYPE::TYPE_INT:
-			result = GetStringFromValue<int>();
-			break;
-		case CGH::DATA_TYPE::TYPE_UINT:
-			result = GetStringFromValue<unsigned int>();
-			break;
-		default:
-			assert(false);
-			break;
-		}
+		std::string* targetString = reinterpret_cast<std::string*>(m_ParamPtr);
+		result.insert(result.end(), targetString->begin(), targetString->end());
+	}
+		break;
+	default:
+		break;
 	}
 
 	return result;
@@ -267,21 +289,24 @@ void UIParam::ParamController::SetUIParam(UIParam* uiParam)
 			m_CurrParam->Selected(true);
 			m_InputData.clear();
 
-			if (m_CurrParam->m_EnumElementInfo)
+			switch (m_CurrParam->m_ControlType)
 			{
-				CreateEnumPanel(m_CurrParam);
+			case UIParam::UICONTROLTYPE::ENUM_DATA:
+			case UIParam::UICONTROLTYPE::STRING_DATA:
+				CreateSubPanel(m_CurrParam);
+			break;
 			}
 		}
 	}
 }
 
 
-void UIParam::ParamController::CreateEnumPanel(UIParam* param)
+void UIParam::ParamController::CreateSubPanel(UIParam* param)
 {
 	if (m_EnumSelectPanel == nullptr)
 	{
 		m_EnumSelectPanel = param->CreateGameObject<UIPanel>(true);
-		m_EnumSelectPanel->SetBackGroundTexture(InputTN::Get("UIParamEnumPanel"));
+		m_EnumSelectPanel->SetBackGroundTexture(InputTN::Get("UIParamSubPanel"));
 	}
 
 	m_EnumSelectPanel->DeleteAllComs();
@@ -292,16 +317,40 @@ void UIParam::ParamController::CreateEnumPanel(UIParam* param)
 	const int propertyIntervale = 15;
 	int posY = 10;
 
-	for (auto& it : *param->m_EnumElementInfo)
+	switch (param->m_ControlType)
 	{
-		auto button = m_EnumSelectPanel->CreateGameObject<UIButton>(true);
-		button->SetText(it.elementName);
-		button->SetTextHeight(10);
-		button->OnlyFontMode();
-		button->AddFunc(std::bind(&UIParam::ParamController::SetEnumData, this, it.value));
+	case UIParam::UICONTROLTYPE::ENUM_DATA:
+	{
+		for (auto& it : *param->m_EnumElementInfo)
+		{
+			auto button = m_EnumSelectPanel->CreateGameObject<UIButton>(true);
+			button->SetText(it.elementName);
+			button->SetTextHeight(10);
+			button->OnlyFontMode();
+			button->AddFunc(std::bind(&UIParam::ParamController::SetEnumData, this, it.value));
 
-		m_EnumSelectPanel->AddUICom(60, posY, button);
-		posY += propertyIntervale;
+			m_EnumSelectPanel->AddUICom(60, posY, button);
+			posY += propertyIntervale;
+		}
+	}
+	break;
+	case UIParam::UICONTROLTYPE::STRING_DATA:
+	{
+		for (auto& it : *param->m_Strings)
+		{
+			std::wstring temp;
+			temp.insert(temp.end(), it.begin(), it.end());
+			auto button = m_EnumSelectPanel->CreateGameObject<UIButton>(true);
+			button->SetText(temp);
+			button->SetTextHeight(10);
+			button->OnlyFontMode();
+			button->AddFunc(std::bind(&UIParam::ParamController::SetStringData, this, it));
+
+			m_EnumSelectPanel->AddUICom(60, posY, button);
+			posY += propertyIntervale;
+		}
+	}
+	break;
 	}
 
 	m_EnumSelectPanel->SetSize(120, posY + propertyIntervale);
@@ -310,5 +359,11 @@ void UIParam::ParamController::CreateEnumPanel(UIParam* param)
 void UIParam::ParamController::SetEnumData(int value)
 {
 	*reinterpret_cast<int*>(m_CurrParam->m_ParamPtr) = value;
+	WorkClear();
+}
+
+void UIParam::ParamController::SetStringData(const std::string& str)
+{
+	*reinterpret_cast<std::string*>(m_CurrParam->m_ParamPtr) = str;
 	WorkClear();
 }

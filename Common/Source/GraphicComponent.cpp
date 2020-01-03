@@ -70,16 +70,9 @@ void ComAnimator::GetSkinNames(std::vector<std::string>& out)
 	}
 }
 
-void ComAnimator::SetAnimationTree(bool value)
+void ComAnimator::SetAnimationTree(AniTree::AnimationTree* tree)
 {
-	if (value)
-	{
-		m_AniTree = std::make_unique<AniTree::AnimationTree>();
-	}
-	else
-	{
-		m_AniTree = nullptr;
-	}
+	m_AniTree = tree;
 }
 
 void ComAnimator::GetAniNames(std::vector<std::string>& out) const
@@ -153,7 +146,7 @@ void ComRenderer::RenderMesh()
 	auto comMesh = m_TargetGameObject.GetComponent<ComMesh>();
 	auto comAnimator = m_TargetGameObject.GetComponent<ComAnimator>();
 
-	if (comMesh != nullptr )
+	if (comMesh != nullptr)
 	{
 		m_RenderInfo.meshOrTextureName = comMesh->GetCurrMeshName();
 	}

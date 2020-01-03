@@ -7,6 +7,8 @@
 
 namespace AniTree
 {
+	class AniNode;
+
 	enum CHANGE_CONDITION_TYPE
 	{
 		CHANGE_CONDITION_TYPE_ANI_END,
@@ -47,17 +49,17 @@ namespace AniTree
 
 	struct NodeArrow
 	{
-		NodeArrow(const std::string& toNodeName);
+		NodeArrow(const AniNode*);
 
 		TO_ANI_ARROW_TYPE type;
-		std::string targetNode;
+		const AniNode* targetNode;
 		bool aniEndIsChange;
 		std::vector<TriggerData> triggers;
 	};
 
 	struct OutputArrow
 	{
-		OutputArrow(const std::string& _from, const std::string& _to, 
+		OutputArrow(const AniNode* _from, const AniNode* _to,
 			std::vector<TriggerData>& _trigger, bool& endIsChange, TO_ANI_ARROW_TYPE& _type)
 			:trigger(_trigger)
 			, from(_from)
@@ -70,37 +72,35 @@ namespace AniTree
 
 		bool&						aniEndIsChange;
 		TO_ANI_ARROW_TYPE&			type;
-		std::string					from;
-		std::string					to;
+		const AniNode*				from;
+		const AniNode*				to;
 		std::vector<TriggerData>&	trigger;
 	};
 
 	class AniNode
 	{
 	public:
-		AniNode(const std::string& ani, unsigned int aniClipEndTime, bool roof, unsigned int index)
-			: m_NodeName(ani)
-			, m_Index(index)
-			, m_AniEndTime(aniClipEndTime)
+		AniNode()
+			: m_AniEndTime(0)
 			, m_CurrTick(0)
-			, m_RoofAni(roof)
+			, m_RoofAni(false)
 		{
 
 		}
 
-		std::string Update(float deltaTime);
+		const AniNode* Update(float deltaTime);
 		const std::string& GetAniName() const;
 		const std::string& GetNodeName() const { return m_NodeName; }
-		void SetAniName(const std::string& name) { m_TargetAniName = name; }
+		void SetAniName(const std::string& name, unsigned int aniEndTime) { m_TargetAniName = name; m_AniEndTime = aniEndTime; }
 		unsigned long long GetCurrTick() const { return m_CurrTick; }
 		unsigned long long GetEndTick() const { return m_AniEndTime; }
-		void GetArrows(std::vector<OutputArrow>& out, const std::string& to="");
+		void GetArrows(std::vector<OutputArrow>& out, const AniNode* to=nullptr);
 		const std::vector<NodeArrow>& GetArrows() { return m_Arrows; }
 
-		void AddArrow(const std::string& to);
-		void DeleteArrow(const std::string& to);
-		void DeleteTrigger(const std::string& to, int index);
-		bool AddTrigger(const std::string& to, TO_ANI_ARROW_TYPE arrowType, CHANGE_CONDITION_TYPE type, const TriggerData* trigger);
+		void AddArrow(const AniNode* to);
+		void DeleteArrow(const AniNode* to);
+		void DeleteTrigger(const AniNode* to, int index);
+		bool AddTrigger(const AniNode* to, TO_ANI_ARROW_TYPE arrowType, CHANGE_CONDITION_TYPE type, const TriggerData* trigger);
 
 		void TriggerReset();
 
@@ -112,9 +112,8 @@ namespace AniTree
 			unsigned long long currTick, unsigned long long aniEndTick);
 
 	private:
-		const unsigned int	m_Index;
-		const unsigned int	m_AniEndTime;
-		const std::string	m_NodeName;
+		unsigned int		m_AniEndTime;
+		std::string			m_NodeName;
 		std::string			m_TargetAniName;
 
 		bool					m_RoofAni;
@@ -134,20 +133,17 @@ namespace AniTree
 		bool Update(float deltaTime);
 
 		void GetArrows(std::vector<OutputArrow>& out);
-		bool AddAniNode(const std::string& aniName, unsigned int aniClipEndTime, bool roof);
-		AniNode* GetAniNode(const std::string aniName);
-		bool AddTrigger(const std::string& from, const std::string& to,
-			TO_ANI_ARROW_TYPE arrowType, CHANGE_CONDITION_TYPE type, const TriggerData* trigger);
-		bool AddTrigger(unsigned int from, unsigned int to,
+		AniNode* AddAniNode();
+		bool AddTrigger(AniNode* from, const AniNode* to,
 			TO_ANI_ARROW_TYPE arrowType, CHANGE_CONDITION_TYPE type, const TriggerData* trigger);
 		std::string GetCurrAnimationName() const;
 		unsigned long long GetCurrAnimationTick() const;
-		int GetIndex(const std::string& aniName) const;
-		void DeleteNode(const std::string& nodeName);
+		void DeleteNode(const AniNode* node);
 
 	private:
 		bool CheckArrowTrigger(NodeArrow& arrow, std::vector<TriggerData>& triggers, 
 			unsigned long long currTick, unsigned long long aniEndTick);
+		int GetIndex(const AniNode* node);
 
 	private:
 		unsigned int										m_CurrAniNodeIndex;

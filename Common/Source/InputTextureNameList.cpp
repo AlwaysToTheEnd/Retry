@@ -10,7 +10,7 @@ std::unordered_map<std::string, std::string> InputTN::textures =
 	{"AniTreeArrowArttributePanel",				"ice.dds"},
 	{"AniTreeArrowArttributePanel_AddButton",	"closeButton.png"},
 	{"AniTreeArrowArttributePanel_DeleteButton","closeButton.png"},
-	{"UIParamEnumPanel",						"ice.dds"},
+	{"UIParamSubPanel",							"ice.dds"},
 };
 
 

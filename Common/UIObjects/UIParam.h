@@ -20,6 +20,13 @@ public:
 		MODIFIER,
 	};
 
+	enum class UICONTROLTYPE
+	{
+		ORIGIN_DATA,
+		ENUM_DATA,
+		STRING_DATA
+	};
+
 private:
 	static class ParamController:public StaticGameObjectController
 	{
@@ -37,8 +44,9 @@ private:
 
 	private:
 		virtual void Update(float delta) override;
-		void CreateEnumPanel(UIParam* param);
+		void CreateSubPanel(UIParam* param);
 		void SetEnumData(int value);
+		void SetStringData(const std::string& str);
 		void Excute();
 
 	private:
@@ -52,6 +60,7 @@ public:
 	UIParam(CGHScene& scene, UIPARAMTYPE type)
 		: GameObject(scene)
 		, m_Type(type)
+		, m_ControlType(UICONTROLTYPE::ORIGIN_DATA)
 		, m_Font(nullptr)
 		, m_Trans(nullptr)
 		, m_UICollision(nullptr)
@@ -59,6 +68,7 @@ public:
 		, m_DataType(CGH::DATA_TYPE::TYPE_INT)
 		, m_Selected(false)
 		, m_EnumElementInfo(nullptr)
+		, m_Strings(nullptr)
 	{
 		
 	}
@@ -67,6 +77,7 @@ public:
 
 	template<typename T> void SetTargetParam(const std::wstring& paramName, T* data);
 	void SetEnumParam(const std::wstring& paramName, const std::vector<ENUM_ELEMENT>* elementInfo, int* data);
+	void SetStringParam(const std::wstring& paramName, const std::vector<std::string>* strings, std::string* data);
 	void SetTextHeight(int height);
 
 private:
@@ -79,6 +90,7 @@ private:
 	template<typename T> std::wstring GetStringFromValue();
 private:
 	const UIPARAMTYPE	m_Type;
+	UICONTROLTYPE		m_ControlType;
 	std::wstring		m_ParamName;
 	ComTransform*		m_Trans;
 	ComFont*			m_Font;
@@ -87,7 +99,8 @@ private:
 	CGH::DATA_TYPE		m_DataType;
 	bool				m_Selected;
 
-	const std::vector<ENUM_ELEMENT>* m_EnumElementInfo;
+	const std::vector<ENUM_ELEMENT>*	m_EnumElementInfo;
+	const std::vector<std::string>*		m_Strings;
 };
 
 template<typename T>
@@ -115,6 +128,7 @@ inline void UIParam::SetTargetParam(const std::wstring& paramName, T* data)
 		return;
 	}
 
+	m_ControlType = UICONTROLTYPE::ORIGIN_DATA;
 	m_ParamName = paramName;
 	m_ParamPtr = reinterpret_cast<void*>(data);
 	m_EnumElementInfo = nullptr;

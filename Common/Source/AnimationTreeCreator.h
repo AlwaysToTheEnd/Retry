@@ -53,20 +53,20 @@ public:
 	AniNodeVisual(CGHScene& scene)
 		:GameObject(scene)
 		,m_Panel(nullptr)
-		,m_GetTargetAninodeFunc(nullptr)
+		,m_TargetAniNode(nullptr)
 	{
 
 	}
 	virtual ~AniNodeVisual() = default;
 	virtual void Delete() override;
 
-	void DeleteArrow(const std::string& to);
+	void DeleteArrow(const AniNodeVisual* to);
 	void ArrowVisualDeleted(AniTreeArowVisual* arrow);
-	void SetTargetAninodeFunc(std::function<AniTree::AniNode*(void)> func);
+	void SetTargetAninode(AniTree::AniNode* node);
 	void SetDeleteAniNodeFunc(std::function<void()> func);
 
-	AniTree::AniNode*		GetNode() { return m_GetTargetAninodeFunc(); }
-	const std::string&		GetNodeName() const { return m_GetTargetAninodeFunc()->GetNodeName(); }
+	AniTree::AniNode*		GetNode() { return m_TargetAniNode; }
+	const std::string&		GetNodeName() const { return m_TargetAniNode->GetNodeName(); }
 	physx::PxVec2			GetPos() const;
 	const physx::PxVec3&	GetSize() const;
 
@@ -81,7 +81,7 @@ private:
 private:
 	std::vector<AniTreeArowVisual*>			m_Arrows;
 	UIPanel*								m_Panel;
-	std::function<AniTree::AniNode*(void)>	m_GetTargetAninodeFunc;
+	AniTree::AniNode*						m_TargetAniNode;
 	std::function<void()>					m_DeleteAninodeFunc;
 };
 
@@ -137,7 +137,7 @@ public:
 	void SetFromNode(AniNodeVisual* from) { m_From = from; }
 	void SetToNode(AniNodeVisual* to);
 	void SetCurrMousePos(const physx::PxVec2& pos) { m_MousePos = pos; }
-	const AniNodeVisual* GetToNode() const { return m_To; }
+	const AniNodeVisual* GetToNodeV() const { return m_To; }
 
 private:
 	virtual void Init() override;
@@ -170,15 +170,19 @@ public:
 private:
 	virtual void Init() override;
 	virtual void Update(float delta) override;
-	void AddNode(int aniIndex);
-	void DeleteNode(std::string nodeName);
+	void AddNode();
+	void DeleteNode(AniNodeVisual* node);
 
 private:
-	AniTree::AnimationTree*					m_Tree;
+	std::unique_ptr<AniTree::AnimationTree>	m_Tree;
 	UIPanel*								m_WorkPanel;
 	ComAnimator*							m_Animator;
 	ComRenderer*							m_Renderer;
 	const Ani::SkinnedData*					m_CurrSkin;
+	std::vector<std::string>				m_SkinNames;
+
 	std::vector<std::string>				m_AniNames;
+	std::vector<unsigned int>				m_AniEndTimes;
+
 	std::list<AniNodeVisual*>				m_AniNodeVs;
 };
