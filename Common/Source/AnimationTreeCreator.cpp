@@ -15,17 +15,18 @@ void AniNodeVisual::Init()
 	m_Panel = CreateGameObject<UIPanel>(true);
 	m_Panel->GetComponent<ComUICollision>()->AddFunc(
 		std::bind(&AniNodeVisual::AnimationTreeArrowCreator::Excute, &s_AnitreeArrowCreater, this));
-
-#pragma region AddPanel
-	{
-	}
-#pragma endregion
-
 }
 
 void AniNodeVisual::Update(float delta)
 {
 
+}
+
+void AniNodeVisual::ChangeAniRoof(AniTree::AniNode* node, UIButton* button)
+{
+	node->SetRoofAni(!node->IsRoofAni());
+
+	button->SetText(L"AniRoof : " + std::wstring(node->IsRoofAni() ? L"true" : L"false"));
 }
 
 void AniNodeVisual::Delete()
@@ -38,7 +39,21 @@ void AniNodeVisual::Delete()
 	}
 
 	m_Panel->Delete();
+
+	m_DeleteAninodeFunc();
 	GameObject::Delete();
+}
+
+void AniNodeVisual::DeleteArrow(const std::string& to)
+{
+	for (auto& it : m_Arrows)
+	{
+		if (it->GetToNode()->GetNodeName() == to)
+		{
+			it->Delete();
+			break;
+		}
+	}
 }
 
 void AniNodeVisual::ArrowVisualDeleted(AniTreeArowVisual* arrow)
@@ -57,13 +72,38 @@ void AniNodeVisual::SetTargetAninodeFunc(std::function<AniTree::AniNode * (void)
 {
 	m_GetTargetAninodeFunc = func;
 
-	auto nodeName = func()->GetNodeName();
+	AniNode* currNode = func();
+	auto nodeName = currNode->GetNodeName();
 	auto nameFont = m_Panel->GetComponent<ComFont>();
-	m_Panel->SetSize(100, 60);
 	m_Panel->SetBackGroundTexture(InputTN::Get("AniNodeVisualPanel"));
+	m_Panel->SetSize(100, 60);
+	m_Panel->SetPos({ 300,300 });
+
+#pragma region AddPanel
+	{
+		m_Panel->DeleteAllComs();
+
+		auto closeButton = m_Panel->CreateGameObject<UIButton>(true);
+		closeButton->AddFunc(std::bind(&AniNodeVisual::Delete, this));
+		closeButton->SetTexture(InputTN::Get("AniNodeVisualPanel_Delete"), { 10,10 });
+		m_Panel->AddUICom(m_Panel->GetSize().x - 10, 10, closeButton);
+
+		auto roofControlButton = m_Panel->CreateGameObject<UIButton>(true);
+		roofControlButton->OnlyFontMode();
+		roofControlButton->SetTextHeight(15);
+		roofControlButton->SetText(L"AniRoof:" + std::wstring(currNode->IsRoofAni() ? L"true" : L"false"));
+		roofControlButton->AddFunc(std::bind(&AniNodeVisual::ChangeAniRoof, this, currNode, roofControlButton));
+		m_Panel->AddUICom(m_Panel->GetSize().x / 2, m_Panel->GetSize().y / 2, roofControlButton);
+	}
+#pragma endregion
 
 	nameFont->m_Text.clear();
 	nameFont->m_Text.insert(nameFont->m_Text.end(), nodeName.begin(), nodeName.end());
+}
+
+void AniNodeVisual::SetDeleteAniNodeFunc(std::function<void()> func)
+{
+	m_DeleteAninodeFunc = func;
 }
 
 physx::PxVec2 AniNodeVisual::GetPos() const
@@ -71,11 +111,6 @@ physx::PxVec2 AniNodeVisual::GetPos() const
 	auto p = m_Panel->GetComponent<ComTransform>()->GetTransform().p;
 
 	return { p.x, p.y };
-}
-
-void AniNodeVisual::SetPos(const physx::PxVec2& pos)
-{
-	m_Panel->SetPos(pos);
 }
 
 const physx::PxVec3& AniNodeVisual::GetSize() const
@@ -248,9 +283,11 @@ void AniTreeArowVisual::Delete()
 		if (m_To)
 		{
 			m_From->GetNode()->DeleteArrow(m_To->GetNodeName());
+			m_To = nullptr;
 		}
 
 		m_From->ArrowVisualDeleted(this);
+		m_From = nullptr;
 	}
 
 	GameObject::Delete();
@@ -358,9 +395,9 @@ void AniTreeArowVisual::AniTreeArrowArttributeEditer::CreateAttributePanel()
 			m_AttributePanel->AddUICom(offsetX, posY, funcParam);
 			posY += m_FontSize + propertyInterval;
 
-			auto triggerType= m_AttributePanel->CreateGameObject<UIParam>(true, UIParam::UIPARAMTYPE::MODIFIER);
+			auto triggerType = m_AttributePanel->CreateGameObject<UIParam>(true, UIParam::UIPARAMTYPE::MODIFIER);
 			triggerType->SetTextHeight(m_FontSize);
-			triggerType->SetEnumParam(L"DataType", &dataTypeNames,reinterpret_cast<int*>(&it2.m_Standard.type));
+			triggerType->SetEnumParam(L"DataType", &dataTypeNames, reinterpret_cast<int*>(&it2.m_Standard.type));
 			m_AttributePanel->AddUICom(offsetX, posY, triggerType);
 			posY += m_FontSize + propertyInterval;
 
@@ -501,7 +538,7 @@ void VisualizedAniTreeCreator::Init()
 
 void VisualizedAniTreeCreator::Update(float delta)
 {
-	
+
 }
 
 void VisualizedAniTreeCreator::AddNode(int aniIndex)
@@ -512,6 +549,27 @@ void VisualizedAniTreeCreator::AddNode(int aniIndex)
 		auto newNode = CreateGameObject<AniNodeVisual>(true);
 
 		newNode->SetTargetAninodeFunc(std::bind(&AnimationTree::GetAniNode, m_Tree, m_AniNames[aniIndex]));
-		newNode->SetPos({ 300,100 });
+		newNode->SetDeleteAniNodeFunc(std::bind(&VisualizedAniTreeCreator::DeleteNode, this, m_AniNames[aniIndex]));
+
+		m_AniNodeVs.push_back(newNode);
 	}
+}
+
+void VisualizedAniTreeCreator::DeleteNode(std::string nodeName)
+{
+	for (auto& it : m_AniNodeVs)
+	{
+		it->DeleteArrow(nodeName);
+	}
+
+	for (auto iter = m_AniNodeVs.begin(); iter != m_AniNodeVs.end(); iter++)
+	{
+		if ((*iter)->GetNodeName() == nodeName)
+		{
+			m_AniNodeVs.erase(iter);
+			break;
+		}
+	}
+
+	m_Tree->DeleteNode(nodeName);
 }

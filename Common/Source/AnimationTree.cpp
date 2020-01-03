@@ -15,9 +15,6 @@ std::string AniTree::AniNode::Update(float deltaTime)
 
 	for (auto& it : m_Arrows)
 	{
-		assert((m_RoofAni ? !(it.aniEndIsChange) : true)
-			&& "if this animation is roof animation, don't have CHANGE_CONDITION_TYPE_ANI_END");
-
 		if (CheckArrowTrigger(it, it.triggers, m_CurrTick, m_AniEndTime))
 		{
 			m_CurrTick = 0;
@@ -231,16 +228,16 @@ bool AniTree::AnimationTree::Update(float deltaTime)
 {
 	if (m_AniNodes.size())
 	{
-		std::string result = m_AniNodes[m_CurrAniNodeIndex].Update(deltaTime);
+		std::string result = m_AniNodes[m_CurrAniNodeIndex]->Update(deltaTime);
 
-		if (result != m_AniNodes[m_CurrAniNodeIndex].GetNodeName())
+		if (result != m_AniNodes[m_CurrAniNodeIndex]->GetNodeName())
 		{
 			m_CurrAniNodeIndex = GetIndex(result);
 		}
 
 		for (auto& it : m_AniNodes)
 		{
-			it.TriggerReset();
+			it->TriggerReset();
 		}
 
 		return true;
@@ -255,7 +252,7 @@ void AniTree::AnimationTree::GetArrows(std::vector<OutputArrow>& out)
 
 	for (size_t nodeIndex = 0; nodeIndex < m_AniNodes.size(); nodeIndex++)
 	{
-		m_AniNodes[nodeIndex].GetArrows(out);
+		m_AniNodes[nodeIndex]->GetArrows(out);
 	}
 }
 
@@ -266,7 +263,7 @@ bool AniTree::AnimationTree::AddAniNode(const std::string& aniName, unsigned int
 		return false;
 	}
 
-	m_AniNodes.emplace_back(aniName, aniClipEndTime, roof, m_AniNodes.size());
+	m_AniNodes.push_back(std::make_unique<AniNode>(aniName, aniClipEndTime, roof, m_AniNodes.size()));
 	return true;
 }
 
@@ -274,9 +271,9 @@ AniNode* AniTree::AnimationTree::GetAniNode(const std::string aniName)
 {
 	for (auto& it : m_AniNodes)
 	{
-		if (it.GetAniName() == aniName)
+		if (it->GetAniName() == aniName)
 		{
-			return &it;
+			return it.get();
 		}
 	}
 
@@ -292,7 +289,7 @@ bool AniTree::AnimationTree::AddTrigger(const std::string& from, const std::stri
 
 	if (fromNode > -1 && GetIndex(to) > -1)
 	{
-		result = m_AniNodes[fromNode].AddTrigger(to, arrowType, type, trigger);
+		result = m_AniNodes[fromNode]->AddTrigger(to, arrowType, type, trigger);
 	}
 
 	return result;
@@ -304,7 +301,7 @@ bool AniTree::AnimationTree::AddTrigger(unsigned int from, unsigned int to, TO_A
 
 	if (from > -1 && to > -1 && from != to)
 	{
-		result = m_AniNodes[from].AddTrigger(m_AniNodes[to].GetNodeName(), arrowType, type, trigger);
+		result = m_AniNodes[from]->AddTrigger(m_AniNodes[to]->GetNodeName(), arrowType, type, trigger);
 	}
 
 	return result;
@@ -314,7 +311,7 @@ std::string AniTree::AnimationTree::GetCurrAnimationName() const
 {
 	if (m_AniNodes.size())
 	{
-		return m_AniNodes[m_CurrAniNodeIndex].GetAniName();
+		return m_AniNodes[m_CurrAniNodeIndex]->GetAniName();
 	}
 
 	return "";
@@ -326,7 +323,7 @@ unsigned long long AniTree::AnimationTree::GetCurrAnimationTick() const
 
 	if (m_AniNodes.size())
 	{
-		result = m_AniNodes[m_CurrAniNodeIndex].GetCurrTick();
+		result = m_AniNodes[m_CurrAniNodeIndex]->GetCurrTick();
 	}
 
 	return result;
@@ -337,7 +334,7 @@ int AniTree::AnimationTree::GetIndex(const std::string& aniName) const
 	int index = 0;
 	for (auto& it : m_AniNodes)
 	{
-		if (it.GetAniName() == aniName)
+		if (it->GetAniName() == aniName)
 		{
 			return index;
 		}
@@ -347,6 +344,18 @@ int AniTree::AnimationTree::GetIndex(const std::string& aniName) const
 
 	index = -1;
 	return index;
+}
+
+void AniTree::AnimationTree::DeleteNode(const std::string& nodeName)
+{
+	for (auto iter = m_AniNodes.begin(); iter != m_AniNodes.end(); iter++)
+	{
+		if (nodeName== (*iter)->GetNodeName())
+		{
+			m_AniNodes.erase(iter);
+			break;
+		}
+	}
 }
 
 bool AniTree::AnimationTree::CheckArrowTrigger(NodeArrow& arrow, std::vector<TriggerData>& triggers,

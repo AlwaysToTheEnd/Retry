@@ -211,7 +211,7 @@ void UIPanel::UIPanelController::Update(float delta)
 
 			if (mouse->leftButton == MOUSEState::RELEASED)
 			{
-				if (m_PressedTime > 1.0f)
+				if (m_PressedTime > 0.1f)
 				{
 					HOLDCANCLE(m_CurrPanel->GetConstructor());
 				}

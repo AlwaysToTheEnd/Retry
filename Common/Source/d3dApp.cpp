@@ -99,9 +99,37 @@ void D3DApp::BaseUpdate()
 	m_GDevice->GetWorldRay(m_RayOrigin, m_Ray);
 }
 
+void D3DApp::CalculateFrame()
+{
+	static int frameCnt = 0;
+	static float timeElapsed = 0.0f;
+
+	frameCnt++;
+
+	if ((m_Timer.TotalTime() - timeElapsed) >= 1.0f)
+	{
+		float fps = (float)frameCnt; 
+		float mspf = 1000.0f / fps;
+
+		wstring fpsStr = to_wstring(fps);
+		wstring mspfStr = to_wstring(mspf);
+
+		wstring windowText = wstring(L"누가죽나 해보자") +
+			L"    fps: " + fpsStr +
+			L"   mspf: " + mspfStr;
+
+		SetWindowText(m_hMainWnd, windowText.c_str());
+
+		frameCnt = 0;
+		timeElapsed += 1.0f;
+	}
+}
+
 int D3DApp::Run()
 {
 	MSG msg = {};
+
+	m_Timer.Reset();
 
 	while (msg.message != WM_QUIT)
 	{
@@ -112,10 +140,11 @@ int D3DApp::Run()
 		}
 		else
 		{
+			m_Timer.Tick();
+
 			if (!m_AppPaused)
 			{
-				m_Timer.Tick();
-
+				CalculateFrame();
 				BaseUpdate();
 
 				m_GDevice->Draw();
@@ -225,11 +254,14 @@ LRESULT D3DApp::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	case WM_ENTERSIZEMOVE:
 		m_AppPaused = true;
 		m_Resizing = true;
+		m_Timer.Stop();
 		return 0;
 
 	case WM_EXITSIZEMOVE:
 		m_AppPaused = false;
 		m_Resizing = false;
+		m_Timer.Start();
+		m_GDevice->OnResize();
 		return 0;
 
 	case WM_DESTROY:
@@ -273,7 +305,7 @@ bool D3DApp::InitMainWindow()
 	int width = R.right - R.left;
 	int height = R.bottom - R.top;
 
-	m_hMainWnd = CreateWindow(L"MainWnd", L"Test",
+	m_hMainWnd = CreateWindow(L"MainWnd", L"Created",
 		WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, width, height, 0, 0, m_hAppInst, 0);
 	if (!m_hMainWnd)
 	{

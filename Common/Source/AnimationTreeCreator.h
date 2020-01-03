@@ -1,5 +1,6 @@
 #pragma once
 #include "GameObject.h"
+#include <list>
 #include <Keyboard.h>
 #include "AnimationTree.h"
 #include "StaticObject.h"
@@ -8,6 +9,7 @@
 class ComAnimator;
 class UIPanel;
 class UIParam;
+class UIButton;
 class AniTreeArowVisual;
 class ComRenderer;
 class ComUICollision;
@@ -39,6 +41,7 @@ class AniNodeVisual :public GameObject
 		virtual void WorkClear() override;
 		virtual void Update(float delta) override;
 
+
 	private:
 		AniNodeVisual*		m_CurrFrom;
 		AniTreeArowVisual*	m_CurrArrow;
@@ -57,9 +60,10 @@ public:
 	virtual ~AniNodeVisual() = default;
 	virtual void Delete() override;
 
+	void DeleteArrow(const std::string& to);
 	void ArrowVisualDeleted(AniTreeArowVisual* arrow);
 	void SetTargetAninodeFunc(std::function<AniTree::AniNode*(void)> func);
-	void SetPos(const physx::PxVec2& pos);
+	void SetDeleteAniNodeFunc(std::function<void()> func);
 
 	AniTree::AniNode*		GetNode() { return m_GetTargetAninodeFunc(); }
 	const std::string&		GetNodeName() const { return m_GetTargetAninodeFunc()->GetNodeName(); }
@@ -69,14 +73,16 @@ public:
 private:
 	virtual void Init() override;
 	virtual void Update(float delta) override;
+	void ChangeAniRoof(AniTree::AniNode* node, UIButton* button);
 
 private:
 	void AddArrow(AniTreeArowVisual* arrow);
 
 private:
-	std::vector<AniTreeArowVisual*>	m_Arrows;
-	UIPanel*						m_Panel;
-	std::function<AniTree::AniNode*(void)> m_GetTargetAninodeFunc;
+	std::vector<AniTreeArowVisual*>			m_Arrows;
+	UIPanel*								m_Panel;
+	std::function<AniTree::AniNode*(void)>	m_GetTargetAninodeFunc;
+	std::function<void()>					m_DeleteAninodeFunc;
 };
 
 class AniTreeArowVisual :public GameObject
@@ -165,6 +171,7 @@ private:
 	virtual void Init() override;
 	virtual void Update(float delta) override;
 	void AddNode(int aniIndex);
+	void DeleteNode(std::string nodeName);
 
 private:
 	AniTree::AnimationTree*					m_Tree;
@@ -173,4 +180,5 @@ private:
 	ComRenderer*							m_Renderer;
 	const Ani::SkinnedData*					m_CurrSkin;
 	std::vector<std::string>				m_AniNames;
+	std::list<AniNodeVisual*>				m_AniNodeVs;
 };

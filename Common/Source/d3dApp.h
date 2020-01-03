@@ -70,6 +70,7 @@ protected:
 	void SetCurrScene(CGHScene* scene) { m_CurrScene = scene; }
 private:
 	void BaseUpdate();
+	void CalculateFrame();
 
 protected:
 	static D3DApp*							m_App;

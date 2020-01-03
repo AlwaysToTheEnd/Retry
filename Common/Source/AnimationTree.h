@@ -2,6 +2,7 @@
 #include <string>
 #include <vector>
 #include <assert.h>
+#include <memory>
 #include "BaseClass.h"
 
 namespace AniTree
@@ -102,7 +103,9 @@ namespace AniTree
 		bool AddTrigger(const std::string& to, TO_ANI_ARROW_TYPE arrowType, CHANGE_CONDITION_TYPE type, const TriggerData* trigger);
 
 		void TriggerReset();
+
 		bool IsRoofAni() const { return m_RoofAni; }
+		void SetRoofAni(bool value) { m_RoofAni = value; }
 
 	private:
 		bool CheckArrowTrigger(NodeArrow& arrow, std::vector<TriggerData>& triggers,
@@ -140,6 +143,7 @@ namespace AniTree
 		std::string GetCurrAnimationName() const;
 		unsigned long long GetCurrAnimationTick() const;
 		int GetIndex(const std::string& aniName) const;
+		void DeleteNode(const std::string& nodeName);
 
 	private:
 		bool CheckArrowTrigger(NodeArrow& arrow, std::vector<TriggerData>& triggers, 
@@ -147,7 +151,7 @@ namespace AniTree
 
 	private:
 		unsigned int										m_CurrAniNodeIndex;
-		std::vector<AniNode>								m_AniNodes;
+		std::vector<std::unique_ptr<AniNode>>				m_AniNodes;
 	};
 
 
