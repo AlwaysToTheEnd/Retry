@@ -79,6 +79,7 @@ public:
 	void SetEnumParam(const std::wstring& paramName, const std::vector<ENUM_ELEMENT>* elementInfo, int* data);
 	void SetStringParam(const std::wstring& paramName, const std::vector<std::string>* strings, std::string* data);
 	void SetTextHeight(int height);
+	void SetDirtyCall(std::function<void()> dirtyCall);
 
 private:
 	virtual void Init() override;
@@ -101,6 +102,7 @@ private:
 
 	const std::vector<ENUM_ELEMENT>*	m_EnumElementInfo;
 	const std::vector<std::string>*		m_Strings;
+	std::function<void()>				m_DirtyCall;
 };
 
 template<typename T>
@@ -132,6 +134,7 @@ inline void UIParam::SetTargetParam(const std::wstring& paramName, T* data)
 	m_ParamName = paramName;
 	m_ParamPtr = reinterpret_cast<void*>(data);
 	m_EnumElementInfo = nullptr;
+	m_DirtyCall = nullptr;
 }
 
 template<typename T>

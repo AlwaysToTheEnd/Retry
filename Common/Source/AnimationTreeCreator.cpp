@@ -29,6 +29,21 @@ void AniNodeVisual::ChangeAniRoof(AniTree::AniNode* node, UIButton* button)
 	button->SetText(L"AniRoof : " + std::wstring(node->IsRoofAni() ? L"true" : L"false"));
 }
 
+void AniNodeVisual::ChangedTargetAni()
+{
+	if (m_CurrAniName.size())
+	{
+		for (size_t i = 0; i < m_CurrSkinAnimationNames->size(); i++)
+		{
+			if ((*m_CurrSkinAnimationNames)[i] == m_CurrAniName)
+			{
+				m_TargetAniNode->SetAniName(m_CurrAniName, (*m_CurrSkinAnimationEndTick)[i]);
+				break;
+			}
+		}
+	}
+}
+
 void AniNodeVisual::Delete()
 {
 	std::vector<AniTreeArowVisual*>	temp = m_Arrows;
@@ -80,6 +95,7 @@ void AniNodeVisual::SetTargetAninode(AniNode* node)
 
 #pragma region AddPanel
 	{
+		const int ElementSize = 15;
 		m_Panel->DeleteAllComs();
 
 		auto closeButton = m_Panel->CreateGameObject<UIButton>(true);
@@ -89,10 +105,17 @@ void AniNodeVisual::SetTargetAninode(AniNode* node)
 
 		auto roofControlButton = m_Panel->CreateGameObject<UIButton>(true);
 		roofControlButton->OnlyFontMode();
-		roofControlButton->SetTextHeight(15);
+		roofControlButton->SetTextHeight(ElementSize);
 		roofControlButton->SetText(L"AniRoof:" + std::wstring(m_TargetAniNode->IsRoofAni() ? L"true" : L"false"));
 		roofControlButton->AddFunc(std::bind(&AniNodeVisual::ChangeAniRoof, this, m_TargetAniNode, roofControlButton));
 		m_Panel->AddUICom(m_Panel->GetSize().x / 2, m_Panel->GetSize().y / 2, roofControlButton);
+
+		auto aniNameParam= m_Panel->CreateGameObject<UIParam>(true, UIParam::UIPARAMTYPE::MODIFIER);
+		aniNameParam->SetStringParam(L"Animation", m_CurrSkinAnimationNames, &m_CurrAniName);
+		aniNameParam->SetDirtyCall(std::bind(&AniNodeVisual::ChangedTargetAni, this));
+		aniNameParam->SetTextHeight(ElementSize);
+
+		m_Panel->AddUICom(0, 8, aniNameParam);
 	}
 #pragma endregion
 
@@ -103,6 +126,12 @@ void AniNodeVisual::SetTargetAninode(AniNode* node)
 void AniNodeVisual::SetDeleteAniNodeFunc(std::function<void()> func)
 {
 	m_DeleteAninodeFunc = func;
+}
+
+void AniNodeVisual::SetSkinAnimationInfoVectorPtr(const std::vector<std::string>* aniNames,const std::vector<unsigned int>* aniEnds)
+{
+	m_CurrSkinAnimationNames = aniNames;
+	m_CurrSkinAnimationEndTick = aniEnds;
 }
 
 physx::PxVec2 AniNodeVisual::GetPos() const
@@ -505,6 +534,7 @@ void VisualizedAniTreeCreator::SelectSkinnedData(const std::string& name)
 	for (auto& it : m_AniNodeVs)
 	{
 		it->GetNode()->SetAniName("", 0);
+		it->AniNameReset();
 	}
 
 	m_AniEndTimes.clear();
@@ -558,7 +588,7 @@ void VisualizedAniTreeCreator::Init()
 		skinbutton->SetTextHeight(15);
 		skinbutton->AddFunc(std::bind(&VisualizedAniTreeCreator::SelectSkinnedData, this, it));
 		m_WorkPanel->AddUICom(50, posY, skinbutton);
-		posY + 20;
+		posY += 20;
 	}
 
 	m_WorkPanel->SetSize(100, posY);
@@ -574,6 +604,7 @@ void VisualizedAniTreeCreator::AddNode()
 	if (auto targetNode = m_Tree->AddAniNode())
 	{
 		auto newNode = CreateGameObject<AniNodeVisual>(true);
+		newNode->SetSkinAnimationInfoVectorPtr(&m_AniNames, &m_AniEndTimes);
 
 		newNode->SetTargetAninode(targetNode);
 		newNode->SetDeleteAniNodeFunc(std::bind(&VisualizedAniTreeCreator::DeleteNode, this, newNode));

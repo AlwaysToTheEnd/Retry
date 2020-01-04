@@ -52,8 +52,10 @@ class AniNodeVisual :public GameObject
 public:
 	AniNodeVisual(CGHScene& scene)
 		:GameObject(scene)
-		,m_Panel(nullptr)
-		,m_TargetAniNode(nullptr)
+		, m_CurrSkinAnimationNames(nullptr)
+		, m_CurrSkinAnimationEndTick(nullptr)
+		, m_Panel(nullptr)
+		, m_TargetAniNode(nullptr)
 	{
 
 	}
@@ -61,9 +63,12 @@ public:
 	virtual void Delete() override;
 
 	void DeleteArrow(const AniNodeVisual* to);
+	void AniNameReset() { m_CurrAniName.clear(); }
+
 	void ArrowVisualDeleted(AniTreeArowVisual* arrow);
 	void SetTargetAninode(AniTree::AniNode* node);
 	void SetDeleteAniNodeFunc(std::function<void()> func);
+	void SetSkinAnimationInfoVectorPtr(const std::vector<std::string>* aniNames, const std::vector<unsigned int>* aniEnds);
 
 	AniTree::AniNode*		GetNode() { return m_TargetAniNode; }
 	const std::string&		GetNodeName() const { return m_TargetAniNode->GetNodeName(); }
@@ -74,11 +79,16 @@ private:
 	virtual void Init() override;
 	virtual void Update(float delta) override;
 	void ChangeAniRoof(AniTree::AniNode* node, UIButton* button);
+	void ChangedTargetAni();
 
 private:
 	void AddArrow(AniTreeArowVisual* arrow);
 
 private:
+	const std::vector<std::string>*			m_CurrSkinAnimationNames;
+	const std::vector<unsigned int>*		m_CurrSkinAnimationEndTick;
+
+	std::string								m_CurrAniName;
 	std::vector<AniTreeArowVisual*>			m_Arrows;
 	UIPanel*								m_Panel;
 	AniTree::AniNode*						m_TargetAniNode;

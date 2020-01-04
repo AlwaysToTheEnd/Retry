@@ -38,6 +38,13 @@ const std::string& AniTree::AniNode::GetAniName() const
 	}
 }
 
+void AniTree::AniNode::SetAniName(const std::string& name, unsigned int aniEndTime)
+{
+	m_TargetAniName = name; 
+	m_AniEndTime = aniEndTime;
+	m_CurrTick = 0;
+}
+
 void AniTree::AniNode::GetArrows(std::vector<OutputArrow>& out, const AniNode* to)
 {
 	out.clear();

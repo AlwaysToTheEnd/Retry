@@ -91,7 +91,7 @@ namespace AniTree
 		const AniNode* Update(float deltaTime);
 		const std::string& GetAniName() const;
 		const std::string& GetNodeName() const { return m_NodeName; }
-		void SetAniName(const std::string& name, unsigned int aniEndTime) { m_TargetAniName = name; m_AniEndTime = aniEndTime; }
+		void SetAniName(const std::string& name, unsigned int aniEndTime);
 		unsigned long long GetCurrTick() const { return m_CurrTick; }
 		unsigned long long GetEndTick() const { return m_AniEndTime; }
 		void GetArrows(std::vector<OutputArrow>& out, const AniNode* to=nullptr);

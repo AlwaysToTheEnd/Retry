@@ -23,6 +23,7 @@ void UIParam::SetEnumParam(const std::wstring& paramName, const std::vector<ENUM
 	m_ParamName = paramName;
 	m_ParamPtr = reinterpret_cast<void*>(data);
 	m_EnumElementInfo = elementInfo;
+	m_DirtyCall = nullptr;
 }
 
 void UIParam::SetStringParam(const std::wstring& paramName, const std::vector<std::string>* strings, std::string* data)
@@ -31,11 +32,17 @@ void UIParam::SetStringParam(const std::wstring& paramName, const std::vector<st
 	m_ParamName = paramName;
 	m_ParamPtr = reinterpret_cast<void*>(data);
 	m_Strings = strings;
+	m_DirtyCall = nullptr;
 }
 
 void UIParam::SetTextHeight(int height)
 {
 	m_Font->m_FontHeight = height;
+}
+
+void UIParam::SetDirtyCall(std::function<void()> dirtyCall)
+{
+	m_DirtyCall = dirtyCall;
 }
 
 void UIParam::Init()
@@ -269,6 +276,11 @@ void UIParam::ParamController::Excute()
 		default:
 			break;
 		}
+
+		if (m_CurrParam->m_DirtyCall)
+		{
+			m_CurrParam->m_DirtyCall();
+		}
 	}
 }
 
@@ -329,6 +341,11 @@ void UIParam::ParamController::CreateSubPanel(UIParam* param)
 			button->OnlyFontMode();
 			button->AddFunc(std::bind(&UIParam::ParamController::SetEnumData, this, it.value));
 
+			if (param->m_DirtyCall)
+			{
+				button->AddFunc(param->m_DirtyCall);
+			}
+
 			m_EnumSelectPanel->AddUICom(60, posY, button);
 			posY += propertyIntervale;
 		}
@@ -345,6 +362,11 @@ void UIParam::ParamController::CreateSubPanel(UIParam* param)
 			button->SetTextHeight(10);
 			button->OnlyFontMode();
 			button->AddFunc(std::bind(&UIParam::ParamController::SetStringData, this, it));
+
+			if (param->m_DirtyCall)
+			{
+				button->AddFunc(param->m_DirtyCall);
+			}
 
 			m_EnumSelectPanel->AddUICom(60, posY, button);
 			posY += propertyIntervale;
