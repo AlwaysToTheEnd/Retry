@@ -1,12 +1,13 @@
 #include "AnimationTree.h"
 
 using namespace AniTree;
+using namespace std;
 
 const AniNode* AniTree::AniNode::Update(float deltaTime)
 {
 	const AniNode* result = nullptr;
 
-	m_CurrTick += deltaTime*1000;
+	m_CurrTick += deltaTime * 1000;
 
 	if (m_RoofAni && m_CurrTick > m_AniEndTime)
 	{
@@ -28,19 +29,12 @@ const AniNode* AniTree::AniNode::Update(float deltaTime)
 
 const std::string& AniTree::AniNode::GetAniName() const
 {
-	if (m_TargetAniName.length())
-	{
-		return m_TargetAniName;
-	}
-	else
-	{
-		return m_NodeName;
-	}
+	return m_TargetAniName;
 }
 
 void AniTree::AniNode::SetAniName(const std::string& name, unsigned int aniEndTime)
 {
-	m_TargetAniName = name; 
+	m_TargetAniName = name;
 	m_AniEndTime = aniEndTime;
 	m_CurrTick = 0;
 }
@@ -68,24 +62,26 @@ void AniTree::AniNode::GetArrows(std::vector<OutputArrow>& out, const AniNode* t
 	}
 }
 
-void AniTree::AniNode::AddArrow(const AniNode* to)
+AniTree::NodeArrow* AniTree::AniNode::AddArrow(const AniNode* to)
 {
-	int arrowIndex = -1;
+	AniTree::NodeArrow* result = nullptr;
 
 	for (size_t i = 0; i < m_Arrows.size(); i++)
 	{
 		if (m_Arrows[i].targetNode == to)
 		{
-			arrowIndex = i;
+			result = &m_Arrows[i];
 			break;
 		}
 	}
 
-	if (arrowIndex == -1)
+	if (result==nullptr)
 	{
-		arrowIndex = m_Arrows.size();
 		m_Arrows.emplace_back(to);
+		result = &m_Arrows.back();
 	}
+
+	return result;
 }
 
 void AniTree::AniNode::DeleteArrow(const AniNode* to)
@@ -121,47 +117,6 @@ void AniTree::AniNode::DeleteTrigger(const AniNode* to, int index)
 	}
 }
 
-bool AniTree::AniNode::AddTrigger(const AniNode* to, TO_ANI_ARROW_TYPE arrowType, CHANGE_CONDITION_TYPE type, const TriggerData* trigger)
-{
-	assert((type == CHANGE_CONDITION_TYPE_ANI_END) ? (trigger == nullptr) : (trigger != nullptr));
-
-	int arrowIndex = -1;
-
-	for (size_t i = 0; i < m_Arrows.size(); i++)
-	{
-		if (m_Arrows[i].targetNode == to)
-		{
-			arrowIndex = i;
-			break;
-		}
-	}
-
-	if (arrowIndex == -1)
-	{
-		arrowIndex = m_Arrows.size();
-		m_Arrows.emplace_back(to);
-
-		assert(arrowType != TO_ANI_NODE_TYPE_USING_PREV_TYPE);
-	}
-
-	if (arrowType != TO_ANI_NODE_TYPE_USING_PREV_TYPE)
-	{
-		m_Arrows[arrowIndex].type = arrowType;
-	}
-
-	if (type == CHANGE_CONDITION_TYPE_ANI_END)
-	{
-		m_Arrows[arrowIndex].aniEndIsChange = true;
-	}
-	else
-	{
-		m_Arrows[arrowIndex].triggers.push_back(*trigger);
-	}
-
-
-	return true;
-}
-
 void AniTree::AniNode::TriggerReset()
 {
 	for (auto& it : m_Arrows)
@@ -171,6 +126,53 @@ void AniTree::AniNode::TriggerReset()
 			if (!(it2.m_TriggerType & TRIGGER_TYPE_OFF_AFTER_CHECK))
 			{
 				it2.m_Trigger._i = 0;
+			}
+		}
+	}
+}
+
+std::ostream& AniTree::operator<<(std::ostream& os, const AniNode& node)
+{
+	if (node.m_TargetAniName.size())
+	{
+		os << node.m_TargetAniName << endl;
+	}
+	else
+	{
+		os << "#none#" << endl;
+	}
+
+	os << node.m_AniEndTime << endl;
+	os << node.m_RoofAni << endl;
+
+	os << node.m_Arrows.size() << endl;
+
+	for (auto& it : node.m_Arrows)
+	{
+		os << it.aniEndIsChange << endl;
+		os << it.targetNode->m_IndexFunc() << endl;
+		os << it.type << endl;
+		os << it.triggers.size() << endl << endl;
+
+		for (auto& trigger : it.triggers)
+		{
+			os << trigger.m_TriggerType << endl;
+			os << static_cast<int>(trigger.m_Standard.type) << endl;
+
+			switch (trigger.m_Standard.type)
+			{
+			case CGH::DATA_TYPE::TYPE_BOOL:
+				os << trigger.m_Standard._b << endl;
+				break;
+			case CGH::DATA_TYPE::TYPE_FLOAT:
+				os << trigger.m_Standard._f << endl;
+				break;
+			case CGH::DATA_TYPE::TYPE_INT:
+				os << trigger.m_Standard._i << endl;
+				break;
+			case CGH::DATA_TYPE::TYPE_UINT:
+				os << trigger.m_Standard._u << endl;
+				break;
 			}
 		}
 	}
@@ -253,6 +255,149 @@ bool AniTree::AnimationTree::Update(float deltaTime)
 	return false;
 }
 
+void AniTree::AnimationTree::SaveTree(const std::wstring& fileFath)
+{
+	ofstream save(fileFath.c_str());
+
+	if (save.bad())
+	{
+		save.close();
+		return;
+	}
+
+	save.clear();
+
+	if (m_CurrSkinName.size())
+	{
+		save << m_CurrSkinName << endl;
+	}
+	else
+	{
+		save << "#none#" << endl;
+	}
+
+	if (m_CurrMeshName.size())
+	{
+		save << m_CurrMeshName << endl;
+	}
+	else
+	{
+		save << "#none#" << endl;
+	}
+
+	save << m_AniNodes.size();
+	save << endl;
+
+	for (auto& it : m_AniNodes)
+	{
+		save << (*it);
+	}
+
+	save.close();
+}
+
+void AniTree::AnimationTree::LoadTree(const std::wstring& fileFath)
+{
+	ifstream load(fileFath.c_str());
+
+	if (load.bad())
+	{
+		load.close();
+		return;
+	}
+
+
+	load >> m_CurrSkinName;
+	load >> m_CurrMeshName;
+
+	if (m_CurrSkinName == "#none#")
+	{
+		m_CurrSkinName.clear();
+	}
+
+	if (m_CurrMeshName == "#none#")
+	{
+		m_CurrMeshName.clear();
+	}
+
+	size_t numAniNodes = 0;
+	load >> numAniNodes;
+
+	for (size_t i = 0; i < numAniNodes; i++)
+	{
+		AddAniNode();
+	}
+
+	for (size_t i = 0; i < numAniNodes; i++)
+	{
+		string name;
+		unsigned int time = 0;
+		bool isRoofAni = false;
+		size_t numArrows = 0;
+
+		load >> name;
+		load >> time;
+		load >> isRoofAni;
+		load >> numArrows;
+
+		if (name != "#none#")
+		{
+			m_AniNodes[i]->SetAniName(name, time);
+		}
+		
+		m_AniNodes[i]->SetRoofAni(isRoofAni);
+
+		for (size_t i = 0; i < numArrows; i++)
+		{
+			bool isAniEndChange = false;
+			int targetNodeIndex = -1;
+			int arrowType = TO_ANI_NODE_TYPE_ONE_OK;
+			size_t numTriggers = 0;
+
+			load >> isAniEndChange;
+			load >> targetNodeIndex;
+			load >> arrowType;
+			load >> numTriggers;
+
+			AniNode* toNode = m_AniNodes[targetNodeIndex].get();
+			auto currArrow = m_AniNodes[i]->AddArrow(toNode);
+			currArrow->aniEndIsChange = isAniEndChange;
+			currArrow->type = TO_ANI_ARROW_TYPE(arrowType);
+			currArrow->triggers.resize(numTriggers);
+
+			for (size_t j = 0; j < numTriggers; j++)
+			{
+				int triggerType = 0;
+				int dataType = 0;
+				
+				load >> triggerType;
+				load >> dataType;
+
+				currArrow->triggers[j].m_TriggerType = TRIGGER_TYPE(triggerType);
+				currArrow->triggers[j].m_Standard.type = static_cast<CGH::DATA_TYPE>(dataType);
+
+				switch (currArrow->triggers[j].m_Standard.type)
+				{
+				case CGH::DATA_TYPE::TYPE_BOOL:
+					load >> currArrow->triggers[j].m_Standard._b;
+					break;
+				case CGH::DATA_TYPE::TYPE_FLOAT:
+					load >> currArrow->triggers[j].m_Standard._f;
+					break;
+				case CGH::DATA_TYPE::TYPE_INT:
+					load >> currArrow->triggers[j].m_Standard._i;
+					break;
+				case CGH::DATA_TYPE::TYPE_UINT:
+					load >> currArrow->triggers[j].m_Standard._u;
+					break;
+				}
+			}
+		}
+	}
+
+	load.close();
+}
+
 void AniTree::AnimationTree::GetArrows(std::vector<OutputArrow>& out)
 {
 	out.clear();
@@ -266,21 +411,10 @@ void AniTree::AnimationTree::GetArrows(std::vector<OutputArrow>& out)
 AniNode* AniTree::AnimationTree::AddAniNode()
 {
 	m_AniNodes.push_back(std::make_unique<AniNode>());
+	m_AniNodes.back()->SetIndexFunc(std::bind(&AniTree::AnimationTree::GetIndex, this, m_AniNodes.back().get()));
 	return m_AniNodes.back().get();
 }
 
-bool AniTree::AnimationTree::AddTrigger(AniNode* from, const AniNode* to,
-	TO_ANI_ARROW_TYPE arrowType, CHANGE_CONDITION_TYPE type, const TriggerData* trigger)
-{
-	bool result = false;
-
-	if (from && to && from!=to)
-	{
-		result = from->AddTrigger(to, arrowType, type, trigger);
-	}
-
-	return result;
-}
 
 std::string AniTree::AnimationTree::GetCurrAnimationName() const
 {
@@ -387,7 +521,7 @@ int AniTree::AnimationTree::GetIndex(const AniNode* node)
 
 		currIndex++;
 	}
-	
+
 	return result;
 }
 
@@ -445,3 +579,5 @@ AniTree::NodeArrow::NodeArrow(const AniNode* to)
 {
 	triggers.reserve(10);
 }
+
+

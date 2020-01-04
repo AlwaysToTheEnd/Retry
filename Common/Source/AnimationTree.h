@@ -3,17 +3,13 @@
 #include <vector>
 #include <assert.h>
 #include <memory>
+#include <fstream>
+#include <functional>
 #include "BaseClass.h"
 
 namespace AniTree
 {
 	class AniNode;
-
-	enum CHANGE_CONDITION_TYPE
-	{
-		CHANGE_CONDITION_TYPE_ANI_END,
-		CHANGE_CONDITION_TYPE_TRIGGER
-	};
 
 	enum TRIGGER_TYPE
 	{
@@ -90,22 +86,24 @@ namespace AniTree
 
 		const AniNode* Update(float deltaTime);
 		const std::string& GetAniName() const;
-		const std::string& GetNodeName() const { return m_NodeName; }
 		void SetAniName(const std::string& name, unsigned int aniEndTime);
 		unsigned long long GetCurrTick() const { return m_CurrTick; }
 		unsigned long long GetEndTick() const { return m_AniEndTime; }
 		void GetArrows(std::vector<OutputArrow>& out, const AniNode* to=nullptr);
 		const std::vector<NodeArrow>& GetArrows() { return m_Arrows; }
 
-		void AddArrow(const AniNode* to);
+		AniTree::NodeArrow* AddArrow(const AniNode* to);
 		void DeleteArrow(const AniNode* to);
 		void DeleteTrigger(const AniNode* to, int index);
-		bool AddTrigger(const AniNode* to, TO_ANI_ARROW_TYPE arrowType, CHANGE_CONDITION_TYPE type, const TriggerData* trigger);
 
 		void TriggerReset();
 
 		bool IsRoofAni() const { return m_RoofAni; }
 		void SetRoofAni(bool value) { m_RoofAni = value; }
+
+	public:
+		void SetIndexFunc(std::function<int()> func) { m_IndexFunc = func; }
+		friend std::ostream& operator <<(std::ostream& os, const AniNode& node);
 
 	private:
 		bool CheckArrowTrigger(NodeArrow& arrow, std::vector<TriggerData>& triggers,
@@ -113,12 +111,13 @@ namespace AniTree
 
 	private:
 		unsigned int		m_AniEndTime;
-		std::string			m_NodeName;
 		std::string			m_TargetAniName;
 
 		bool					m_RoofAni;
 		unsigned long long		m_CurrTick;
 		std::vector<NodeArrow>	m_Arrows;
+
+		std::function<int()>	m_IndexFunc;
 	};
 
 	class AnimationTree final
@@ -132,13 +131,21 @@ namespace AniTree
 
 		bool Update(float deltaTime);
 
-		void GetArrows(std::vector<OutputArrow>& out);
-		AniNode* AddAniNode();
-		bool AddTrigger(AniNode* from, const AniNode* to,
-			TO_ANI_ARROW_TYPE arrowType, CHANGE_CONDITION_TYPE type, const TriggerData* trigger);
-		std::string GetCurrAnimationName() const;
-		unsigned long long GetCurrAnimationTick() const;
-		void DeleteNode(const AniNode* node);
+
+		void SaveTree(const std::wstring& fileFath);
+		void LoadTree(const std::wstring& fileFath);
+
+		void				GetArrows(std::vector<OutputArrow>& out);
+		unsigned long long	GetCurrAnimationTick() const;
+		std::string			GetCurrAnimationName() const;
+		const std::string&	GetCurrSkinName() const { return m_CurrSkinName; }
+		const std::string&	GetCurrMeshName() const { return m_CurrMeshName; }
+		
+		AniNode*	AddAniNode();
+		void		DeleteNode(const AniNode* node);
+
+		void SetCurrSkinName(const std::string& name) { m_CurrSkinName = name; }
+		void SetCurrMeshName(const std::string& name) { m_CurrMeshName = name; }
 
 	private:
 		bool CheckArrowTrigger(NodeArrow& arrow, std::vector<TriggerData>& triggers, 
@@ -147,6 +154,8 @@ namespace AniTree
 
 	private:
 		unsigned int										m_CurrAniNodeIndex;
+		std::string											m_CurrSkinName;
+		std::string											m_CurrMeshName;
 		std::vector<std::unique_ptr<AniNode>>				m_AniNodes;
 	};
 

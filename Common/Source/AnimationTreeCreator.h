@@ -71,7 +71,6 @@ public:
 	void SetSkinAnimationInfoVectorPtr(const std::vector<std::string>* aniNames, const std::vector<unsigned int>* aniEnds);
 
 	AniTree::AniNode*		GetNode() { return m_TargetAniNode; }
-	const std::string&		GetNodeName() const { return m_TargetAniNode->GetNodeName(); }
 	physx::PxVec2			GetPos() const;
 	const physx::PxVec3&	GetSize() const;
 

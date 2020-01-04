@@ -87,8 +87,6 @@ void AniNodeVisual::SetTargetAninode(AniNode* node)
 {
 	m_TargetAniNode = node;
 
-	auto nodeName = m_TargetAniNode->GetNodeName();
-	auto nameFont = m_Panel->GetComponent<ComFont>();
 	m_Panel->SetBackGroundTexture(InputTN::Get("AniNodeVisualPanel"));
 	m_Panel->SetSize(100, 60);
 	m_Panel->SetPos({ 300,300 });
@@ -118,9 +116,6 @@ void AniNodeVisual::SetTargetAninode(AniNode* node)
 		m_Panel->AddUICom(0, 8, aniNameParam);
 	}
 #pragma endregion
-
-	nameFont->m_Text.clear();
-	nameFont->m_Text.insert(nameFont->m_Text.end(), nodeName.begin(), nodeName.end());
 }
 
 void AniNodeVisual::SetDeleteAniNodeFunc(std::function<void()> func)
