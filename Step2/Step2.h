@@ -23,6 +23,7 @@ private:
 	virtual void SelectDevices() override;
 
 private:
+	virtual void LoadObjectsFromFile() override;
 	virtual void InitObjects() override;
 
 private:

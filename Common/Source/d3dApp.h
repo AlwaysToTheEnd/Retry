@@ -36,6 +36,11 @@ public:
 		MainFolderFath + L"FontData"
 	};
 
+	std::vector<std::wstring>		m_TargetAniTreeFolders =
+	{
+		MainFolderFath + L"AniTree"
+	};
+
 protected:
 	D3DApp(HINSTANCE hInstance);
 	D3DApp(const D3DApp& rhs) = delete;
@@ -62,6 +67,7 @@ protected:
 	virtual void Update(float delta) = 0;
 	virtual void SelectDevices() = 0;
 	virtual void InitObjects() = 0;
+	virtual void LoadObjectsFromFile() = 0;
 	virtual bool InitMainWindow();
 	
 	template<typename GraphicDeviceClass, typename PhysicsDeviceClass>

@@ -7,6 +7,7 @@ const std::unordered_map<std::string, MeshObject>* ComMesh::m_Meshs = nullptr;
 std::vector<RenderInfo>* ComRenderer::m_ReservedRenderObjects = nullptr;
 
 const std::unordered_map<std::string, Ani::SkinnedData>* ComAnimator::m_SkinnedDatas = nullptr;
+const std::unordered_map<std::wstring, AniTree::AnimationTree>* ComAnimator::m_AnimationTrees = nullptr;
 std::vector<AniBoneMat>* ComAnimator::m_ReservedAniBone = nullptr;
 
 std::vector<RenderFont>* ComFont::m_ReservedFonts = nullptr;

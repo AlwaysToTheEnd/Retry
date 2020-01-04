@@ -28,6 +28,11 @@ void Step2::SelectDevices()
 	SelectDeviceByTemplate<UsingGraphicDevice, UsingPhsicsDevice>();
 }
 
+void Step2::LoadObjectsFromFile()
+{
+
+}
+
 void Step2::InitObjects()
 {
 	 testScene = new AniTreeScene(m_GDevice.get(), m_PXDevice.get());

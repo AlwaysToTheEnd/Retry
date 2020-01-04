@@ -287,7 +287,7 @@ IComponent* GraphicDX12::CreateComponent(CGHScene&, COMPONENTTYPE type, unsigned
 	break;
 	case COMPONENTTYPE::COM_ANIMATOR:
 	{
-		newComponent = new ComAnimator(gameObject, id, &m_SkinnedDatas, &m_ReservedAniBones);
+		newComponent = new ComAnimator(gameObject, id, &m_SkinnedDatas, &m_AniTreeDatas, &m_ReservedAniBones);
 	}
 	break;
 	default:
@@ -507,6 +507,15 @@ void GraphicDX12::LoadFontFromFolder(const std::vector<std::wstring>& targetFont
 		files, m_BackBufferFormat, m_DepthStencilFormat);
 
 	m_FontManager->Resize(m_ClientWidth, m_ClientHeight);
+}
+
+void GraphicDX12::LoadAniTreeFromFolder(const std::vector<std::wstring>& targetFolders)
+{
+	vector<wstring> files;
+	for (auto& it : targetFolders)
+	{
+		SearchAllFileFromFolder(it, true, files);
+	}
 }
 
 void GraphicDX12::ReadyWorksEnd()

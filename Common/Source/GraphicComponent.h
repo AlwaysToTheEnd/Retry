@@ -45,6 +45,7 @@ class ComAnimator :public IComponent
 public:
 	ComAnimator(GameObject& gameObject, int ID,
 		const std::unordered_map<std::string, Ani::SkinnedData>* skinnedDatas,
+		const std::unordered_map<std::wstring, AniTree::AnimationTree>* aniTreeDatas,
 		std::vector<AniBoneMat>* reservedAniBone)
 		: IComponent(COMPONENTTYPE::COM_ANIMATOR, gameObject, ID)
 		, m_AniTree(nullptr)
@@ -55,6 +56,7 @@ public:
 		if (m_SkinnedDatas == nullptr)
 		{
 			m_SkinnedDatas = skinnedDatas;
+			m_AnimationTrees = aniTreeDatas;
 			m_ReservedAniBone = reservedAniBone;
 		}
 	}
@@ -74,8 +76,9 @@ public:
 	bool SelectAnimation(const std::string& name);
 
 private:
-	static const std::unordered_map<std::string, Ani::SkinnedData>* m_SkinnedDatas;
-	static std::vector<AniBoneMat>*									m_ReservedAniBone;
+	static const std::unordered_map<std::string, Ani::SkinnedData>*			m_SkinnedDatas;
+	static const std::unordered_map<std::wstring, AniTree::AnimationTree>*	m_AnimationTrees;
+	static std::vector<AniBoneMat>*											m_ReservedAniBone;
 
 	AniTree::AnimationTree*					m_AniTree;
 	const Ani::SkinnedData*					m_CurrSkinnedData;
