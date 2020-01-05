@@ -635,11 +635,6 @@ void VisualizedAniTreeCreator::DeleteNode(AniNodeVisual* node)
 	m_Tree->DeleteNode(node->GetNode());
 }
 
-#define STRICT_TYPED_ITEMIDS
-
-#define NTDDI_VERSION NTDDI_VISTA
-#define _WIN32_WINNT _WIN32_WINNT_VISTA
-
 #include <Windows.h>
 #include <ShlObj.h>
 
