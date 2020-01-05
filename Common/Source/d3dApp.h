@@ -36,10 +36,7 @@ public:
 		MainFolderFath + L"FontData"
 	};
 
-	std::vector<std::wstring>		m_TargetAniTreeFolders =
-	{
-		MainFolderFath + L"AniTree"
-	};
+	const std::wstring				m_TargetAniTreeFolder = MainFolderFath + L"AniTree";
 
 protected:
 	D3DApp(HINSTANCE hInstance);

@@ -158,7 +158,7 @@ private: // Used Function by ReadyWorks
 	virtual void LoadTextureFromFolder(const std::vector<std::wstring>& targetTextureFolders) override;
 	virtual void LoadMeshAndMaterialFromFolder(const std::vector<std::wstring>& targetMeshFolders) override;
 	virtual void LoadFontFromFolder(const std::vector<std::wstring>& targetFontFolders) override;
-	virtual void LoadAniTreeFromFolder(const std::vector<std::wstring>& targetFolders) override;
+	virtual void LoadAniTreeFromFolder(const std::wstring& targetFolder) override;
 	virtual void ReadyWorksEnd() override;
 
 private: // Device Base Functions
@@ -237,12 +237,13 @@ private:
 	ComPtr<ID3D12RootSignature>										m_RootSignature = nullptr;
 	ComPtr<ID3D12RootSignature>										m_PointRenderRootSignature = nullptr;
 	
-	PassConstants													m_MainPassCB;
-	std::unique_ptr<cTextureBuffer>									m_TextureBuffer;
-	std::unique_ptr<cIndexManagementBuffer<Material>>				m_Materials;
-	std::unordered_map<std::string, MeshObject>						m_Meshs;
-	std::unordered_map<std::string, Ani::SkinnedData>				m_SkinnedDatas;
-	std::unordered_map<std::wstring, AniTree::AnimationTree>		m_AniTreeDatas;
+	PassConstants																m_MainPassCB;
+	std::unique_ptr<cTextureBuffer>												m_TextureBuffer;
+	std::unique_ptr<cIndexManagementBuffer<Material>>							m_Materials;
+	std::unordered_map<std::string, MeshObject>									m_Meshs;
+	std::unordered_map<std::string, Ani::SkinnedData>							m_SkinnedDatas;
+	std::unordered_map<std::wstring, std::unique_ptr<AniTree::AnimationTree>>	m_AniTreeDatas;
+
 	std::unique_ptr<FrameResource>									m_FrameResource;
 	std::unique_ptr<DX12FontManager>								m_FontManager;
 

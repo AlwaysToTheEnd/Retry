@@ -509,12 +509,28 @@ void GraphicDX12::LoadFontFromFolder(const std::vector<std::wstring>& targetFont
 	m_FontManager->Resize(m_ClientWidth, m_ClientHeight);
 }
 
-void GraphicDX12::LoadAniTreeFromFolder(const std::vector<std::wstring>& targetFolders)
+void GraphicDX12::LoadAniTreeFromFolder(const std::wstring& targetFolder)
 {
 	vector<wstring> files;
-	for (auto& it : targetFolders)
+	SearchAllFileFromFolder(targetFolder, true, files);
+
+	for (auto& it : files)
 	{
-		SearchAllFileFromFolder(it, true, files);
+		std::wstring extension;
+		std::wstring fileName = GetFileNameFromPath(it, extension);
+
+		if (extension == L"Anitree")
+		{
+			if (m_AniTreeDatas.find(it) == m_AniTreeDatas.end())
+			{
+				m_AniTreeDatas[fileName] = make_unique<AniTree::AnimationTree>();
+				m_AniTreeDatas[fileName]->LoadTree(it);
+			}
+			else
+			{
+				assert(false);
+			}
+		}
 	}
 }
 
@@ -868,7 +884,7 @@ void GraphicDX12::UpdateMainPassCB()
 	physx::PxMat44 invView = view.inverseRT();
 	physx::PxMat44 invProj = proj.inverseRT();
 	physx::PxMat44 invViewProj = viewProj.inverseRT();
-	
+
 	m_MainPassCB.view = view.getTranspose();
 	m_MainPassCB.invView = invView.getTranspose();
 	m_MainPassCB.proj = proj.getTranspose();

@@ -170,7 +170,7 @@ bool D3DApp::Initialize()
 	if (!m_PXDevice->Init(m_GDevice->GetDevicePtr())) return false;
 
 	m_GDevice->ReadyWorks(	m_TargetTextureFolders, m_TargetMeshFolders,
-							m_TargetFontFolders, m_TargetAniTreeFolders);
+							m_TargetFontFolders, m_TargetAniTreeFolder);
 	m_GDevice->SetCamera(&m_Camera);
 
 	LoadObjectsFromFile();

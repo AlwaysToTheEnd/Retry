@@ -187,6 +187,9 @@ private:
 	UIPanel*								m_WorkPanel;
 	ComAnimator*							m_Animator;
 	ComRenderer*							m_Renderer;
+
+	std::wstring							m_CurrTreeFilePath;
+
 	const Ani::SkinnedData*					m_CurrSkin;
 	std::vector<std::string>				m_SkinNames;
 

@@ -28,12 +28,12 @@ private:
 	void ReadyWorks(const std::vector<std::wstring>& targetTextureFolders,
 					const std::vector<std::wstring>& targetMeshFolders,
 					const std::vector<std::wstring>& targetFontFolders,
-					const std::vector<std::wstring>& targetAniTreeFolders)
+					const std::wstring& targetAniTreeFolder)
 	{
 		LoadTextureFromFolder(targetTextureFolders);
 		LoadMeshAndMaterialFromFolder(targetMeshFolders);
 		LoadFontFromFolder(targetFontFolders);
-		LoadAniTreeFromFolder(targetAniTreeFolders);
+		LoadAniTreeFromFolder(targetAniTreeFolder);
 		ReadyWorksEnd();
 	}
 
@@ -48,7 +48,7 @@ protected:
 	virtual void LoadTextureFromFolder(const std::vector<std::wstring>& targetTextureFolders) = 0;
 	virtual void LoadMeshAndMaterialFromFolder(const std::vector<std::wstring>& targetMeshFolders) = 0;
 	virtual void LoadFontFromFolder(const std::vector<std::wstring>& targetFontFolders) = 0;
-	virtual void LoadAniTreeFromFolder(const std::vector<std::wstring>& targetFolders) = 0;
+	virtual void LoadAniTreeFromFolder(const std::wstring& targetFolder) = 0;
 	virtual void ReadyWorksEnd() = 0;
 
 protected:
