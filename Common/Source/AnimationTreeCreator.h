@@ -181,6 +181,7 @@ private:
 	virtual void Update(float delta) override;
 	void AddNode();
 	void DeleteNode(AniNodeVisual* node);
+	void TestCode();
 
 private:
 	std::unique_ptr<AniTree::AnimationTree>	m_Tree;

@@ -74,8 +74,9 @@ public:
 	bool SelectAnimation(const std::string& name);
 
 	void SetAnimationTree(AniTree::AnimationTree* tree);
-	void SaveAnimationTree(const std::wstring& fileName, AniTree::AnimationTree* tree);
+	void SetAnimationTree(const std::wstring& fileName);
 	AniTree::AnimationTree* GetAnimationTree() { return m_AniTree; }
+	void SaveAnimationTree(const std::wstring& fileName, AniTree::AnimationTree* tree);
 
 private:
 	static const std::unordered_map<std::string, Ani::SkinnedData>*						m_SkinnedDatas;

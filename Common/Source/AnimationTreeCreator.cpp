@@ -108,7 +108,7 @@ void AniNodeVisual::SetTargetAninode(AniNode* node)
 		roofControlButton->AddFunc(std::bind(&AniNodeVisual::ChangeAniRoof, this, m_TargetAniNode, roofControlButton));
 		m_Panel->AddUICom(m_Panel->GetSize().x / 2, m_Panel->GetSize().y / 2, roofControlButton);
 
-		auto aniNameParam= m_Panel->CreateGameObject<UIParam>(true, UIParam::UIPARAMTYPE::MODIFIER);
+		auto aniNameParam = m_Panel->CreateGameObject<UIParam>(true, UIParam::UIPARAMTYPE::MODIFIER);
 		aniNameParam->SetStringParam(L"Animation", m_CurrSkinAnimationNames, &m_CurrAniName);
 		aniNameParam->SetDirtyCall(std::bind(&AniNodeVisual::ChangedTargetAni, this));
 		aniNameParam->SetTextHeight(ElementSize);
@@ -123,7 +123,7 @@ void AniNodeVisual::SetDeleteAniNodeFunc(std::function<void()> func)
 	m_DeleteAninodeFunc = func;
 }
 
-void AniNodeVisual::SetSkinAnimationInfoVectorPtr(const std::vector<std::string>* aniNames,const std::vector<unsigned int>* aniEnds)
+void AniNodeVisual::SetSkinAnimationInfoVectorPtr(const std::vector<std::string>* aniNames, const std::vector<unsigned int>* aniEnds)
 {
 	m_CurrSkinAnimationNames = aniNames;
 	m_CurrSkinAnimationEndTick = aniEnds;
@@ -586,6 +586,14 @@ void VisualizedAniTreeCreator::Init()
 		posY += 20;
 	}
 
+	auto testbutton = CreateGameObject<UIButton>(true);
+	testbutton->SetText(L"TestButton");
+	testbutton->OnlyFontMode();
+	testbutton->SetTextHeight(15);
+	testbutton->AddFunc(std::bind(&VisualizedAniTreeCreator::TestCode, this));
+	m_WorkPanel->AddUICom(50, posY, testbutton);
+	posY += 20;
+
 	m_WorkPanel->SetSize(100, posY);
 }
 
@@ -625,4 +633,52 @@ void VisualizedAniTreeCreator::DeleteNode(AniNodeVisual* node)
 	}
 
 	m_Tree->DeleteNode(node->GetNode());
+}
+
+#define STRICT_TYPED_ITEMIDS
+
+#define NTDDI_VERSION NTDDI_VISTA
+#define _WIN32_WINNT _WIN32_WINNT_VISTA
+
+#include <Windows.h>
+#include <ShlObj.h>
+
+#pragma comment(lib, "comctl32.lib")
+#pragma comment(linker,"/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' "\
+                       "version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
+
+void VisualizedAniTreeCreator::TestCode()
+{
+	IFileOpenDialog* pfsd;
+	HRESULT hr = CoCreateInstance(CLSID_FileOpenDialog, NULL, CLSCTX_INPROC, IID_PPV_ARGS(&pfsd));
+	if (SUCCEEDED(hr))
+	{
+		COMDLG_FILTERSPEC const rgSaveTypes[] =
+		{
+			{ L"Text Documents", L"*.txt" },
+			{ L"All Files", L"*.*" },
+		};
+
+		hr = pfsd->SetFileTypes(ARRAYSIZE(rgSaveTypes), rgSaveTypes);
+
+		if (SUCCEEDED(hr))
+		{
+			LPWSTR fileName;
+			hr = pfsd->Show(NULL);
+
+			if (SUCCEEDED(hr))
+			{
+				IShellItem* psi;
+				hr = pfsd->GetResult(&psi);
+				if (SUCCEEDED(hr))
+				{
+					psi->GetDisplayName(SIGDN_NORMALDISPLAY, &fileName);
+					psi->Release();
+					delete[] fileName;
+				}
+			}
+		}
+
+		pfsd->Release();
+	}
 }

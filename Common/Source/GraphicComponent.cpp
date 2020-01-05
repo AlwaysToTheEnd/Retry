@@ -1,6 +1,7 @@
 #include "GraphicComponent.h"
 #include "BaseComponent.h"
 #include "GameObject.h"
+#include "d3dApp.h"
 
 const std::unordered_map<std::string, MeshObject>* ComMesh::m_Meshs = nullptr;
 
@@ -74,6 +75,32 @@ void ComAnimator::GetSkinNames(std::vector<std::string>& out)
 void ComAnimator::SetAnimationTree(AniTree::AnimationTree* tree)
 {
 	m_AniTree = tree;
+}
+
+void ComAnimator::SetAnimationTree(const std::wstring& fileName)
+{
+	auto iter = m_AnimationTrees->find(fileName);
+
+	if (iter != m_AnimationTrees->end())
+	{
+		m_AniTree = iter->second.get();
+	}
+}
+
+void ComAnimator::SaveAnimationTree(const std::wstring& fileName, AniTree::AnimationTree* tree)
+{
+	auto iter = m_AnimationTrees->find(fileName);
+
+	if (iter == m_AnimationTrees->end())
+	{
+		m_AnimationTrees->insert({ fileName, std::unique_ptr<AniTree::AnimationTree>(tree) });
+	}
+	else
+	{
+		assert(iter->second.get() == tree);
+	}
+
+	tree->SaveTree(GETAPP->m_TargetAniTreeFolder + fileName);
 }
 
 void ComAnimator::GetAniNames(std::vector<std::string>& out) const

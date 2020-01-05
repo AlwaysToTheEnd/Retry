@@ -176,6 +176,8 @@ std::ostream& AniTree::operator<<(std::ostream& os, const AniNode& node)
 			}
 		}
 	}
+
+	return os;
 }
 
 bool AniTree::AniNode::CheckArrowTrigger(NodeArrow& arrow, std::vector<TriggerData>& triggers, unsigned long long currTick, unsigned long long aniEndTick)
@@ -363,7 +365,7 @@ void AniTree::AnimationTree::LoadTree(const std::wstring& fileFath)
 			auto currArrow = m_AniNodes[i]->AddArrow(toNode);
 			currArrow->aniEndIsChange = isAniEndChange;
 			currArrow->type = TO_ANI_ARROW_TYPE(arrowType);
-			currArrow->triggers.resize(numTriggers);
+			currArrow->triggers.reserve(numTriggers);
 
 			for (size_t j = 0; j < numTriggers; j++)
 			{
@@ -373,24 +375,26 @@ void AniTree::AnimationTree::LoadTree(const std::wstring& fileFath)
 				load >> triggerType;
 				load >> dataType;
 
-				currArrow->triggers[j].m_TriggerType = TRIGGER_TYPE(triggerType);
-				currArrow->triggers[j].m_Standard.type = static_cast<CGH::DATA_TYPE>(dataType);
+				CGH::UnionData standard;
+				standard.type = static_cast<CGH::DATA_TYPE>(dataType);
 
 				switch (currArrow->triggers[j].m_Standard.type)
 				{
 				case CGH::DATA_TYPE::TYPE_BOOL:
-					load >> currArrow->triggers[j].m_Standard._b;
+					load >> standard._b;
 					break;
 				case CGH::DATA_TYPE::TYPE_FLOAT:
-					load >> currArrow->triggers[j].m_Standard._f;
+					load >> standard._f;
 					break;
 				case CGH::DATA_TYPE::TYPE_INT:
-					load >> currArrow->triggers[j].m_Standard._i;
+					load >> standard._i;
 					break;
 				case CGH::DATA_TYPE::TYPE_UINT:
-					load >> currArrow->triggers[j].m_Standard._u;
+					load >> standard._u;
 					break;
 				}
+
+				currArrow->triggers.emplace_back(TRIGGER_TYPE(triggerType), standard);
 			}
 		}
 	}
