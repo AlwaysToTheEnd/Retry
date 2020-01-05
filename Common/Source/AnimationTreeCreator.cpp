@@ -674,7 +674,7 @@ void VisualizedAniTreeCreator::TestCode()
 				{
 					psi->GetDisplayName(SIGDN_NORMALDISPLAY, &fileName);
 					psi->Release();
-					delete[] fileName;
+
 				}
 			}
 		}
