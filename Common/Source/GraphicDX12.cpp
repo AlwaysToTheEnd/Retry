@@ -517,11 +517,12 @@ void GraphicDX12::LoadAniTreeFromFolder(const std::wstring& targetFolder)
 	for (auto& it : files)
 	{
 		std::wstring extension;
-		std::wstring fileName = GetFileNameFromPath(it, extension);
+		std::wstring wfileName = GetFileNameFromPath(it, extension);
+		std::string fileName(wfileName.begin(), wfileName.end());
 
-		if (extension == L"Anitree")
+		if (extension == L"anitree")
 		{
-			if (m_AniTreeDatas.find(it) == m_AniTreeDatas.end())
+			if (m_AniTreeDatas.find(fileName) == m_AniTreeDatas.end())
 			{
 				m_AniTreeDatas[fileName] = make_unique<AniTree::AnimationTree>();
 				m_AniTreeDatas[fileName]->LoadTree(it);

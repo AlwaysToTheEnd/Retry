@@ -5,8 +5,6 @@
 void AniTreeScene::Init()
 {
 	auto treeCreater = AddGameObject<VisualizedAniTreeCreator>();
-
-	treeCreater->SelectSkinnedData("poporiClass03.X");
 }
 
 bool AniTreeScene::Update(const DirectX::Mouse::ButtonStateTracker& mouse, float delta)

@@ -8,7 +8,7 @@ const std::unordered_map<std::string, MeshObject>* ComMesh::m_Meshs = nullptr;
 std::vector<RenderInfo>* ComRenderer::m_ReservedRenderObjects = nullptr;
 
 const std::unordered_map<std::string, Ani::SkinnedData>* ComAnimator::m_SkinnedDatas = nullptr;
-std::unordered_map<std::wstring, std::unique_ptr<AniTree::AnimationTree>>* ComAnimator::m_AnimationTrees = nullptr;
+std::unordered_map<std::string, std::unique_ptr<AniTree::AnimationTree>>* ComAnimator::m_AnimationTrees = nullptr;
 std::vector<AniBoneMat>* ComAnimator::m_ReservedAniBone = nullptr;
 
 std::vector<RenderFont>* ComFont::m_ReservedFonts = nullptr;
@@ -72,12 +72,25 @@ void ComAnimator::GetSkinNames(std::vector<std::string>& out)
 	}
 }
 
+bool ComAnimator::IsRegisteredTree(const AniTree::AnimationTree* tree) const
+{
+	for (auto& it : *m_AnimationTrees)
+	{
+		if (it.second.get() == tree)
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
 void ComAnimator::SetAnimationTree(AniTree::AnimationTree* tree)
 {
 	m_AniTree = tree;
 }
 
-void ComAnimator::SetAnimationTree(const std::wstring& fileName)
+void ComAnimator::SetAnimationTree(const std::string& fileName)
 {
 	auto iter = m_AnimationTrees->find(fileName);
 
@@ -87,7 +100,16 @@ void ComAnimator::SetAnimationTree(const std::wstring& fileName)
 	}
 }
 
-void ComAnimator::SaveAnimationTree(const std::wstring& fileName, AniTree::AnimationTree* tree)
+void ComAnimator::GetAnimationTreeNames(std::vector<std::string>& out) const
+{
+	out.clear();
+	for (auto& it : *m_AnimationTrees)
+	{
+		out.push_back(it.first);
+	}
+}
+
+void ComAnimator::SaveAnimationTree(const std::wstring& filePath, const std::string& fileName, AniTree::AnimationTree* tree)
 {
 	auto iter = m_AnimationTrees->find(fileName);
 
@@ -100,7 +122,7 @@ void ComAnimator::SaveAnimationTree(const std::wstring& fileName, AniTree::Anima
 		assert(iter->second.get() == tree);
 	}
 
-	tree->SaveTree(GETAPP->m_TargetAniTreeFolder + fileName);
+	tree->SaveTree(filePath);
 }
 
 void ComAnimator::GetAniNames(std::vector<std::string>& out) const

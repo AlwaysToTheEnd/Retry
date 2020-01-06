@@ -242,7 +242,7 @@ private:
 	std::unique_ptr<cIndexManagementBuffer<Material>>							m_Materials;
 	std::unordered_map<std::string, MeshObject>									m_Meshs;
 	std::unordered_map<std::string, Ani::SkinnedData>							m_SkinnedDatas;
-	std::unordered_map<std::wstring, std::unique_ptr<AniTree::AnimationTree>>	m_AniTreeDatas;
+	std::unordered_map<std::string, std::unique_ptr<AniTree::AnimationTree>>	m_AniTreeDatas;
 
 	std::unique_ptr<FrameResource>									m_FrameResource;
 	std::unique_ptr<DX12FontManager>								m_FontManager;

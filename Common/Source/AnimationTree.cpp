@@ -142,6 +142,9 @@ std::ostream& AniTree::operator<<(std::ostream& os, const AniNode& node)
 		os << "#none#" << endl;
 	}
 
+	os << node.m_Pos.x << endl;
+	os << node.m_Pos.y << endl;
+
 	os << node.m_AniEndTime << endl;
 	os << node.m_RoofAni << endl;
 
@@ -308,7 +311,6 @@ void AniTree::AnimationTree::LoadTree(const std::wstring& fileFath)
 		return;
 	}
 
-
 	load >> m_CurrSkinName;
 	load >> m_CurrMeshName;
 
@@ -333,11 +335,14 @@ void AniTree::AnimationTree::LoadTree(const std::wstring& fileFath)
 	for (size_t i = 0; i < numAniNodes; i++)
 	{
 		string name;
+		physx::PxVec2 pos;
 		unsigned int time = 0;
 		bool isRoofAni = false;
 		size_t numArrows = 0;
-
+		
 		load >> name;
+		load >> pos.x;
+		load >> pos.y;
 		load >> time;
 		load >> isRoofAni;
 		load >> numArrows;
@@ -347,9 +352,10 @@ void AniTree::AnimationTree::LoadTree(const std::wstring& fileFath)
 			m_AniNodes[i]->SetAniName(name, time);
 		}
 		
+		m_AniNodes[i]->SetPos(pos);
 		m_AniNodes[i]->SetRoofAni(isRoofAni);
 
-		for (size_t i = 0; i < numArrows; i++)
+		for (size_t j = 0; j < numArrows; j++)
 		{
 			bool isAniEndChange = false;
 			int targetNodeIndex = -1;
@@ -367,7 +373,7 @@ void AniTree::AnimationTree::LoadTree(const std::wstring& fileFath)
 			currArrow->type = TO_ANI_ARROW_TYPE(arrowType);
 			currArrow->triggers.reserve(numTriggers);
 
-			for (size_t j = 0; j < numTriggers; j++)
+			for (size_t z= 0; z < numTriggers; z++)
 			{
 				int triggerType = 0;
 				int dataType = 0;
@@ -378,7 +384,7 @@ void AniTree::AnimationTree::LoadTree(const std::wstring& fileFath)
 				CGH::UnionData standard;
 				standard.type = static_cast<CGH::DATA_TYPE>(dataType);
 
-				switch (currArrow->triggers[j].m_Standard.type)
+				switch (standard.type)
 				{
 				case CGH::DATA_TYPE::TYPE_BOOL:
 					load >> standard._b;
@@ -449,6 +455,7 @@ void AniTree::AnimationTree::DeleteNode(const AniNode* node)
 		if (node == (*iter).get())
 		{
 			m_AniNodes.erase(iter);
+			m_CurrAniNodeIndex = 0;
 			break;
 		}
 	}

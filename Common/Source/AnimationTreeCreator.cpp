@@ -19,7 +19,7 @@ void AniNodeVisual::Init()
 
 void AniNodeVisual::Update(float delta)
 {
-
+	m_TargetAniNode->SetPos(m_Panel->GetPos());
 }
 
 void AniNodeVisual::ChangeAniRoof(AniTree::AniNode* node, UIButton* button)
@@ -59,6 +59,17 @@ void AniNodeVisual::Delete()
 	GameObject::Delete();
 }
 
+void AniNodeVisual::VisualClear()
+{
+	for (auto& it : m_Arrows)
+	{
+		it->VisualClear();
+	}
+
+	m_Panel->Delete();
+	GameObject::Delete();
+}
+
 void AniNodeVisual::DeleteArrow(const AniNodeVisual* to)
 {
 	for (auto& it : m_Arrows)
@@ -81,6 +92,11 @@ void AniNodeVisual::ArrowVisualDeleted(AniTreeArowVisual* arrow)
 			break;
 		}
 	}
+}
+
+void AniNodeVisual::SetPos(physx::PxVec2 pos)
+{
+	m_Panel->SetPos(pos);
 }
 
 void AniNodeVisual::SetTargetAninode(AniNode* node)
@@ -316,6 +332,11 @@ void AniTreeArowVisual::Delete()
 	GameObject::Delete();
 }
 
+void AniTreeArowVisual::VisualClear()
+{
+	GameObject::Delete();
+}
+
 void AniTreeArowVisual::SetToNode(AniNodeVisual* to)
 {
 	if (m_From != to)
@@ -523,61 +544,87 @@ void AniTreeArowVisual::AniTreeArrowArttributeEditer::ChangeType(UIParam* target
 	}
 }
 
+VisualizedAniTreeCreator::~VisualizedAniTreeCreator()
+{
+	if (!m_Animator->IsRegisteredTree(m_CurrTree) && m_CurrTree)
+	{
+		delete m_CurrTree;
+	}
+}
+
 //////////////
 void VisualizedAniTreeCreator::SelectSkinnedData(const std::string& name)
 {
-	for (auto& it : m_AniNodeVs)
+	if (m_CurrTree)
 	{
-		it->GetNode()->SetAniName("", 0);
-		it->AniNameReset();
+		for (auto& it : m_AniNodeVs)
+		{
+			it->GetNode()->SetAniName("", 0);
+			it->AniNameReset();
+		}
+
+		m_AniEndTimes.clear();
+
+		m_CurrSkin = m_Animator->GetSkinnedData(name);
+		m_CurrSkin->GetAnimationNames(m_AniNames);
+
+		for (auto& it : m_AniNames)
+		{
+			m_AniEndTimes.push_back(m_CurrSkin->GetClipEndTime(it));
+		}
+
+		GetComponent<ComMesh>()->SelectMesh(name);
+		m_Animator->SelectSkin(name);
+
+		m_CurrTree->SetCurrMeshName(name);
+		m_CurrTree->SetCurrSkinName(name);
+		m_Renderer->SetActive(true);
 	}
-
-	m_AniEndTimes.clear();
-
-	m_CurrSkin = m_Animator->GetSkinnedData(name);
-	m_CurrSkin->GetAnimationNames(m_AniNames);
-
-	for (auto& it : m_AniNames)
-	{
-		m_AniEndTimes.push_back(m_CurrSkin->GetClipEndTime(it));
-	}
-
-	GetComponent<ComMesh>()->SelectMesh(name);
-	m_Animator->SelectSkin(name);
 }
 
 void VisualizedAniTreeCreator::Init()
 {
-	m_Tree = std::make_unique<AniTree::AnimationTree>();
-
 	AddComponent<ComTransform>();
 	AddComponent<ComMesh>();
 	m_Renderer = AddComponent<ComRenderer>();
 	m_Animator = AddComponent<ComAnimator>();
 
-	m_Animator->SetAnimationTree(m_Tree.get());
 	m_Renderer->SetRenderInfo(RenderInfo(RENDER_MESH));
 
 	m_WorkPanel = CreateGameObject<UIPanel>(false);
 	m_WorkPanel->SetBackGroundTexture(InputTN::Get("AniTreeCreatorWorkPanel"));
 	m_WorkPanel->SetPos({ 50,50 });
 
+	m_Animator->GetAnimationTreeNames(m_TreeNames);
 	m_Animator->GetSkinNames(m_SkinNames);
 
-	auto button = CreateGameObject<UIButton>(true);
+	int posY = 15;
+
+	auto nullTreeButton = m_WorkPanel->CreateGameObject<UIButton>(true);
+	nullTreeButton->SetText(L"AddNullTree");
+	nullTreeButton->OnlyFontMode();
+	nullTreeButton->SetTextHeight(15);
+	nullTreeButton->AddFunc(std::bind(&VisualizedAniTreeCreator::CreateNullTree, this));
+	m_WorkPanel->AddUICom(50, posY, nullTreeButton);
+	posY += 20;
+
+	SetAnimationTreeListsParamToPanel(10, posY, m_WorkPanel);
+	posY += 20;
+
+	auto button = m_WorkPanel->CreateGameObject<UIButton>(true);
 	button->SetText(L"AddNode");
 	button->OnlyFontMode();
 	button->SetTextHeight(15);
 	button->AddFunc(std::bind(&VisualizedAniTreeCreator::AddNode, this));
-	m_WorkPanel->AddUICom(50, 15, button);
+	m_WorkPanel->AddUICom(50, posY, button);
+	posY += 20;
 
-	int posY = 30;
 	for (auto& it : m_SkinNames)
 	{
 		std::wstring skinName;
 		skinName.insert(skinName.end(), it.begin(), it.end());
 
-		auto skinbutton = CreateGameObject<UIButton>(true);
+		auto skinbutton = m_WorkPanel->CreateGameObject<UIButton>(true);
 		skinbutton->SetText(skinName);
 		skinbutton->OnlyFontMode();
 		skinbutton->SetTextHeight(15);
@@ -586,15 +633,17 @@ void VisualizedAniTreeCreator::Init()
 		posY += 20;
 	}
 
-	auto testbutton = CreateGameObject<UIButton>(true);
-	testbutton->SetText(L"TestButton");
+	auto testbutton = m_WorkPanel->CreateGameObject<UIButton>(true);
+	testbutton->SetText(L"SaveButton");
 	testbutton->OnlyFontMode();
 	testbutton->SetTextHeight(15);
-	testbutton->AddFunc(std::bind(&VisualizedAniTreeCreator::TestCode, this));
+	testbutton->AddFunc(std::bind(&VisualizedAniTreeCreator::SaveTree, this));
 	m_WorkPanel->AddUICom(50, posY, testbutton);
 	posY += 20;
 
 	m_WorkPanel->SetSize(100, posY);
+
+	m_Renderer->SetActive(false);
 }
 
 void VisualizedAniTreeCreator::Update(float delta)
@@ -604,15 +653,35 @@ void VisualizedAniTreeCreator::Update(float delta)
 
 void VisualizedAniTreeCreator::AddNode()
 {
-	if (auto targetNode = m_Tree->AddAniNode())
+	if (m_CurrTree)
 	{
-		auto newNode = CreateGameObject<AniNodeVisual>(true);
-		newNode->SetSkinAnimationInfoVectorPtr(&m_AniNames, &m_AniEndTimes);
+		if (auto targetNode = m_CurrTree->AddAniNode())
+		{
+			auto newNode = CreateGameObject<AniNodeVisual>(true);
+			newNode->SetSkinAnimationInfoVectorPtr(&m_AniNames, &m_AniEndTimes);
 
-		newNode->SetTargetAninode(targetNode);
-		newNode->SetDeleteAniNodeFunc(std::bind(&VisualizedAniTreeCreator::DeleteNode, this, newNode));
+			newNode->SetTargetAninode(targetNode);
+			newNode->SetDeleteAniNodeFunc(std::bind(&VisualizedAniTreeCreator::DeleteNode, this, newNode));
 
-		m_AniNodeVs.push_back(newNode);
+			m_AniNodeVs.push_back(newNode);
+		}
+	}
+}
+
+void VisualizedAniTreeCreator::AddNodeVs(AniTree::AniNode* node)
+{
+	if (m_CurrTree)
+	{
+		if (node)
+		{
+			auto newNode = CreateGameObject<AniNodeVisual>(true);
+			newNode->SetSkinAnimationInfoVectorPtr(&m_AniNames, &m_AniEndTimes);
+
+			newNode->SetTargetAninode(node);
+			newNode->SetDeleteAniNodeFunc(std::bind(&VisualizedAniTreeCreator::DeleteNode, this, newNode));
+
+			m_AniNodeVs.push_back(newNode);
+		}
 	}
 }
 
@@ -632,40 +701,189 @@ void VisualizedAniTreeCreator::DeleteNode(AniNodeVisual* node)
 		}
 	}
 
-	m_Tree->DeleteNode(node->GetNode());
+	m_CurrTree->DeleteNode(node->GetNode());
+}
+
+void VisualizedAniTreeCreator::SetAnimationTreeListsParamToPanel(int posX, int posY, UIPanel* workPanel)
+{
+	if (m_AniTreeParam == nullptr)
+	{
+		m_AniTreeParam = workPanel->CreateGameObject<UIParam>(true, UIParam::UIPARAMTYPE::MODIFIER);
+
+		m_AniTreeParam->SetTextHeight(15);
+		m_AniTreeParam->SetStringParam(L"CurrTree", &m_TreeNames, &m_CurrTreeName);
+		m_AniTreeParam->SetDirtyCall(std::bind(&VisualizedAniTreeCreator::ChangedTree, this));
+
+		workPanel->AddUICom(posX, posY, m_AniTreeParam);
+	}
+}
+
+void VisualizedAniTreeCreator::CreateNullTree()
+{
+	if (!m_Animator->IsRegisteredTree(m_CurrTree) && m_CurrTree)
+	{
+		delete m_CurrTree;
+		m_CurrTree = nullptr;
+	}
+
+	m_CurrTree = new AnimationTree;
+	m_Animator->SetAnimationTree(m_CurrTree);
+	m_Renderer->SetActive(false);
+	
+	for (auto& it : m_AniNodeVs)
+	{
+		it->VisualClear();
+	}
+
+	m_CurrTreeName.clear();
+	m_AniNodeVs.clear();
+	m_AniNames.clear();
+	m_AniEndTimes.clear();
+	m_CurrSkin = nullptr;
+}
+
+void VisualizedAniTreeCreator::ChangedTree()
+{
+	m_Animator->SetAnimationTree(m_CurrTreeName);
+
+	auto tree = m_Animator->GetAnimationTree();
+
+	if (m_CurrTree != tree && tree)
+	{
+		for (auto& it : m_AniNodeVs)
+		{
+			it->VisualClear();
+		}
+
+		m_AniNodeVs.clear();
+
+		m_CurrTree = tree;
+
+		std::string skinName = m_CurrTree->GetCurrSkinName();
+		std::string meshName = m_CurrTree->GetCurrMeshName();
+
+		if (skinName.size())
+		{
+			SelectSkinnedData(skinName);
+		}
+
+		if (meshName.size())
+		{
+			GetComponent<ComMesh>()->SelectMesh(meshName);
+		}
+
+		unsigned int numNodes = m_CurrTree->GetNumNodes();
+
+		for (unsigned int i = 0; i < numNodes; i++)
+		{
+			AddNodeVs(m_CurrTree->GetNode(i));
+		}
+
+		std::vector<AniNodeVisual*> vsNodes(m_AniNodeVs.begin(), m_AniNodeVs.end());
+
+		for (unsigned int i = 0; i < numNodes; i++)
+		{
+			auto currNode = vsNodes[i]->GetNode();
+			auto arrows = currNode->GetArrows();
+			vsNodes[i]->SetPos(currNode->GetPos());
+
+			for (auto& it : arrows)
+			{
+				auto currVsArrow = vsNodes[i]->CreateGameObject<AniTreeArowVisual>(true);
+				currVsArrow->SetFromNode(vsNodes[i]);
+
+				bool isNotHadTo = true;
+				for (auto& it2 : vsNodes)
+				{
+					if (it2->GetNode() == it.targetNode)
+					{
+						currVsArrow->SetToNode(it2);
+						vsNodes[i]->AddArrow(currVsArrow);
+						isNotHadTo = false;
+						break;
+					}
+				}
+
+				if (isNotHadTo)
+				{
+					currVsArrow->Delete();
+				}
+			}
+		}
+	}
 }
 
 #include <Windows.h>
 #include <ShlObj.h>
+#include <stdio.h>
 
-void VisualizedAniTreeCreator::TestCode()
+void VisualizedAniTreeCreator::SaveTree()
 {
-	IFileOpenDialog* pfsd;
-	HRESULT hr = CoCreateInstance(CLSID_FileOpenDialog, NULL, CLSCTX_INPROC, IID_PPV_ARGS(&pfsd));
+	IFileSaveDialog* pfsd;
+	HRESULT hr = CoCreateInstance(CLSID_FileSaveDialog, NULL, CLSCTX_INPROC, IID_PPV_ARGS(&pfsd));
+
 	if (SUCCEEDED(hr))
 	{
 		COMDLG_FILTERSPEC const rgSaveTypes[] =
 		{
-			{ L"Text Documents", L"*.txt" },
+			{ L"AniTree Files", L"*.aniTree" },
 			{ L"All Files", L"*.*" },
 		};
 
 		hr = pfsd->SetFileTypes(ARRAYSIZE(rgSaveTypes), rgSaveTypes);
+		LPWSTR fileName = nullptr;
+
+		wchar_t buffer[FILENAME_MAX];
+		GetCurrentDirectoryW(FILENAME_MAX, buffer);
+		std::wstring filePath(buffer);
 
 		if (SUCCEEDED(hr))
 		{
-			LPWSTR fileName;
+			IShellItem* folder;
+
+			while (filePath.size())
+			{
+				if (filePath.back() == '\\')
+				{
+					break;
+				}
+				else
+				{
+					filePath.pop_back();
+				}
+			}
+
+			filePath += L"Common\\AniTree";
+
+			SHCreateItemFromParsingName(filePath.c_str(), nullptr, IID_PPV_ARGS(&folder));
+			pfsd->SetFolder(folder);
+			folder->Release();
+		}
+
+		if (SUCCEEDED(hr))
+		{
 			hr = pfsd->Show(NULL);
 
 			if (SUCCEEDED(hr))
 			{
 				IShellItem* psi;
+
 				hr = pfsd->GetResult(&psi);
 				if (SUCCEEDED(hr))
 				{
 					psi->GetDisplayName(SIGDN_NORMALDISPLAY, &fileName);
-					psi->Release();
+					std::wstring wFileName(fileName);
+					filePath += L"\\" + wFileName;
 
+					if (m_CurrTree)
+					{
+						std::string treeName(wFileName.begin(), wFileName.end());
+						m_CurrTreeName = treeName;
+						m_Animator->SaveAnimationTree(filePath, treeName, m_CurrTree);
+						m_Animator->GetAnimationTreeNames(m_TreeNames);
+					}
+
+					psi->Release();
 				}
 			}
 		}

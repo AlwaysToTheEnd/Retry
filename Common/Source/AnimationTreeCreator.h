@@ -41,7 +41,6 @@ class AniNodeVisual :public GameObject
 		virtual void WorkClear() override;
 		virtual void Update(float delta) override;
 
-
 	private:
 		AniNodeVisual*		m_CurrFrom;
 		AniTreeArowVisual*	m_CurrArrow;
@@ -61,11 +60,15 @@ public:
 	}
 	virtual ~AniNodeVisual() = default;
 	virtual void Delete() override;
+	void VisualClear();
 
 	void DeleteArrow(const AniNodeVisual* to);
+	void ArrowVisualDeleted(AniTreeArowVisual* arrow);
 	void AniNameReset() { m_CurrAniName.clear(); }
 
-	void ArrowVisualDeleted(AniTreeArowVisual* arrow);
+	void AddArrow(AniTreeArowVisual* arrow);
+
+	void SetPos(physx::PxVec2 pos);
 	void SetTargetAninode(AniTree::AniNode* node);
 	void SetDeleteAniNodeFunc(std::function<void()> func);
 	void SetSkinAnimationInfoVectorPtr(const std::vector<std::string>* aniNames, const std::vector<unsigned int>* aniEnds);
@@ -79,9 +82,6 @@ private:
 	virtual void Update(float delta) override;
 	void ChangeAniRoof(AniTree::AniNode* node, UIButton* button);
 	void ChangedTargetAni();
-
-private:
-	void AddArrow(AniTreeArowVisual* arrow);
 
 private:
 	const std::vector<std::string>*			m_CurrSkinAnimationNames;
@@ -142,6 +142,7 @@ public:
 	}
 	virtual ~AniTreeArowVisual() = default;
 	virtual void Delete() override;
+	void VisualClear();
 
 	void SetFromNode(AniNodeVisual* from) { m_From = from; }
 	void SetToNode(AniNodeVisual* to);
@@ -167,29 +168,40 @@ class VisualizedAniTreeCreator :public GameObject
 public:
 	VisualizedAniTreeCreator(CGHScene& scene)
 		: GameObject(scene)
+		, m_CurrTree(nullptr)
+		, m_AniTreeParam(nullptr)
 		, m_CurrSkin(nullptr)
 		, m_WorkPanel(nullptr)
 		, m_Animator(nullptr)
 	{
 
 	}
-
+	virtual ~VisualizedAniTreeCreator();
+	
 	void SelectSkinnedData(const std::string& name);
 
 private:
 	virtual void Init() override;
 	virtual void Update(float delta) override;
 	void AddNode();
+	void AddNodeVs(AniTree::AniNode* node);
 	void DeleteNode(AniNodeVisual* node);
-	void TestCode();
+	
+	void SetAnimationTreeListsParamToPanel(int posX, int posY, UIPanel* workPanel);
+
+	void CreateNullTree();
+	void ChangedTree();
+	void SaveTree();
 
 private:
-	std::unique_ptr<AniTree::AnimationTree>	m_Tree;
+	AniTree::AnimationTree*					m_CurrTree;
 	UIPanel*								m_WorkPanel;
+	UIParam*								m_AniTreeParam;
 	ComAnimator*							m_Animator;
 	ComRenderer*							m_Renderer;
 
-	std::wstring							m_CurrTreeFilePath;
+	std::string								m_CurrTreeName;
+	std::vector<std::string>				m_TreeNames;
 
 	const Ani::SkinnedData*					m_CurrSkin;
 	std::vector<std::string>				m_SkinNames;
