@@ -55,10 +55,10 @@
     <Filter Include="Common\GameObject">
       <UniqueIdentifier>{55e480f8-e552-48de-a884-b8b2d8b2518d}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Step2\AnimationTreeCreateScene">
+    <Filter Include="Step2\Scenes">
       <UniqueIdentifier>{101019ee-3020-4bd7-9c52-b82a980d7fbd}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Step2\AnimationTree">
+    <Filter Include="Common\GameObject\AnimationTree">
       <UniqueIdentifier>{08dd9b4e-5586-45da-8ec8-0c9288782583}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -118,10 +118,10 @@
       <Filter>Common\CodeResources\Components</Filter>
     </ClCompile>
     <ClCompile Include="..\Common\Source\AnimationTree.cpp">
-      <Filter>Step2\AnimationTree</Filter>
+      <Filter>Common\GameObject\AnimationTree</Filter>
     </ClCompile>
     <ClCompile Include="..\Common\Source\AnimationTreeCreator.cpp">
-      <Filter>Step2\AnimationTree</Filter>
+      <Filter>Common\GameObject\AnimationTree</Filter>
     </ClCompile>
     <ClCompile Include="..\Common\Source\AnimationStructs.cpp">
       <Filter>Common\CodeResources\BaseClass</Filter>
@@ -160,7 +160,7 @@
       <Filter>Common\UIObjects</Filter>
     </ClCompile>
     <ClCompile Include="..\Common\Source\AnimationTreeScene\AnimationTreeScene.cpp">
-      <Filter>Step2\AnimationTreeCreateScene</Filter>
+      <Filter>Step2\Scenes</Filter>
     </ClCompile>
     <ClCompile Include="..\Common\Source\InputTextureNameList.cpp">
       <Filter>Step2</Filter>
@@ -219,10 +219,10 @@
       <Filter>Common\CodeResources\Components</Filter>
     </ClInclude>
     <ClInclude Include="..\Common\Source\AnimationTree.h">
-      <Filter>Step2\AnimationTree</Filter>
+      <Filter>Common\GameObject\AnimationTree</Filter>
     </ClInclude>
     <ClInclude Include="..\Common\Source\AnimationTreeCreator.h">
-      <Filter>Step2\AnimationTree</Filter>
+      <Filter>Common\GameObject\AnimationTree</Filter>
     </ClInclude>
     <ClInclude Include="..\Common\Source\BaseClass.h">
       <Filter>Common\CodeResources\BaseClass</Filter>
@@ -267,7 +267,7 @@
       <Filter>Common\CodeResources\BaseClass</Filter>
     </ClInclude>
     <ClInclude Include="..\Common\Source\AnimationTreeScene\AnimationTreeScene.h">
-      <Filter>Step2\AnimationTreeCreateScene</Filter>
+      <Filter>Step2\Scenes</Filter>
     </ClInclude>
     <ClInclude Include="..\Common\Source\InputTextureNameList.h">
       <Filter>Step2</Filter>

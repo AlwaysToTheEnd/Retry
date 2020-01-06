@@ -98,40 +98,58 @@ private:
 	bool	m_IsConstantBuffer = false;
 };
 
-struct FrameResource
-{
-	FrameResource(ID3D12Device* device, UINT passCount, UINT objectCount,UINT aniBoneSetNum)
-	{
-		ThrowIfFailed(device->CreateCommandAllocator(
-			D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(cmdListAlloc.GetAddressOf())));
-
-		passCB = std::make_unique<UploadBuffer<PassConstants>>(device, passCount, true);
-		meshObjectCB = std::make_unique<UploadBuffer<ObjectConstants>>(device, objectCount, true);
-		pointCB =std::make_unique<UploadBuffer<OnlyTexObjectConstants>>(device, objectCount, false);
-		aniBoneMatBuffer = std::make_unique<UploadBuffer<AniBoneMat>>(device, aniBoneSetNum, true);
-	}
-
-	FrameResource(const FrameResource& rhs) = delete;
-	FrameResource& operator=(const FrameResource& rhs) = delete;
-
-	ComPtr<ID3D12CommandAllocator> cmdListAlloc;
-	
-	std::unique_ptr<UploadBuffer<PassConstants>> passCB = nullptr;
-	std::unique_ptr<UploadBuffer<ObjectConstants>> meshObjectCB = nullptr;
-	std::unique_ptr<UploadBuffer<OnlyTexObjectConstants>> pointCB = nullptr;
-	std::unique_ptr<UploadBuffer<AniBoneMat>> aniBoneMatBuffer = nullptr;
-};
 
 class GraphicDX12 final : public IGraphicDevice
 {
 	enum
 	{
-		MATERIAL_BUFFER,
-		PASS_CB,
-		OBJECT_CB,
-		TEXTURE_TABLE,
-		ANIBONE_BUFFER,
-		ROOT_COUNT
+		T1_MATERIAL_SRV,
+		T1_PASS_CB,
+		T1_OBJECT_CB,
+		T1_TEXTURE_TABLE,
+		T1_ANIBONE_SRV,
+		T1_ROOT_COUNT
+	};
+
+	enum
+	{
+		P1_OBJECT_SRV,
+		P1_PASS_CB,
+		P1_TEXTURE_TABLE,
+		P1_ROOT_COUNT
+	};
+
+	struct T1_IndirectCommand
+	{
+		D3D12_GPU_VIRTUAL_ADDRESS	objectCB;
+		D3D12_GPU_VIRTUAL_ADDRESS	aniboneSRV;
+		D3D12_DRAW_ARGUMENTS		drawArg;
+	};
+
+	struct FrameResource
+	{
+		FrameResource(ID3D12Device* device, UINT passCount, UINT objectCount, UINT aniBoneSetNum)
+		{
+			ThrowIfFailed(device->CreateCommandAllocator(
+				D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(cmdListAlloc.GetAddressOf())));
+
+			passCB = std::make_unique<UploadBuffer<PassConstants>>(device, passCount, true);
+			meshObjectCB = std::make_unique<UploadBuffer<ObjectConstants>>(device, objectCount, true);
+			pointCB = std::make_unique<UploadBuffer<OnlyTexObjectConstants>>(device, objectCount, false);
+			aniBoneMatBuffer = std::make_unique<UploadBuffer<AniBoneMat>>(device, aniBoneSetNum, true);
+			t1IndrectCB = std::make_unique<UploadBuffer<T1_IndirectCommand>>(device, objectCount, false);
+		}
+
+		FrameResource(const FrameResource& rhs) = delete;
+		FrameResource& operator=(const FrameResource& rhs) = delete;
+
+		ComPtr<ID3D12CommandAllocator> cmdListAlloc;
+
+		std::unique_ptr<UploadBuffer<PassConstants>> passCB = nullptr;
+		std::unique_ptr<UploadBuffer<ObjectConstants>> meshObjectCB = nullptr;
+		std::unique_ptr<UploadBuffer<OnlyTexObjectConstants>> pointCB = nullptr;
+		std::unique_ptr<UploadBuffer<AniBoneMat>> aniBoneMatBuffer = nullptr;
+		std::unique_ptr<UploadBuffer<T1_IndirectCommand>> t1IndrectCB = nullptr;
 	};
 
 public:
@@ -174,6 +192,7 @@ private: // Device Base Functions
 private: // Base object Builds
 	void BuildFrameResources();
 	void BuildRootSignature();
+	void BuildCommandSignature();
 	void BuildShadersAndInputLayout();
 	void BuildPSOs();
 
@@ -197,55 +216,57 @@ private:
 	std::wstring	m_MainWndCaption = L"DX12";
 	D3D_DRIVER_TYPE	m_D3dDriverType = D3D_DRIVER_TYPE::D3D_DRIVER_TYPE_UNKNOWN;
 
-	ComPtr<IDXGIFactory4>	m_DxgiFactory;
-	ComPtr<IDXGISwapChain>	m_SwapChain;
-	DXGI_FORMAT				m_BackBufferFormat = DXGI_FORMAT_R8G8B8A8_UNORM; // 0~1 
-	DXGI_FORMAT				m_DepthStencilFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	ComPtr<IDXGIFactory4>				m_DxgiFactory;
+	ComPtr<IDXGISwapChain>				m_SwapChain;
+	DXGI_FORMAT							m_BackBufferFormat = DXGI_FORMAT_R8G8B8A8_UNORM; // 0~1 
+	DXGI_FORMAT							m_DepthStencilFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
 
-	ComPtr<ID3D12Device>	m_D3dDevice;
+	ComPtr<ID3D12Device>				m_D3dDevice;
 
-	ComPtr<ID3D12Fence>		m_Fence;
-	UINT64					m_CurrentFence = 0;
+	ComPtr<ID3D12Fence>					m_Fence;
+	UINT64								m_CurrentFence = 0;
 
-	ComPtr<ID3D12CommandQueue>		m_CommandQueue;
-	ComPtr<ID3D12CommandAllocator>	m_DirectCmdListAlloc;
-	ComPtr<ID3D12GraphicsCommandList> m_CommandList;
+	ComPtr<ID3D12CommandQueue>			m_CommandQueue;
+	ComPtr<ID3D12CommandAllocator>		m_DirectCmdListAlloc;
+	ComPtr<ID3D12GraphicsCommandList>	m_CommandList;
 
-	static const int				SwapChainBufferCount = 2;
-	int								m_CurrBackBuffer = 0;
-	ComPtr<ID3D12Resource>			m_SwapChainBuffer[SwapChainBufferCount];
-	ComPtr<ID3D12Resource>			m_DepthStencilBuffer;
+	static const int					SwapChainBufferCount = 2;
+	int									m_CurrBackBuffer = 0;
+	ComPtr<ID3D12Resource>				m_SwapChainBuffer[SwapChainBufferCount];
+	ComPtr<ID3D12Resource>				m_DepthStencilBuffer;
 
-	ComPtr<ID3D12DescriptorHeap>	m_RTVHeap;
-	ComPtr<ID3D12DescriptorHeap>	m_DSVHeap;
-	UINT							m_RTVDescriptorSize = 0;
-	UINT							m_DSVDescriptorSize = 0;
-	UINT							m_CBV_SRV_UAV_DescriptorSize = 0;
+	ComPtr<ID3D12DescriptorHeap>		m_RTVHeap;
+	ComPtr<ID3D12DescriptorHeap>		m_DSVHeap;
+	UINT								m_RTVDescriptorSize = 0;
+	UINT								m_DSVDescriptorSize = 0;
+	UINT								m_CBV_SRV_UAV_DescriptorSize = 0;
 
-	bool							m_4xMsaaState = false;
-	UINT							m_4xmsaaQuality = 0;
+	bool								m_4xMsaaState = false;
+	UINT								m_4xmsaaQuality = 0;
 
-	cCamera*						m_CurrCamera = nullptr;
-	physx::PxVec3					m_RayOrigin;
-	physx::PxVec3					m_Ray;
+	cCamera*							m_CurrCamera = nullptr;
+	physx::PxVec3						m_RayOrigin;
+	physx::PxVec3						m_Ray;
 
 private:
 	std::unordered_map<std::string, ComPtr<ID3D12PipelineState>>	m_PSOs;
 	std::vector<D3D12_INPUT_ELEMENT_DESC>							m_NTVertexInputLayout;
 	std::vector<D3D12_INPUT_ELEMENT_DESC>							m_BPPointInputLayout;
 	std::unordered_map<std::string, ComPtr<ID3DBlob>>				m_Shaders;
-	ComPtr<ID3D12RootSignature>										m_RootSignature = nullptr;
-	ComPtr<ID3D12RootSignature>										m_PointRenderRootSignature = nullptr;
+	ComPtr<ID3D12RootSignature>										m_T1RootSignature;
+	ComPtr<ID3D12CommandSignature>									m_T1CommandSignature;
+	ComPtr<ID3D12RootSignature>										m_P1RootSignature;
 	
-	PassConstants																m_MainPassCB;
+	PassConstants													m_MainPassCB;
+	std::unique_ptr<FrameResource>									m_FrameResource;
+	std::unique_ptr<DX12FontManager>								m_FontManager;
+
 	std::unique_ptr<cTextureBuffer>												m_TextureBuffer;
 	std::unique_ptr<cIndexManagementBuffer<Material>>							m_Materials;
 	std::unordered_map<std::string, MeshObject>									m_Meshs;
 	std::unordered_map<std::string, Ani::SkinnedData>							m_SkinnedDatas;
 	std::unordered_map<std::string, std::unique_ptr<AniTree::AnimationTree>>	m_AniTreeDatas;
 
-	std::unique_ptr<FrameResource>									m_FrameResource;
-	std::unique_ptr<DX12FontManager>								m_FontManager;
 
 private:
 	std::vector<RenderFont>							m_ReservedFonts;

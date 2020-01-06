@@ -4,7 +4,7 @@
 
 void AniTreeScene::Init()
 {
-	auto treeCreater = AddGameObject<VisualizedAniTreeCreator>();
+	CreateGameObject<VisualizedAniTreeCreator>();
 }
 
 bool AniTreeScene::Update(const DirectX::Mouse::ButtonStateTracker& mouse, float delta)

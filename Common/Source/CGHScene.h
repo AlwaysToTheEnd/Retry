@@ -28,7 +28,7 @@ public:
 	const std::string& GetSceneName() const { return m_SceneName; }
 
 protected:
-	template<typename T, typename ...Types> T* AddGameObject(Types... args);
+	template<typename T, typename ...Types> T* CreateGameObject(Types... args);
 	void AddGameObject(GameObject* object);
 
 private:
@@ -48,7 +48,7 @@ protected:
 };
 
 template<typename T, typename ...Types>
-inline T* CGHScene::AddGameObject(Types... args)
+inline T* CGHScene::CreateGameObject(Types... args)
 {
 	T* newObject = new T(*this, args...);
 	AddGameObject(newObject);

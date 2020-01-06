@@ -603,12 +603,12 @@ void GraphicDX12::Draw()
 	m_CommandList->SetDescriptorHeaps(1, descriptorHeaps);
 	m_CommandList->OMSetRenderTargets(1, &CurrentBackBufferView(), true, &DepthStencilView());
 
-	m_CommandList->SetGraphicsRootSignature(m_RootSignature.Get());
+	m_CommandList->SetGraphicsRootSignature(m_T1RootSignature.Get());
 
 	auto matBuffer = m_Materials->GetBufferResource();
-	m_CommandList->SetGraphicsRootShaderResourceView(MATERIAL_BUFFER, matBuffer->GetGPUVirtualAddress());
-	m_CommandList->SetGraphicsRootConstantBufferView(PASS_CB, m_FrameResource->passCB->Resource()->GetGPUVirtualAddress());
-	m_CommandList->SetGraphicsRootDescriptorTable(TEXTURE_TABLE, m_TextureBuffer->GetHeap()->GetGPUDescriptorHandleForHeapStart());
+	m_CommandList->SetGraphicsRootShaderResourceView(T1_MATERIAL_SRV, matBuffer->GetGPUVirtualAddress());
+	m_CommandList->SetGraphicsRootConstantBufferView(T1_PASS_CB, m_FrameResource->passCB->Resource()->GetGPUVirtualAddress());
+	m_CommandList->SetGraphicsRootDescriptorTable(T1_TEXTURE_TABLE, m_TextureBuffer->GetHeap()->GetGPUDescriptorHandleForHeapStart());
 
 	DrawMeshObjects();
 	DrawPointObjects();
@@ -721,15 +721,15 @@ void GraphicDX12::BuildRootSignature()
 	CD3DX12_DESCRIPTOR_RANGE texTable;
 	texTable.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, m_TextureBuffer->GetTexturesNum(), 0);
 
-	CD3DX12_ROOT_PARAMETER baseRootParam[ROOT_COUNT];
-	baseRootParam[MATERIAL_BUFFER].InitAsShaderResourceView(0, 1);
-	baseRootParam[PASS_CB].InitAsConstantBufferView(0);
-	baseRootParam[OBJECT_CB].InitAsConstantBufferView(1);
-	baseRootParam[ANIBONE_BUFFER].InitAsConstantBufferView(2);
-	baseRootParam[TEXTURE_TABLE].InitAsDescriptorTable(1, &texTable, D3D12_SHADER_VISIBILITY_PIXEL);
+	CD3DX12_ROOT_PARAMETER baseRootParam[T1_ROOT_COUNT];
+	baseRootParam[T1_MATERIAL_SRV].InitAsShaderResourceView(0, 1);
+	baseRootParam[T1_PASS_CB].InitAsConstantBufferView(0);
+	baseRootParam[T1_OBJECT_CB].InitAsConstantBufferView(1);
+	baseRootParam[T1_ANIBONE_SRV].InitAsConstantBufferView(2);
+	baseRootParam[T1_TEXTURE_TABLE].InitAsDescriptorTable(1, &texTable, D3D12_SHADER_VISIBILITY_PIXEL);
 
 	CD3DX12_ROOT_SIGNATURE_DESC rootDesc;
-	rootDesc.Init(ROOT_COUNT, baseRootParam, _countof(staticSamplers),
+	rootDesc.Init(T1_ROOT_COUNT, baseRootParam, _countof(staticSamplers),
 		staticSamplers, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
 	ComPtr<ID3DBlob> serializedRootSig = nullptr;
@@ -745,16 +745,16 @@ void GraphicDX12::BuildRootSignature()
 	ThrowIfFailed(hr);
 
 	ThrowIfFailed(m_D3dDevice->CreateRootSignature(0, serializedRootSig->GetBufferPointer(),
-		serializedRootSig->GetBufferSize(), IID_PPV_ARGS(m_RootSignature.GetAddressOf())));
+		serializedRootSig->GetBufferSize(), IID_PPV_ARGS(m_T1RootSignature.GetAddressOf())));
 
 	///////////////////////////////////////////////////////////////////////////
 	CD3DX12_ROOT_PARAMETER pointRenderRootParam[3];
-	pointRenderRootParam[0].InitAsShaderResourceView(0, 1);
-	pointRenderRootParam[1].InitAsConstantBufferView(0);
-	pointRenderRootParam[2].InitAsDescriptorTable(1, &texTable, D3D12_SHADER_VISIBILITY_PIXEL);
+	pointRenderRootParam[P1_OBJECT_SRV].InitAsShaderResourceView(0, 1);
+	pointRenderRootParam[P1_PASS_CB].InitAsConstantBufferView(0);
+	pointRenderRootParam[P1_TEXTURE_TABLE].InitAsDescriptorTable(1, &texTable, D3D12_SHADER_VISIBILITY_PIXEL);
 
 	CD3DX12_ROOT_SIGNATURE_DESC pointRenderrootDesc;
-	pointRenderrootDesc.Init(3, pointRenderRootParam, _countof(staticSamplers),
+	pointRenderrootDesc.Init(P1_ROOT_COUNT, pointRenderRootParam, _countof(staticSamplers),
 		staticSamplers, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
 	hr = D3D12SerializeRootSignature(&pointRenderrootDesc, D3D_ROOT_SIGNATURE_VERSION_1,
@@ -767,7 +767,26 @@ void GraphicDX12::BuildRootSignature()
 	ThrowIfFailed(hr);
 
 	ThrowIfFailed(m_D3dDevice->CreateRootSignature(0, serializedRootSig->GetBufferPointer(),
-		serializedRootSig->GetBufferSize(), IID_PPV_ARGS(m_PointRenderRootSignature.GetAddressOf())));
+		serializedRootSig->GetBufferSize(), IID_PPV_ARGS(m_P1RootSignature.GetAddressOf())));
+}
+
+void GraphicDX12::BuildCommandSignature()
+{
+	D3D12_INDIRECT_ARGUMENT_DESC argumentDescs[3] = {};
+
+	argumentDescs[0].Type = D3D12_INDIRECT_ARGUMENT_TYPE_CONSTANT_BUFFER_VIEW;
+	argumentDescs[0].ConstantBufferView.RootParameterIndex = T1_OBJECT_CB;
+	argumentDescs[1].Type = D3D12_INDIRECT_ARGUMENT_TYPE_SHADER_RESOURCE_VIEW;
+	argumentDescs[1].ShaderResourceView.RootParameterIndex = T1_ANIBONE_SRV;
+	argumentDescs[2].Type = D3D12_INDIRECT_ARGUMENT_TYPE_DRAW;
+
+	D3D12_COMMAND_SIGNATURE_DESC cmdSignatureDesc = {};
+	cmdSignatureDesc.pArgumentDescs = argumentDescs;
+	cmdSignatureDesc.NumArgumentDescs = _countof(argumentDescs);
+	cmdSignatureDesc.ByteStride = sizeof(T1_IndirectCommand);
+
+	ThrowIfFailed(m_D3dDevice->CreateCommandSignature(&cmdSignatureDesc, m_T1RootSignature.Get(), 
+		IID_PPV_ARGS(m_T1CommandSignature.GetAddressOf())));
 }
 
 void GraphicDX12::BuildShadersAndInputLayout()
@@ -822,7 +841,7 @@ void GraphicDX12::BuildPSOs()
 
 	ZeroMemory(&opaquePsoDesc, sizeof(D3D12_GRAPHICS_PIPELINE_STATE_DESC));
 	opaquePsoDesc.InputLayout = { m_NTVertexInputLayout.data(), (UINT)m_NTVertexInputLayout.size() };
-	opaquePsoDesc.pRootSignature = m_RootSignature.Get();
+	opaquePsoDesc.pRootSignature = m_T1RootSignature.Get();
 	opaquePsoDesc.VS =
 	{
 		reinterpret_cast<BYTE*>(m_Shaders["baseVS"]->GetBufferPointer()),
@@ -850,7 +869,7 @@ void GraphicDX12::BuildPSOs()
 	ThrowIfFailed(m_D3dDevice->CreateGraphicsPipelineState(&opaquePsoDesc, IID_PPV_ARGS(&m_PSOs["base"])));
 
 	opaquePsoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_POINT;
-	opaquePsoDesc.pRootSignature = m_PointRenderRootSignature.Get();
+	opaquePsoDesc.pRootSignature = m_P1RootSignature.Get();
 	opaquePsoDesc.InputLayout = { m_BPPointInputLayout.data(), (UINT)m_BPPointInputLayout.size() };
 
 	opaquePsoDesc.VS =
@@ -1004,6 +1023,7 @@ void GraphicDX12::UpdateObjectCB()
 	for (size_t i = 0; i < m_RenderObjects.size(); i++)
 	{
 		meshObjectCB->CopyData(i, m_RenderObjects[i]);
+		T1_IndirectCommand command = {};
 	}
 }
 
@@ -1067,11 +1087,11 @@ void GraphicDX12::DrawMeshObjects()
 			m_CommandList->IASetPrimitiveTopology(currPrimitive);
 		}
 
-		m_CommandList->SetGraphicsRootConstantBufferView(OBJECT_CB, ObjectCBVritualAD);
+		m_CommandList->SetGraphicsRootConstantBufferView(T1_OBJECT_CB, ObjectCBVritualAD);
 
 		if (m_RenderObjects[i].aniBoneIndex != -1)
 		{
-			m_CommandList->SetGraphicsRootConstantBufferView(ANIBONE_BUFFER,
+			m_CommandList->SetGraphicsRootConstantBufferView(T1_ANIBONE_SRV,
 				AniBoneCBVritualAD + (m_RenderObjects[i].aniBoneIndex * AniBoneStrideSize));
 		}
 
@@ -1089,10 +1109,10 @@ void GraphicDX12::DrawPointObjects()
 		ID3D12DescriptorHeap* descriptorHeaps[] = { m_TextureBuffer->GetHeap() };
 		m_CommandList->SetDescriptorHeaps(1, descriptorHeaps);
 
-		m_CommandList->SetGraphicsRootSignature(m_PointRenderRootSignature.Get());
-		m_CommandList->SetGraphicsRootShaderResourceView(0, m_FrameResource->pointCB->Resource()->GetGPUVirtualAddress());
-		m_CommandList->SetGraphicsRootConstantBufferView(1, m_FrameResource->passCB->Resource()->GetGPUVirtualAddress());
-		m_CommandList->SetGraphicsRootDescriptorTable(2, m_TextureBuffer->GetHeap()->GetGPUDescriptorHandleForHeapStart());
+		m_CommandList->SetGraphicsRootSignature(m_P1RootSignature.Get());
+		m_CommandList->SetGraphicsRootShaderResourceView(P1_OBJECT_SRV, m_FrameResource->pointCB->Resource()->GetGPUVirtualAddress());
+		m_CommandList->SetGraphicsRootConstantBufferView(P1_PASS_CB, m_FrameResource->passCB->Resource()->GetGPUVirtualAddress());
+		m_CommandList->SetGraphicsRootDescriptorTable(P1_TEXTURE_TABLE, m_TextureBuffer->GetHeap()->GetGPUDescriptorHandleForHeapStart());
 
 		D3D12_VERTEX_BUFFER_VIEW vertexBufferView = {};
 
