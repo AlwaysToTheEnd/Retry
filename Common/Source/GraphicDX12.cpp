@@ -313,6 +313,12 @@ void GraphicDX12::ComponentDeleteManaging(CGHScene&, COMPONENTTYPE type, ICompon
 	}
 }
 
+bool GraphicDX12::AddMesh(const std::string meshName, CGH::MESH_TYPE meshType, unsigned int dataSize, const void* data, const std::vector<unsigned int>& indices)
+{
+
+	return false;
+}
+
 void GraphicDX12::LoadTextureFromFolder(const std::vector<std::wstring>& targetTextureFolders)
 {
 	vector<string> files;
@@ -770,25 +776,6 @@ void GraphicDX12::BuildRootSignature()
 		serializedRootSig->GetBufferSize(), IID_PPV_ARGS(m_P1RootSignature.GetAddressOf())));
 }
 
-void GraphicDX12::BuildCommandSignature()
-{
-	D3D12_INDIRECT_ARGUMENT_DESC argumentDescs[3] = {};
-
-	argumentDescs[0].Type = D3D12_INDIRECT_ARGUMENT_TYPE_CONSTANT_BUFFER_VIEW;
-	argumentDescs[0].ConstantBufferView.RootParameterIndex = T1_OBJECT_CB;
-	argumentDescs[1].Type = D3D12_INDIRECT_ARGUMENT_TYPE_SHADER_RESOURCE_VIEW;
-	argumentDescs[1].ShaderResourceView.RootParameterIndex = T1_ANIBONE_SRV;
-	argumentDescs[2].Type = D3D12_INDIRECT_ARGUMENT_TYPE_DRAW;
-
-	D3D12_COMMAND_SIGNATURE_DESC cmdSignatureDesc = {};
-	cmdSignatureDesc.pArgumentDescs = argumentDescs;
-	cmdSignatureDesc.NumArgumentDescs = _countof(argumentDescs);
-	cmdSignatureDesc.ByteStride = sizeof(T1_IndirectCommand);
-
-	ThrowIfFailed(m_D3dDevice->CreateCommandSignature(&cmdSignatureDesc, m_T1RootSignature.Get(), 
-		IID_PPV_ARGS(m_T1CommandSignature.GetAddressOf())));
-}
-
 void GraphicDX12::BuildShadersAndInputLayout()
 {
 	string textureNum = to_string(m_TextureBuffer->GetTexturesNum());
@@ -1023,7 +1010,6 @@ void GraphicDX12::UpdateObjectCB()
 	for (size_t i = 0; i < m_RenderObjects.size(); i++)
 	{
 		meshObjectCB->CopyData(i, m_RenderObjects[i]);
-		T1_IndirectCommand command = {};
 	}
 }
 

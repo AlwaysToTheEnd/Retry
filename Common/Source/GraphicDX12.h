@@ -119,13 +119,6 @@ class GraphicDX12 final : public IGraphicDevice
 		P1_ROOT_COUNT
 	};
 
-	struct T1_IndirectCommand
-	{
-		D3D12_GPU_VIRTUAL_ADDRESS	objectCB;
-		D3D12_GPU_VIRTUAL_ADDRESS	aniboneSRV;
-		D3D12_DRAW_ARGUMENTS		drawArg;
-	};
-
 	struct FrameResource
 	{
 		FrameResource(ID3D12Device* device, UINT passCount, UINT objectCount, UINT aniBoneSetNum)
@@ -137,7 +130,6 @@ class GraphicDX12 final : public IGraphicDevice
 			meshObjectCB = std::make_unique<UploadBuffer<ObjectConstants>>(device, objectCount, true);
 			pointCB = std::make_unique<UploadBuffer<OnlyTexObjectConstants>>(device, objectCount, false);
 			aniBoneMatBuffer = std::make_unique<UploadBuffer<AniBoneMat>>(device, aniBoneSetNum, true);
-			t1IndrectCB = std::make_unique<UploadBuffer<T1_IndirectCommand>>(device, objectCount, false);
 		}
 
 		FrameResource(const FrameResource& rhs) = delete;
@@ -149,7 +141,6 @@ class GraphicDX12 final : public IGraphicDevice
 		std::unique_ptr<UploadBuffer<ObjectConstants>> meshObjectCB = nullptr;
 		std::unique_ptr<UploadBuffer<OnlyTexObjectConstants>> pointCB = nullptr;
 		std::unique_ptr<UploadBuffer<AniBoneMat>> aniBoneMatBuffer = nullptr;
-		std::unique_ptr<UploadBuffer<T1_IndirectCommand>> t1IndrectCB = nullptr;
 	};
 
 public:
@@ -172,6 +163,10 @@ public: // Used Functions
 private: // Only Used by FuncPtr
 	virtual void ComponentDeleteManaging(CGHScene&, COMPONENTTYPE type, IComponent* deletedCom) override;
 
+private: // Used from components
+	bool AddMesh(const std::string meshName, CGH::MESH_TYPE meshType,
+		unsigned int dataSize, const void* data, const std::vector<unsigned int>& indices);
+
 private: // Used Function by ReadyWorks 
 	virtual void LoadTextureFromFolder(const std::vector<std::wstring>& targetTextureFolders) override;
 	virtual void LoadMeshAndMaterialFromFolder(const std::vector<std::wstring>& targetMeshFolders) override;
@@ -192,11 +187,10 @@ private: // Device Base Functions
 private: // Base object Builds
 	void BuildFrameResources();
 	void BuildRootSignature();
-	void BuildCommandSignature();
 	void BuildShadersAndInputLayout();
 	void BuildPSOs();
 
-private:
+private: // Used in frame.
 	void UpdateMainPassCB();
 	void UpdateObjectCB();
 	void UpdateAniBoneBuffer();
@@ -254,7 +248,6 @@ private:
 	std::vector<D3D12_INPUT_ELEMENT_DESC>							m_BPPointInputLayout;
 	std::unordered_map<std::string, ComPtr<ID3DBlob>>				m_Shaders;
 	ComPtr<ID3D12RootSignature>										m_T1RootSignature;
-	ComPtr<ID3D12CommandSignature>									m_T1CommandSignature;
 	ComPtr<ID3D12RootSignature>										m_P1RootSignature;
 	
 	PassConstants													m_MainPassCB;
