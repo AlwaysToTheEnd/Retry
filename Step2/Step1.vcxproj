@@ -54,6 +54,7 @@
     <ClCompile Include="..\Common\UIObjects\UIPanel.cpp" />
     <ClCompile Include="..\Common\UIObjects\UIParam.cpp" />
     <ClCompile Include="Step2.cpp" />
+    <ClCompile Include="TESTOBJECT.CPP" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Common\Source\AnimationStructs.h" />
@@ -91,6 +92,7 @@
     <ClInclude Include="..\Common\UIObjects\UIButton.h" />
     <ClInclude Include="..\Common\UIObjects\UIPanel.h" />
     <ClInclude Include="Step2.h" />
+    <ClInclude Include="TestObject.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Common\MainShaders\BaseShader.hlsl">

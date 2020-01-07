@@ -164,8 +164,10 @@ private: // Only Used by FuncPtr
 	virtual void ComponentDeleteManaging(CGHScene&, COMPONENTTYPE type, IComponent* deletedCom) override;
 
 private: // Used from components
-	bool AddMesh(const std::string meshName, CGH::MESH_TYPE meshType,
+	bool AddMesh(const std::string& meshName, MeshObject& meshinfo,
 		unsigned int dataSize, const void* data, const std::vector<unsigned int>& indices);
+	bool AddMaterials(const std::vector<std::string>& materialNames, const std::vector<Material>& materials);
+	int	GetTextureIndex(const std::string& textureName);
 
 private: // Used Function by ReadyWorks 
 	virtual void LoadTextureFromFolder(const std::vector<std::wstring>& targetTextureFolders) override;

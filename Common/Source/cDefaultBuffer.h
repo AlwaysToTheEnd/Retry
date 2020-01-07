@@ -17,10 +17,12 @@ public:
 		D3D12_RESOURCE_STATES endState = D3D12_RESOURCE_STATE_GENERIC_READ);
 	virtual ~cDefaultBuffer() = default;
 
-	Microsoft::WRL::ComPtr<ID3D12Resource> AddData(ID3D12Device* device, ID3D12GraphicsCommandList* commandList, std::vector<T>& datas);
+	virtual Microsoft::WRL::ComPtr<ID3D12Resource> AddData(ID3D12Device* device, 
+		ID3D12GraphicsCommandList* commandList, UINT numData,const T* datas);
 
 public:
 	UINT GetBufferSize() { return m_BufferSize; }
+	UINT GetNumDatas() { return (m_BufferSize - m_Redundancy) / sizeof(T); }
 	ID3D12Resource* GetBufferResource() { return m_Resource.Get(); }
 	void ClearUploadBuffer()
 	{
@@ -86,19 +88,19 @@ inline cDefaultBuffer<T>::cDefaultBuffer(
 }
 
 template<typename T>
-inline Microsoft::WRL::ComPtr<ID3D12Resource> cDefaultBuffer<T>::AddData(ID3D12Device* device, ID3D12GraphicsCommandList* commandList, std::vector<T>& datas)
+inline Microsoft::WRL::ComPtr<ID3D12Resource> cDefaultBuffer<T>::AddData(ID3D12Device* device, 
+	ID3D12GraphicsCommandList* commandList, UINT numData,const T* datas)
 {
 	Microsoft::WRL::ComPtr<ID3D12Resource> result = nullptr;
 	UINT elementByteSize = sizeof(T);
 	BYTE* mappedData = nullptr;
-	UINT addDataByteSize = elementByteSize * datas.size();
+	UINT addDataByteSize = elementByteSize * numData;
+	UINT usingByte = m_BufferSize - m_Redundancy;
 
 	if (m_Redundancy < addDataByteSize)
 	{
-		UINT usingByte = m_BufferSize - m_Redundancy;
-
 		m_BufferSize = (m_BufferSize * 2) > (m_BufferSize + addDataByteSize) ? (m_BufferSize * 2) : (m_BufferSize + addDataByteSize);
-		m_Redundancy = bufferSize - (usingByte + addDataByteSize);
+		m_Redundancy = m_BufferSize - usingByte;
 
 		ID3D12Resource* newResource = nullptr;
 		ThrowIfFailed(device->CreateCommittedResource(
@@ -130,13 +132,14 @@ inline Microsoft::WRL::ComPtr<ID3D12Resource> cDefaultBuffer<T>::AddData(ID3D12D
 		IID_PPV_ARGS(m_UploadBuffer.GetAddressOf())));
 
 	D3D12_SUBRESOURCE_DATA subResourceData = {};
-	subResourceData.pData = datas.data();
+	subResourceData.pData = datas;
 	subResourceData.RowPitch = addDataByteSize;
 	subResourceData.SlicePitch = subResourceData.RowPitch;
 
-	UpdateSubresources<1>(commandList, m_Resource.Get(), m_UploadBuffer.Get(), m_BufferSize - m_Redundancy, 0, 1, &subResourceData);
+	UpdateSubresources<1>(commandList, m_Resource.Get(), m_UploadBuffer.Get(), usingByte, 0, 1, &subResourceData);
 	commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_Resource.Get(),
 		D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_GENERIC_READ));
 
+	m_Redundancy -= addDataByteSize;
 	return result;
 }

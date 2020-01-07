@@ -282,7 +282,17 @@ IComponent* GraphicDX12::CreateComponent(CGHScene&, COMPONENTTYPE type, unsigned
 	break;
 	case COMPONENTTYPE::COM_MESH:
 	{
-		newComponent = new ComMesh(gameObject, id, &m_Meshs);
+		static MeshWorkFunc meshWork =
+		{
+			std::bind(&GraphicDX12::AddMesh, this,
+			std::placeholders::_1, std::placeholders::_2,std::placeholders::_3,std::placeholders::_4, std::placeholders::_5)
+			,
+			std::bind(&GraphicDX12::AddMaterials, this, std::placeholders::_1, std::placeholders::_2)
+			,
+			std::bind(&GraphicDX12::GetTextureIndex, this, std::placeholders::_1)
+		};
+
+		newComponent = new ComMesh(gameObject, id, &m_Meshs, &meshWork);
 	}
 	break;
 	case COMPONENTTYPE::COM_ANIMATOR:
@@ -294,7 +304,7 @@ IComponent* GraphicDX12::CreateComponent(CGHScene&, COMPONENTTYPE type, unsigned
 		assert(false);
 		break;
 	}
-
+	
 	return newComponent;
 }
 
@@ -313,10 +323,98 @@ void GraphicDX12::ComponentDeleteManaging(CGHScene&, COMPONENTTYPE type, ICompon
 	}
 }
 
-bool GraphicDX12::AddMesh(const std::string meshName, CGH::MESH_TYPE meshType, unsigned int dataSize, const void* data, const std::vector<unsigned int>& indices)
+bool GraphicDX12::AddMesh(const std::string& meshName, MeshObject& meshinfo,
+	unsigned int dataSize, const void* data, const std::vector<unsigned int>& indices)
 {
+	ComPtr<ID3D12CommandAllocator>		allocator;
+	ComPtr<ID3D12GraphicsCommandList>	commandList;
 
-	return false;
+	ThrowIfFailed(m_D3dDevice->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, 
+		IID_PPV_ARGS(allocator.GetAddressOf())));
+	ThrowIfFailed(m_D3dDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, 
+		allocator.Get(), nullptr, IID_PPV_ARGS(commandList.GetAddressOf())));
+
+	if (m_Meshs.find(meshName) == m_Meshs.end())
+	{
+		return false;
+	}
+
+	UINT baseVertexLocation = 0;
+	UINT numVertices = 0;
+	UINT baseIndexLocation = 0;
+	UINT numIndices = 0;
+
+	ComPtr<ID3D12Resource> prevVertexBuffer = nullptr;
+	ComPtr<ID3D12Resource> prevIndexBuffer = nullptr;
+
+	switch (meshinfo.type)
+	{
+	case CGH::MESH_NORMAL:
+	{
+		baseVertexLocation = m_VertexBuffer->GetNumDatas();
+		baseIndexLocation = m_IndexBuffer->GetNumDatas();
+		numVertices = dataSize / sizeof(Vertex);
+		numIndices = indices.size();
+
+		prevVertexBuffer = m_VertexBuffer->AddData(m_D3dDevice.Get(), commandList.Get(),
+			numVertices, reinterpret_cast<const Vertex*>(data));
+		prevIndexBuffer = m_IndexBuffer->AddData(m_D3dDevice.Get(), commandList.Get(),
+			numIndices, indices.data());
+	}
+	break;
+	case CGH::MESH_SKINED:
+	case CGH::MESH_NONE:
+		return false;
+		break;
+	default:
+		break;
+	}
+
+	commandList->Close();
+
+	ID3D12CommandList* cmdLists[] = { commandList.Get() };
+	m_CommandQueue->ExecuteCommandLists(_countof(cmdLists), cmdLists);
+
+	for (auto& it : meshinfo.subs)
+	{
+		it.second.vertexOffset += baseVertexLocation;
+		it.second.indexOffset += baseIndexLocation;
+	}
+
+	m_Meshs.insert({ meshName, meshinfo });
+
+	FlushCommandQueue();
+	ThrowIfFailed(allocator->Reset());
+
+	return true;
+}
+
+bool GraphicDX12::AddMaterials(const std::vector<std::string>& materialNames, const std::vector<Material>& materials)
+{
+	ComPtr<ID3D12CommandAllocator>		allocator;
+	ComPtr<ID3D12GraphicsCommandList>	commandList;
+
+	ThrowIfFailed(m_D3dDevice->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT,
+		IID_PPV_ARGS(allocator.GetAddressOf())));
+	ThrowIfFailed(m_D3dDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT,
+		allocator.Get(), nullptr, IID_PPV_ARGS(commandList.GetAddressOf())));
+
+	auto prevBuffer = m_Materials->AddData(m_D3dDevice.Get(), commandList.Get(), materials.size(), materials.data(), materialNames);
+
+	commandList->Close();
+
+	ID3D12CommandList* cmdLists[] = { commandList.Get() };
+	m_CommandQueue->ExecuteCommandLists(_countof(cmdLists), cmdLists);
+	
+	FlushCommandQueue();
+	ThrowIfFailed(allocator->Reset());
+
+	return true;
+}
+
+int GraphicDX12::GetTextureIndex(const std::string& textureName)
+{
+	return m_TextureBuffer->GetTextureIndex(textureName);
 }
 
 void GraphicDX12::LoadTextureFromFolder(const std::vector<std::wstring>& targetTextureFolders)
@@ -1011,6 +1109,7 @@ void GraphicDX12::UpdateObjectCB()
 	{
 		meshObjectCB->CopyData(i, m_RenderObjects[i]);
 	}
+
 }
 
 void GraphicDX12::UpdateAniBoneBuffer()

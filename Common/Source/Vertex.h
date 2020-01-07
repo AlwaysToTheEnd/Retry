@@ -3,6 +3,7 @@
 
 struct Vertex
 {
+	Vertex() = default;
 	Vertex(physx::PxVec3 _pos, physx::PxVec3 _normal, physx::PxVec2 _uv)
 	{
 		position = _pos;

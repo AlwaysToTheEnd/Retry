@@ -4,6 +4,7 @@
 #include "d3dApp.h"
 
 const std::unordered_map<std::string, MeshObject>* ComMesh::m_Meshs = nullptr;
+const MeshWorkFunc* ComMesh::m_MeshWorks = nullptr;
 
 std::vector<RenderInfo>* ComRenderer::m_ReservedRenderObjects = nullptr;
 

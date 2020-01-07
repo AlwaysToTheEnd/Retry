@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <unordered_map>
+#include <functional>
 #include "BaseClass.h"
 #define BONEMAXMATRIX 160
 
@@ -149,6 +150,16 @@ struct MeshObject
 
 	std::unordered_map<std::string, SubmeshData> subs;
 };
+
+struct MeshWorkFunc
+{
+	std::function<bool(const std::string & meshName, MeshObject & meshinfo,
+		unsigned int dataSize, const void* data, const std::vector<unsigned int> & indices)>	createMeshfunc;
+	std::function<bool(const std::vector<std::string> & materialNames, 
+											const std::vector<Material> & materials)>			createMaterialfunc;
+	std::function<int(const std::string& textureName)>											getTextureIndexfunc;
+};
+
 
 struct AniBoneMat
 {

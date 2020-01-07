@@ -16,25 +16,28 @@ class ComMesh :public IComponent
 {
 public:
 	ComMesh(GameObject& gameObject, int ID,
-		const std::unordered_map<std::string, MeshObject>* meshs)
+		const std::unordered_map<std::string, MeshObject>* meshs,const MeshWorkFunc* funcs)
 		: IComponent(COMPONENTTYPE::COM_MESH ,gameObject, ID)
 		, m_CurrMesh(nullptr)
 	{
 		if (m_Meshs == nullptr)
 		{
 			m_Meshs = meshs;
+			m_MeshWorks = funcs;
 		}
 	}
 	virtual ~ComMesh() = default;
 
 	virtual void Update(float delta) override {};
 
-	static void GetMeshNames(std::vector<std::string>& out);
+	void GetMeshNames(std::vector<std::string>& out);
+	const MeshWorkFunc* GetDeviceMeshWorks() { return m_MeshWorks; }
 	bool SelectMesh(const std::string& name);
 	const std::string& GetCurrMeshName() const { return m_CurrMeshName; }
 
 private:
-	static const std::unordered_map<std::string, MeshObject>* m_Meshs;
+	static const std::unordered_map<std::string, MeshObject>*	m_Meshs;
+	static const MeshWorkFunc*									m_MeshWorks;
 
 	const MeshObject* m_CurrMesh;
 	std::string m_CurrMeshName;
@@ -64,7 +67,7 @@ public:
 
 	virtual void Update(float delta) override;
 
-	static void GetSkinNames(std::vector<std::string>& out);
+	void GetSkinNames(std::vector<std::string>& out);
 	unsigned int GetAniEndTime(const std::string& name) const { return m_CurrSkinnedData->GetClipEndTime(name); }
 	const Ani::SkinnedData* GetSkinnedData(const std::string& name) const { return &m_SkinnedDatas->find(name)->second; }
 	int GetBoneMatStoredIndex() const { return m_BoneMatStoredIndex; }

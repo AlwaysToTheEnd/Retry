@@ -168,6 +168,9 @@
     <ClCompile Include="..\Common\Source\GameTimer.cpp">
       <Filter>Common\CodeResources\Procedure Class</Filter>
     </ClCompile>
+    <ClCompile Include="TESTOBJECT.CPP">
+      <Filter>Step2</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Common\Source\d3dApp.h">
@@ -274,6 +277,9 @@
     </ClInclude>
     <ClInclude Include="..\Common\Source\GameTimer.h">
       <Filter>Common\CodeResources\Procedure Class</Filter>
+    </ClInclude>
+    <ClInclude Include="TestObject.h">
+      <Filter>Step2</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
