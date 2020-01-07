@@ -33,9 +33,9 @@ protected:
 	void										AddGameObject(GameObject* object);
 
 private:
-	DeviceObjectUpdater& GetComponentUpdater(unsigned int hashCode);
-	void UnRegisterDeviceObject(unsigned int hashCode, DeviceObject* gameObject);
-	void RegisterDeviceObject(unsigned int hashCode, DeviceObject* gameObject);
+	DeviceObjectUpdater& GetComponentUpdater(const char* typeName);
+	void UnRegisterDeviceObject(const char* typeName, DeviceObject* gameObject);
+	void RegisterDeviceObject(const char* typeName, DeviceObject* gameObject);
 
 
 private:
@@ -44,13 +44,13 @@ private:
 	IPhysicsDevice*											m_PhysicsDevice;
 	std::vector<std::unique_ptr<GameObject>>				m_Objects;
 	size_t													m_NumNullptr;
-	std::unordered_map<unsigned int, DeviceObjectUpdater>	m_ComUpdater;
+	std::unordered_map<std::string, DeviceObjectUpdater>	m_ComUpdater;
 };
 
 template<typename T, typename ...Types>
 inline T* CGHScene::CreateGameObject(Types... args)
 {
-	T* newObject = new T(*this, nullptr, typeid(T).hash_code(), args...);
+	T* newObject = new T(*this, nullptr, typeid(T).name(), args...);
 	AddGameObject(newObject);
 
 	return newObject;

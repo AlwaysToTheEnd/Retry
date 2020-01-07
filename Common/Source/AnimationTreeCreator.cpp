@@ -222,8 +222,8 @@ void AniNodeVisual::AnimationTreeArrowCreator::Excute(AniNodeVisual* aniNode)
 
 void AniTreeArowVisual::Init()
 {
-	m_Transform = AddComponent<DOTransform>();
-	m_Renderer = AddComponent<DORenderer>();
+	m_Transform = CreateComponenet<DOTransform>();
+	m_Renderer = CreateComponenet<DORenderer>();
 	m_Transform->SetPosZ(0.4f);
 }
 
@@ -342,7 +342,7 @@ void AniTreeArowVisual::SetToNode(AniNodeVisual* to)
 	if (m_From != to)
 	{
 		m_To = to;
-		m_UICollison = AddComponent<DOUICollision>();
+		m_UICollison = CreateComponenet<DOUICollision>();
 		m_UICollison->AddFunc(
 			std::bind(&AniTreeArowVisual::AniTreeArrowArttributeEditer::SetArrowVisual,
 				&s_ArrowArttributeEditer, this));
@@ -584,10 +584,10 @@ void VisualizedAniTreeCreator::SelectSkinnedData(const std::string& name)
 
 void VisualizedAniTreeCreator::Init()
 {
-	AddComponent<DOTransform>();
-	AddComponent<DOMesh>();
-	m_Renderer = AddComponent<DORenderer>();
-	m_Animator = AddComponent<DOAnimator>();
+	CreateComponenet<DOTransform>();
+	CreateComponenet<DOMesh>();
+	m_Renderer = CreateComponenet<DORenderer>();
+	m_Animator = CreateComponenet<DOAnimator>();
 
 	m_Renderer->SetRenderInfo(RenderInfo(RENDER_MESH));
 
@@ -744,6 +744,12 @@ void VisualizedAniTreeCreator::CreateNullTree()
 
 void VisualizedAniTreeCreator::ChangedTree()
 {
+	if (!m_Animator->IsRegisteredTree(m_CurrTree) && m_CurrTree)
+	{
+		delete m_CurrTree;
+		m_CurrTree = nullptr;
+	}
+
 	m_Animator->SetAnimationTree(m_CurrTreeName);
 
 	auto tree = m_Animator->GetAnimationTree();

@@ -264,23 +264,29 @@ void GraphicDX12::GetWorldRay(physx::PxVec3& origin, physx::PxVec3& ray) const
 	ray = m_Ray;
 }
 
-DeviceObject* GraphicDX12::RegisterDeviceObject(CGHScene&, COMPONENTTYPE type, unsigned int id, GameObject& gameObject)
+void GraphicDX12::RegisterDeviceObject(CGHScene& scene, DeviceObject* gameObject)
 {
-	DeviceObject* newComponent = nullptr;
+	auto typeName = gameObject->GetTypeName();
 
-	switch (type)
+	if (typeName == typeid(DORenderer).name())
 	{
-	case COMPONENTTYPE::COM_RENDERER:
-	{
-		newComponent = new DORenderer(gameObject, id, &m_ReservedRenders);
+		static bool firstWork = true;
+		if (firstWork)
+		{
+			reinterpret_cast<DORenderer*>(gameObject)->SetDORenderNeedInfoFromDevice(&m_ReservedRenders);
+			firstWork = false;
+		}
 	}
-	break;
-	case COMPONENTTYPE::COM_FONT:
+	else if (typeName == typeid(DOFont).name())
 	{
-		newComponent = new DOFont(gameObject, id, &m_ReservedFonts);
+		static bool firstWork = true;
+		if (firstWork)
+		{
+			reinterpret_cast<DOFont*>(gameObject)->SetDOFontNeedInfoFromDevice(&m_ReservedFonts);
+			firstWork = false;
+		}
 	}
-	break;
-	case COMPONENTTYPE::COM_MESH:
+	else if (typeName == typeid(DOMesh).name())
 	{
 		static MeshWorkFunc meshWork =
 		{
@@ -292,35 +298,28 @@ DeviceObject* GraphicDX12::RegisterDeviceObject(CGHScene&, COMPONENTTYPE type, u
 			std::bind(&GraphicDX12::GetTextureIndex, this, std::placeholders::_1)
 		};
 
-		newComponent = new DOMesh(gameObject, id, &m_Meshs, &meshWork);
+		static bool firstWork = true;
+		if (firstWork)
+		{
+			reinterpret_cast<DOMesh*>(gameObject)->SetDOMeshNeedInfoFromDevice(&meshWork, &m_Meshs);
+			firstWork = false;
+		}
 	}
-	break;
-	case COMPONENTTYPE::COM_ANIMATOR:
+	else if (typeName == typeid(DOAnimator).name())
 	{
-		newComponent = new DOAnimator(gameObject, id, &m_SkinnedDatas, &m_AniTreeDatas, &m_ReservedAniBones);
+		static bool firstWork = true;
+		if (firstWork)
+		{
+			reinterpret_cast<DOAnimator*>(gameObject)->SetDOAnimatorNeedInfoFromDevice(
+				&m_ReservedAniBones, &m_SkinnedDatas, &m_AniTreeDatas);
+			firstWork = false;
+		}
 	}
-	break;
-	default:
-		assert(false);
-		break;
-	}
-	
-	return newComponent;
 }
 
-void GraphicDX12::UnRegisterDeviceObject(CGHScene&, COMPONENTTYPE type, DeviceObject* deletedCom)
+void GraphicDX12::UnRegisterDeviceObject(CGHScene& scene, DeviceObject* gameObject)
 {
-	switch (type)
-	{
-	case COMPONENTTYPE::COM_RENDERER:
-	case COMPONENTTYPE::COM_MESH:
-	case COMPONENTTYPE::COM_ANIMATOR:
-	case COMPONENTTYPE::COM_FONT:
-		break;
-	default:
-		assert(false);
-		break;
-	}
+	
 }
 
 bool GraphicDX12::AddMesh(const std::string& meshName, MeshObject& meshinfo,

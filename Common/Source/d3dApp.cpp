@@ -16,7 +16,7 @@ D3DApp* D3DApp::GetApp()
 	return m_App;
 }
 
-const DirectX::Keyboard::KeyboardStateTracker* D3DApp::GetKeyBoard(const GameObject* caller)
+const DirectX::Keyboard::KeyboardStateTracker* D3DApp::GetKeyBoard(const GameObject* const caller)
 {
 	const DirectX::Keyboard::KeyboardStateTracker* result = nullptr;
 
@@ -28,7 +28,7 @@ const DirectX::Keyboard::KeyboardStateTracker* D3DApp::GetKeyBoard(const GameObj
 	return result;
 }
 
-const DirectX::Mouse::ButtonStateTracker* D3DApp::GetMouse(const GameObject* caller)
+const DirectX::Mouse::ButtonStateTracker* D3DApp::GetMouse(const GameObject* const caller)
 {
 	const DirectX::Mouse::ButtonStateTracker* result = nullptr;
 
@@ -40,7 +40,7 @@ const DirectX::Mouse::ButtonStateTracker* D3DApp::GetMouse(const GameObject* cal
 	return result;
 }
 
-void D3DApp::InputDeviceHoldRequest(const GameObject* caller)
+void D3DApp::InputDeviceHoldRequest(const GameObject* const caller)
 {
 	if (caller)
 	{
@@ -48,7 +48,7 @@ void D3DApp::InputDeviceHoldRequest(const GameObject* caller)
 	}
 }
 
-void D3DApp::InputDeviceHoldCancle(const GameObject* caller)
+void D3DApp::InputDeviceHoldCancle(const GameObject* const caller)
 {
 	if (caller)
 	{

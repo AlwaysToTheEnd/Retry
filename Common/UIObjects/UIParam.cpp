@@ -47,14 +47,16 @@ void UIParam::SetDirtyCall(std::function<void()> dirtyCall)
 
 void UIParam::Init()
 {
-	m_Trans = AddComponent<DOTransform>();
-	m_Font = AddComponent<DOFont>();
+	m_Trans = CreateComponenet<DOTransform>();
+	m_Font = CreateComponenet<DOFont>();
 	m_Font->SetFont(RenderFont::fontNames.front());
 	m_Font->SetBenchmark(RenderFont::FONTBENCHMARK::LEFT);
 
+	auto Trans = GetComponent<DOTransform>();
+
 	if (m_Type == UIPARAMTYPE::MODIFIER)
 	{
-		m_UICollision = AddComponent<DOUICollision>();
+		m_UICollision = CreateComponenet<DOUICollision>();
 		m_UICollision->AddFunc(std::bind(&UIParam::SetUIParamToController, this));
 	}
 }

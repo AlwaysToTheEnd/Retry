@@ -3,8 +3,8 @@
 #include "GameObject.h"
 #include "d3dApp.h"
 
-const std::unordered_map<std::string, MeshObject>* DOMesh::m_Meshs = nullptr;
 const MeshWorkFunc* DOMesh::m_MeshWorks = nullptr;
+const std::unordered_map<std::string, MeshObject>* DOMesh::m_Meshs = nullptr;
 
 std::vector<RenderInfo>* DORenderer::m_ReservedRenderObjects = nullptr;
 
@@ -13,6 +13,12 @@ std::unordered_map<std::string, std::unique_ptr<AniTree::AnimationTree>>* DOAnim
 std::vector<AniBoneMat>* DOAnimator::m_ReservedAniBone = nullptr;
 
 std::vector<RenderFont>* DOFont::m_ReservedFonts = nullptr;
+
+void DOMesh::SetDOMeshNeedInfoFromDevice(const MeshWorkFunc* funcs, const std::unordered_map<std::string, MeshObject>* meshs)
+{
+	m_MeshWorks = funcs;
+	m_Meshs = meshs;
+}
 
 void DOMesh::GetMeshNames(std::vector<std::string>& out)
 {
@@ -60,6 +66,13 @@ void DOAnimator::Update(float delta)
 	{
 		m_BoneMatStoredIndex = -1;
 	}
+}
+
+void DOAnimator::SetDOAnimatorNeedInfoFromDevice(std::vector<AniBoneMat>* reservedAnibones, const std::unordered_map<std::string, Ani::SkinnedData>* skinnedDatas, std::unordered_map<std::string, std::unique_ptr<AniTree::AnimationTree>>* animationTrees)
+{
+	m_ReservedAniBone = reservedAnibones;
+	m_SkinnedDatas = skinnedDatas;
+	m_AnimationTrees = animationTrees;
 }
 
 void DOAnimator::GetSkinNames(std::vector<std::string>& out)

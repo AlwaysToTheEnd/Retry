@@ -37,7 +37,7 @@ bool CGHScene::Update(const DirectX::Mouse::ButtonStateTracker& mouse, float del
 		m_Objects[i]->SetClickedState(GameObject::CLICKEDSTATE::NONE);
 	}
 
-	GetComponentUpdater(typeid(DOTransform).hash_code()).Update(delta);
+	GetComponentUpdater(typeid(DOUICollision).name()).Update(delta);
 	physx::PxVec3 rayOrigin;
 	physx::PxVec3 ray;
 	GETAPP->GetMouseRay(rayOrigin, ray);
@@ -65,29 +65,29 @@ bool CGHScene::Update(const DirectX::Mouse::ButtonStateTracker& mouse, float del
 
 
 	m_PhysicsDevice->Update(*this);
-	GetComponentUpdater(typeid(DORigidStatic).hash_code()).Update(delta);
-	GetComponentUpdater(typeid(DORigidDynamic).hash_code()).Update(delta);
+	GetComponentUpdater(typeid(DORigidStatic).name()).Update(delta);
+	GetComponentUpdater(typeid(DORigidDynamic).name()).Update(delta);
 
-	GetComponentUpdater(typeid(DOAnimator).hash_code()).Update(delta);
-	GetComponentUpdater(typeid(DORenderer).hash_code()).Update(delta);
-	GetComponentUpdater(typeid(DOFont).hash_code()).Update(delta);
+	GetComponentUpdater(typeid(DOAnimator).name()).Update(delta);
+	GetComponentUpdater(typeid(DORenderer).name()).Update(delta);
+	GetComponentUpdater(typeid(DOFont).name()).Update(delta);
 
 	m_GraphicDevice->Update(*this);
 
 	return result;
 }
 
-DeviceObjectUpdater& CGHScene::GetComponentUpdater(unsigned int hashCode)
+DeviceObjectUpdater& CGHScene::GetComponentUpdater(const char* typeName)
 {
-	return m_ComUpdater[hashCode];
+	return m_ComUpdater[typeName];
 }
 
-void CGHScene::UnRegisterDeviceObject(unsigned int hashCode, DeviceObject* gameObject)
+void CGHScene::UnRegisterDeviceObject(const char* typeName, DeviceObject* gameObject)
 {
 	assert(gameObject);
 	assert(gameObject->GetID() != -1);
 
-	auto& comUpdater = GetComponentUpdater(hashCode);
+	auto& comUpdater = GetComponentUpdater(typeName);
 
 	m_GraphicDevice->UnRegisterDeviceObject(*this, gameObject);
 	m_PhysicsDevice->UnRegisterDeviceObject(*this, gameObject);
@@ -95,18 +95,18 @@ void CGHScene::UnRegisterDeviceObject(unsigned int hashCode, DeviceObject* gameO
 	comUpdater.SignalDeleted(gameObject->GetID());
 }
 
-void CGHScene::RegisterDeviceObject(unsigned int hashCode, DeviceObject* gameObject)
+void CGHScene::RegisterDeviceObject(const char* typeName, DeviceObject* gameObject)
 {
 	assert(gameObject);
 	assert(gameObject->GetID() == -1);
 
-	auto& comUpdater = GetComponentUpdater(hashCode);
+	auto& comUpdater = GetComponentUpdater(typeName);
 	gameObject->SetID(comUpdater.GetNextID());
 
 	m_GraphicDevice->RegisterDeviceObject(*this, gameObject);
 	m_PhysicsDevice->RegisterDeviceObject(*this, gameObject);
 
-	comUpdater.AddData(std::unique_ptr<DeviceObject>(gameObject));
+	comUpdater.AddData(gameObject);
 }
 
 void CGHScene::DeleteGameObject(GameObject* object)

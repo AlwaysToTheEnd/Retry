@@ -20,20 +20,24 @@ public:
 
 	friend class CGHScene;
 public:
-	GameObject(CGHScene& scene, GameObject* const parent, unsigned int hashCode, bool enrollment = true);
+	GameObject(CGHScene& scene, GameObject* parent, const char* typeName);
 	virtual ~GameObject() = default;
 
 	virtual void	Delete();
 	void			ExceptComponent(GameObject* com);
 
-	template<typename T, typename ...Types> T*	CreateComponenet(Types... args);
+	template<typename T, typename ...Types> T*	CreateComponenet(bool dependent, Types... args);
+	template<typename T> T*						CreateComponenet();
 	void										SetClickedState(CLICKEDSTATE state) { m_State = state; }
 	void										SetAllComponentActive(bool value);
 	void										SetActive(bool value) { m_IsActive = value; }
+	void										SetParent(GameObject* parent);
 
-	bool										Is(unsigned int hashCode) const { return m_HashCode == hashCode; }
-	CLICKEDSTATE								GetClickedState() const { return m_State; }
+	bool										Is(const char* hashName) const { return m_TypeName == hashName; }
 	bool										GetActive() const { return m_IsActive; }
+	const char*									GetTypeName() const { return m_TypeName; }
+	CLICKEDSTATE								GetClickedState() const { return m_State; }
+	const GameObject* const						GetConstructor() const;
 	template<typename T> T*						GetComponent();
 	template<typename T> std::vector<T*>		GetComponents();
 	CGHScene&									GetScene() { return m_Scene; }
@@ -41,11 +45,15 @@ public:
 protected:
 	virtual void Update(float delta) = 0;
 	virtual void Init() = 0;
+	virtual bool IsDeviceObject() { return false; }
+
+private:
+	void CreatedObjectInit(GameObject* object);
 
 protected:
 	CGHScene&												m_Scene;
-	GameObject* const										m_Parent;
-	const unsigned int										m_HashCode;
+	GameObject*												m_Parent;
+	const char*												m_TypeName;
 
 	bool													m_IsActive;
 	CLICKEDSTATE											m_State;
@@ -53,9 +61,32 @@ protected:
 };
 
 template<typename T, typename ...Types>
-inline T* GameObject::CreateComponenet(Types ...args)
+inline T* GameObject::CreateComponenet(bool dependent, Types ...args)
 {
-	T* result = new T(m_Scene, this, typeid(T).hash_code(), args...);
+	T* result = nullptr;
+
+	if (dependent)
+	{
+		result= new T(m_Scene, this, typeid(T).name(), args...);
+		m_Components.push_back(result);
+	}
+	else
+	{
+		result = new T(m_Scene, nullptr, typeid(T).name(), args...);
+	}
+
+	CreatedObjectInit(result);
+
+	return result;
+}
+
+template<typename T>
+inline T* GameObject::CreateComponenet()
+{
+	T* result = new T(m_Scene, this, typeid(T).name());
+
+	m_Components.push_back(result);
+	CreatedObjectInit(result);
 
 	return result;
 }
@@ -67,9 +98,10 @@ inline T* GameObject::GetComponent()
 
 	for (auto& it : m_Components)
 	{
-		if (it->Is(typeid(T).hash_code())
+		if (it->Is(typeid(T).name()))
 		{
 			component = static_cast<T*>(it);
+			break;
 		}
 	}
 
@@ -79,15 +111,15 @@ inline T* GameObject::GetComponent()
 template<typename T>
 inline std::vector<T*> GameObject::GetComponents()
 {
-	std::vector<T*> components;
+	std::vector<T*> result;
 
-	for (auto& it : m_Components)
+	for (size_t i = 0; i < m_Components.size(); i++)
 	{
-		if (it->Is(typeid(T).hash_code())
+		if (m_Components[i]->Is(typeid(T).name()))
 		{
-			components.push_back(static_cast<T*>(it));
+			result.push_back(static_cast<T*>(m_Components[i]));
 		}
 	}
-
-	return components;
+	
+	return result;
 }

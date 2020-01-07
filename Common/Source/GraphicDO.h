@@ -15,48 +15,51 @@ namespace AniTree
 class DOMesh :public DeviceObject
 {
 public:
-	DOMesh(CGHScene& scene, GameObject* const parent, unsigned int hashCode)
-		: DeviceObject(scene, parent, hashCode)
+	DOMesh(CGHScene& scene, GameObject* parent, const char* typeName)
+		: DeviceObject(scene, parent, typeName)
 	{
 	
 	}
 	virtual ~DOMesh() = default;
 
-	virtual void Update(float delta) override {};
+	void				SetDOMeshNeedInfoFromDevice(const MeshWorkFunc* funcs,
+									const std::unordered_map<std::string, MeshObject>* meshs);
 
-	void GetMeshNames(std::vector<std::string>& out);
+	void				GetMeshNames(std::vector<std::string>& out);
 	const MeshWorkFunc* GetDeviceMeshWorks() { return m_MeshWorks; }
-	bool SelectMesh(const std::string& name);
-	const std::string& GetCurrMeshName() const { return m_CurrMeshName; }
+	const std::string&	GetCurrMeshName() const { return m_CurrMeshName; }
+
+	bool				SelectMesh(const std::string& name);
 
 private:
-	static const std::unordered_map<std::string, MeshObject>*	m_Meshs;
-	static const MeshWorkFunc*									m_MeshWorks;
+	virtual void		Update(float delta) override {}
+	virtual void		Init() override {}
 
-	const MeshObject* m_CurrMesh;
-	std::string m_CurrMeshName;
+private:
+	static const MeshWorkFunc*									m_MeshWorks;
+	static const std::unordered_map<std::string, MeshObject>*	m_Meshs;
+
+	std::string			m_CurrMeshName;
+	const MeshObject*	m_CurrMesh;
 };
 
 class DOAnimator :public DeviceObject
 {
 public:
-	DOAnimator(CGHScene& scene, GameObject* const parent, unsigned int hashCode)
-		: DeviceObject(scene, parent, hashCode)
+	DOAnimator(CGHScene& scene, GameObject* parent, const char* typeName)
+		: DeviceObject(scene, parent, typeName)
 		, m_AniTree(nullptr)
 		, m_BoneMatStoredIndex(-1)
 		, m_CurrSkinnedData(nullptr)
 		, m_CurrTick(0)
 	{
-		if (m_SkinnedDatas == nullptr)
-		{
-			m_SkinnedDatas = skinnedDatas;
-			m_AnimationTrees = aniTreeDatas;
-			m_ReservedAniBone = reservedAniBone;
-		}
+		
 	}
 	virtual ~DOAnimator() = default;
 
-	virtual void Update(float delta) override;
+	void SetDOAnimatorNeedInfoFromDevice(std::vector<AniBoneMat>* reservedAnibones,
+		const std::unordered_map<std::string, Ani::SkinnedData>* skinnedDatas,
+		std::unordered_map<std::string, std::unique_ptr<AniTree::AnimationTree>>* animationTrees);
 
 	void GetSkinNames(std::vector<std::string>& out);
 	unsigned int GetAniEndTime(const std::string& name) const { return m_CurrSkinnedData->GetClipEndTime(name); }
@@ -75,8 +78,12 @@ public:
 	void SaveAnimationTree(const std::wstring& filePath, const std::string& fileName, AniTree::AnimationTree* tree);
 
 private:
+	virtual void Update(float delta) override;
+	virtual void Init() override {}
+
+private:
 	static const std::unordered_map<std::string, Ani::SkinnedData>*						m_SkinnedDatas;
-	static std::unordered_map<std::string,std::unique_ptr<AniTree::AnimationTree>>*	m_AnimationTrees;
+	static std::unordered_map<std::string,std::unique_ptr<AniTree::AnimationTree>>*		m_AnimationTrees;
 	static std::vector<AniBoneMat>*														m_ReservedAniBone;
 
 	AniTree::AnimationTree*					m_AniTree;
@@ -89,63 +96,62 @@ private:
 class DORenderer :public DeviceObject
 {
 public:
-	DORenderer(CGHScene& scene, GameObject* const parent, unsigned int hashCode)
-		: DeviceObject(scene, parent, hashCode)
+	DORenderer(CGHScene& scene, GameObject* parent, const char* typeName)
+		: DeviceObject(scene, parent, typeName)
 		, m_RenderInfo(RENDER_NONE)
 	{
-		if (m_ReservedRenderObjects == nullptr)
-		{
-			m_ReservedRenderObjects = reservedRenderObjects;
-		}
+		
 	}
 	virtual ~DORenderer() = default;
 
-	virtual void Update(float delta) override;
-	void SetRenderInfo(const RenderInfo& info) 
-	{ 
-		m_RenderInfo = info; 
-	}
+	void SetDORenderNeedInfoFromDevice(std::vector<RenderInfo>* reservedRenderOBs) { m_ReservedRenderObjects = reservedRenderOBs; }
+
+	void SetRenderInfo(const RenderInfo& info) { m_RenderInfo = info; }
 	const RenderInfo& GetRenderInfo() { return m_RenderInfo; }
 
 private:
+	virtual void Update(float delta) override;
+	virtual void Init() override {}
+
 	void RenderMesh();
 
 private:
-	RenderInfo	m_RenderInfo;
 	static std::vector<RenderInfo>* m_ReservedRenderObjects;
+	RenderInfo	m_RenderInfo;
 };
 
 class DOFont :public DeviceObject
 {
 public:
-	DOFont(CGHScene& scene, GameObject* const parent, unsigned int hashCode)
-		: DeviceObject(scene, parent, hashCode)
+	DOFont(CGHScene& scene, GameObject* parent, const char* typeName)
+		: DeviceObject(scene, parent, typeName)
 		, m_Pos(0,0,0)
 		, m_FontHeight(-1)
 		, m_Color(0,0,0,1)
 		, m_DrawSize(0,0)
 		, m_Benchmark(RenderFont::FONTBENCHMARK::LEFT)
 	{
-		if (m_ReservedFonts == nullptr)
-		{
-			m_ReservedFonts = reservedFonts;
-		}
 	}
 	virtual ~DOFont() = default;
 
-	virtual void Update(float delta) override;
+	void SetDOFontNeedInfoFromDevice(std::vector<RenderFont>* reservedFonts) { m_ReservedFonts = reservedFonts; }
+
 	void SetFont(std::wstring fontName) { m_FontName = fontName; }
 	void SetBenchmark(RenderFont::FONTBENCHMARK mark) { m_Benchmark = mark; }
 
+private:
+	virtual void Update(float delta) override;
+	virtual void Init() override {}
+
 public:
-	std::wstring		m_Text;
-	int					m_FontHeight;
+	physx::PxVec4		m_Color;
 	physx::PxVec2		m_DrawSize;
 	physx::PxVec3		m_Pos;
-	physx::PxVec4		m_Color;
+	int					m_FontHeight;
+	std::wstring		m_Text;
 
 private:
-	RenderFont::FONTBENCHMARK		m_Benchmark;
 	static std::vector<RenderFont>*	m_ReservedFonts;
+	RenderFont::FONTBENCHMARK		m_Benchmark;
 	std::wstring					m_FontName;
 };

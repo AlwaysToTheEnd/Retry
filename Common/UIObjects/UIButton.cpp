@@ -4,9 +4,9 @@
 
 void UIButton::Init()
 {
-	m_Trans = AddComponent<DOTransform>();
-	m_Font = AddComponent<DOFont>();
-	m_UICollision = AddComponent<DOUICollision>();
+	m_Trans = CreateComponenet<DOTransform>();
+	m_Font = CreateComponenet<DOFont>();
+	m_UICollision = CreateComponenet<DOUICollision>();
 
 	m_Font->SetFont(RenderFont::fontNames.front());
 	m_Font->SetBenchmark(RenderFont::FONTBENCHMARK::CENTER);
@@ -28,7 +28,7 @@ void UIButton::SetTexture(const std::string& name, const physx::PxVec2& halfSize
 {
 	if (!m_Render)
 	{
-		m_Render = AddComponent<DORenderer>();
+		m_Render = CreateComponenet<DORenderer>();
 	}
 
 	RenderInfo info(RENDER_TYPE::RENDER_UI);

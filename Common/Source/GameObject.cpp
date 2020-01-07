@@ -5,15 +5,14 @@
 #include "d3dApp.h"
 
 
-GameObject::GameObject(CGHScene& scene, GameObject* const parent, unsigned int hashCode, bool enrollment)
+GameObject::GameObject(CGHScene& scene, GameObject* parent, const char* typeName)
 	: m_Scene(scene)
 	, m_Parent(parent)
-	, m_HashCode(hashCode)
+	, m_TypeName(typeName)
+	, m_IsActive(true)
+	, m_State(CLICKEDSTATE::NONE)
 {
-	if (enrollment)
-	{
-		m_Scene.AddGameObject(this);
-	}
+	
 }
 
 void GameObject::SetAllComponentActive(bool value)
@@ -21,6 +20,53 @@ void GameObject::SetAllComponentActive(bool value)
 	for (auto& it : m_Components)
 	{
 		it->SetActive(value);
+	}
+}
+
+void GameObject::SetParent(GameObject* parent)
+{
+	if (m_Parent)
+	{
+		m_Parent->ExceptComponent(this);
+	}
+	
+	m_Parent = parent;
+
+	if (m_Parent)
+	{
+		for (auto& it : m_Parent->m_Components)
+		{
+			if (it == this)
+			{
+				return;
+			}
+		}
+
+		m_Parent->m_Components.push_back(this);
+	}
+}
+
+const GameObject* const GameObject::GetConstructor() const
+{
+	if (m_Parent)
+	{
+		return m_Parent->GetConstructor();
+	}
+	else
+	{
+		return this;
+	}
+}
+
+void GameObject::CreatedObjectInit(GameObject* object)
+{
+	if (object->IsDeviceObject())
+	{
+		m_Scene.RegisterDeviceObject(object->m_TypeName, reinterpret_cast<DeviceObject*>(object));
+	}
+	else
+	{
+		m_Scene.AddGameObject(object);
 	}
 }
 

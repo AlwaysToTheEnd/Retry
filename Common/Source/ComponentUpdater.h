@@ -8,6 +8,8 @@ template <typename T>
 class InstanceAndIndexManager
 {
 public:
+	virtual ~InstanceAndIndexManager()=default;
+
 	unsigned int GetNextID();
 	void AddData(T com);
 	void AddData();
@@ -19,9 +21,11 @@ protected:
 	std::vector<unsigned int>	m_DeletedIndices;
 };
 
-class DeviceObjectUpdater : public InstanceAndIndexManager<std::unique_ptr<DeviceObject>>
+class DeviceObjectUpdater : public InstanceAndIndexManager<DeviceObject*>
 {
 public:
+	virtual ~DeviceObjectUpdater();
+
 	void Update(float delta);
 	virtual void SignalDeleted(unsigned int id) override;
 };

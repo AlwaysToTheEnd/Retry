@@ -1,7 +1,7 @@
 #pragma once
 #include "IGraphicDevice.h"
 #include "IPhysicsDevice.h"
-#include "IComponent.h"
+#include "DeviceObject.h"
 #include "CGHScene.h"
 #include <Mouse.h>
 #include <Keyboard.h>
@@ -46,10 +46,10 @@ protected:
 
 public:
 	static D3DApp* GetApp();
-	const DirectX::Keyboard::KeyboardStateTracker* GetKeyBoard(const GameObject* caller);
-	const DirectX::Mouse::ButtonStateTracker* GetMouse(const GameObject* caller);
-	void InputDeviceHoldRequest(const GameObject* caller);
-	void InputDeviceHoldCancle(const GameObject* caller);
+	const DirectX::Keyboard::KeyboardStateTracker* GetKeyBoard(const GameObject* const caller);
+	const DirectX::Mouse::ButtonStateTracker* GetMouse(const GameObject* const caller);
+	void InputDeviceHoldRequest(const GameObject* const caller);
+	void InputDeviceHoldCancle(const GameObject* const caller);
 	void GetMouseRay(physx::PxVec3& origin, physx::PxVec3& ray) const { origin = m_RayOrigin; ray = m_Ray; }
 	physx::PxVec2 GetMousePos() const { return m_Camera.GetMousePos(); }
 	physx::PxVec2 GetClientSize() const { return m_GDevice->GetClientSize(); }

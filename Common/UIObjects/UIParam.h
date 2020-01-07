@@ -57,8 +57,8 @@ private:
 	} s_ParamController;
 
 public:
-	UIParam(CGHScene& scene, UIPARAMTYPE type)
-		: GameObject(scene)
+	UIParam(CGHScene& scene, GameObject* parent, const char* typeName, UIPARAMTYPE type)
+		: GameObject(scene, parent, typeName)
 		, m_Type(type)
 		, m_ControlType(UICONTROLTYPE::ORIGIN_DATA)
 		, m_Font(nullptr)

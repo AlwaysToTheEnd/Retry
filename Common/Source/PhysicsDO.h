@@ -16,16 +16,20 @@ namespace physx
 class DORigidDynamic :public DeviceObject
 {
 public:
-	DORigidDynamic(CGHScene& scene, GameObject* const parent, unsigned int hashCode)
-		: DeviceObject(scene, parent, hashCode)
-		, m_RigidBody(rigidBody)
+	DORigidDynamic(CGHScene& scene, GameObject* parent, const char* typeName)
+		: DeviceObject(scene, parent, typeName)
+		, m_RigidBody(nullptr)
 	{
 
 	}
 	virtual ~DORigidDynamic() = default;
 
-	virtual void Update(float delta) override;
+	void SetRigidBody(physx::PxRigidDynamic* rigidBody) { m_RigidBody = rigidBody; }
 	physx::PxRigidDynamic* GetRigidBody() { return m_RigidBody; }
+
+private:
+	virtual void Update(float delta) override;
+	virtual void Init() override {}
 
 private:
 	physx::PxRigidDynamic* m_RigidBody;
@@ -34,16 +38,19 @@ private:
 class DORigidStatic :public DeviceObject
 {
 public:
-	DORigidStatic(CGHScene& scene, GameObject* const parent, unsigned int hashCode)
-		: DeviceObject(scene, parent, hashCode)
-		, m_RigidBody(rigidBody)
+	DORigidStatic(CGHScene& scene, GameObject* parent, const char* typeName)
+		: DeviceObject(scene, parent, typeName)
 	{
 
 	}
 	virtual ~DORigidStatic() = default;
 
-	virtual void Update(float delta) override;
+	void SetRigidBody(physx::PxRigidStatic* rigidBody) { m_RigidBody = rigidBody; }
 	physx::PxRigidStatic* GetRigidBody() { return m_RigidBody; }
+
+private:
+	virtual void Update(float delta) override;
+	virtual void Init() override {}
 
 private:
 	physx::PxRigidStatic* m_RigidBody;
@@ -52,17 +59,15 @@ private:
 class DOUICollision :public DeviceObject
 {
 public:
-	DOUICollision(CGHScene& scene, GameObject* const parent, unsigned int hashCode)
-		: DeviceObject(scene, parent, hashCode)
+	DOUICollision(CGHScene& scene, GameObject* parent, const char* typeName)
+		: DeviceObject(scene, parent, typeName)
 		,m_Size(1,1)
 		,m_Offset(0,0)
-		,m_ReservedUICol(reservedVec)
 	{
-		
 	}
 	virtual ~DOUICollision() = default;
 
-	virtual void Update(float delta) override;
+	void SetDOUICollisionNeedInfoFromDevice(std::vector<UICollisions>* reservedUIcol) { m_ReservedUICol = reservedUIcol; }
 
 	void SetSize(const physx::PxVec2& halfSize) { m_Size = halfSize; }
 	void SetOffset(const physx::PxVec2& offset) { m_Offset = offset; }
@@ -70,7 +75,11 @@ public:
 	void AddFunc(std::function<void()> func) { m_VoidFuncs.push_back(func); }
 
 private:
-	std::vector<UICollisions>* const		m_ReservedUICol;
+	virtual void Update(float delta) override;
+	virtual void Init() override {}
+
+private:
+	std::vector<UICollisions>* 				m_ReservedUICol;
 
 	physx::PxVec2							m_Size;
 	physx::PxVec2							m_Offset;
@@ -80,15 +89,14 @@ private:
 class DOTransform :public DeviceObject
 {
 public:
-	DOTransform(CGHScene& scene, GameObject* const parent, unsigned int hashCode)
-		: DeviceObject(scene, parent, hashCode)
+	DOTransform(CGHScene& scene, GameObject* parent, const char* typeName)
+		: DeviceObject(scene, parent, typeName)
 		, m_Transform(physx::PxIDENTITY::PxIdentity)
 	{
 		
 	}
 	virtual ~DOTransform() = default;
 
-	virtual void Update(float delta) override {}
 	void SetTransform(const physx::PxTransform& transform) { m_Transform = transform; }
 	void SetPosX(float x) { m_Transform.p.x = x; }
 	void SetPosY(float y) { m_Transform.p.y = y; }
@@ -98,6 +106,10 @@ public:
 
 	physx::PxMat44 GetMatrix() const { return physx::PxMat44(m_Transform); }
 	const physx::PxTransform& GetTransform() const { return m_Transform; }
+
+private:
+	virtual void Update(float delta) override {}
+	virtual void Init() {}
 
 private:
 	physx::PxTransform m_Transform;

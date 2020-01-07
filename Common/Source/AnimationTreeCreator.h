@@ -49,8 +49,8 @@ class AniNodeVisual :public GameObject
 	} s_AnitreeArrowCreater;
 
 public:
-	AniNodeVisual(CGHScene& scene)
-		:GameObject(scene)
+	AniNodeVisual(CGHScene& scene, GameObject* parent, const char* typeName)
+		: GameObject(scene, parent, typeName)
 		, m_CurrSkinAnimationNames(nullptr)
 		, m_CurrSkinAnimationEndTick(nullptr)
 		, m_Panel(nullptr)
@@ -132,8 +132,8 @@ private:
 	} s_ArrowArttributeEditer;
 
 public:
-	AniTreeArowVisual(CGHScene& scene)
-		:GameObject(scene)
+	AniTreeArowVisual(CGHScene& scene, GameObject* parent, const char* typeName)
+		: GameObject(scene, parent, typeName)
 		, m_From(nullptr)
 		, m_To(nullptr)
 		, m_MousePos(0,0)
@@ -166,8 +166,8 @@ private:
 class VisualizedAniTreeCreator :public GameObject
 {
 public:
-	VisualizedAniTreeCreator(CGHScene& scene)
-		: GameObject(scene)
+	VisualizedAniTreeCreator(CGHScene& scene, GameObject* parent, const char* typeName)
+		: GameObject(scene, parent, typeName)
 		, m_CurrTree(nullptr)
 		, m_AniTreeParam(nullptr)
 		, m_CurrSkin(nullptr)

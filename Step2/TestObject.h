@@ -5,8 +5,8 @@
 class TestObject :public GameObject
 {
 public:
-	TestObject(CGHScene& scene)
-		:GameObject(scene)
+	TestObject(CGHScene& scene, GameObject* parent, const char* typeName)
+		: GameObject(scene, parent, typeName)
 	{
 
 	}

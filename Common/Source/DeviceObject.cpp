@@ -1,11 +1,11 @@
 #include "DeviceObject.h"
 #include "CGHScene.h"
 
-DeviceObject::DeviceObject(CGHScene& scene, GameObject* const parent, unsigned int hashCode)
-	: GameObject(scene, parent, hashCode, false)
+DeviceObject::DeviceObject(CGHScene& scene, GameObject* parent, const char* typeName)
+	: GameObject(scene, parent, typeName)
 	, m_ID(-1)
 {
-	scene.RegisterDeviceObject(hashCode, this);
+
 }
 
 void DeviceObject::Delete()
@@ -20,5 +20,5 @@ void DeviceObject::Delete()
 		m_Parent->ExceptComponent(this);
 	}
 
-	m_Scene.UnRegisterDeviceObject(m_HashCode, this);
+	m_Scene.UnRegisterDeviceObject(m_TypeName, this);
 }

@@ -8,10 +8,10 @@ UIPanel::UIPanelController UIPanel::s_PanelController;
 
 void UIPanel::Init()
 {
-	m_Trans = AddComponent<DOTransform>();
-	m_Font = AddComponent<DOFont>();
-	m_UICollision = AddComponent<DOUICollision>();
-	m_Render = AddComponent<DORenderer>();
+	m_Trans = CreateComponenet<DOTransform>();
+	m_Font = CreateComponenet<DOFont>();
+	m_UICollision = CreateComponenet<DOUICollision>();
+	m_Render = CreateComponenet<DORenderer>();
 
 	m_Trans->SetPosZ(0.9f);
 	m_Font->SetFont(RenderFont::fontNames.front());
@@ -33,21 +33,21 @@ void UIPanel::AddUICom(unsigned int x, unsigned y, UIButton* button)
 {
 	m_UIComs.push_back({ UICOMTYPE::UIBUTTON, button });
 	m_UIComOffset.push_back({ static_cast<float>(x),static_cast<float>(y) });
-	button->SetConstructor(GetConstructor());
+	button->SetParent(this);
 }
 
 void UIPanel::AddUICom(unsigned int x, unsigned y, UIParam* param)
 {
 	m_UIComs.push_back({ UICOMTYPE::UIPARAM, param });
 	m_UIComOffset.push_back({ static_cast<float>(x),static_cast<float>(y) });
-	param->SetConstructor(GetConstructor());
+	param->SetParent(this);
 }
 
 void UIPanel::AddUICom(unsigned int x, unsigned y, UIPanel* panel)
 {
 	m_UIComs.push_back({ UICOMTYPE::UIPANEL, panel });
 	m_UIComOffset.push_back({ static_cast<float>(x),static_cast<float>(y) });
-	panel->SetConstructor(GetConstructor());
+	panel->SetParent(this);
 
 	panel->ThisPanalIsStatic();
 }

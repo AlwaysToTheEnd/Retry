@@ -56,8 +56,8 @@ private:
 	};
 
 public:
-	UIPanel(CGHScene& scene)
-		:GameObject(scene)
+	UIPanel(CGHScene& scene, GameObject* parent, const char* typeName)
+		: GameObject(scene, parent, typeName)
 		, m_Trans(nullptr)
 		, m_Font(nullptr)
 		, m_Render(nullptr)

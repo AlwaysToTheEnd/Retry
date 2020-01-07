@@ -2,11 +2,13 @@
 #include "GameObject.h"
 
 class GameObject;
+class DeviceObjectUpdater;
 
 class DeviceObject : public GameObject
 {
+	friend class DeviceObjectUpdater;
 public:
-	DeviceObject(CGHScene& scene, GameObject* const parent, unsigned int hashCode);
+	DeviceObject(CGHScene& scene, GameObject* parent, const char* typeName);
 	virtual ~DeviceObject() = default;
 
 	virtual void	Delete() override;
@@ -17,6 +19,7 @@ public:
 protected:
 	virtual void Update(float delta) = 0;
 	virtual void Init() = 0;
+	virtual bool IsDeviceObject() override { return true; }
 
 private:
 	int				m_ID;

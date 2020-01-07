@@ -4,8 +4,8 @@
 class HeightMap :public GameObject
 {
 public:
-	HeightMap(CGHScene& scene)
-		:GameObject(scene)
+	HeightMap(CGHScene& scene, GameObject* parent, const char* typeName)
+		: GameObject(scene, parent, typeName)
 	{
 
 	}

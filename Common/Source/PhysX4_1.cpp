@@ -113,70 +113,55 @@ void PhysX4_1::CreateScene(const CGHScene& scene)
 	m_Scenes[scene.GetSceneName()].scene = addedScene;
 }
 
-DeviceObject* PhysX4_1::RegisterDeviceObject(CGHScene& scene, COMPONENTTYPE type, unsigned int id, GameObject& gameObject)
+void PhysX4_1::RegisterDeviceObject(CGHScene& scene, DeviceObject* gameObject)
 {
-	DeviceObject* newComponent = nullptr;
-
 	static PxTransform identityTransform(PxIDENTITY::PxIdentity);
 	identityTransform.p.y = 4;
 	PxRigidActor* rigidBody = nullptr;
 
-	switch (type)
-	{
-	case COMPONENTTYPE::COM_DYNAMIC:
-	{
-		rigidBody = m_Physics->createRigidDynamic(identityTransform);
-		newComponent = new DORigidDynamic(gameObject, id, reinterpret_cast<PxRigidDynamic*>(rigidBody));
+	auto typeName = gameObject->GetTypeName();
 
-	}
-	break;
-	case COMPONENTTYPE::COM_STATIC:
+	if (typeName == typeid(DORigidDynamic).name())
 	{
-		rigidBody = m_Physics->createRigidStatic(identityTransform);
-		newComponent = new DORigidStatic(gameObject, id, reinterpret_cast<PxRigidStatic*>(rigidBody));
+		auto pxDynamic = m_Physics->createRigidDynamic(identityTransform);
+		reinterpret_cast<DORigidDynamic*>(gameObject)->SetRigidBody(pxDynamic);
+		rigidBody = pxDynamic;
 	}
-	break;
-	case COMPONENTTYPE::COM_TRANSFORM:
-		newComponent = new DOTransform(gameObject, id);
-		break;
-	case COMPONENTTYPE::COM_UICOLLISTION:
-		newComponent = new DOUICollision(gameObject, id, &m_Scenes[scene.GetSceneName()].reservedToCheckUIs);
-		break;
-	default:
-		assert(false);
-		break;
+	else if (typeName == typeid(DORigidStatic).name())
+	{
+		auto pxStatic = m_Physics->createRigidStatic(identityTransform);
+		reinterpret_cast<DORigidStatic*>(gameObject)->SetRigidBody(pxStatic);
+		rigidBody = pxStatic;
+	}
+	else if (typeName == typeid(DOUICollision).name())
+	{
+		reinterpret_cast<DOUICollision*>(gameObject)->SetDOUICollisionNeedInfoFromDevice(
+			&m_Scenes[scene.GetSceneName()].reservedToCheckUIs);
+	}
+	else if (typeName == typeid(DOTransform).name())
+	{
+
 	}
 
 	if (rigidBody)
 	{
 		m_Scenes[scene.GetSceneName()].scene->addActor(*rigidBody);
 	}
-
-	return newComponent;
 }
 
-void PhysX4_1::UnRegisterDeviceObject(CGHScene& scene, COMPONENTTYPE type, DeviceObject* deletedCom)
+void PhysX4_1::UnRegisterDeviceObject(CGHScene& scene, DeviceObject* gameObject)
 {
 	PxRigidActor* deletedActor = nullptr;
 
-	switch (type)
+	auto typeName = gameObject->GetTypeName();
+
+	if (typeName == typeid(DORigidDynamic).name())
 	{
-	case COMPONENTTYPE::COM_DYNAMIC:
-	{
-		deletedActor = reinterpret_cast<DORigidDynamic*>(deletedCom)->GetRigidBody();
+		deletedActor = reinterpret_cast<DORigidDynamic*>(gameObject)->GetRigidBody();
 	}
-	break;
-	case COMPONENTTYPE::COM_STATIC:
+	else if (typeName == typeid(DORigidStatic).name())
 	{
-		deletedActor = reinterpret_cast<DORigidStatic*>(deletedCom)->GetRigidBody();
-	}
-	break;
-	case COMPONENTTYPE::COM_UICOLLISTION:
-	case COMPONENTTYPE::COM_TRANSFORM:
-		break;
-	default:
-		assert(false);
-		break;
+		deletedActor = reinterpret_cast<DORigidStatic*>(gameObject)->GetRigidBody();
 	}
 
 	if (deletedActor)

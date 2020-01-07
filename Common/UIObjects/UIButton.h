@@ -11,8 +11,8 @@ class DOUICollision;
 class UIButton :public GameObject
 {
 public:
-	UIButton(CGHScene& scene)
-		:GameObject(scene)
+	UIButton(CGHScene& scene, GameObject* parent, const char* typeName)
+		: GameObject(scene, parent, typeName)
 	{
 	}
 	virtual ~UIButton() = default;
@@ -31,7 +31,7 @@ private:
 private:
 	bool			m_isOnlyFontMode;
 	DOTransform*	m_Trans;
-	DOFont*		m_Font;
-	DORenderer*	m_Render;
+	DOFont*			m_Font;
+	DORenderer*		m_Render;
 	DOUICollision*	m_UICollision;
 };
