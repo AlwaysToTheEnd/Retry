@@ -1,5 +1,5 @@
 #include "PhysX4_1.h"
-#include "BaseComponent.h"
+#include "PhysicsDO.h"
 #include "CGHScene.h"
 #include "d3dApp.h"
 #include <Windows.h>
@@ -113,9 +113,9 @@ void PhysX4_1::CreateScene(const CGHScene& scene)
 	m_Scenes[scene.GetSceneName()].scene = addedScene;
 }
 
-IComponent* PhysX4_1::CreateComponent(CGHScene& scene, COMPONENTTYPE type, unsigned int id, GameObject& gameObject)
+DeviceObject* PhysX4_1::RegisterDeviceObject(CGHScene& scene, COMPONENTTYPE type, unsigned int id, GameObject& gameObject)
 {
-	IComponent* newComponent = nullptr;
+	DeviceObject* newComponent = nullptr;
 
 	static PxTransform identityTransform(PxIDENTITY::PxIdentity);
 	identityTransform.p.y = 4;
@@ -126,21 +126,21 @@ IComponent* PhysX4_1::CreateComponent(CGHScene& scene, COMPONENTTYPE type, unsig
 	case COMPONENTTYPE::COM_DYNAMIC:
 	{
 		rigidBody = m_Physics->createRigidDynamic(identityTransform);
-		newComponent = new ComRigidDynamic(gameObject, id, reinterpret_cast<PxRigidDynamic*>(rigidBody));
+		newComponent = new DORigidDynamic(gameObject, id, reinterpret_cast<PxRigidDynamic*>(rigidBody));
 
 	}
 	break;
 	case COMPONENTTYPE::COM_STATIC:
 	{
 		rigidBody = m_Physics->createRigidStatic(identityTransform);
-		newComponent = new ComRigidStatic(gameObject, id, reinterpret_cast<PxRigidStatic*>(rigidBody));
+		newComponent = new DORigidStatic(gameObject, id, reinterpret_cast<PxRigidStatic*>(rigidBody));
 	}
 	break;
 	case COMPONENTTYPE::COM_TRANSFORM:
-		newComponent = new ComTransform(gameObject, id);
+		newComponent = new DOTransform(gameObject, id);
 		break;
 	case COMPONENTTYPE::COM_UICOLLISTION:
-		newComponent = new ComUICollision(gameObject, id, &m_Scenes[scene.GetSceneName()].reservedToCheckUIs);
+		newComponent = new DOUICollision(gameObject, id, &m_Scenes[scene.GetSceneName()].reservedToCheckUIs);
 		break;
 	default:
 		assert(false);
@@ -155,7 +155,7 @@ IComponent* PhysX4_1::CreateComponent(CGHScene& scene, COMPONENTTYPE type, unsig
 	return newComponent;
 }
 
-void PhysX4_1::ComponentDeleteManaging(CGHScene& scene, COMPONENTTYPE type, IComponent* deletedCom)
+void PhysX4_1::UnRegisterDeviceObject(CGHScene& scene, COMPONENTTYPE type, DeviceObject* deletedCom)
 {
 	PxRigidActor* deletedActor = nullptr;
 
@@ -163,12 +163,12 @@ void PhysX4_1::ComponentDeleteManaging(CGHScene& scene, COMPONENTTYPE type, ICom
 	{
 	case COMPONENTTYPE::COM_DYNAMIC:
 	{
-		deletedActor = reinterpret_cast<ComRigidDynamic*>(deletedCom)->GetRigidBody();
+		deletedActor = reinterpret_cast<DORigidDynamic*>(deletedCom)->GetRigidBody();
 	}
 	break;
 	case COMPONENTTYPE::COM_STATIC:
 	{
-		deletedActor = reinterpret_cast<ComRigidStatic*>(deletedCom)->GetRigidBody();
+		deletedActor = reinterpret_cast<DORigidStatic*>(deletedCom)->GetRigidBody();
 	}
 	break;
 	case COMPONENTTYPE::COM_UICOLLISTION:

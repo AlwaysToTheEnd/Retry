@@ -1,85 +1,53 @@
 #include "GameObject.h"
-#include "BaseComponent.h"
-#include "GraphicComponent.h"
+#include "PhysicsDO.h"
+#include "GraphicDO.h"
 #include "CGHScene.h"
 #include "d3dApp.h"
 
 
-std::unordered_map<unsigned int, unsigned int> GameObject::m_TypeIDs = GameObject::GetComponentTypeIDs();
-
-GameObject::GameObject(CGHScene& scene)
+GameObject::GameObject(CGHScene& scene, GameObject* const parent, unsigned int hashCode, bool enrollment)
 	: m_Scene(scene)
-	, m_Constructor(this)
+	, m_Parent(parent)
+	, m_HashCode(hashCode)
 {
-
+	if (enrollment)
+	{
+		m_Scene.AddGameObject(this);
+	}
 }
 
 void GameObject::SetAllComponentActive(bool value)
 {
 	for (auto& it : m_Components)
 	{
-		for (auto& it2 : it)
-		{
-			it2->SetActive(value);
-		}
+		it->SetActive(value);
 	}
 }
 
 void GameObject::Delete()
 {
+	for (auto& it : m_Components)
+	{
+		it->Delete();
+	}
+
+	if (m_Parent)
+	{
+		m_Parent->ExceptComponent(this);
+	}
+
 	m_Scene.DeleteGameObject(this);
 }
 
-std::unordered_map<unsigned int, unsigned int> GameObject::GetComponentTypeIDs()
+void GameObject::ExceptComponent(GameObject* com)
 {
-	std::unordered_map<unsigned int, unsigned int> map;
-
-	for (size_t i = 0; i < IComponent::NUMCOMPONENTTYPE; i++)
+	for (auto& it : m_Components)
 	{
-		COMPONENTTYPE type = static_cast<COMPONENTTYPE>(i);
-		size_t hash_code = 0;
-
-		switch (type)
+		if (it == com)
 		{
-		case COMPONENTTYPE::COM_DYNAMIC:
-			hash_code = typeid(ComRigidDynamic).hash_code();
-			break;
-		case COMPONENTTYPE::COM_STATIC:
-			hash_code = typeid(ComRigidStatic).hash_code();
-			break;
-		case COMPONENTTYPE::COM_UICOLLISTION:
-			hash_code = typeid(ComUICollision).hash_code();
-			break;
-		case COMPONENTTYPE::COM_TRANSFORM:
-			hash_code = typeid(ComTransform).hash_code();
-			break;
-		case COMPONENTTYPE::COM_RENDERER:
-			hash_code = typeid(ComRenderer).hash_code();
-			break;
-		case COMPONENTTYPE::COM_MESH:
-			hash_code = typeid(ComMesh).hash_code();
-			break;
-		case COMPONENTTYPE::COM_ANIMATOR:
-			hash_code = typeid(ComAnimator).hash_code();
-			break;
-		case COMPONENTTYPE::COM_FONT:
-			hash_code = typeid(ComFont).hash_code();
-			break;
-		default:
-			assert(false);
+			it = m_Components.back();
+			m_Components.pop_back();
 			break;
 		}
-
-		map.insert({ hash_code, i });
 	}
-
-	return map;
-}
-
-IComponent* GameObject::CreateComponent(COMPONENTTYPE type)
-{
-	unsigned int index = static_cast<unsigned int>(type);
-	m_Components[index].push_back(m_Scene.CreateComponent(type, *this));
-
-	return m_Components[index].back().get();
 }

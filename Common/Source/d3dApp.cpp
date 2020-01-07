@@ -1,5 +1,5 @@
 #include "d3dApp.h"
-#include "BaseComponent.h"
+#include "PhysicsDO.h"
 #include "StaticObject.h"
 #include <WindowsX.h>
 

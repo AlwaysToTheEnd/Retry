@@ -1,6 +1,6 @@
 #include "ComponentUpdater.h"
 
-void ComponentUpdater::Update(float delta)
+void DeviceObjectUpdater::Update(float delta)
 {
 	for (auto& it : m_Datas)
 	{
@@ -14,7 +14,7 @@ void ComponentUpdater::Update(float delta)
 	}
 }
 
-void ComponentUpdater::SignalDeleted(unsigned int id)
+void DeviceObjectUpdater::SignalDeleted(unsigned int id)
 {
 	assert(id <= m_Datas.size());
 

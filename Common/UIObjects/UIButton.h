@@ -3,10 +3,10 @@
 #include <string>
 #include <functional>
 
-class ComFont;
-class ComTransform;
-class ComRenderer;
-class ComUICollision;
+class DOFont;
+class DOTransform;
+class DORenderer;
+class DOUICollision;
 
 class UIButton :public GameObject
 {
@@ -30,8 +30,8 @@ private:
 
 private:
 	bool			m_isOnlyFontMode;
-	ComTransform*	m_Trans;
-	ComFont*		m_Font;
-	ComRenderer*	m_Render;
-	ComUICollision*	m_UICollision;
+	DOTransform*	m_Trans;
+	DOFont*		m_Font;
+	DORenderer*	m_Render;
+	DOUICollision*	m_UICollision;
 };

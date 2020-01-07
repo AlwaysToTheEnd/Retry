@@ -1,6 +1,6 @@
 #pragma once
 #include <memory>
-#include "IComponent.h"
+#include "DeviceObject.h"
 #include "DX12RenderClasses.h"
 #include "AnimationStructs.h"
 #include "AnimationTree.h"
@@ -12,21 +12,15 @@ namespace AniTree
 	class AnimationTree;
 }
 
-class ComMesh :public IComponent
+class DOMesh :public DeviceObject
 {
 public:
-	ComMesh(GameObject& gameObject, int ID,
-		const std::unordered_map<std::string, MeshObject>* meshs,const MeshWorkFunc* funcs)
-		: IComponent(COMPONENTTYPE::COM_MESH ,gameObject, ID)
-		, m_CurrMesh(nullptr)
+	DOMesh(CGHScene& scene, GameObject* const parent, unsigned int hashCode)
+		: DeviceObject(scene, parent, hashCode)
 	{
-		if (m_Meshs == nullptr)
-		{
-			m_Meshs = meshs;
-			m_MeshWorks = funcs;
-		}
+	
 	}
-	virtual ~ComMesh() = default;
+	virtual ~DOMesh() = default;
 
 	virtual void Update(float delta) override {};
 
@@ -43,14 +37,11 @@ private:
 	std::string m_CurrMeshName;
 };
 
-class ComAnimator :public IComponent
+class DOAnimator :public DeviceObject
 {
 public:
-	ComAnimator(GameObject& gameObject, int ID,
-		const std::unordered_map<std::string, Ani::SkinnedData>* skinnedDatas,
-		std::unordered_map<std::string, std::unique_ptr<AniTree::AnimationTree>>* aniTreeDatas,
-		std::vector<AniBoneMat>* reservedAniBone)
-		: IComponent(COMPONENTTYPE::COM_ANIMATOR, gameObject, ID)
+	DOAnimator(CGHScene& scene, GameObject* const parent, unsigned int hashCode)
+		: DeviceObject(scene, parent, hashCode)
 		, m_AniTree(nullptr)
 		, m_BoneMatStoredIndex(-1)
 		, m_CurrSkinnedData(nullptr)
@@ -63,7 +54,7 @@ public:
 			m_ReservedAniBone = reservedAniBone;
 		}
 	}
-	virtual ~ComAnimator() = default;
+	virtual ~DOAnimator() = default;
 
 	virtual void Update(float delta) override;
 
@@ -95,22 +86,19 @@ private:
 	int										m_BoneMatStoredIndex;
 };
 
-class ComRenderer :public IComponent
+class DORenderer :public DeviceObject
 {
 public:
-	ComRenderer(GameObject& gameObject, int ID,
-		std::vector<RenderInfo>* reservedRenderObjects)
-		: IComponent(COMPONENTTYPE::COM_RENDERER, gameObject, ID)
+	DORenderer(CGHScene& scene, GameObject* const parent, unsigned int hashCode)
+		: DeviceObject(scene, parent, hashCode)
 		, m_RenderInfo(RENDER_NONE)
 	{
-		
-
 		if (m_ReservedRenderObjects == nullptr)
 		{
 			m_ReservedRenderObjects = reservedRenderObjects;
 		}
 	}
-	virtual ~ComRenderer() = default;
+	virtual ~DORenderer() = default;
 
 	virtual void Update(float delta) override;
 	void SetRenderInfo(const RenderInfo& info) 
@@ -127,12 +115,11 @@ private:
 	static std::vector<RenderInfo>* m_ReservedRenderObjects;
 };
 
-class ComFont :public IComponent
+class DOFont :public DeviceObject
 {
 public:
-	ComFont(GameObject& gameObject, int ID, 
-		std::vector<RenderFont>* reservedFonts)
-		: IComponent(COMPONENTTYPE::COM_FONT, gameObject, ID)
+	DOFont(CGHScene& scene, GameObject* const parent, unsigned int hashCode)
+		: DeviceObject(scene, parent, hashCode)
 		, m_Pos(0,0,0)
 		, m_FontHeight(-1)
 		, m_Color(0,0,0,1)
@@ -144,7 +131,7 @@ public:
 			m_ReservedFonts = reservedFonts;
 		}
 	}
-	virtual ~ComFont() = default;
+	virtual ~DOFont() = default;
 
 	virtual void Update(float delta) override;
 	void SetFont(std::wstring fontName) { m_FontName = fontName; }

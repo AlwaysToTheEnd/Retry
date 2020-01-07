@@ -1,20 +1,20 @@
-#include "GraphicComponent.h"
-#include "BaseComponent.h"
+#include "GraphicDO.h"
+#include "PhysicsDO.h"
 #include "GameObject.h"
 #include "d3dApp.h"
 
-const std::unordered_map<std::string, MeshObject>* ComMesh::m_Meshs = nullptr;
-const MeshWorkFunc* ComMesh::m_MeshWorks = nullptr;
+const std::unordered_map<std::string, MeshObject>* DOMesh::m_Meshs = nullptr;
+const MeshWorkFunc* DOMesh::m_MeshWorks = nullptr;
 
-std::vector<RenderInfo>* ComRenderer::m_ReservedRenderObjects = nullptr;
+std::vector<RenderInfo>* DORenderer::m_ReservedRenderObjects = nullptr;
 
-const std::unordered_map<std::string, Ani::SkinnedData>* ComAnimator::m_SkinnedDatas = nullptr;
-std::unordered_map<std::string, std::unique_ptr<AniTree::AnimationTree>>* ComAnimator::m_AnimationTrees = nullptr;
-std::vector<AniBoneMat>* ComAnimator::m_ReservedAniBone = nullptr;
+const std::unordered_map<std::string, Ani::SkinnedData>* DOAnimator::m_SkinnedDatas = nullptr;
+std::unordered_map<std::string, std::unique_ptr<AniTree::AnimationTree>>* DOAnimator::m_AnimationTrees = nullptr;
+std::vector<AniBoneMat>* DOAnimator::m_ReservedAniBone = nullptr;
 
-std::vector<RenderFont>* ComFont::m_ReservedFonts = nullptr;
+std::vector<RenderFont>* DOFont::m_ReservedFonts = nullptr;
 
-void ComMesh::GetMeshNames(std::vector<std::string>& out)
+void DOMesh::GetMeshNames(std::vector<std::string>& out)
 {
 	for (auto& it : *m_Meshs)
 	{
@@ -22,7 +22,7 @@ void ComMesh::GetMeshNames(std::vector<std::string>& out)
 	}
 }
 
-bool ComMesh::SelectMesh(const std::string& name)
+bool DOMesh::SelectMesh(const std::string& name)
 {
 	auto iter = m_Meshs->find(name);
 	if (iter == m_Meshs->end())
@@ -37,7 +37,7 @@ bool ComMesh::SelectMesh(const std::string& name)
 	return true;
 }
 
-void ComAnimator::Update(float delta)
+void DOAnimator::Update(float delta)
 {
 	m_CurrTick += delta;
 
@@ -62,7 +62,7 @@ void ComAnimator::Update(float delta)
 	}
 }
 
-void ComAnimator::GetSkinNames(std::vector<std::string>& out)
+void DOAnimator::GetSkinNames(std::vector<std::string>& out)
 {
 	assert(m_SkinnedDatas);
 	out.clear();
@@ -73,7 +73,7 @@ void ComAnimator::GetSkinNames(std::vector<std::string>& out)
 	}
 }
 
-bool ComAnimator::IsRegisteredTree(const AniTree::AnimationTree* tree) const
+bool DOAnimator::IsRegisteredTree(const AniTree::AnimationTree* tree) const
 {
 	for (auto& it : *m_AnimationTrees)
 	{
@@ -86,12 +86,12 @@ bool ComAnimator::IsRegisteredTree(const AniTree::AnimationTree* tree) const
 	return false;
 }
 
-void ComAnimator::SetAnimationTree(AniTree::AnimationTree* tree)
+void DOAnimator::SetAnimationTree(AniTree::AnimationTree* tree)
 {
 	m_AniTree = tree;
 }
 
-void ComAnimator::SetAnimationTree(const std::string& fileName)
+void DOAnimator::SetAnimationTree(const std::string& fileName)
 {
 	auto iter = m_AnimationTrees->find(fileName);
 
@@ -101,7 +101,7 @@ void ComAnimator::SetAnimationTree(const std::string& fileName)
 	}
 }
 
-void ComAnimator::GetAnimationTreeNames(std::vector<std::string>& out) const
+void DOAnimator::GetAnimationTreeNames(std::vector<std::string>& out) const
 {
 	out.clear();
 	for (auto& it : *m_AnimationTrees)
@@ -110,7 +110,7 @@ void ComAnimator::GetAnimationTreeNames(std::vector<std::string>& out) const
 	}
 }
 
-void ComAnimator::SaveAnimationTree(const std::wstring& filePath, const std::string& fileName, AniTree::AnimationTree* tree)
+void DOAnimator::SaveAnimationTree(const std::wstring& filePath, const std::string& fileName, AniTree::AnimationTree* tree)
 {
 	auto iter = m_AnimationTrees->find(fileName);
 
@@ -126,7 +126,7 @@ void ComAnimator::SaveAnimationTree(const std::wstring& filePath, const std::str
 	tree->SaveTree(filePath);
 }
 
-void ComAnimator::GetAniNames(std::vector<std::string>& out) const
+void DOAnimator::GetAniNames(std::vector<std::string>& out) const
 {
 	if (m_CurrSkinnedData)
 	{
@@ -134,7 +134,7 @@ void ComAnimator::GetAniNames(std::vector<std::string>& out) const
 	}
 }
 
-bool ComAnimator::SelectSkin(const std::string& name)
+bool DOAnimator::SelectSkin(const std::string& name)
 {
 	auto iter = m_SkinnedDatas->find(name);
 	m_CurrAniName.clear();
@@ -149,7 +149,7 @@ bool ComAnimator::SelectSkin(const std::string& name)
 	return true;
 }
 
-bool ComAnimator::SelectAnimation(const std::string& name)
+bool DOAnimator::SelectAnimation(const std::string& name)
 {
 	if (m_CurrSkinnedData != nullptr)
 	{
@@ -163,9 +163,9 @@ bool ComAnimator::SelectAnimation(const std::string& name)
 	return false;
 }
 
-void ComRenderer::Update(float delta)
+void DORenderer::Update(float delta)
 {
-	auto comTransform = m_TargetGameObject.GetComponent<ComTransform>();
+	auto comTransform = m_Parent->GetComponent<DOTransform>();
 
 	assert(comTransform != nullptr);
 
@@ -192,10 +192,10 @@ void ComRenderer::Update(float delta)
 	m_ReservedRenderObjects->push_back(m_RenderInfo);
 }
 
-void ComRenderer::RenderMesh()
+void DORenderer::RenderMesh()
 {
-	auto comMesh = m_TargetGameObject.GetComponent<ComMesh>();
-	auto comAnimator = m_TargetGameObject.GetComponent<ComAnimator>();
+	auto comMesh = m_Parent->GetComponent<DOMesh>();
+	auto comAnimator = m_Parent->GetComponent<DOAnimator>();
 
 	if (comMesh != nullptr)
 	{
@@ -212,7 +212,7 @@ void ComRenderer::RenderMesh()
 	}
 }
 
-void ComFont::Update(float delta)
+void DOFont::Update(float delta)
 {
 	//#TODO
 	if (m_Text.size())

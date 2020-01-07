@@ -1,5 +1,5 @@
 #pragma once
-#include "IComponentCreater.h"
+#include "IDeviceObjectRegistration.h"
 #include <DirectXMath.h>
 #include <foundation/PxTransform.h>
 #include <functional>
@@ -7,7 +7,7 @@
 
 class CGHScene;
 
-class IPhysicsDevice : public ICompnentCreater
+class IPhysicsDevice : public IDeviceObjectRegistration
 {
 public:
 	IPhysicsDevice() = default;

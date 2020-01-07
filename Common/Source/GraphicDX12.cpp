@@ -1,7 +1,7 @@
 #include "GraphicDX12.h"
 #include "cCamera.h"
 #include "cTextureBuffer.h"
-#include "GraphicComponent.h"
+#include "GraphicDO.h"
 #include "BaseClass.h"
 
 using namespace DirectX;
@@ -264,20 +264,20 @@ void GraphicDX12::GetWorldRay(physx::PxVec3& origin, physx::PxVec3& ray) const
 	ray = m_Ray;
 }
 
-IComponent* GraphicDX12::CreateComponent(CGHScene&, COMPONENTTYPE type, unsigned int id, GameObject& gameObject)
+DeviceObject* GraphicDX12::RegisterDeviceObject(CGHScene&, COMPONENTTYPE type, unsigned int id, GameObject& gameObject)
 {
-	IComponent* newComponent = nullptr;
+	DeviceObject* newComponent = nullptr;
 
 	switch (type)
 	{
 	case COMPONENTTYPE::COM_RENDERER:
 	{
-		newComponent = new ComRenderer(gameObject, id, &m_ReservedRenders);
+		newComponent = new DORenderer(gameObject, id, &m_ReservedRenders);
 	}
 	break;
 	case COMPONENTTYPE::COM_FONT:
 	{
-		newComponent = new ComFont(gameObject, id, &m_ReservedFonts);
+		newComponent = new DOFont(gameObject, id, &m_ReservedFonts);
 	}
 	break;
 	case COMPONENTTYPE::COM_MESH:
@@ -292,12 +292,12 @@ IComponent* GraphicDX12::CreateComponent(CGHScene&, COMPONENTTYPE type, unsigned
 			std::bind(&GraphicDX12::GetTextureIndex, this, std::placeholders::_1)
 		};
 
-		newComponent = new ComMesh(gameObject, id, &m_Meshs, &meshWork);
+		newComponent = new DOMesh(gameObject, id, &m_Meshs, &meshWork);
 	}
 	break;
 	case COMPONENTTYPE::COM_ANIMATOR:
 	{
-		newComponent = new ComAnimator(gameObject, id, &m_SkinnedDatas, &m_AniTreeDatas, &m_ReservedAniBones);
+		newComponent = new DOAnimator(gameObject, id, &m_SkinnedDatas, &m_AniTreeDatas, &m_ReservedAniBones);
 	}
 	break;
 	default:
@@ -308,7 +308,7 @@ IComponent* GraphicDX12::CreateComponent(CGHScene&, COMPONENTTYPE type, unsigned
 	return newComponent;
 }
 
-void GraphicDX12::ComponentDeleteManaging(CGHScene&, COMPONENTTYPE type, IComponent* deletedCom)
+void GraphicDX12::UnRegisterDeviceObject(CGHScene&, COMPONENTTYPE type, DeviceObject* deletedCom)
 {
 	switch (type)
 	{

@@ -1,6 +1,6 @@
 #include "UIPanel.h"
-#include "BaseComponent.h"
-#include "GraphicComponent.h"
+#include "PhysicsDO.h"
+#include "GraphicDO.h"
 #include "CGHScene.h"
 #include "d3dApp.h"
 
@@ -8,10 +8,10 @@ UIPanel::UIPanelController UIPanel::s_PanelController;
 
 void UIPanel::Init()
 {
-	m_Trans = AddComponent<ComTransform>();
-	m_Font = AddComponent<ComFont>();
-	m_UICollision = AddComponent<ComUICollision>();
-	m_Render = AddComponent<ComRenderer>();
+	m_Trans = AddComponent<DOTransform>();
+	m_Font = AddComponent<DOFont>();
+	m_UICollision = AddComponent<DOUICollision>();
+	m_Render = AddComponent<DORenderer>();
 
 	m_Trans->SetPosZ(0.9f);
 	m_Font->SetFont(RenderFont::fontNames.front());
@@ -137,7 +137,7 @@ void UIPanel::ThisPanalIsStatic()
 {
 	if (m_UICollision)
 	{
-		DeleteComponent(m_UICollision);
+		ExceptComponent(m_UICollision);
 		m_UICollision = nullptr;
 	}
 }
@@ -154,7 +154,7 @@ void UIPanel::Update(float delta)
 
 		for (size_t i = 0; i < m_UIComs.size(); i++)
 		{
-			auto transform = m_UIComs[i].object->GetComponent<ComTransform>();
+			auto transform = m_UIComs[i].object->GetComponent<DOTransform>();
 
 			transform->SetTransform(
 				physx::PxTransform(m_UIComOffset[i].x - halfSize.x, m_UIComOffset[i].y - halfSize.y, -0.001f)
@@ -196,7 +196,7 @@ void UIPanel::UIPanelController::Update(float delta)
 			case GameObject::CLICKEDSTATE::HELD:
 			{
 				physx::PxVec2 moveValue = mousePos - m_PrevMousePos;
-				m_CurrPanel->GetComponent<ComTransform>()->AddVector({ moveValue.x,moveValue.y,0 });
+				m_CurrPanel->GetComponent<DOTransform>()->AddVector({ moveValue.x,moveValue.y,0 });
 				m_PrevMousePos = mousePos;
 			}
 			break;
@@ -265,7 +265,7 @@ void UIPanel::UIPanelController::SortPanels(UIPanel* currPanel)
 		for (auto& it : m_Panels)
 		{
 			posZ += 0.01f;
-			it->GetComponent<ComTransform>()->SetPosZ(posZ);
+			it->GetComponent<DOTransform>()->SetPosZ(posZ);
 		}
 	}
 }

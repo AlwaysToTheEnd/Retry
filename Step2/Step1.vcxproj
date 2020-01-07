@@ -23,7 +23,7 @@
     <ClCompile Include="..\Common\Source\AnimationTree.cpp" />
     <ClCompile Include="..\Common\Source\AnimationTreeCreator.cpp" />
     <ClCompile Include="..\Common\Source\AnimationTreeScene\AnimationTreeScene.cpp" />
-    <ClCompile Include="..\Common\Source\BaseComponent.cpp" />
+    <ClCompile Include="..\Common\Source\PhysicsDO.cpp" />
     <ClCompile Include="..\Common\Source\cCamera.cpp" />
     <ClCompile Include="..\Common\Source\CGHScene.cpp" />
     <ClCompile Include="..\Common\Source\ComponentUpdater.cpp" />
@@ -34,10 +34,10 @@
     <ClCompile Include="..\Common\Source\DX12RenderClasses.cpp" />
     <ClCompile Include="..\Common\Source\GameObject.cpp" />
     <ClCompile Include="..\Common\Source\GameTimer.cpp" />
-    <ClCompile Include="..\Common\Source\GraphicComponent.cpp" />
+    <ClCompile Include="..\Common\Source\GraphicDO.cpp" />
     <ClCompile Include="..\Common\Source\GraphicDX12.cpp" />
     <ClCompile Include="..\Common\Source\HeightMap.cpp" />
-    <ClCompile Include="..\Common\Source\IComponent.cpp" />
+    <ClCompile Include="..\Common\Source\DeviceObject.cpp" />
     <ClCompile Include="..\Common\Source\InputTextureNameList.cpp" />
     <ClCompile Include="..\Common\Source\PhysX4_1.cpp" />
     <ClCompile Include="..\Common\Source\StaticObject.cpp" />
@@ -63,7 +63,7 @@
     <ClInclude Include="..\Common\Source\AnimationTreeCreator.h" />
     <ClInclude Include="..\Common\Source\AnimationTreeScene\AnimationTreeScene.h" />
     <ClInclude Include="..\Common\Source\BaseClass.h" />
-    <ClInclude Include="..\Common\Source\BaseComponent.h" />
+    <ClInclude Include="..\Common\Source\PhysicsDO.h" />
     <ClInclude Include="..\Common\Source\cCamera.h" />
     <ClInclude Include="..\Common\Source\cDefaultBuffer.h" />
     <ClInclude Include="..\Common\Source\CGHScene.h" />
@@ -72,13 +72,13 @@
     <ClInclude Include="..\Common\Source\DX12RenderClasses.h" />
     <ClInclude Include="..\Common\Source\GameObject.h" />
     <ClInclude Include="..\Common\Source\GameTimer.h" />
-    <ClInclude Include="..\Common\Source\GraphicComponent.h" />
+    <ClInclude Include="..\Common\Source\GraphicDO.h" />
     <ClInclude Include="..\Common\Source\HeightMap.h" />
-    <ClInclude Include="..\Common\Source\IComponent.h" />
+    <ClInclude Include="..\Common\Source\DeviceObject.h" />
     <ClInclude Include="..\Common\Source\cTextureBuffer.h" />
     <ClInclude Include="..\Common\Source\d3dApp.h" />
     <ClInclude Include="..\Common\Source\d3dUtil.h" />
-    <ClInclude Include="..\Common\Source\IComponentCreater.h" />
+    <ClInclude Include="..\Common\Source\IDeviceObjectRegistration.h" />
     <ClInclude Include="..\Common\Source\IGraphicDevice.h" />
     <ClInclude Include="..\Common\Source\GraphicDX12.h" />
     <ClInclude Include="..\Common\Source\cIndexManagementBuffer.h" />

@@ -1,6 +1,6 @@
 #include "Step2.h"
 #include <random>
-#include "BaseComponent.h"
+#include "PhysicsDO.h"
 #include <DirectXColors.h>
 #include "AnimationTreeScene/AnimationTreeScene.h"
 using namespace std;

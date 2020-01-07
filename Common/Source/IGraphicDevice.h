@@ -1,14 +1,14 @@
 #pragma once
 #include <windows.h>
 #include "BaseClass.h"
-#include "IComponentCreater.h"
+#include "IDeviceObjectRegistration.h"
 #include "Vertex.h"
 
 class cCamera;
 struct MeshObject;
 class D3DApp;
 
-class IGraphicDevice : public ICompnentCreater
+class IGraphicDevice : public IDeviceObjectRegistration
 {
 	friend class D3DApp;
 public:

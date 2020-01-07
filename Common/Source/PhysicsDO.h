@@ -2,7 +2,7 @@
 #include <vector>
 #include <DirectXMath.h>
 #include <functional>
-#include "IComponent.h"
+#include "DeviceObject.h"
 #include "BaseClass.h"
 #include "PhysXFunctionalObject.h"
 #include "foundation/PxTransform.h"
@@ -13,17 +13,16 @@ namespace physx
 	class PxRigidDynamic;
 }
 
-class ComRigidDynamic :public IComponent
+class DORigidDynamic :public DeviceObject
 {
 public:
-	ComRigidDynamic(GameObject& gameObject, int ID,
-		physx::PxRigidDynamic* rigidBody)
-		:IComponent(COMPONENTTYPE::COM_DYNAMIC, gameObject, ID)
+	DORigidDynamic(CGHScene& scene, GameObject* const parent, unsigned int hashCode)
+		: DeviceObject(scene, parent, hashCode)
 		, m_RigidBody(rigidBody)
 	{
 
 	}
-	virtual ~ComRigidDynamic() = default;
+	virtual ~DORigidDynamic() = default;
 
 	virtual void Update(float delta) override;
 	physx::PxRigidDynamic* GetRigidBody() { return m_RigidBody; }
@@ -32,17 +31,16 @@ private:
 	physx::PxRigidDynamic* m_RigidBody;
 };
 
-class ComRigidStatic :public IComponent
+class DORigidStatic :public DeviceObject
 {
 public:
-	ComRigidStatic(GameObject& gameObject, int ID,
-		physx::PxRigidStatic* rigidBody)
-		:IComponent(COMPONENTTYPE::COM_STATIC, gameObject, ID)
+	DORigidStatic(CGHScene& scene, GameObject* const parent, unsigned int hashCode)
+		: DeviceObject(scene, parent, hashCode)
 		, m_RigidBody(rigidBody)
 	{
 
 	}
-	virtual ~ComRigidStatic() = default;
+	virtual ~DORigidStatic() = default;
 
 	virtual void Update(float delta) override;
 	physx::PxRigidStatic* GetRigidBody() { return m_RigidBody; }
@@ -51,19 +49,18 @@ private:
 	physx::PxRigidStatic* m_RigidBody;
 };
 
-class ComUICollision :public IComponent
+class DOUICollision :public DeviceObject
 {
 public:
-	ComUICollision(GameObject& gameObject, int ID,
-		std::vector<UICollisions>* reservedVec)
-		:IComponent(COMPONENTTYPE::COM_UICOLLISTION, gameObject, ID)
+	DOUICollision(CGHScene& scene, GameObject* const parent, unsigned int hashCode)
+		: DeviceObject(scene, parent, hashCode)
 		,m_Size(1,1)
 		,m_Offset(0,0)
 		,m_ReservedUICol(reservedVec)
 	{
 		
 	}
-	virtual ~ComUICollision() = default;
+	virtual ~DOUICollision() = default;
 
 	virtual void Update(float delta) override;
 
@@ -80,16 +77,16 @@ private:
 	std::vector<std::function<void()>>		m_VoidFuncs;
 };
 
-class ComTransform :public IComponent
+class DOTransform :public DeviceObject
 {
 public:
-	ComTransform(GameObject& gameObject, int ID)
-		: IComponent(COMPONENTTYPE::COM_TRANSFORM, gameObject, ID)
+	DOTransform(CGHScene& scene, GameObject* const parent, unsigned int hashCode)
+		: DeviceObject(scene, parent, hashCode)
 		, m_Transform(physx::PxIDENTITY::PxIdentity)
 	{
 		
 	}
-	virtual ~ComTransform() = default;
+	virtual ~DOTransform() = default;
 
 	virtual void Update(float delta) override {}
 	void SetTransform(const physx::PxTransform& transform) { m_Transform = transform; }

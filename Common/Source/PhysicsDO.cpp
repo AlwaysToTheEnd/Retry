@@ -1,13 +1,13 @@
-#include "BaseComponent.h"
+#include "PhysicsDO.h"
 #include "GameObject.h"
 #include "PxRigidStatic.h"
 #include "PxRigidDynamic.h"
 #include "PxScene.h"
 #include "foundation/PxMat44.h"
 
-void ComRigidDynamic::Update(float delta)
+void DORigidDynamic::Update(float delta)
 {
-	auto transform = m_TargetGameObject.GetComponent<ComTransform>();
+	auto transform = m_Parent->GetComponent<DOTransform>();
 
 	if (transform)
 	{
@@ -15,9 +15,9 @@ void ComRigidDynamic::Update(float delta)
 	}
 }
 
-void ComRigidStatic::Update(float delta)
+void DORigidStatic::Update(float delta)
 {
-	auto transform = m_TargetGameObject.GetComponent<ComTransform>();
+	auto transform = m_Parent->GetComponent<DOTransform>();
 
 	if (transform)
 	{
@@ -25,15 +25,15 @@ void ComRigidStatic::Update(float delta)
 	}
 }
 
-void ComUICollision::Update(float delta)
+void DOUICollision::Update(float delta)
 {
-	auto transform = m_TargetGameObject.GetComponent<ComTransform>();
+	auto transform = m_Parent->GetComponent<DOTransform>();
 
 	if (transform)
 	{
 		physx::PxTransform offset(m_Offset.x, m_Offset.y, 0);
 		physx::PxTransform wPos = transform->GetTransform();
 		wPos = offset * wPos;
-		m_ReservedUICol->push_back(UICollisions(&m_TargetGameObject, wPos, m_Size, m_VoidFuncs));
+		m_ReservedUICol->push_back(UICollisions(m_Parent, wPos, m_Size, m_VoidFuncs));
 	}
 }

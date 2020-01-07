@@ -1,6 +1,7 @@
 #pragma once
-#include "IComponent.h"
+#include "DeviceObject.h"
 #include <vector>
+#include <memory>
 #include <assert.h>
 
 template <typename T>
@@ -18,7 +19,7 @@ protected:
 	std::vector<unsigned int>	m_DeletedIndices;
 };
 
-class ComponentUpdater : public InstanceAndIndexManager<IComponent*>
+class DeviceObjectUpdater : public InstanceAndIndexManager<std::unique_ptr<DeviceObject>>
 {
 public:
 	void Update(float delta);
@@ -47,7 +48,7 @@ inline void InstanceAndIndexManager<T>::AddData(T com)
 {
 	if (m_DeletedIndices.size())
 	{
-		m_Datas[m_DeletedIndices.back()] = com;
+		m_Datas[m_DeletedIndices.back()] = std::move(com);
 		m_DeletedIndices.pop_back();
 	}
 	else

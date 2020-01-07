@@ -1,12 +1,12 @@
 #include "UIButton.h"
-#include "GraphicComponent.h"
-#include "BaseComponent.h"
+#include "GraphicDO.h"
+#include "PhysicsDO.h"
 
 void UIButton::Init()
 {
-	m_Trans = AddComponent<ComTransform>();
-	m_Font = AddComponent<ComFont>();
-	m_UICollision = AddComponent<ComUICollision>();
+	m_Trans = AddComponent<DOTransform>();
+	m_Font = AddComponent<DOFont>();
+	m_UICollision = AddComponent<DOUICollision>();
 
 	m_Font->SetFont(RenderFont::fontNames.front());
 	m_Font->SetBenchmark(RenderFont::FONTBENCHMARK::CENTER);
@@ -28,7 +28,7 @@ void UIButton::SetTexture(const std::string& name, const physx::PxVec2& halfSize
 {
 	if (!m_Render)
 	{
-		m_Render = AddComponent<ComRenderer>();
+		m_Render = AddComponent<DORenderer>();
 	}
 
 	RenderInfo info(RENDER_TYPE::RENDER_UI);
@@ -53,7 +53,7 @@ void UIButton::OnlyFontMode()
 {
 	if (m_Render)
 	{
-		DeleteComponent(m_Render);
+		ExceptComponent(m_Render);
 	}
 
 	m_Render = nullptr;

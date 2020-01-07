@@ -78,8 +78,8 @@ public:
 	virtual void Update(const CGHScene& scene);
 	virtual void CreateScene(const CGHScene& scene) override;
 
-	virtual IComponent* CreateComponent(CGHScene& scene, COMPONENTTYPE type, unsigned int id, GameObject& gameObject) override;
-	virtual void ComponentDeleteManaging(CGHScene& scene, COMPONENTTYPE type, IComponent* deletedCom) override;
+	virtual void RegisterDeviceObject(CGHScene& scene, DeviceObject* gameObject) override;
+	virtual void UnRegisterDeviceObject(CGHScene& scene, DeviceObject* gameObject) override;
 	virtual bool ExcuteFuncOfClickedObject(CGHScene& scene, float origin_x, float origin_y, float origin_z,
 		float ray_x, float ray_y, float ray_z, float dist, GameObject::CLICKEDSTATE state) override;
 

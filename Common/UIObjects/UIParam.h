@@ -6,9 +6,9 @@
 #include <string>
 #include <memory>
 
-class ComFont;
-class ComUICollision;
-class ComTransform;
+class DOFont;
+class DOUICollision;
+class DOTransform;
 class UIPanel;
 
 class UIParam :public GameObject
@@ -93,9 +93,9 @@ private:
 	const UIPARAMTYPE	m_Type;
 	UICONTROLTYPE		m_ControlType;
 	std::wstring		m_ParamName;
-	ComTransform*		m_Trans;
-	ComFont*			m_Font;
-	ComUICollision*		m_UICollision;
+	DOTransform*		m_Trans;
+	DOFont*			m_Font;
+	DOUICollision*		m_UICollision;
 	void*				m_ParamPtr;
 	CGH::DATA_TYPE		m_DataType;
 	bool				m_Selected;

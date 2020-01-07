@@ -94,10 +94,10 @@ private:
 
 private:
 	bool			m_Active;
-	ComTransform*	m_Trans;
-	ComFont*		m_Font;
-	ComRenderer*	m_Render;
-	ComUICollision* m_UICollision;
+	DOTransform*	m_Trans;
+	DOFont*		m_Font;
+	DORenderer*	m_Render;
+	DOUICollision* m_UICollision;
 
 	physx::PxVec2	m_Size;
 	std::vector<UIComObjects>	m_UIComs;

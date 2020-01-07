@@ -1,8 +1,8 @@
 #include "UIParam.h"
 #include "UIPanel.h"
 #include "UIButton.h"
-#include "GraphicComponent.h"
-#include "BaseComponent.h"
+#include "GraphicDO.h"
+#include "PhysicsDO.h"
 #include "d3dApp.h"
 
 UIParam::ParamController UIParam::s_ParamController;
@@ -47,14 +47,14 @@ void UIParam::SetDirtyCall(std::function<void()> dirtyCall)
 
 void UIParam::Init()
 {
-	m_Trans = AddComponent<ComTransform>();
-	m_Font = AddComponent<ComFont>();
+	m_Trans = AddComponent<DOTransform>();
+	m_Font = AddComponent<DOFont>();
 	m_Font->SetFont(RenderFont::fontNames.front());
 	m_Font->SetBenchmark(RenderFont::FONTBENCHMARK::LEFT);
 
 	if (m_Type == UIPARAMTYPE::MODIFIER)
 	{
-		m_UICollision = AddComponent<ComUICollision>();
+		m_UICollision = AddComponent<DOUICollision>();
 		m_UICollision->AddFunc(std::bind(&UIParam::SetUIParamToController, this));
 	}
 }
@@ -317,14 +317,14 @@ void UIParam::ParamController::CreateSubPanel(UIParam* param)
 {
 	if (m_EnumSelectPanel == nullptr)
 	{
-		m_EnumSelectPanel = param->CreateGameObject<UIPanel>(true);
+		m_EnumSelectPanel = param->CreateComponenet<UIPanel>(true);
 		m_EnumSelectPanel->SetBackGroundTexture(InputTN::Get("UIParamSubPanel"));
 	}
 
 	m_EnumSelectPanel->DeleteAllComs();
 	m_EnumSelectPanel->UIOn();
 	m_EnumSelectPanel->SetPos(GETAPP->GetMousePos());
-	m_EnumSelectPanel->GetComponent<ComTransform>()->SetPosZ(0.1f);
+	m_EnumSelectPanel->GetComponent<DOTransform>()->SetPosZ(0.1f);
 
 	const int propertyIntervale = 15;
 	int posY = 10;
@@ -335,7 +335,7 @@ void UIParam::ParamController::CreateSubPanel(UIParam* param)
 	{
 		for (auto& it : *param->m_EnumElementInfo)
 		{
-			auto button = m_EnumSelectPanel->CreateGameObject<UIButton>(true);
+			auto button = m_EnumSelectPanel->CreateComponenet<UIButton>(true);
 			button->SetText(it.elementName);
 			button->SetTextHeight(10);
 			button->OnlyFontMode();
@@ -357,7 +357,7 @@ void UIParam::ParamController::CreateSubPanel(UIParam* param)
 		{
 			std::wstring temp;
 			temp.insert(temp.end(), it.begin(), it.end());
-			auto button = m_EnumSelectPanel->CreateGameObject<UIButton>(true);
+			auto button = m_EnumSelectPanel->CreateComponenet<UIButton>(true);
 			button->SetText(temp);
 			button->SetTextHeight(10);
 			button->OnlyFontMode();

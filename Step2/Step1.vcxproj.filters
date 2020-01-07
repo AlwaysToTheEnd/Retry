@@ -37,9 +37,6 @@
     <Filter Include="Common\CodeResources\Parser">
       <UniqueIdentifier>{50d9665b-1fd6-4595-a761-3be464ecf4d8}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Common\CodeResources\Components">
-      <UniqueIdentifier>{cebfb674-268f-4769-8844-0419a7c46bea}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Common\CodeResources\Procedure Class">
       <UniqueIdentifier>{f8b7cc8e-b6ca-43c8-b634-649675801085}</UniqueIdentifier>
     </Filter>
@@ -63,6 +60,12 @@
     </Filter>
     <Filter Include="Common\GameObject\HeightMap">
       <UniqueIdentifier>{3ef657c7-f421-4966-a887-9741dd86652f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Common\CodeResources\DeviceObject">
+      <UniqueIdentifier>{cebfb674-268f-4769-8844-0419a7c46bea}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Common\CodeResources\DeviceObject\DoUpdater">
+      <UniqueIdentifier>{14a28a25-1bc1-43a5-9ed6-cd9a827e851e}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -99,23 +102,11 @@
     <ClCompile Include="..\Common\Source\XFileParser.cpp">
       <Filter>Common\CodeResources\Parser</Filter>
     </ClCompile>
-    <ClCompile Include="..\Common\Source\GraphicComponent.cpp">
-      <Filter>Common\CodeResources\Components</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Common\Source\BaseComponent.cpp">
-      <Filter>Common\CodeResources\Components</Filter>
-    </ClCompile>
     <ClCompile Include="..\Common\Source\GameObject.cpp">
       <Filter>Common\GameObject</Filter>
     </ClCompile>
     <ClCompile Include="..\Common\Source\cTextureBuffer.cpp">
       <Filter>Common\DeviceInstance\DX12Supporters\Buffer</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Common\Source\IComponent.cpp">
-      <Filter>Common\CodeResources\Components</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Common\Source\ComponentUpdater.cpp">
-      <Filter>Common\CodeResources\Components</Filter>
     </ClCompile>
     <ClCompile Include="..\Common\Source\AnimationTree.cpp">
       <Filter>Common\GameObject\AnimationTree</Filter>
@@ -177,6 +168,18 @@
     <ClCompile Include="..\Common\Source\HeightMap.cpp">
       <Filter>Common\GameObject\HeightMap</Filter>
     </ClCompile>
+    <ClCompile Include="..\Common\Source\DeviceObject.cpp">
+      <Filter>Common\CodeResources\DeviceObject</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Source\PhysicsDO.cpp">
+      <Filter>Common\CodeResources\DeviceObject</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Source\ComponentUpdater.cpp">
+      <Filter>Common\CodeResources\DeviceObject\DoUpdater</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Source\GraphicDO.cpp">
+      <Filter>Common\CodeResources\DeviceObject</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Common\Source\IPhysicsDevice.h">
@@ -194,15 +197,6 @@
     <ClInclude Include="..\Common\Source\XFileParser.h">
       <Filter>Common\CodeResources\Parser</Filter>
     </ClInclude>
-    <ClInclude Include="..\Common\Source\IComponent.h">
-      <Filter>Common\CodeResources\Components</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Common\Source\BaseComponent.h">
-      <Filter>Common\CodeResources\Components</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Common\Source\GraphicComponent.h">
-      <Filter>Common\CodeResources\Components</Filter>
-    </ClInclude>
     <ClInclude Include="..\Common\Source\GameObject.h">
       <Filter>Common\GameObject</Filter>
     </ClInclude>
@@ -217,12 +211,6 @@
     </ClInclude>
     <ClInclude Include="..\Common\Source\cIndexManagementBuffer.h">
       <Filter>Common\DeviceInstance\DX12Supporters\Buffer</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Common\Source\IComponentCreater.h">
-      <Filter>Common\DeviceInstance\_Interface</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Common\Source\ComponentUpdater.h">
-      <Filter>Common\CodeResources\Components</Filter>
     </ClInclude>
     <ClInclude Include="..\Common\Source\AnimationTree.h">
       <Filter>Common\GameObject\AnimationTree</Filter>
@@ -289,6 +277,21 @@
     </ClInclude>
     <ClInclude Include="..\Common\Source\HeightMap.h">
       <Filter>Common\GameObject\HeightMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\DeviceObject.h">
+      <Filter>Common\CodeResources\DeviceObject</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\IDeviceObjectRegistration.h">
+      <Filter>Common\DeviceInstance\_Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\PhysicsDO.h">
+      <Filter>Common\CodeResources\DeviceObject</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\ComponentUpdater.h">
+      <Filter>Common\CodeResources\DeviceObject\DoUpdater</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\GraphicDO.h">
+      <Filter>Common\CodeResources\DeviceObject</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

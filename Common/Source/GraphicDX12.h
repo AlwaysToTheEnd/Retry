@@ -154,14 +154,14 @@ public:
 	virtual void OnResize() override;
 	virtual void* GetDevicePtr() override { return m_D3dDevice.Get(); }
 	virtual void GetWorldRay(physx::PxVec3& origin, physx::PxVec3& ray) const override;
-	virtual IComponent* CreateComponent(CGHScene&, COMPONENTTYPE type, unsigned int id, GameObject& gameObject) override;
+	virtual void RegisterDeviceObject(CGHScene& scene, DeviceObject* gameObject) override;
 	virtual void CreateScene(const CGHScene& scene) override {} //#TODO
 	
 public: // Used Functions
 	virtual void SetCamera(cCamera* camera) { m_CurrCamera = camera; }
 
 private: // Only Used by FuncPtr
-	virtual void ComponentDeleteManaging(CGHScene&, COMPONENTTYPE type, IComponent* deletedCom) override;
+	virtual void UnRegisterDeviceObject(CGHScene& scene, DeviceObject* gameObject) override;
 
 private: // Used from components
 	bool AddMesh(const std::string& meshName, MeshObject& meshinfo,

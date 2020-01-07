@@ -6,14 +6,14 @@
 #include "StaticObject.h"
 #include "CGHScene.h"
 
-class ComAnimator;
+class DOAnimator;
 class UIPanel;
 class UIParam;
 class UIButton;
 class AniTreeArowVisual;
-class ComRenderer;
-class ComUICollision;
-class ComTransform;
+class DORenderer;
+class DOUICollision;
+class DOTransform;
 
 namespace Ani
 {
@@ -155,9 +155,9 @@ private:
 
 private:
 	std::string			m_Name;
-	ComTransform*		m_Transform;
-	ComUICollision*		m_UICollison;
-	ComRenderer*		m_Renderer;
+	DOTransform*		m_Transform;
+	DOUICollision*		m_UICollison;
+	DORenderer*		m_Renderer;
 	AniNodeVisual*		m_From;
 	AniNodeVisual*		m_To;
 	physx::PxVec2		m_MousePos;
@@ -197,8 +197,8 @@ private:
 	AniTree::AnimationTree*					m_CurrTree;
 	UIPanel*								m_WorkPanel;
 	UIParam*								m_AniTreeParam;
-	ComAnimator*							m_Animator;
-	ComRenderer*							m_Renderer;
+	DOAnimator*							m_Animator;
+	DORenderer*							m_Renderer;
 
 	std::string								m_CurrTreeName;
 	std::vector<std::string>				m_TreeNames;

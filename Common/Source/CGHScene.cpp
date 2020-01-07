@@ -3,7 +3,8 @@
 #include "IPhysicsDevice.h"
 #include "d3dApp.h"
 #include "GameObject.h"
-
+#include "PhysicsDO.h"
+#include "GraphicDO.h"
 
 
 CGHScene::CGHScene(IGraphicDevice* graphicDevice, IPhysicsDevice* pxDevice, const std::string& name)
@@ -36,7 +37,7 @@ bool CGHScene::Update(const DirectX::Mouse::ButtonStateTracker& mouse, float del
 		m_Objects[i]->SetClickedState(GameObject::CLICKEDSTATE::NONE);
 	}
 
-	GetComponentUpdater(COMPONENTTYPE::COM_UICOLLISTION).Update(delta);
+	GetComponentUpdater(typeid(DOTransform).hash_code()).Update(delta);
 	physx::PxVec3 rayOrigin;
 	physx::PxVec3 ray;
 	GETAPP->GetMouseRay(rayOrigin, ray);
@@ -44,7 +45,7 @@ bool CGHScene::Update(const DirectX::Mouse::ButtonStateTracker& mouse, float del
 	if (mouse.leftButton == MOUSEState::UP)
 	{
 		m_PhysicsDevice->ExcuteFuncOfClickedObject(*this, rayOrigin.x, rayOrigin.y, rayOrigin.z,
-			ray.x, ray.y, ray.z,500.0f, GameObject::CLICKEDSTATE::MOUSEOVER);
+			ray.x, ray.y, ray.z, 500.0f, GameObject::CLICKEDSTATE::MOUSEOVER);
 	}
 	else if (mouse.leftButton == MOUSEState::PRESSED)
 	{
@@ -64,62 +65,48 @@ bool CGHScene::Update(const DirectX::Mouse::ButtonStateTracker& mouse, float del
 
 
 	m_PhysicsDevice->Update(*this);
-	GetComponentUpdater(COMPONENTTYPE::COM_STATIC).Update(delta);
-	GetComponentUpdater(COMPONENTTYPE::COM_DYNAMIC).Update(delta);
+	GetComponentUpdater(typeid(DORigidStatic).hash_code()).Update(delta);
+	GetComponentUpdater(typeid(DORigidDynamic).hash_code()).Update(delta);
 
-	GetComponentUpdater(COMPONENTTYPE::COM_ANIMATOR).Update(delta);
-	GetComponentUpdater(COMPONENTTYPE::COM_RENDERER).Update(delta);
-	GetComponentUpdater(COMPONENTTYPE::COM_FONT).Update(delta);
+	GetComponentUpdater(typeid(DOAnimator).hash_code()).Update(delta);
+	GetComponentUpdater(typeid(DORenderer).hash_code()).Update(delta);
+	GetComponentUpdater(typeid(DOFont).hash_code()).Update(delta);
 
 	m_GraphicDevice->Update(*this);
 
 	return result;
 }
 
-void CGHScene::ComponentDeleteManaging(COMPONENTTYPE type, int id)
+DeviceObjectUpdater& CGHScene::GetComponentUpdater(unsigned int hashCode)
 {
-	if (type == COMPONENTTYPE::COM_END)
-	{
-		assert(false && "THIS COMPONENT IS NONE USED TYPE");
-	}
-
-	auto& comUpdater = GetComponentUpdater(type);
-
-	if (type > COMPONENTTYPE::COM_TRANSFORM)
-	{
-		m_GraphicDevice->ComponentDeleteManaging(*this, type, comUpdater.GetData(id));
-	}
-	else
-	{
-		m_PhysicsDevice->ComponentDeleteManaging(*this, type, comUpdater.GetData(id));
-	}
-
-	comUpdater.SignalDeleted(id);
+	return m_ComUpdater[hashCode];
 }
 
-std::unique_ptr<IComponent> CGHScene::CreateComponent(COMPONENTTYPE type, GameObject& gameObject)
+void CGHScene::UnRegisterDeviceObject(unsigned int hashCode, DeviceObject* gameObject)
 {
-	assert(type != COMPONENTTYPE::COM_END && "THIS COMPONENT IS NONE USED TYPE");
+	assert(gameObject);
+	assert(gameObject->GetID() != -1);
 
-	IComponent* newComponent = nullptr;
-	auto& comUpdater = GetComponentUpdater(type);
-	UINT nextID = comUpdater.GetNextID();
+	auto& comUpdater = GetComponentUpdater(hashCode);
 
-	if (type > COMPONENTTYPE::COM_TRANSFORM)
-	{
-		newComponent = m_GraphicDevice->CreateComponent(*this, type, nextID, gameObject);
-	}
-	else
-	{
-		newComponent = m_PhysicsDevice->CreateComponent(*this, type, nextID, gameObject);
-	}
+	m_GraphicDevice->UnRegisterDeviceObject(*this, gameObject);
+	m_PhysicsDevice->UnRegisterDeviceObject(*this, gameObject);
 
-	if (newComponent)
-	{
-		comUpdater.AddData(newComponent);
-	}
+	comUpdater.SignalDeleted(gameObject->GetID());
+}
 
-	return std::unique_ptr<IComponent>(newComponent);
+void CGHScene::RegisterDeviceObject(unsigned int hashCode, DeviceObject* gameObject)
+{
+	assert(gameObject);
+	assert(gameObject->GetID() == -1);
+
+	auto& comUpdater = GetComponentUpdater(hashCode);
+	gameObject->SetID(comUpdater.GetNextID());
+
+	m_GraphicDevice->RegisterDeviceObject(*this, gameObject);
+	m_PhysicsDevice->RegisterDeviceObject(*this, gameObject);
+
+	comUpdater.AddData(std::unique_ptr<DeviceObject>(gameObject));
 }
 
 void CGHScene::DeleteGameObject(GameObject* object)
@@ -156,11 +143,4 @@ void CGHScene::AddGameObject(GameObject* object)
 	}
 
 	object->Init();
-}
-
-ComponentUpdater& CGHScene::GetComponentUpdater(COMPONENTTYPE type)
-{
-	unsigned int index = static_cast<unsigned int>(type);
-
-	return m_ComUpdater[index];
 }

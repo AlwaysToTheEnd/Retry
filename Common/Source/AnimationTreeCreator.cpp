@@ -1,6 +1,6 @@
 #include "AnimationTreeCreator.h"
-#include "GraphicComponent.h"
-#include "BaseComponent.h"
+#include "GraphicDO.h"
+#include "PhysicsDO.h"
 #include "../UIObjects/UIPanel.h"
 #include "d3dApp.h"
 #include "InputTextureNameList.h"
@@ -12,8 +12,8 @@ AniTreeArowVisual::AniTreeArrowArttributeEditer AniTreeArowVisual::s_ArrowArttri
 
 void AniNodeVisual::Init()
 {
-	m_Panel = CreateGameObject<UIPanel>(true);
-	m_Panel->GetComponent<ComUICollision>()->AddFunc(
+	m_Panel = CreateComponenet<UIPanel>(true);
+	m_Panel->GetComponent<DOUICollision>()->AddFunc(
 		std::bind(&AniNodeVisual::AnimationTreeArrowCreator::Excute, &s_AnitreeArrowCreater, this));
 }
 
@@ -112,19 +112,19 @@ void AniNodeVisual::SetTargetAninode(AniNode* node)
 		const int ElementSize = 15;
 		m_Panel->DeleteAllComs();
 
-		auto closeButton = m_Panel->CreateGameObject<UIButton>(true);
+		auto closeButton = m_Panel->CreateComponenet<UIButton>(true);
 		closeButton->AddFunc(std::bind(&AniNodeVisual::Delete, this));
 		closeButton->SetTexture(InputTN::Get("AniNodeVisualPanel_Delete"), { 10,10 });
 		m_Panel->AddUICom(m_Panel->GetSize().x - 10, 10, closeButton);
 
-		auto roofControlButton = m_Panel->CreateGameObject<UIButton>(true);
+		auto roofControlButton = m_Panel->CreateComponenet<UIButton>(true);
 		roofControlButton->OnlyFontMode();
 		roofControlButton->SetTextHeight(ElementSize);
 		roofControlButton->SetText(L"AniRoof:" + std::wstring(m_TargetAniNode->IsRoofAni() ? L"true" : L"false"));
 		roofControlButton->AddFunc(std::bind(&AniNodeVisual::ChangeAniRoof, this, m_TargetAniNode, roofControlButton));
 		m_Panel->AddUICom(m_Panel->GetSize().x / 2, m_Panel->GetSize().y / 2, roofControlButton);
 
-		auto aniNameParam = m_Panel->CreateGameObject<UIParam>(true, UIParam::UIPARAMTYPE::MODIFIER);
+		auto aniNameParam = m_Panel->CreateComponenet<UIParam>(true, UIParam::UIPARAMTYPE::MODIFIER);
 		aniNameParam->SetStringParam(L"Animation", m_CurrSkinAnimationNames, &m_CurrAniName);
 		aniNameParam->SetDirtyCall(std::bind(&AniNodeVisual::ChangedTargetAni, this));
 		aniNameParam->SetTextHeight(ElementSize);
@@ -147,14 +147,14 @@ void AniNodeVisual::SetSkinAnimationInfoVectorPtr(const std::vector<std::string>
 
 physx::PxVec2 AniNodeVisual::GetPos() const
 {
-	auto p = m_Panel->GetComponent<ComTransform>()->GetTransform().p;
+	auto p = m_Panel->GetComponent<DOTransform>()->GetTransform().p;
 
 	return { p.x, p.y };
 }
 
 const physx::PxVec3& AniNodeVisual::GetSize() const
 {
-	return m_Panel->GetComponent<ComRenderer>()->GetRenderInfo().point.size;
+	return m_Panel->GetComponent<DORenderer>()->GetRenderInfo().point.size;
 }
 
 void AniNodeVisual::AddArrow(AniTreeArowVisual* arrow)
@@ -198,7 +198,7 @@ void AniNodeVisual::AnimationTreeArrowCreator::Excute(AniNodeVisual* aniNode)
 		WorkStart();
 		m_CurrFrom = aniNode;
 
-		m_CurrArrow = m_CurrFrom->CreateGameObject<AniTreeArowVisual>(true);
+		m_CurrArrow = m_CurrFrom->CreateComponenet<AniTreeArowVisual>(true);
 		m_CurrArrow->SetFromNode(m_CurrFrom);
 	}
 	else
@@ -222,8 +222,8 @@ void AniNodeVisual::AnimationTreeArrowCreator::Excute(AniNodeVisual* aniNode)
 
 void AniTreeArowVisual::Init()
 {
-	m_Transform = AddComponent<ComTransform>();
-	m_Renderer = AddComponent<ComRenderer>();
+	m_Transform = AddComponent<DOTransform>();
+	m_Renderer = AddComponent<DORenderer>();
 	m_Transform->SetPosZ(0.4f);
 }
 
@@ -342,7 +342,7 @@ void AniTreeArowVisual::SetToNode(AniNodeVisual* to)
 	if (m_From != to)
 	{
 		m_To = to;
-		m_UICollison = AddComponent<ComUICollision>();
+		m_UICollison = AddComponent<DOUICollision>();
 		m_UICollison->AddFunc(
 			std::bind(&AniTreeArowVisual::AniTreeArrowArttributeEditer::SetArrowVisual,
 				&s_ArrowArttributeEditer, this));
@@ -390,7 +390,7 @@ void AniTreeArowVisual::AniTreeArrowArttributeEditer::CreateAttributePanel()
 
 	if (m_AttributePanel == nullptr)
 	{
-		m_AttributePanel = m_CurrArrow->CreateGameObject<UIPanel>(false);
+		m_AttributePanel = m_CurrArrow->CreateComponenet<UIPanel>(false);
 
 		m_AttributePanel->SetPos(physx::PxVec2(GETAPP->GetClientSize().x - 230, 200));
 		m_AttributePanel->SetBackGroundTexture(InputTN::Get("AniTreeArrowArttributePanel"));
@@ -430,13 +430,13 @@ void AniTreeArowVisual::AniTreeArrowArttributeEditer::CreateAttributePanel()
 
 	for (auto& it : m_Arrows)
 	{
-		auto endIsParam = m_AttributePanel->CreateGameObject<UIParam>(true, UIParam::UIPARAMTYPE::MODIFIER);
+		auto endIsParam = m_AttributePanel->CreateComponenet<UIParam>(true, UIParam::UIPARAMTYPE::MODIFIER);
 		endIsParam->SetTargetParam(L"AniEndIsChange", &it.aniEndIsChange);
 		endIsParam->SetTextHeight(m_FontSize);
 		m_AttributePanel->AddUICom(offsetX, posY, endIsParam);
 		posY += m_FontSize + propertyInterval;
 
-		auto arrowTypeParam = m_AttributePanel->CreateGameObject<UIParam>(true, UIParam::UIPARAMTYPE::MODIFIER);
+		auto arrowTypeParam = m_AttributePanel->CreateComponenet<UIParam>(true, UIParam::UIPARAMTYPE::MODIFIER);
 		arrowTypeParam->SetEnumParam(L"ArrowType", &arrowTypeNames, reinterpret_cast<int*>(&it.type));
 		arrowTypeParam->SetTextHeight(m_FontSize);
 		m_AttributePanel->AddUICom(offsetX, posY, arrowTypeParam);
@@ -444,20 +444,20 @@ void AniTreeArowVisual::AniTreeArrowArttributeEditer::CreateAttributePanel()
 
 		for (auto& it2 : it.trigger)
 		{
-			auto funcParam = m_AttributePanel->CreateGameObject<UIParam>(true, UIParam::UIPARAMTYPE::MODIFIER);
+			auto funcParam = m_AttributePanel->CreateComponenet<UIParam>(true, UIParam::UIPARAMTYPE::MODIFIER);
 			funcParam->SetTextHeight(m_FontSize);
 			funcParam->SetEnumParam(L"Func", &triggerTypeNames, reinterpret_cast<int*>(&it2.m_TriggerType));
 
 			m_AttributePanel->AddUICom(offsetX, posY, funcParam);
 			posY += m_FontSize + propertyInterval;
 
-			auto triggerType = m_AttributePanel->CreateGameObject<UIParam>(true, UIParam::UIPARAMTYPE::MODIFIER);
+			auto triggerType = m_AttributePanel->CreateComponenet<UIParam>(true, UIParam::UIPARAMTYPE::MODIFIER);
 			triggerType->SetTextHeight(m_FontSize);
 			triggerType->SetEnumParam(L"DataType", &dataTypeNames, reinterpret_cast<int*>(&it2.m_Standard.type));
 			m_AttributePanel->AddUICom(offsetX, posY, triggerType);
 			posY += m_FontSize + propertyInterval;
 
-			auto triggerParam = m_AttributePanel->CreateGameObject<UIParam>(true, UIParam::UIPARAMTYPE::MODIFIER);
+			auto triggerParam = m_AttributePanel->CreateComponenet<UIParam>(true, UIParam::UIPARAMTYPE::MODIFIER);
 			triggerParam->SetTextHeight(m_FontSize);
 
 			switch (it2.m_Standard.type)
@@ -478,7 +478,7 @@ void AniTreeArowVisual::AniTreeArrowArttributeEditer::CreateAttributePanel()
 				break;
 			}
 
-			triggerParam->GetComponent<ComUICollision>()->AddFunc(std::bind(
+			triggerParam->GetComponent<DOUICollision>()->AddFunc(std::bind(
 				&AniTreeArowVisual::AniTreeArrowArttributeEditer::ChangeType, this, triggerParam, &it2.m_Standard));
 
 			m_AttributePanel->AddUICom(offsetX, posY, triggerParam);
@@ -488,7 +488,7 @@ void AniTreeArowVisual::AniTreeArrowArttributeEditer::CreateAttributePanel()
 
 	m_AttributePanel->SetSize(230, posY + m_FontSize * 3);
 
-	auto addButton = m_AttributePanel->CreateGameObject<UIButton>(true);
+	auto addButton = m_AttributePanel->CreateComponenet<UIButton>(true);
 	addButton->SetTexture(
 		InputTN::Get("AniTreeArrowArttributePanel_AddButton"),
 		{ 10,5 });
@@ -497,7 +497,7 @@ void AniTreeArowVisual::AniTreeArrowArttributeEditer::CreateAttributePanel()
 	m_AttributePanel->AddUICom(m_AttributePanel->GetSize().x / 2, posY, addButton);
 	posY += m_FontSize + propertyInterval;
 
-	auto deleteButton = m_AttributePanel->CreateGameObject<UIButton>(true);
+	auto deleteButton = m_AttributePanel->CreateComponenet<UIButton>(true);
 	deleteButton->SetTexture(
 		InputTN::Get("AniTreeArrowArttributePanel_DeleteButton"),
 		{ 10,5 });
@@ -573,7 +573,7 @@ void VisualizedAniTreeCreator::SelectSkinnedData(const std::string& name)
 			m_AniEndTimes.push_back(m_CurrSkin->GetClipEndTime(it));
 		}
 
-		GetComponent<ComMesh>()->SelectMesh(name);
+		GetComponent<DOMesh>()->SelectMesh(name);
 		m_Animator->SelectSkin(name);
 
 		m_CurrTree->SetCurrMeshName(name);
@@ -584,14 +584,14 @@ void VisualizedAniTreeCreator::SelectSkinnedData(const std::string& name)
 
 void VisualizedAniTreeCreator::Init()
 {
-	AddComponent<ComTransform>();
-	AddComponent<ComMesh>();
-	m_Renderer = AddComponent<ComRenderer>();
-	m_Animator = AddComponent<ComAnimator>();
+	AddComponent<DOTransform>();
+	AddComponent<DOMesh>();
+	m_Renderer = AddComponent<DORenderer>();
+	m_Animator = AddComponent<DOAnimator>();
 
 	m_Renderer->SetRenderInfo(RenderInfo(RENDER_MESH));
 
-	m_WorkPanel = CreateGameObject<UIPanel>(false);
+	m_WorkPanel = CreateComponenet<UIPanel>(false);
 	m_WorkPanel->SetBackGroundTexture(InputTN::Get("AniTreeCreatorWorkPanel"));
 	m_WorkPanel->SetPos({ 50,50 });
 
@@ -600,7 +600,7 @@ void VisualizedAniTreeCreator::Init()
 
 	int posY = 15;
 
-	auto nullTreeButton = m_WorkPanel->CreateGameObject<UIButton>(true);
+	auto nullTreeButton = m_WorkPanel->CreateComponenet<UIButton>(true);
 	nullTreeButton->SetText(L"AddNullTree");
 	nullTreeButton->OnlyFontMode();
 	nullTreeButton->SetTextHeight(15);
@@ -611,7 +611,7 @@ void VisualizedAniTreeCreator::Init()
 	SetAnimationTreeListsParamToPanel(10, posY, m_WorkPanel);
 	posY += 20;
 
-	auto button = m_WorkPanel->CreateGameObject<UIButton>(true);
+	auto button = m_WorkPanel->CreateComponenet<UIButton>(true);
 	button->SetText(L"AddNode");
 	button->OnlyFontMode();
 	button->SetTextHeight(15);
@@ -624,7 +624,7 @@ void VisualizedAniTreeCreator::Init()
 		std::wstring skinName;
 		skinName.insert(skinName.end(), it.begin(), it.end());
 
-		auto skinbutton = m_WorkPanel->CreateGameObject<UIButton>(true);
+		auto skinbutton = m_WorkPanel->CreateComponenet<UIButton>(true);
 		skinbutton->SetText(skinName);
 		skinbutton->OnlyFontMode();
 		skinbutton->SetTextHeight(15);
@@ -633,7 +633,7 @@ void VisualizedAniTreeCreator::Init()
 		posY += 20;
 	}
 
-	auto testbutton = m_WorkPanel->CreateGameObject<UIButton>(true);
+	auto testbutton = m_WorkPanel->CreateComponenet<UIButton>(true);
 	testbutton->SetText(L"SaveButton");
 	testbutton->OnlyFontMode();
 	testbutton->SetTextHeight(15);
@@ -657,7 +657,7 @@ void VisualizedAniTreeCreator::AddNode()
 	{
 		if (auto targetNode = m_CurrTree->AddAniNode())
 		{
-			auto newNode = CreateGameObject<AniNodeVisual>(true);
+			auto newNode = CreateComponenet<AniNodeVisual>(true);
 			newNode->SetSkinAnimationInfoVectorPtr(&m_AniNames, &m_AniEndTimes);
 
 			newNode->SetTargetAninode(targetNode);
@@ -674,7 +674,7 @@ void VisualizedAniTreeCreator::AddNodeVs(AniTree::AniNode* node)
 	{
 		if (node)
 		{
-			auto newNode = CreateGameObject<AniNodeVisual>(true);
+			auto newNode = CreateComponenet<AniNodeVisual>(true);
 			newNode->SetSkinAnimationInfoVectorPtr(&m_AniNames, &m_AniEndTimes);
 
 			newNode->SetTargetAninode(node);
@@ -708,7 +708,7 @@ void VisualizedAniTreeCreator::SetAnimationTreeListsParamToPanel(int posX, int p
 {
 	if (m_AniTreeParam == nullptr)
 	{
-		m_AniTreeParam = workPanel->CreateGameObject<UIParam>(true, UIParam::UIPARAMTYPE::MODIFIER);
+		m_AniTreeParam = workPanel->CreateComponenet<UIParam>(true, UIParam::UIPARAMTYPE::MODIFIER);
 
 		m_AniTreeParam->SetTextHeight(15);
 		m_AniTreeParam->SetStringParam(L"CurrTree", &m_TreeNames, &m_CurrTreeName);
@@ -769,7 +769,7 @@ void VisualizedAniTreeCreator::ChangedTree()
 
 		if (meshName.size())
 		{
-			GetComponent<ComMesh>()->SelectMesh(meshName);
+			GetComponent<DOMesh>()->SelectMesh(meshName);
 		}
 
 		unsigned int numNodes = m_CurrTree->GetNumNodes();
@@ -789,7 +789,7 @@ void VisualizedAniTreeCreator::ChangedTree()
 
 			for (auto& it : arrows)
 			{
-				auto currVsArrow = vsNodes[i]->CreateGameObject<AniTreeArowVisual>(true);
+				auto currVsArrow = vsNodes[i]->CreateComponenet<AniTreeArowVisual>(true);
 				currVsArrow->SetFromNode(vsNodes[i]);
 
 				bool isNotHadTo = true;

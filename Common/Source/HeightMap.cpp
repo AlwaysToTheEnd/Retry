@@ -1,5 +1,5 @@
 #include "HeightMap.h"
-#include "BaseComponent.h"
+#include "PhysicsDO.h"
 #include "PxPhysicsAPI.h"
 
 void HeightMap::Update(float delta)
