@@ -386,6 +386,9 @@ bool GraphicDX12::AddMesh(const std::string& meshName, MeshObject& meshinfo,
 	FlushCommandQueue();
 	ThrowIfFailed(allocator->Reset());
 
+	m_VertexBuffer->ClearUploadBuffer();
+	m_IndexBuffer->ClearUploadBuffer();
+
 	return true;
 }
 
@@ -408,6 +411,8 @@ bool GraphicDX12::AddMaterials(const std::vector<std::string>& materialNames, co
 	
 	FlushCommandQueue();
 	ThrowIfFailed(allocator->Reset());
+
+	m_Materials->ClearUploadBuffer();
 
 	return true;
 }

@@ -102,15 +102,15 @@ inline Microsoft::WRL::ComPtr<ID3D12Resource> cDefaultBuffer<T>::AddData(ID3D12D
 		m_BufferSize = (m_BufferSize * 2) > (m_BufferSize + addDataByteSize) ? (m_BufferSize * 2) : (m_BufferSize + addDataByteSize);
 		m_Redundancy = m_BufferSize - usingByte;
 
-		ID3D12Resource* newResource = nullptr;
+		Microsoft::WRL::ComPtr<ID3D12Resource> newResource;
 		ThrowIfFailed(device->CreateCommittedResource(
 			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
 			D3D12_HEAP_FLAG_NONE,
 			&CD3DX12_RESOURCE_DESC::Buffer(m_BufferSize),
 			D3D12_RESOURCE_STATE_COPY_DEST, nullptr,
-			IID_PPV_ARGS(&newResource)));
+			IID_PPV_ARGS(newResource.GetAddressOf())));
 
-		commandList->CopyBufferRegion(newResource, 0, m_Resource.Get(), 0, usingByte);
+		commandList->CopyBufferRegion(newResource.Get(), 0, m_Resource.Get(), 0, usingByte);
 
 		result = m_Resource;
 		m_Resource = nullptr;
