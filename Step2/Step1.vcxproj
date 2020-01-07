@@ -36,6 +36,7 @@
     <ClCompile Include="..\Common\Source\GameTimer.cpp" />
     <ClCompile Include="..\Common\Source\GraphicComponent.cpp" />
     <ClCompile Include="..\Common\Source\GraphicDX12.cpp" />
+    <ClCompile Include="..\Common\Source\HeightMap.cpp" />
     <ClCompile Include="..\Common\Source\IComponent.cpp" />
     <ClCompile Include="..\Common\Source\InputTextureNameList.cpp" />
     <ClCompile Include="..\Common\Source\PhysX4_1.cpp" />
@@ -72,6 +73,7 @@
     <ClInclude Include="..\Common\Source\GameObject.h" />
     <ClInclude Include="..\Common\Source\GameTimer.h" />
     <ClInclude Include="..\Common\Source\GraphicComponent.h" />
+    <ClInclude Include="..\Common\Source\HeightMap.h" />
     <ClInclude Include="..\Common\Source\IComponent.h" />
     <ClInclude Include="..\Common\Source\cTextureBuffer.h" />
     <ClInclude Include="..\Common\Source\d3dApp.h" />

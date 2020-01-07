@@ -61,12 +61,12 @@
     <Filter Include="Common\GameObject\AnimationTree">
       <UniqueIdentifier>{08dd9b4e-5586-45da-8ec8-0c9288782583}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Common\GameObject\HeightMap">
+      <UniqueIdentifier>{3ef657c7-f421-4966-a887-9741dd86652f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Step2.cpp">
-      <Filter>Step2</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Common\Source\d3dApp.cpp">
       <Filter>Step2</Filter>
     </ClCompile>
     <ClCompile Include="..\Common\Source\zlib\inflate.c">
@@ -162,20 +162,23 @@
     <ClCompile Include="..\Common\Source\AnimationTreeScene\AnimationTreeScene.cpp">
       <Filter>Step2\Scenes</Filter>
     </ClCompile>
-    <ClCompile Include="..\Common\Source\InputTextureNameList.cpp">
-      <Filter>Step2</Filter>
-    </ClCompile>
     <ClCompile Include="..\Common\Source\GameTimer.cpp">
       <Filter>Common\CodeResources\Procedure Class</Filter>
     </ClCompile>
     <ClCompile Include="TESTOBJECT.CPP">
       <Filter>Step2</Filter>
     </ClCompile>
+    <ClCompile Include="..\Common\Source\d3dApp.cpp">
+      <Filter>Common\CodeResources\BaseClass</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Source\InputTextureNameList.cpp">
+      <Filter>Common\CodeResources\BaseClass</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Source\HeightMap.cpp">
+      <Filter>Common\GameObject\HeightMap</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\Common\Source\d3dApp.h">
-      <Filter>Step2</Filter>
-    </ClInclude>
     <ClInclude Include="..\Common\Source\IPhysicsDevice.h">
       <Filter>Common\DeviceInstance\_Interface</Filter>
     </ClInclude>
@@ -272,14 +275,20 @@
     <ClInclude Include="..\Common\Source\AnimationTreeScene\AnimationTreeScene.h">
       <Filter>Step2\Scenes</Filter>
     </ClInclude>
-    <ClInclude Include="..\Common\Source\InputTextureNameList.h">
-      <Filter>Step2</Filter>
-    </ClInclude>
     <ClInclude Include="..\Common\Source\GameTimer.h">
       <Filter>Common\CodeResources\Procedure Class</Filter>
     </ClInclude>
     <ClInclude Include="TestObject.h">
       <Filter>Step2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\d3dApp.h">
+      <Filter>Common\CodeResources\BaseClass</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\InputTextureNameList.h">
+      <Filter>Common\CodeResources\BaseClass</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\HeightMap.h">
+      <Filter>Common\GameObject\HeightMap</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -31,7 +31,6 @@ PhysX4_1::~PhysX4_1()
 		m_PVD = nullptr;
 	}
 
-
 	m_Foundation = nullptr;
 	m_Foundation = nullptr;
 }
