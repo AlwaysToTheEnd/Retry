@@ -189,25 +189,26 @@ private:
 	
 	void SetAnimationTreeListsParamToPanel(int posX, int posY, UIPanel* workPanel);
 
-	void CreateNullTree();
+	void SelectNullTree();
 	void ChangedTree();
 	void SaveTree();
 
 private:
-	AniTree::AnimationTree*					m_CurrTree;
-	UIPanel*								m_WorkPanel;
-	UIParam*								m_AniTreeParam;
-	DOAnimator*							m_Animator;
-	DORenderer*							m_Renderer;
+	std::unique_ptr< AniTree::AnimationTree>	m_NullTree;
+	AniTree::AnimationTree*						m_CurrTree;
+	UIPanel*									m_WorkPanel;
+	UIParam*									m_AniTreeParam;
+	DOAnimator*									m_Animator;
+	DORenderer*									m_Renderer;
 
-	std::string								m_CurrTreeName;
-	std::vector<std::string>				m_TreeNames;
+	std::string									m_CurrTreeName;
+	std::vector<std::string>					m_TreeNames;
 
-	const Ani::SkinnedData*					m_CurrSkin;
-	std::vector<std::string>				m_SkinNames;
+	const Ani::SkinnedData*						m_CurrSkin;
+	std::vector<std::string>					m_SkinNames;
 
-	std::vector<std::string>				m_AniNames;
-	std::vector<unsigned int>				m_AniEndTimes;
+	std::vector<std::string>					m_AniNames;
+	std::vector<unsigned int>					m_AniEndTimes;
 
-	std::list<AniNodeVisual*>				m_AniNodeVs;
+	std::list<AniNodeVisual*>					m_AniNodeVs;
 };

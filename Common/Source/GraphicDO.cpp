@@ -75,7 +75,7 @@ void DOAnimator::SetDOAnimatorNeedInfoFromDevice(std::vector<AniBoneMat>* reserv
 	m_AnimationTrees = animationTrees;
 }
 
-void DOAnimator::GetSkinNames(std::vector<std::string>& out)
+void DOAnimator::GetSkinNames(std::vector<std::string>& out) const
 {
 	assert(m_SkinnedDatas);
 	out.clear();
@@ -137,6 +137,21 @@ void DOAnimator::SaveAnimationTree(const std::wstring& filePath, const std::stri
 	}
 
 	tree->SaveTree(filePath);
+}
+
+void DOAnimator::SaveAnimationTree(const std::wstring& filePath, const std::string& fileName, std::unique_ptr<AniTree::AnimationTree> tree)
+{
+	auto iter = m_AnimationTrees->find(fileName);
+
+	if (iter == m_AnimationTrees->end())
+	{
+		tree->SaveTree(filePath);
+		m_AnimationTrees->insert({ fileName, std::move(tree) });
+	}
+	else
+	{
+		assert(iter->second.get() == tree.get());
+	}
 }
 
 void DOAnimator::GetAniNames(std::vector<std::string>& out) const

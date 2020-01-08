@@ -109,30 +109,6 @@ void UIPanel::SetPos(const physx::PxVec2& pos)
 
 }
 
-void UIPanel::UIOn()
-{
-	m_Active = true;
-
-	SetAllComponentActive(true);
-
-	for (auto& it : m_UIComs)
-	{
-		it.object->SetAllComponentActive(true);
-	}
-}
-
-void UIPanel::UIOff()
-{
-	m_Active = false;
-
-	SetAllComponentActive(false);
-
-	for (auto& it : m_UIComs)
-	{
-		it.object->SetAllComponentActive(false);
-	}
-}
-
 void UIPanel::ThisPanalIsStatic()
 {
 	if (m_UICollision)

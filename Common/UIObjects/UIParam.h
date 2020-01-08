@@ -1,5 +1,5 @@
 #pragma once
-#include "GameObject.h"
+#include "UIObject.h"
 #include "BaseClass.h"
 #include "StaticObject.h"
 #include <DirectXMath.h>
@@ -11,7 +11,7 @@ class DOUICollision;
 class DOTransform;
 class UIPanel;
 
-class UIParam :public GameObject
+class UIParam :public UIObject
 {
 public:
 	enum class UIPARAMTYPE
@@ -58,7 +58,7 @@ private:
 
 public:
 	UIParam(CGHScene& scene, GameObject* parent, const char* typeName, UIPARAMTYPE type)
-		: GameObject(scene, parent, typeName)
+		: UIObject(scene, parent, typeName)
 		, m_Type(type)
 		, m_ControlType(UICONTROLTYPE::ORIGIN_DATA)
 		, m_Font(nullptr)

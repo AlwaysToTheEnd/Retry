@@ -253,7 +253,7 @@ void GraphicDX12::OnResize()
 
 	XMMATRIX P = XMMatrixPerspectiveFovLH(XM_PIDIV4, (float)m_ClientWidth / m_ClientHeight, 1.0f, 1000.0f);
 	XMMATRIX OrthoP = XMMatrixOrthographicOffCenterLH(m_ScissorRect.left, m_ScissorRect.right,
-		m_ScissorRect.bottom, m_ScissorRect.top, 0, 1.0f);
+		m_ScissorRect.bottom, m_ScissorRect.top, D3D12_MIN_DEPTH, D3D12_MAX_DEPTH);
 	XMStoreFloat4x4(m_ProjectionMat, P);
 	XMStoreFloat4x4(m_OrthoProjectionMat, OrthoP);
 }

@@ -180,6 +180,9 @@
     <ClCompile Include="..\Common\Source\GraphicDO.cpp">
       <Filter>Common\CodeResources\DeviceObject</Filter>
     </ClCompile>
+    <ClCompile Include="..\Common\UIObjects\UIObject.cpp">
+      <Filter>Common\UIObjects</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Common\Source\IPhysicsDevice.h">
@@ -292,6 +295,9 @@
     </ClInclude>
     <ClInclude Include="..\Common\Source\GraphicDO.h">
       <Filter>Common\CodeResources\DeviceObject</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\UIObjects\UIObject.h">
+      <Filter>Common\UIObjects</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -14,12 +14,12 @@ public:
 	virtual void	Delete() override;
 
 	void			SetID(unsigned int id) { m_ID = id; }
-	int				GetID() { return m_ID; }
+	int				GetID() const { return m_ID; }
 
 protected:
 	virtual void Update(float delta) = 0;
 	virtual void Init() = 0;
-	virtual bool IsDeviceObject() override { return true; }
+	virtual bool IsDeviceObject() const override { return true; }
 
 private:
 	int				m_ID;

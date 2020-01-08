@@ -4,7 +4,7 @@
 #include "foundation/PxVec2.h"
 #include <list>
 
-class UIPanel :public GameObject
+class UIPanel :public UIObject
 {
 private:
 	static class UIPanelController :public StaticGameObjectController
@@ -46,18 +46,18 @@ private:
 
 	struct UIComObjects
 	{
-		UIComObjects(UICOMTYPE _type, GameObject* _object)
+		UIComObjects(UICOMTYPE _type, UIObject* _object)
 		{
 			type = _type;
 			object = _object;
 		}
 		UICOMTYPE type;
-		GameObject* object;
+		UIObject* object;
 	};
 
 public:
 	UIPanel(CGHScene& scene, GameObject* parent, const char* typeName)
-		: GameObject(scene, parent, typeName)
+		: UIObject(scene, parent, typeName)
 		, m_Trans(nullptr)
 		, m_Font(nullptr)
 		, m_Render(nullptr)
@@ -84,8 +84,6 @@ public:
 	void SetSize(unsigned int x, unsigned y);
 	void SetName(const std::wstring& name);
 	void SetPos(const physx::PxVec2& pos);
-	void UIOn();
-	void UIOff();
 	void ThisPanalIsStatic();
 
 private:
@@ -94,12 +92,12 @@ private:
 
 private:
 	bool			m_Active;
-	DOTransform*	m_Trans;
-	DOFont*		m_Font;
-	DORenderer*	m_Render;
-	DOUICollision* m_UICollision;
-
 	physx::PxVec2	m_Size;
+	DOTransform*	m_Trans;
+	DOFont*			m_Font;
+	DORenderer*		m_Render;
+	DOUICollision*	m_UICollision;
+
 	std::vector<UIComObjects>	m_UIComs;
 	std::vector<physx::PxVec2>	m_UIComOffset;
 };

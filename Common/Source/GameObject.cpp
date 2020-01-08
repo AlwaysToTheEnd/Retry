@@ -15,11 +15,16 @@ GameObject::GameObject(CGHScene& scene, GameObject* parent, const char* typeName
 	
 }
 
-void GameObject::SetAllComponentActive(bool value)
+void GameObject::SetActive(bool value, bool components)
 {
-	for (auto& it : m_Components)
+	m_IsActive = value;
+
+	if (components)
 	{
-		it->SetActive(value);
+		for (auto& it : m_Components)
+		{
+			it->SetActive(value, components);
+		}
 	}
 }
 

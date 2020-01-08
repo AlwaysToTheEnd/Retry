@@ -1,5 +1,5 @@
 #pragma once
-#include "GameObject.h"
+#include "UIObject.h"
 #include <string>
 #include <functional>
 
@@ -8,11 +8,11 @@ class DOTransform;
 class DORenderer;
 class DOUICollision;
 
-class UIButton :public GameObject
+class UIButton :public UIObject
 {
 public:
 	UIButton(CGHScene& scene, GameObject* parent, const char* typeName)
-		: GameObject(scene, parent, typeName)
+		: UIObject(scene, parent, typeName)
 	{
 	}
 	virtual ~UIButton() = default;

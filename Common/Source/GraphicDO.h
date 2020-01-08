@@ -32,8 +32,8 @@ public:
 	bool				SelectMesh(const std::string& name);
 
 private:
-	virtual void		Update(float delta) override {}
-	virtual void		Init() override {}
+	virtual void Update(float delta) override {}
+	virtual void Init() override {}
 
 private:
 	static const MeshWorkFunc*									m_MeshWorks;
@@ -57,25 +57,26 @@ public:
 	}
 	virtual ~DOAnimator() = default;
 
-	void SetDOAnimatorNeedInfoFromDevice(std::vector<AniBoneMat>* reservedAnibones,
-		const std::unordered_map<std::string, Ani::SkinnedData>* skinnedDatas,
-		std::unordered_map<std::string, std::unique_ptr<AniTree::AnimationTree>>* animationTrees);
+	void					SetDOAnimatorNeedInfoFromDevice(std::vector<AniBoneMat>* reservedAnibones,
+								const std::unordered_map<std::string, Ani::SkinnedData>* skinnedDatas,
+								std::unordered_map<std::string, std::unique_ptr<AniTree::AnimationTree>>* animationTrees);
 
-	void GetSkinNames(std::vector<std::string>& out);
-	unsigned int GetAniEndTime(const std::string& name) const { return m_CurrSkinnedData->GetClipEndTime(name); }
+	void					GetAnimationTreeNames(std::vector<std::string>& out) const;
+	AniTree::AnimationTree* GetCurrAnimationTree() { return m_AniTree; }
+	void					GetSkinNames(std::vector<std::string>& out) const;
+	unsigned int			GetAniEndTime(const std::string& name) const { return m_CurrSkinnedData->GetClipEndTime(name); }
 	const Ani::SkinnedData* GetSkinnedData(const std::string& name) const { return &m_SkinnedDatas->find(name)->second; }
-	int GetBoneMatStoredIndex() const { return m_BoneMatStoredIndex; }
-	void GetAniNames(std::vector<std::string>& out) const;
+	int						GetBoneMatStoredIndex() const { return m_BoneMatStoredIndex; }
+	void					GetAniNames(std::vector<std::string>& out) const;
+	bool					IsRegisteredTree(const AniTree::AnimationTree* tree) const;
 	
-	bool SelectSkin(const std::string& name);
-	bool SelectAnimation(const std::string& name);
+	bool					SelectSkin(const std::string& name);
+	bool					SelectAnimation(const std::string& name);
 
-	bool IsRegisteredTree(const AniTree::AnimationTree* tree) const;
-	void SetAnimationTree(AniTree::AnimationTree* tree);
-	void SetAnimationTree(const std::string& fileName);
-	void GetAnimationTreeNames(std::vector<std::string>& out) const;
-	AniTree::AnimationTree* GetAnimationTree() { return m_AniTree; }
-	void SaveAnimationTree(const std::wstring& filePath, const std::string& fileName, AniTree::AnimationTree* tree);
+	void					SetAnimationTree(AniTree::AnimationTree* tree);
+	void					SetAnimationTree(const std::string& fileName);
+	void					SaveAnimationTree(const std::wstring& filePath, const std::string& fileName, AniTree::AnimationTree* tree);
+	void					SaveAnimationTree(const std::wstring& filePath, const std::string& fileName, std::unique_ptr<AniTree::AnimationTree> tree);
 
 private:
 	virtual void Update(float delta) override;
@@ -104,16 +105,18 @@ public:
 	}
 	virtual ~DORenderer() = default;
 
-	void SetDORenderNeedInfoFromDevice(std::vector<RenderInfo>* reservedRenderOBs) { m_ReservedRenderObjects = reservedRenderOBs; }
+	void				SetDORenderNeedInfoFromDevice(std::vector<RenderInfo>* reservedRenderOBs) { m_ReservedRenderObjects = reservedRenderOBs; }
 
-	void SetRenderInfo(const RenderInfo& info) { m_RenderInfo = info; }
-	const RenderInfo& GetRenderInfo() { return m_RenderInfo; }
+	void				SetRenderInfo(const RenderInfo& info) { m_RenderInfo = info; }
+	
+	const RenderInfo&	GetRenderInfo() { return m_RenderInfo; }
 
 private:
 	virtual void Update(float delta) override;
 	virtual void Init() override {}
 
-	void RenderMesh();
+private:
+	void		 RenderMesh();
 
 private:
 	static std::vector<RenderInfo>* m_ReservedRenderObjects;
@@ -134,10 +137,10 @@ public:
 	}
 	virtual ~DOFont() = default;
 
-	void SetDOFontNeedInfoFromDevice(std::vector<RenderFont>* reservedFonts) { m_ReservedFonts = reservedFonts; }
+	void			SetDOFontNeedInfoFromDevice(std::vector<RenderFont>* reservedFonts) { m_ReservedFonts = reservedFonts; }
 
-	void SetFont(std::wstring fontName) { m_FontName = fontName; }
-	void SetBenchmark(RenderFont::FONTBENCHMARK mark) { m_Benchmark = mark; }
+	void			SetFont(std::wstring fontName) { m_FontName = fontName; }
+	void			SetBenchmark(RenderFont::FONTBENCHMARK mark) { m_Benchmark = mark; }
 
 private:
 	virtual void Update(float delta) override;

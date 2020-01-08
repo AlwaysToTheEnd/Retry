@@ -8,7 +8,7 @@
 #include <SpriteBatch.h>
 #include <SpriteFont.h>
 #include <GraphicsMemory.h>
-
+#include <CommonStates.h>
 
 using Microsoft::WRL::ComPtr;
 
@@ -33,6 +33,7 @@ private:
 	ComPtr<ID3D12DescriptorHeap>				m_DescriptorHeap;
 	std::unique_ptr<DirectX::SpriteBatch>		m_SpriteBatch;
 	std::unique_ptr<DirectX::GraphicsMemory>	m_Memory;
+	std::unique_ptr<DirectX::CommonStates>		m_States;
 
 	std::vector<DirectX::SpriteFont>			m_Fonts;
 	std::vector<std::wstring>					m_FontNames;

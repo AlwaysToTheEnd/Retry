@@ -24,8 +24,9 @@ public:
 	}
 	virtual ~DORigidDynamic() = default;
 
-	void SetRigidBody(physx::PxRigidDynamic* rigidBody) { m_RigidBody = rigidBody; }
-	physx::PxRigidDynamic* GetRigidBody() { return m_RigidBody; }
+	void					SetRigidBody(physx::PxRigidDynamic* rigidBody) { m_RigidBody = rigidBody; }
+	
+	physx::PxRigidDynamic*	GetRigidBody() { return m_RigidBody; }
 
 private:
 	virtual void Update(float delta) override;
@@ -45,8 +46,9 @@ public:
 	}
 	virtual ~DORigidStatic() = default;
 
-	void SetRigidBody(physx::PxRigidStatic* rigidBody) { m_RigidBody = rigidBody; }
-	physx::PxRigidStatic* GetRigidBody() { return m_RigidBody; }
+	void					SetRigidBody(physx::PxRigidStatic* rigidBody) { m_RigidBody = rigidBody; }
+	
+	physx::PxRigidStatic*	GetRigidBody() { return m_RigidBody; }
 
 private:
 	virtual void Update(float delta) override;
@@ -67,12 +69,13 @@ public:
 	}
 	virtual ~DOUICollision() = default;
 
-	void SetDOUICollisionNeedInfoFromDevice(std::vector<UICollisions>* reservedUIcol) { m_ReservedUICol = reservedUIcol; }
+	void					SetDOUICollisionNeedInfoFromDevice(std::vector<UICollisions>* reservedUIcol) { m_ReservedUICol = reservedUIcol; }
 
-	void SetSize(const physx::PxVec2& halfSize) { m_Size = halfSize; }
-	void SetOffset(const physx::PxVec2& offset) { m_Offset = offset; }
-	const physx::PxVec2& GetSize() const { return m_Size; }
-	void AddFunc(std::function<void()> func) { m_VoidFuncs.push_back(func); }
+	const physx::PxVec2&	GetSize() const { return m_Size; }
+
+	void					SetSize(const physx::PxVec2& halfSize) { m_Size = halfSize; }
+	void					SetOffset(const physx::PxVec2& offset) { m_Offset = offset; }
+	void					AddFunc(std::function<void()> func) { m_VoidFuncs.push_back(func); }
 
 private:
 	virtual void Update(float delta) override;
@@ -97,15 +100,15 @@ public:
 	}
 	virtual ~DOTransform() = default;
 
-	void SetTransform(const physx::PxTransform& transform) { m_Transform = transform; }
-	void SetPosX(float x) { m_Transform.p.x = x; }
-	void SetPosY(float y) { m_Transform.p.y = y; }
-	void SetPosZ(float z) { m_Transform.p.z = z; }
-	void AddVector(physx::PxVec3 vec) { m_Transform.p += vec; }
-	void SetPos(physx::PxVec3 pos) { m_Transform.p = pos; }
+	physx::PxMat44				GetMatrix() const { return physx::PxMat44(m_Transform); }
+	const physx::PxTransform&	GetTransform() const { return m_Transform; }
 
-	physx::PxMat44 GetMatrix() const { return physx::PxMat44(m_Transform); }
-	const physx::PxTransform& GetTransform() const { return m_Transform; }
+	void						SetPosX(float x) { m_Transform.p.x = x; }
+	void						SetPosY(float y) { m_Transform.p.y = y; }
+	void						SetPosZ(float z) { m_Transform.p.z = z; }
+	void						SetPos(physx::PxVec3 pos) { m_Transform.p = pos; }
+	void						SetTransform(const physx::PxTransform& transform) { m_Transform = transform; }
+	void						AddVector(physx::PxVec3 vec) { m_Transform.p += vec; }
 
 private:
 	virtual void Update(float delta) override {}

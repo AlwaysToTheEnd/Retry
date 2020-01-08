@@ -29,9 +29,8 @@ public:
 	template<typename T, typename ...Types> T*	CreateComponenet(bool dependent, Types... args);
 	template<typename T> T*						CreateComponenet();
 	void										SetClickedState(CLICKEDSTATE state) { m_State = state; }
-	void										SetAllComponentActive(bool value);
-	void										SetActive(bool value) { m_IsActive = value; }
 	void										SetParent(GameObject* parent);
+	virtual void								SetActive(bool value, bool components = false);
 
 	bool										Is(const char* hashName) const { return m_TypeName == hashName; }
 	bool										GetActive() const { return m_IsActive; }
@@ -45,19 +44,19 @@ public:
 protected:
 	virtual void Update(float delta) = 0;
 	virtual void Init() = 0;
-	virtual bool IsDeviceObject() { return false; }
+	virtual bool IsDeviceObject() const { return false; }
 
 private:
 	void CreatedObjectInit(GameObject* object);
 
 protected:
-	CGHScene&												m_Scene;
-	GameObject*												m_Parent;
-	const char*												m_TypeName;
+	CGHScene&					m_Scene;
+	GameObject*					m_Parent;
+	const char*					m_TypeName;
 
-	bool													m_IsActive;
-	CLICKEDSTATE											m_State;
-	std::vector<GameObject*>								m_Components;
+	bool						m_IsActive;
+	CLICKEDSTATE				m_State;
+	std::vector<GameObject*>	m_Components;
 };
 
 template<typename T, typename ...Types>

@@ -12,6 +12,8 @@ void DX12FontManager::Init(ID3D12Device* device, ID3D12CommandQueue* queue,
 	DXGI_FORMAT rtFormat, DXGI_FORMAT dsForma)
 {
 	m_Memory = std::make_unique<GraphicsMemory>(device);
+	m_States = std::make_unique<DirectX::CommonStates>(device);
+
 
 	D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
 	heapDesc.NumDescriptors = filePaths.size();
@@ -42,6 +44,7 @@ void DX12FontManager::Init(ID3D12Device* device, ID3D12CommandQueue* queue,
 	pd.blendDesc = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
 	pd.blendDesc.AlphaToCoverageEnable = true;
 	pd.blendDesc.RenderTarget[0] = transparencyBlendDesc;
+	pd.samplerDescriptor = m_States->AnisotropicWrap();
 
 	m_SpriteBatch = std::make_unique<SpriteBatch>(device, resourceUpload, pd);
 
@@ -82,7 +85,7 @@ void DX12FontManager::Resize(unsigned int clientWidth, unsigned clientHeight)
 void DX12FontManager::RenderCommandWrite(ID3D12GraphicsCommandList* cmdList,
 	const std::vector<RenderFont>& renderFonts)
 {
-	ID3D12DescriptorHeap* heaps[] = { m_DescriptorHeap.Get() };
+	ID3D12DescriptorHeap* heaps[] = { m_DescriptorHeap.Get(), m_States->Heap() };
 	cmdList->SetDescriptorHeaps(_countof(heaps), heaps);
 
 	m_SpriteBatch->Begin(cmdList);
@@ -131,7 +134,7 @@ void DX12FontManager::RenderCommandWrite(ID3D12GraphicsCommandList* cmdList,
 		}
 
 		pos.y -= size.y / 2;
-
+		
 		m_Fonts[it.fontIndex].DrawString(m_SpriteBatch.get(), it.printString.c_str(), pos,
 			color, it.rotation, origin, scale, DirectX::SpriteEffects_None, pos.z);
 	}

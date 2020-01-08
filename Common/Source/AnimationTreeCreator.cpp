@@ -546,10 +546,7 @@ void AniTreeArowVisual::AniTreeArrowArttributeEditer::ChangeType(UIParam* target
 
 VisualizedAniTreeCreator::~VisualizedAniTreeCreator()
 {
-	if (!m_Animator->IsRegisteredTree(m_CurrTree) && m_CurrTree)
-	{
-		delete m_CurrTree;
-	}
+
 }
 
 //////////////
@@ -588,10 +585,11 @@ void VisualizedAniTreeCreator::Init()
 	CreateComponenet<DOMesh>();
 	m_Renderer = CreateComponenet<DORenderer>();
 	m_Animator = CreateComponenet<DOAnimator>();
+	m_WorkPanel = CreateComponenet<UIPanel>(false);
+	m_NullTree = std::make_unique<AnimationTree>();
 
 	m_Renderer->SetRenderInfo(RenderInfo(RENDER_MESH));
 
-	m_WorkPanel = CreateComponenet<UIPanel>(false);
 	m_WorkPanel->SetBackGroundTexture(InputTN::Get("AniTreeCreatorWorkPanel"));
 	m_WorkPanel->SetPos({ 50,50 });
 
@@ -604,7 +602,7 @@ void VisualizedAniTreeCreator::Init()
 	nullTreeButton->SetText(L"AddNullTree");
 	nullTreeButton->OnlyFontMode();
 	nullTreeButton->SetTextHeight(15);
-	nullTreeButton->AddFunc(std::bind(&VisualizedAniTreeCreator::CreateNullTree, this));
+	nullTreeButton->AddFunc(std::bind(&VisualizedAniTreeCreator::SelectNullTree, this));
 	m_WorkPanel->AddUICom(50, posY, nullTreeButton);
 	posY += 20;
 
@@ -718,41 +716,79 @@ void VisualizedAniTreeCreator::SetAnimationTreeListsParamToPanel(int posX, int p
 	}
 }
 
-void VisualizedAniTreeCreator::CreateNullTree()
+void VisualizedAniTreeCreator::SelectNullTree()
 {
-	if (!m_Animator->IsRegisteredTree(m_CurrTree) && m_CurrTree)
-	{
-		delete m_CurrTree;
-		m_CurrTree = nullptr;
-	}
-
-	m_CurrTree = new AnimationTree;
+	m_CurrTree = m_NullTree.get();
 	m_Animator->SetAnimationTree(m_CurrTree);
 	m_Renderer->SetActive(false);
+	
+	m_CurrTreeName.clear();
 	
 	for (auto& it : m_AniNodeVs)
 	{
 		it->VisualClear();
 	}
 
-	m_CurrTreeName.clear();
 	m_AniNodeVs.clear();
-	m_AniNames.clear();
-	m_AniEndTimes.clear();
-	m_CurrSkin = nullptr;
+
+	std::string skinName = m_CurrTree->GetCurrSkinName();
+	std::string meshName = m_CurrTree->GetCurrMeshName();
+
+	if (skinName.size())
+	{
+		SelectSkinnedData(skinName);
+	}
+
+	if (meshName.size())
+	{
+		GetComponent<DOMesh>()->SelectMesh(meshName);
+	}
+
+	unsigned int numNodes = m_CurrTree->GetNumNodes();
+
+	for (unsigned int i = 0; i < numNodes; i++)
+	{
+		AddNodeVs(m_CurrTree->GetNode(i));
+	}
+
+	std::vector<AniNodeVisual*> vsNodes(m_AniNodeVs.begin(), m_AniNodeVs.end());
+
+	for (unsigned int i = 0; i < numNodes; i++)
+	{
+		auto currNode = vsNodes[i]->GetNode();
+		auto arrows = currNode->GetArrows();
+		vsNodes[i]->SetPos(currNode->GetPos());
+
+		for (auto& it : arrows)
+		{
+			auto currVsArrow = vsNodes[i]->CreateComponenet<AniTreeArowVisual>(true);
+			currVsArrow->SetFromNode(vsNodes[i]);
+
+			bool isNotHadTo = true;
+			for (auto& it2 : vsNodes)
+			{
+				if (it2->GetNode() == it.targetNode)
+				{
+					currVsArrow->SetToNode(it2);
+					vsNodes[i]->AddArrow(currVsArrow);
+					isNotHadTo = false;
+					break;
+				}
+			}
+
+			if (isNotHadTo)
+			{
+				currVsArrow->Delete();
+			}
+		}
+	}
 }
 
 void VisualizedAniTreeCreator::ChangedTree()
 {
-	if (!m_Animator->IsRegisteredTree(m_CurrTree) && m_CurrTree)
-	{
-		delete m_CurrTree;
-		m_CurrTree = nullptr;
-	}
-
 	m_Animator->SetAnimationTree(m_CurrTreeName);
 
-	auto tree = m_Animator->GetAnimationTree();
+	auto tree = m_Animator->GetCurrAnimationTree();
 
 	if (m_CurrTree != tree && tree)
 	{
@@ -885,7 +921,17 @@ void VisualizedAniTreeCreator::SaveTree()
 					{
 						std::string treeName(wFileName.begin(), wFileName.end());
 						m_CurrTreeName = treeName;
-						m_Animator->SaveAnimationTree(filePath, treeName, m_CurrTree);
+
+						if (m_CurrTree == m_NullTree.get())
+						{
+							m_Animator->SaveAnimationTree(filePath, treeName, std::move(m_NullTree));
+							m_NullTree = std::make_unique<AnimationTree>();
+						}
+						else
+						{
+							m_Animator->SaveAnimationTree(filePath, treeName, m_CurrTree);
+						}
+
 						m_Animator->GetAnimationTreeNames(m_TreeNames);
 					}
 
