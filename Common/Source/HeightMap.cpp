@@ -84,6 +84,8 @@ void HeightMap::CreateRigidStatic(PhysX4_1* pxd, int fileHeight, int fileWidth, 
 	for (int i = 0; i < samplesSize; i++)
 	{
 		samples[i].height = datas[i];
+		samples[i].materialIndex0 = 0;
+		samples[i].materialIndex1 = 0;
 	}
 
 	PxHeightFieldDesc fieldDesc = {};
@@ -110,6 +112,8 @@ void HeightMap::CreateRigidStatic(PhysX4_1* pxd, int fileHeight, int fileWidth, 
 	m_PxStatic = PxCreateStatic(*pxDevice, PxTransform(PxIdentity), *shape);
 
 	shape->release();
+
+	pxd->GetScene(GetScene())->addActor(*m_PxStatic);
 }
 
 void HeightMap::CreateRenderMesh(IGraphicDevice* gd, int fileHeight, int fileWidth, const std::vector<float>& heights)
