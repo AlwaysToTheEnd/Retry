@@ -1,6 +1,5 @@
 #pragma once
 #include "IGraphicDevice.h"
-#include "IPhysicsDevice.h"
 #include "DeviceObject.h"
 #include "CGHScene.h"
 #include <Mouse.h>
@@ -17,6 +16,7 @@ typedef DirectX::Keyboard::Keys KEYState;
 typedef DirectX::Mouse::ButtonStateTracker::ButtonState MOUSEState;
 
 struct MeshObject;
+class PhysX4_1;
 
 class D3DApp
 {
@@ -67,11 +67,11 @@ protected:
 	virtual void LoadObjectsFromFile() = 0;
 	virtual bool InitMainWindow();
 	
-	template<typename GraphicDeviceClass, typename PhysicsDeviceClass>
-	void SelectDeviceByTemplate();
+	template<typename GraphicDeviceClass> void SelectDeviceByTemplate();
 
 	void SetCurrScene(CGHScene* scene) { m_CurrScene = scene; }
 private:
+	void CreatePhysxDevice();
 	void BaseUpdate();
 	void CalculateFrame();
 
@@ -98,24 +98,22 @@ protected:
 	bool		m_Maximized = false;
 
 	std::unique_ptr<IGraphicDevice>	m_GDevice;
-	std::unique_ptr<IPhysicsDevice>	m_PXDevice;
+	PhysX4_1*						m_PXDevice;
 
 private:
 	CGHScene*						m_CurrScene;
 	GameTimer						m_Timer;
 };
 
-template<typename GraphicDeviceClass,typename PhysicsDeviceClass>
+template<typename GraphicDeviceClass>
 inline void D3DApp::SelectDeviceByTemplate()
 {
 	assert(!m_GDevice.get());
-	assert(!m_PXDevice.get());
+	assert(!m_PXDevice);
 
 	GraphicDeviceClass* gdeviceInstance = new GraphicDeviceClass();
 	std::unique_ptr<IGraphicDevice> temp1(static_cast<IGraphicDevice*>(gdeviceInstance));
 	m_GDevice = move(temp1);
 
-	PhysicsDeviceClass* pxdeviceInstance = new PhysicsDeviceClass();
-	std::unique_ptr<IPhysicsDevice> temp2(static_cast<IPhysicsDevice*>(pxdeviceInstance));
-	m_PXDevice = move(temp2);
+	CreatePhysxDevice();
 }

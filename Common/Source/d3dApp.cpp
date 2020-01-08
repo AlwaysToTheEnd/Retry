@@ -1,4 +1,5 @@
 #include "d3dApp.h"
+#include "PhysX4_1.h"
 #include "PhysicsDO.h"
 #include "StaticObject.h"
 #include <WindowsX.h>
@@ -63,6 +64,7 @@ D3DApp::D3DApp(HINSTANCE hInstance)
 	: m_hAppInst(hInstance)
 	, m_CurrScene(nullptr)
 	, m_CurrInputDeviceHoldObject(nullptr)
+	, m_PXDevice(nullptr)
 {
 	assert(m_App == nullptr);
 	m_App = this;
@@ -70,6 +72,15 @@ D3DApp::D3DApp(HINSTANCE hInstance)
 
 D3DApp::~D3DApp()
 {
+	if (m_PXDevice)
+	{
+		delete m_PXDevice;
+	}
+}
+
+void D3DApp::CreatePhysxDevice()
+{
+	m_PXDevice = new PhysX4_1;
 }
 
 void D3DApp::BaseUpdate()

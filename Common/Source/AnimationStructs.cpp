@@ -1,5 +1,5 @@
 #include "AnimationStructs.h"
-#include "DX12RenderClasses.h"
+#include "GraphicBase.h"
 #include <d3d12.h>
 #include <SimpleMath.h>
 

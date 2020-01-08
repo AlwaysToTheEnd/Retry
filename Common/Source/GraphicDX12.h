@@ -10,13 +10,12 @@
 #include <DirectXCollision.h>
 #include <algorithm>
 #include <functional>
-#include "DX12RenderClasses.h"
-#include "DX12FontMG.h"
-#include "cIndexManagementBuffer.h"
+
 #include "IGraphicDevice.h"
-#include "AnimationStructs.h"
+#include "DX12FontMG.h"
 #include "XFileParser.h"
-#include "AnimationTree.h"
+#include "cIndexManagementBuffer.h"
+#include "DX12RenderClasses.h"
 
 #pragma comment(lib,"d3dcompiler.lib")
 #pragma comment(lib, "D3D12.lib")
@@ -147,25 +146,27 @@ public:
 	GraphicDX12();
 	virtual ~GraphicDX12() override;
 
-	virtual void Update(const CGHScene& scene) override;
-	virtual void Draw() override;
-	virtual void ReservedWorksClear() override;
-	virtual bool Init(HWND hWnd, UINT windowWidth, UINT windowHeight) override;
-	virtual void OnResize() override;
-	virtual void* GetDevicePtr() override { return m_D3dDevice.Get(); }
-	virtual void GetWorldRay(physx::PxVec3& origin, physx::PxVec3& ray) const override;
-	virtual void RegisterDeviceObject(CGHScene& scene, DeviceObject* gameObject) override;
-	virtual void UnRegisterDeviceObject(CGHScene& scene, DeviceObject* gameObject) override;
-	virtual void CreateScene(const CGHScene& scene) override {} //#TODO
-	
-public: // Used Functions
-	virtual void SetCamera(cCamera* camera) { m_CurrCamera = camera; }
+private:
+	virtual void	Update(const CGHScene& scene) override;
+	virtual void	Draw() override;
+	virtual bool	Init(HWND hWnd, UINT windowWidth, UINT windowHeight) override;
+	virtual void	OnResize() override;
+	virtual void*	GetDevicePtr() override { return m_D3dDevice.Get(); }
+	virtual void	GetWorldRay(physx::PxVec3& origin, physx::PxVec3& ray) const override;
+	virtual void	CreateScene(const CGHScene& scene) override {} //#TODO
 
-private: // Used from components
-	bool AddMesh(const std::string& meshName, MeshObject& meshinfo,
-		unsigned int dataSize, const void* data, const std::vector<unsigned int>& indices);
-	bool AddMaterials(const std::vector<std::string>& materialNames, const std::vector<Material>& materials);
-	int	GetTextureIndex(const std::string& textureName);
+	virtual void	RegisterDeviceObject(CGHScene& scene, DeviceObject* gameObject) override;
+	virtual void	UnRegisterDeviceObject(CGHScene& scene, DeviceObject* gameObject) override;
+
+public: // Used from DeviceObject Init
+	virtual std::unordered_map<std::string, MeshObject>*								GetMeshDataMap() override { return &m_Meshs; }
+	virtual std::unordered_map<std::string, Ani::SkinnedData>*							GetSkinnedDataMap() override {return &m_SkinnedDatas;}
+	virtual std::unordered_map<std::string, std::unique_ptr<AniTree::AnimationTree>>*	GetAnimationTreeMap() override {return &m_AniTreeDatas;}
+
+	virtual bool	AddMesh(const std::string& meshName, MeshObject& meshinfo, const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices) override;
+	virtual bool	AddMaterials(const std::vector<std::string>& materialNames, const std::vector<Material>& materials) override;
+	
+	virtual int		GetTextureIndex(const std::string& textureName) override;
 
 private: // Used Function by ReadyWorks 
 	virtual void LoadTextureFromFolder(const std::vector<std::wstring>& targetTextureFolders) override;
@@ -238,7 +239,6 @@ private:
 	bool								m_4xMsaaState = false;
 	UINT								m_4xmsaaQuality = 0;
 
-	cCamera*							m_CurrCamera = nullptr;
 	physx::PxVec3						m_RayOrigin;
 	physx::PxVec3						m_Ray;
 
@@ -262,11 +262,6 @@ private:
 
 
 private:
-	std::vector<RenderFont>							m_ReservedFonts;
-
-	std::vector<AniBoneMat>							m_ReservedAniBones;
-	std::vector<RenderInfo>							m_ReservedRenders;
-
 	std::vector<ObjectConstants>					m_RenderObjects;
 	std::vector<const SubmeshData*>					m_RenderObjectsSubmesh;
 	unsigned int									m_NumRenderPointObjects;

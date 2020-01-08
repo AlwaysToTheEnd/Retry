@@ -20,5 +20,5 @@ void DeviceObject::Delete()
 		m_Parent->ExceptComponent(this);
 	}
 
-	m_Scene.UnRegisterDeviceObject(m_TypeName, this);
+	m_Scene.UnRegisterDeviceObject(this);
 }

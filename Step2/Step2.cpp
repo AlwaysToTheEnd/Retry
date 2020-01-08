@@ -1,7 +1,8 @@
 #include "Step2.h"
 #include <random>
-#include "PhysicsDO.h"
 #include <DirectXColors.h>
+#include "PhysX4_1.h"
+#include "PhysicsDO.h"
 #include "AnimationTreeScene/AnimationTreeScene.h"
 using namespace std;
 
@@ -25,7 +26,7 @@ void Step2::Update(float delta)
 
 void Step2::SelectDevices()
 {
-	SelectDeviceByTemplate<UsingGraphicDevice, UsingPhsicsDevice>();
+	SelectDeviceByTemplate<UsingGraphicDevice>();
 }
 
 void Step2::LoadObjectsFromFile()
@@ -35,7 +36,7 @@ void Step2::LoadObjectsFromFile()
 
 void Step2::InitObjects()
 {
-	 testScene = new AniTreeScene(m_GDevice.get(), m_PXDevice.get());
+	 testScene = new AniTreeScene(m_GDevice.get(), m_PXDevice);
 	 testScene->Init();
 	 SetCurrScene(testScene);
 }

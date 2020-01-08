@@ -4,11 +4,11 @@
 #include <d3d12.h>
 #include <memory>
 #include <wrl.h>
-#include "DX12RenderClasses.h"
 #include <SpriteBatch.h>
 #include <SpriteFont.h>
 #include <GraphicsMemory.h>
 #include <CommonStates.h>
+#include "GraphicBase.h"
 
 using Microsoft::WRL::ComPtr;
 

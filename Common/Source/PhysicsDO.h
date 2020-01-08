@@ -1,58 +1,73 @@
 #pragma once
 #include <vector>
-#include <DirectXMath.h>
 #include <functional>
-#include "DeviceObject.h"
-#include "BaseClass.h"
+#include <foundation/PxMat44.h>
+#include <foundation/PxTransform.h>
 #include "PhysXFunctionalObject.h"
-#include "foundation/PxTransform.h"
+#include "PhysicsObject.h"
 
 namespace physx
 {
 	class PxRigidStatic;
 	class PxRigidDynamic;
+	class PxShape;
 }
 
-class DORigidDynamic :public DeviceObject
+class DOMeshCollsion :public PhyscisObject
+{
+public:
+	DOMeshCollsion(CGHScene& scene, GameObject* parent, const char* typeName)
+		: PhyscisObject(scene, parent, typeName)
+		, m_Shape(nullptr)
+	{
+		
+	}
+
+private:
+	virtual void Update(float delta) override {}
+	virtual void Init(PhysX4_1* physxDevice, IGraphicDevice*);
+
+private:
+	physx::PxShape* m_Shape;
+};
+
+class DORigidDynamic :public PhyscisObject
 {
 public:
 	DORigidDynamic(CGHScene& scene, GameObject* parent, const char* typeName)
-		: DeviceObject(scene, parent, typeName)
+		: PhyscisObject(scene, parent, typeName)
 		, m_RigidBody(nullptr)
 	{
 
 	}
 	virtual ~DORigidDynamic() = default;
 
-	void					SetRigidBody(physx::PxRigidDynamic* rigidBody) { m_RigidBody = rigidBody; }
-	
-	physx::PxRigidDynamic*	GetRigidBody() { return m_RigidBody; }
+	virtual void Delete() override;
 
 private:
 	virtual void Update(float delta) override;
-	virtual void Init() override {}
+	virtual void Init(PhysX4_1* physxDevice, IGraphicDevice*);
 
 private:
 	physx::PxRigidDynamic* m_RigidBody;
 };
 
-class DORigidStatic :public DeviceObject
+class DORigidStatic :public PhyscisObject
 {
 public:
 	DORigidStatic(CGHScene& scene, GameObject* parent, const char* typeName)
-		: DeviceObject(scene, parent, typeName)
+		: PhyscisObject(scene, parent, typeName)
+		, m_RigidBody(nullptr)
 	{
 
 	}
 	virtual ~DORigidStatic() = default;
 
-	void					SetRigidBody(physx::PxRigidStatic* rigidBody) { m_RigidBody = rigidBody; }
-	
-	physx::PxRigidStatic*	GetRigidBody() { return m_RigidBody; }
+	virtual void Delete() override;
 
 private:
 	virtual void Update(float delta) override;
-	virtual void Init() override {}
+	virtual void Init(PhysX4_1* physxDevice, IGraphicDevice*);
 
 private:
 	physx::PxRigidStatic* m_RigidBody;
@@ -63,13 +78,12 @@ class DOUICollision :public DeviceObject
 public:
 	DOUICollision(CGHScene& scene, GameObject* parent, const char* typeName)
 		: DeviceObject(scene, parent, typeName)
-		,m_Size(1,1)
-		,m_Offset(0,0)
+		, m_ReservedUICol(nullptr)
+		, m_Size(1,1)
+		, m_Offset(0,0)
 	{
 	}
 	virtual ~DOUICollision() = default;
-
-	void					SetDOUICollisionNeedInfoFromDevice(std::vector<UICollisions>* reservedUIcol) { m_ReservedUICol = reservedUIcol; }
 
 	const physx::PxVec2&	GetSize() const { return m_Size; }
 
@@ -79,7 +93,7 @@ public:
 
 private:
 	virtual void Update(float delta) override;
-	virtual void Init() override {}
+	virtual void Init(PhysX4_1* physxDevice, IGraphicDevice*);
 
 private:
 	std::vector<UICollisions>* 				m_ReservedUICol;
@@ -112,7 +126,7 @@ public:
 
 private:
 	virtual void Update(float delta) override {}
-	virtual void Init() {}
+	virtual void Init(PhysX4_1*, IGraphicDevice*) {};
 
 private:
 	physx::PxTransform m_Transform;

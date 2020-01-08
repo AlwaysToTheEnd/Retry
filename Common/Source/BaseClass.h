@@ -2,8 +2,8 @@
 #include <foundation/PxMat44.h>
 #include <foundation/PxVec2.h>
 #include <foundation/PxVec3.h>
-#include "InputTextureNameList.h"
 #include <string>
+#include "InputTextureNameList.h"
 
 struct ENUM_ELEMENT
 {
@@ -31,12 +31,5 @@ namespace CGH
 			int		_i;
 			unsigned int _u;
 		};
-	};
-
-	enum MESH_TYPE
-	{
-		MESH_NORMAL,
-		MESH_SKINED,
-		MESH_NONE
 	};
 }

@@ -58,14 +58,14 @@
     <Filter Include="Common\GameObject\AnimationTree">
       <UniqueIdentifier>{08dd9b4e-5586-45da-8ec8-0c9288782583}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Common\GameObject\HeightMap">
-      <UniqueIdentifier>{3ef657c7-f421-4966-a887-9741dd86652f}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Common\CodeResources\DeviceObject">
       <UniqueIdentifier>{cebfb674-268f-4769-8844-0419a7c46bea}</UniqueIdentifier>
     </Filter>
     <Filter Include="Common\CodeResources\DeviceObject\DoUpdater">
       <UniqueIdentifier>{14a28a25-1bc1-43a5-9ed6-cd9a827e851e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Step2\HeightMap">
+      <UniqueIdentifier>{3ef657c7-f421-4966-a887-9741dd86652f}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -126,9 +126,6 @@
     <ClCompile Include="..\Common\Source\cCamera.cpp">
       <Filter>Common\CodeResources\Procedure Class</Filter>
     </ClCompile>
-    <ClCompile Include="..\Common\Source\DX12RenderClasses.cpp">
-      <Filter>Common\DeviceInstance\DX12Supporters</Filter>
-    </ClCompile>
     <ClCompile Include="..\Common\Source\GraphicDX12.cpp">
       <Filter>Common\DeviceInstance\DX12Supporters</Filter>
     </ClCompile>
@@ -166,7 +163,7 @@
       <Filter>Common\CodeResources\BaseClass</Filter>
     </ClCompile>
     <ClCompile Include="..\Common\Source\HeightMap.cpp">
-      <Filter>Common\GameObject\HeightMap</Filter>
+      <Filter>Step2\HeightMap</Filter>
     </ClCompile>
     <ClCompile Include="..\Common\Source\DeviceObject.cpp">
       <Filter>Common\CodeResources\DeviceObject</Filter>
@@ -183,11 +180,14 @@
     <ClCompile Include="..\Common\UIObjects\UIObject.cpp">
       <Filter>Common\UIObjects</Filter>
     </ClCompile>
+    <ClCompile Include="..\Common\Source\IGraphicDevice.cpp">
+      <Filter>Common\DeviceInstance\_Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Source\GraphicBase.cpp">
+      <Filter>Common\CodeResources\BaseClass</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\Common\Source\IPhysicsDevice.h">
-      <Filter>Common\DeviceInstance\_Interface</Filter>
-    </ClInclude>
     <ClInclude Include="..\Common\Source\IGraphicDevice.h">
       <Filter>Common\DeviceInstance\_Interface</Filter>
     </ClInclude>
@@ -279,7 +279,7 @@
       <Filter>Common\CodeResources\BaseClass</Filter>
     </ClInclude>
     <ClInclude Include="..\Common\Source\HeightMap.h">
-      <Filter>Common\GameObject\HeightMap</Filter>
+      <Filter>Step2\HeightMap</Filter>
     </ClInclude>
     <ClInclude Include="..\Common\Source\DeviceObject.h">
       <Filter>Common\CodeResources\DeviceObject</Filter>
@@ -298,6 +298,12 @@
     </ClInclude>
     <ClInclude Include="..\Common\UIObjects\UIObject.h">
       <Filter>Common\UIObjects</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\GraphicBase.h">
+      <Filter>Common\CodeResources\BaseClass</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\PhysicsObject.h">
+      <Filter>Common\CodeResources\DeviceObject</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

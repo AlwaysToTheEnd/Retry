@@ -10,7 +10,7 @@
 #include "DeviceObject.h"
 
 class IGraphicDevice;
-class IPhysicsDevice;
+class PhysX4_1;
 class GameObject;
 
 class CGHScene
@@ -18,7 +18,7 @@ class CGHScene
 	friend class GameObject;
 	friend class DeviceObject;
 public:
-	CGHScene(IGraphicDevice* graphicDevice, IPhysicsDevice* pxDevice, const std::string& name);
+	CGHScene(IGraphicDevice* graphicDevice, PhysX4_1* pxDevice, const std::string& name);
 	virtual ~CGHScene();
 	
 	virtual void		Init() = 0;
@@ -34,14 +34,13 @@ protected:
 
 private:
 	DeviceObjectUpdater& GetComponentUpdater(const char* typeName);
-	void UnRegisterDeviceObject(const char* typeName, DeviceObject* gameObject);
-	void RegisterDeviceObject(const char* typeName, DeviceObject* gameObject);
-
+	void RegisterDeviceObject(DeviceObject* gameObject);
+	void UnRegisterDeviceObject(DeviceObject* gameObject);
 
 private:
 	std::string												m_SceneName;
 	IGraphicDevice*											m_GraphicDevice;
-	IPhysicsDevice*											m_PhysicsDevice;
+	PhysX4_1*											m_PhysicsDevice;
 	std::vector<std::unique_ptr<GameObject>>				m_Objects;
 	size_t													m_NumNullptr;
 	std::unordered_map<std::string, DeviceObjectUpdater>	m_ComUpdater;

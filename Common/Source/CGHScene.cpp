@@ -1,13 +1,13 @@
 #include "CGHScene.h"
 #include "IGraphicDevice.h"
-#include "IPhysicsDevice.h"
+#include "PhysX4_1.h"
 #include "d3dApp.h"
 #include "GameObject.h"
 #include "PhysicsDO.h"
 #include "GraphicDO.h"
 
 
-CGHScene::CGHScene(IGraphicDevice* graphicDevice, IPhysicsDevice* pxDevice, const std::string& name)
+CGHScene::CGHScene(IGraphicDevice* graphicDevice, PhysX4_1* pxDevice, const std::string& name)
 	:m_GraphicDevice(graphicDevice)
 	, m_PhysicsDevice(pxDevice)
 	, m_SceneName(name)
@@ -82,12 +82,12 @@ DeviceObjectUpdater& CGHScene::GetComponentUpdater(const char* typeName)
 	return m_ComUpdater[typeName];
 }
 
-void CGHScene::UnRegisterDeviceObject(const char* typeName, DeviceObject* gameObject)
+void CGHScene::UnRegisterDeviceObject(DeviceObject* gameObject)
 {
 	assert(gameObject);
 	assert(gameObject->GetID() != -1);
 
-	auto& comUpdater = GetComponentUpdater(typeName);
+	auto& comUpdater = GetComponentUpdater(gameObject->GetTypeName());
 
 	m_GraphicDevice->UnRegisterDeviceObject(*this, gameObject);
 	m_PhysicsDevice->UnRegisterDeviceObject(*this, gameObject);
@@ -95,12 +95,12 @@ void CGHScene::UnRegisterDeviceObject(const char* typeName, DeviceObject* gameOb
 	comUpdater.SignalDeleted(gameObject->GetID());
 }
 
-void CGHScene::RegisterDeviceObject(const char* typeName, DeviceObject* gameObject)
+void CGHScene::RegisterDeviceObject(DeviceObject* gameObject)
 {
 	assert(gameObject);
 	assert(gameObject->GetID() == -1);
 
-	auto& comUpdater = GetComponentUpdater(typeName);
+	auto& comUpdater = GetComponentUpdater(gameObject->GetTypeName());
 	gameObject->SetID(comUpdater.GetNextID());
 
 	m_GraphicDevice->RegisterDeviceObject(*this, gameObject);
@@ -132,15 +132,26 @@ void CGHScene::AddGameObject(GameObject* object)
 {
 	assert(object);
 
-	if (m_NumNullptr)
+	if (object->IsObjectType(GameObject::GAMEOBJECT_TYPE::DEVICE_OBJECT))
 	{
-		m_Objects[m_Objects.size() - m_NumNullptr] = std::unique_ptr<GameObject>(object);
-		m_NumNullptr--;
+		auto deviceOB = reinterpret_cast<DeviceObject*>(object);
+		RegisterDeviceObject(deviceOB);
+
+		deviceOB->Init(m_PhysicsDevice, m_GraphicDevice);
 	}
 	else
 	{
-		m_Objects.push_back(std::unique_ptr<GameObject>(object));
-	}
+		if (m_NumNullptr)
+		{
 
-	object->Init();
+			m_Objects[m_Objects.size() - m_NumNullptr] = std::unique_ptr<GameObject>(object);
+			m_NumNullptr--;
+		}
+		else
+		{
+			m_Objects.push_back(std::unique_ptr<GameObject>(object));
+		}
+
+		object->Init();
+	}
 }

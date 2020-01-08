@@ -1,9 +1,17 @@
 #include "PhysicsDO.h"
 #include "GameObject.h"
-#include "PxRigidStatic.h"
-#include "PxRigidDynamic.h"
-#include "PxScene.h"
-#include "foundation/PxMat44.h"
+#include "PhysX4_1.h"
+
+void DORigidDynamic::Delete()
+{
+	if (m_RigidBody)
+	{
+		m_RigidBody->getScene()->removeActor(*m_RigidBody);
+		m_RigidBody = nullptr;
+	}
+
+	DeviceObject::Delete();
+}
 
 void DORigidDynamic::Update(float delta)
 {
@@ -15,6 +23,22 @@ void DORigidDynamic::Update(float delta)
 	}
 }
 
+void DORigidDynamic::Init(PhysX4_1* physxDevice, IGraphicDevice*)
+{
+
+}
+
+void DORigidStatic::Delete()
+{
+	if (m_RigidBody)
+	{
+		m_RigidBody->getScene()->removeActor(*m_RigidBody);
+		m_RigidBody = nullptr;
+	}
+
+	DeviceObject::Delete();
+}
+
 void DORigidStatic::Update(float delta)
 {
 	auto transform = m_Parent->GetComponent<DOTransform>();
@@ -23,6 +47,10 @@ void DORigidStatic::Update(float delta)
 	{
 		transform->SetTransform(m_RigidBody->getGlobalPose());
 	}
+}
+
+void DORigidStatic::Init(PhysX4_1* physxDevice, IGraphicDevice*)
+{
 }
 
 void DOUICollision::Update(float delta)
@@ -36,4 +64,14 @@ void DOUICollision::Update(float delta)
 		wPos = offset * wPos;
 		m_ReservedUICol->push_back(UICollisions(m_Parent, wPos, m_Size, m_VoidFuncs));
 	}
+}
+
+void DOUICollision::Init(PhysX4_1* physxDevice, IGraphicDevice*)
+{
+	m_ReservedUICol = physxDevice->GetReservedUICollisionVector(m_Scene);
+}
+
+void DOMeshCollsion::Init(PhysX4_1* physxDevice, IGraphicDevice*)
+{
+
 }

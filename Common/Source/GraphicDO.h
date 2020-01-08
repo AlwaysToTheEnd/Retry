@@ -1,7 +1,6 @@
 #pragma once
-#include <memory>
 #include "DeviceObject.h"
-#include "DX12RenderClasses.h"
+#include "GraphicBase.h"
 #include "AnimationStructs.h"
 #include "AnimationTree.h"
 
@@ -12,31 +11,26 @@ namespace AniTree
 	class AnimationTree;
 }
 
-class DOMesh :public DeviceObject
+class DORenderMesh :public DeviceObject
 {
 public:
-	DOMesh(CGHScene& scene, GameObject* parent, const char* typeName)
+	DORenderMesh(CGHScene& scene, GameObject* parent, const char* typeName)
 		: DeviceObject(scene, parent, typeName)
 	{
 	
 	}
-	virtual ~DOMesh() = default;
-
-	void				SetDOMeshNeedInfoFromDevice(const MeshWorkFunc* funcs,
-									const std::unordered_map<std::string, MeshObject>* meshs);
+	virtual ~DORenderMesh() = default;
 
 	void				GetMeshNames(std::vector<std::string>& out);
-	const MeshWorkFunc* GetDeviceMeshWorks() { return m_MeshWorks; }
 	const std::string&	GetCurrMeshName() const { return m_CurrMeshName; }
 
 	bool				SelectMesh(const std::string& name);
 
 private:
 	virtual void Update(float delta) override {}
-	virtual void Init() override {}
+	virtual void Init(PhysX4_1*, IGraphicDevice* graphicDevice);
 
 private:
-	static const MeshWorkFunc*									m_MeshWorks;
 	static const std::unordered_map<std::string, MeshObject>*	m_Meshs;
 
 	std::string			m_CurrMeshName;
@@ -57,10 +51,6 @@ public:
 	}
 	virtual ~DOAnimator() = default;
 
-	void					SetDOAnimatorNeedInfoFromDevice(std::vector<AniBoneMat>* reservedAnibones,
-								const std::unordered_map<std::string, Ani::SkinnedData>* skinnedDatas,
-								std::unordered_map<std::string, std::unique_ptr<AniTree::AnimationTree>>* animationTrees);
-
 	void					GetAnimationTreeNames(std::vector<std::string>& out) const;
 	AniTree::AnimationTree* GetCurrAnimationTree() { return m_AniTree; }
 	void					GetSkinNames(std::vector<std::string>& out) const;
@@ -80,7 +70,7 @@ public:
 
 private:
 	virtual void Update(float delta) override;
-	virtual void Init() override {}
+	virtual void Init(PhysX4_1*, IGraphicDevice* graphicDevice);
 
 private:
 	static const std::unordered_map<std::string, Ani::SkinnedData>*						m_SkinnedDatas;
@@ -105,15 +95,13 @@ public:
 	}
 	virtual ~DORenderer() = default;
 
-	void				SetDORenderNeedInfoFromDevice(std::vector<RenderInfo>* reservedRenderOBs) { m_ReservedRenderObjects = reservedRenderOBs; }
-
 	void				SetRenderInfo(const RenderInfo& info) { m_RenderInfo = info; }
 	
 	const RenderInfo&	GetRenderInfo() { return m_RenderInfo; }
 
 private:
 	virtual void Update(float delta) override;
-	virtual void Init() override {}
+	virtual void Init(PhysX4_1*, IGraphicDevice* graphicDevice);
 
 private:
 	void		 RenderMesh();
@@ -137,14 +125,12 @@ public:
 	}
 	virtual ~DOFont() = default;
 
-	void			SetDOFontNeedInfoFromDevice(std::vector<RenderFont>* reservedFonts) { m_ReservedFonts = reservedFonts; }
-
 	void			SetFont(std::wstring fontName) { m_FontName = fontName; }
 	void			SetBenchmark(RenderFont::FONTBENCHMARK mark) { m_Benchmark = mark; }
 
 private:
 	virtual void Update(float delta) override;
-	virtual void Init() override {}
+	virtual void Init(PhysX4_1*, IGraphicDevice* graphicDevice);
 
 public:
 	physx::PxVec4		m_Color;
@@ -154,7 +140,7 @@ public:
 	std::wstring		m_Text;
 
 private:
-	static std::vector<RenderFont>*	m_ReservedFonts;
+	static std::vector<RenderFont>*	m_ReservedRenderFonts;
 	RenderFont::FONTBENCHMARK		m_Benchmark;
 	std::wstring					m_FontName;
 };

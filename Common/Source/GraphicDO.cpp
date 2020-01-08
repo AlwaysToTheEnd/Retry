@@ -3,8 +3,7 @@
 #include "GameObject.h"
 #include "d3dApp.h"
 
-const MeshWorkFunc* DOMesh::m_MeshWorks = nullptr;
-const std::unordered_map<std::string, MeshObject>* DOMesh::m_Meshs = nullptr;
+const std::unordered_map<std::string, MeshObject>* DORenderMesh::m_Meshs = nullptr;
 
 std::vector<RenderInfo>* DORenderer::m_ReservedRenderObjects = nullptr;
 
@@ -12,15 +11,9 @@ const std::unordered_map<std::string, Ani::SkinnedData>* DOAnimator::m_SkinnedDa
 std::unordered_map<std::string, std::unique_ptr<AniTree::AnimationTree>>* DOAnimator::m_AnimationTrees = nullptr;
 std::vector<AniBoneMat>* DOAnimator::m_ReservedAniBone = nullptr;
 
-std::vector<RenderFont>* DOFont::m_ReservedFonts = nullptr;
+std::vector<RenderFont>* DOFont::m_ReservedRenderFonts = nullptr;
 
-void DOMesh::SetDOMeshNeedInfoFromDevice(const MeshWorkFunc* funcs, const std::unordered_map<std::string, MeshObject>* meshs)
-{
-	m_MeshWorks = funcs;
-	m_Meshs = meshs;
-}
-
-void DOMesh::GetMeshNames(std::vector<std::string>& out)
+void DORenderMesh::GetMeshNames(std::vector<std::string>& out)
 {
 	for (auto& it : *m_Meshs)
 	{
@@ -28,7 +21,7 @@ void DOMesh::GetMeshNames(std::vector<std::string>& out)
 	}
 }
 
-bool DOMesh::SelectMesh(const std::string& name)
+bool DORenderMesh::SelectMesh(const std::string& name)
 {
 	auto iter = m_Meshs->find(name);
 	if (iter == m_Meshs->end())
@@ -41,6 +34,14 @@ bool DOMesh::SelectMesh(const std::string& name)
 	m_CurrMesh = &iter->second;
 	m_CurrMeshName = name;
 	return true;
+}
+
+void DORenderMesh::Init(PhysX4_1*, IGraphicDevice* graphicDevice)
+{
+	if (m_Meshs == nullptr)
+	{
+		m_Meshs = graphicDevice->GetMeshDataMap();
+	}
 }
 
 void DOAnimator::Update(float delta)
@@ -68,11 +69,14 @@ void DOAnimator::Update(float delta)
 	}
 }
 
-void DOAnimator::SetDOAnimatorNeedInfoFromDevice(std::vector<AniBoneMat>* reservedAnibones, const std::unordered_map<std::string, Ani::SkinnedData>* skinnedDatas, std::unordered_map<std::string, std::unique_ptr<AniTree::AnimationTree>>* animationTrees)
+void DOAnimator::Init(PhysX4_1*, IGraphicDevice* graphicDevice)
 {
-	m_ReservedAniBone = reservedAnibones;
-	m_SkinnedDatas = skinnedDatas;
-	m_AnimationTrees = animationTrees;
+	if (m_ReservedAniBone == nullptr)
+	{
+		m_ReservedAniBone = graphicDevice->GetReservedAniBoneMatVector();
+		m_AnimationTrees = graphicDevice->GetAnimationTreeMap();
+		m_SkinnedDatas = graphicDevice->GetSkinnedDataMap();
+	}
 }
 
 void DOAnimator::GetSkinNames(std::vector<std::string>& out) const
@@ -220,9 +224,17 @@ void DORenderer::Update(float delta)
 	m_ReservedRenderObjects->push_back(m_RenderInfo);
 }
 
+void DORenderer::Init(PhysX4_1*, IGraphicDevice* graphicDevice)
+{
+	if (m_ReservedRenderObjects == nullptr)
+	{
+		m_ReservedRenderObjects = graphicDevice->GetReservedRenderInfoVector();
+	}
+}
+
 void DORenderer::RenderMesh()
 {
-	auto comMesh = m_Parent->GetComponent<DOMesh>();
+	auto comMesh = m_Parent->GetComponent<DORenderMesh>();
 	auto comAnimator = m_Parent->GetComponent<DOAnimator>();
 
 	if (comMesh != nullptr)
@@ -252,6 +264,14 @@ void DOFont::Update(float delta)
 		addedFont.drawSize = &m_DrawSize;
 		addedFont.benchmark = m_Benchmark;
 
-		m_ReservedFonts->push_back(addedFont);
+		m_ReservedRenderFonts->push_back(addedFont);
+	}
+}
+
+void DOFont::Init(PhysX4_1*, IGraphicDevice* graphicDevice)
+{
+	if (m_ReservedRenderFonts == nullptr)
+	{
+		m_ReservedRenderFonts = graphicDevice->GetReservedRenderFontVector();
 	}
 }

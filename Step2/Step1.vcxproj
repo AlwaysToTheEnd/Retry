@@ -23,6 +23,8 @@
     <ClCompile Include="..\Common\Source\AnimationTree.cpp" />
     <ClCompile Include="..\Common\Source\AnimationTreeCreator.cpp" />
     <ClCompile Include="..\Common\Source\AnimationTreeScene\AnimationTreeScene.cpp" />
+    <ClCompile Include="..\Common\Source\GraphicBase.cpp" />
+    <ClCompile Include="..\Common\Source\IGraphicDevice.cpp" />
     <ClCompile Include="..\Common\Source\PhysicsDO.cpp" />
     <ClCompile Include="..\Common\Source\cCamera.cpp" />
     <ClCompile Include="..\Common\Source\CGHScene.cpp" />
@@ -31,7 +33,6 @@
     <ClCompile Include="..\Common\Source\d3dApp.cpp" />
     <ClCompile Include="..\Common\Source\d3dUtil.cpp" />
     <ClCompile Include="..\Common\Source\DX12FontMG.cpp" />
-    <ClCompile Include="..\Common\Source\DX12RenderClasses.cpp" />
     <ClCompile Include="..\Common\Source\GameObject.cpp" />
     <ClCompile Include="..\Common\Source\GameTimer.cpp" />
     <ClCompile Include="..\Common\Source\GraphicDO.cpp" />
@@ -64,6 +65,7 @@
     <ClInclude Include="..\Common\Source\AnimationTreeCreator.h" />
     <ClInclude Include="..\Common\Source\AnimationTreeScene\AnimationTreeScene.h" />
     <ClInclude Include="..\Common\Source\BaseClass.h" />
+    <ClInclude Include="..\Common\Source\GraphicBase.h" />
     <ClInclude Include="..\Common\Source\PhysicsDO.h" />
     <ClInclude Include="..\Common\Source\cCamera.h" />
     <ClInclude Include="..\Common\Source\cDefaultBuffer.h" />
@@ -84,7 +86,7 @@
     <ClInclude Include="..\Common\Source\GraphicDX12.h" />
     <ClInclude Include="..\Common\Source\cIndexManagementBuffer.h" />
     <ClInclude Include="..\Common\Source\InputTextureNameList.h" />
-    <ClInclude Include="..\Common\Source\IPhysicsDevice.h" />
+    <ClInclude Include="..\Common\Source\PhysicsObject.h" />
     <ClInclude Include="..\Common\Source\PhysX4_1.h" />
     <ClInclude Include="..\Common\Source\PhysXFunctionalObject.h" />
     <ClInclude Include="..\Common\Source\Px1RefPtr.h" />

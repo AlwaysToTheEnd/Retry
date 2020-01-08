@@ -18,6 +18,13 @@ public:
 		RELEASED,
 	};
 
+	enum GAMEOBJECT_TYPE
+	{
+		DEVICE_OBJECT = 1,
+		PHYSICS_OBJECT= 1<<1,
+		GRAPHIC_OBJECT= 1<<2,
+	};
+
 	friend class CGHScene;
 public:
 	GameObject(CGHScene& scene, GameObject* parent, const char* typeName);
@@ -33,6 +40,7 @@ public:
 	virtual void								SetActive(bool value, bool components = false);
 
 	bool										Is(const char* hashName) const { return m_TypeName == hashName; }
+	virtual bool								IsObjectType(GAMEOBJECT_TYPE type) const { return false; }
 	bool										GetActive() const { return m_IsActive; }
 	const char*									GetTypeName() const { return m_TypeName; }
 	CLICKEDSTATE								GetClickedState() const { return m_State; }
@@ -44,10 +52,9 @@ public:
 protected:
 	virtual void Update(float delta) = 0;
 	virtual void Init() = 0;
-	virtual bool IsDeviceObject() const { return false; }
 
 private:
-	void CreatedObjectInit(GameObject* object);
+	void InitObject(GameObject* object);
 
 protected:
 	CGHScene&					m_Scene;
@@ -63,7 +70,7 @@ template<typename T, typename ...Types>
 inline T* GameObject::CreateComponenet(bool dependent, Types ...args)
 {
 	T* result = nullptr;
-
+	
 	if (dependent)
 	{
 		result= new T(m_Scene, this, typeid(T).name(), args...);
@@ -74,7 +81,7 @@ inline T* GameObject::CreateComponenet(bool dependent, Types ...args)
 		result = new T(m_Scene, nullptr, typeid(T).name(), args...);
 	}
 
-	CreatedObjectInit(result);
+	InitObject(result);
 
 	return result;
 }
@@ -85,7 +92,7 @@ inline T* GameObject::CreateComponenet()
 	T* result = new T(m_Scene, this, typeid(T).name());
 
 	m_Components.push_back(result);
-	CreatedObjectInit(result);
+	InitObject(result);
 
 	return result;
 }

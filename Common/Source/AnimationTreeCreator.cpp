@@ -570,7 +570,7 @@ void VisualizedAniTreeCreator::SelectSkinnedData(const std::string& name)
 			m_AniEndTimes.push_back(m_CurrSkin->GetClipEndTime(it));
 		}
 
-		GetComponent<DOMesh>()->SelectMesh(name);
+		GetComponent<DORenderMesh>()->SelectMesh(name);
 		m_Animator->SelectSkin(name);
 
 		m_CurrTree->SetCurrMeshName(name);
@@ -582,7 +582,7 @@ void VisualizedAniTreeCreator::SelectSkinnedData(const std::string& name)
 void VisualizedAniTreeCreator::Init()
 {
 	CreateComponenet<DOTransform>();
-	CreateComponenet<DOMesh>();
+	CreateComponenet<DORenderMesh>();
 	m_Renderer = CreateComponenet<DORenderer>();
 	m_Animator = CreateComponenet<DOAnimator>();
 	m_WorkPanel = CreateComponenet<UIPanel>(false);
@@ -741,7 +741,7 @@ void VisualizedAniTreeCreator::SelectNullTree()
 
 	if (meshName.size())
 	{
-		GetComponent<DOMesh>()->SelectMesh(meshName);
+		GetComponent<DORenderMesh>()->SelectMesh(meshName);
 	}
 
 	unsigned int numNodes = m_CurrTree->GetNumNodes();
@@ -811,7 +811,7 @@ void VisualizedAniTreeCreator::ChangedTree()
 
 		if (meshName.size())
 		{
-			GetComponent<DOMesh>()->SelectMesh(meshName);
+			GetComponent<DORenderMesh>()->SelectMesh(meshName);
 		}
 
 		unsigned int numNodes = m_CurrTree->GetNumNodes();

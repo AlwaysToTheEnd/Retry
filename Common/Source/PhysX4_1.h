@@ -1,9 +1,9 @@
 #pragma once
+#include <memory>
 #include "PxPhysicsAPI.h"
-#include "IPhysicsDevice.h"
-#include "PhysXFunctionalObject.h"
 #include "Px1RefPtr.h"
-
+#include "PhysXFunctionalObject.h"
+#include "IDeviceObjectRegistration.h"
 
 struct PhysxSceneObject
 {
@@ -11,8 +11,14 @@ struct PhysxSceneObject
 	std::vector<UICollisions>	reservedToCheckUIs;
 };
 
-class PhysX4_1 final : public IPhysicsDevice
+class CGHScene;
+class D3DApp;
+
+class PhysX4_1 : public IDeviceObjectRegistration
 {
+	friend class D3DApp;
+	friend class CGHScene;
+
 	class SceneSimulationFilterCallBack :public physx::PxSimulationFilterCallback
 	{
 	public:
@@ -70,18 +76,26 @@ class PhysX4_1 final : public IPhysicsDevice
 
 	} m_SceneSimulationFilterCallBack;
 
-public:
+private:
 	PhysX4_1();
 	virtual ~PhysX4_1();
 
-	virtual bool Init(void* graphicDevicePtr);
-	virtual void Update(const CGHScene& scene);
-	virtual void CreateScene(const CGHScene& scene) override;
+	bool Init(void* graphicDevicePtr);
+	void Update(const CGHScene& scene);
+	void CreateScene(const CGHScene& scene);
+	bool ExcuteFuncOfClickedObject(CGHScene& scene, float origin_x, float origin_y, float origin_z,
+		float ray_x, float ray_y, float ray_z, float dist, GameObject::CLICKEDSTATE state);
 
 	virtual void RegisterDeviceObject(CGHScene& scene, DeviceObject* gameObject) override;
 	virtual void UnRegisterDeviceObject(CGHScene& scene, DeviceObject* gameObject) override;
-	virtual bool ExcuteFuncOfClickedObject(CGHScene& scene, float origin_x, float origin_y, float origin_z,
-		float ray_x, float ray_y, float ray_z, float dist, GameObject::CLICKEDSTATE state) override;
+
+public:
+	std::vector<UICollisions>*	GetReservedUICollisionVector(CGHScene& scene);
+	physx::PxScene*				GetScene(CGHScene& scene);
+	physx::PxCooking*			GetCooking() { return m_Cooking.Get(); }
+	physx::PxPhysics*			GetPhysics() { return m_Physics.Get(); }
+	physx::PxFoundation*		GetFoundation() { return m_Foundation.Get(); }
+	physx::PxMaterial*			GetBaseMaterial() { return m_Material.Get(); }
 
 private:
 	bool CheckUIClicked(std::vector<UICollisions>& collisions, GameObject::CLICKEDSTATE state);
@@ -92,20 +106,20 @@ private:
 		physx::PxPairFlags& pairFlags, const void* constantBlock, physx::PxU32 constantBlockSize);
 
 private:
-	physx::PxDefaultAllocator									m_Allocator;
-	physx::PxDefaultErrorCallback								m_ErrorCallback;
-	void*														m_GraphicsDevice;
+	physx::PxDefaultAllocator							m_Allocator;
+	physx::PxDefaultErrorCallback						m_ErrorCallback;
+	void*												m_GraphicsDevice;
 	
-	Px1RefPtr<physx::PxFoundation>								m_Foundation;
-	Px1RefPtr<physx::PxPhysics>									m_Physics;
-	Px1RefPtr<physx::PxDefaultCpuDispatcher>					m_Dispatcher;
-	Px1RefPtr<physx::PxCooking>									m_Cooking;
-	Px1RefPtr<physx::PxCudaContextManager>						m_CudaManager;
-	Px1RefPtr<physx::PxPvd>										m_PVD;
-	std::unordered_map<std::string, PhysxSceneObject>			m_Scenes;
+	Px1RefPtr<physx::PxFoundation>						m_Foundation;
+	Px1RefPtr<physx::PxPhysics>							m_Physics;
+	Px1RefPtr<physx::PxDefaultCpuDispatcher>			m_Dispatcher;
+	Px1RefPtr<physx::PxCooking>							m_Cooking;
+	Px1RefPtr<physx::PxCudaContextManager>				m_CudaManager;
+	Px1RefPtr<physx::PxPvd>								m_PVD;
+	std::unordered_map<std::string, PhysxSceneObject>	m_Scenes;
 
 private:
-	Px1RefPtr<physx::PxMaterial>					m_Material;
-	std::vector<PhysXFunctionalObject*>				m_ReservedFunc;
+	Px1RefPtr<physx::PxMaterial>						m_Material;
+	std::vector<PhysXFunctionalObject*>					m_ReservedFunc;
 };
 

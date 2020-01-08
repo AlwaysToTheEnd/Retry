@@ -270,50 +270,18 @@ void GraphicDX12::RegisterDeviceObject(CGHScene& scene, DeviceObject* gameObject
 
 	if (typeName == typeid(DORenderer).name())
 	{
-		static bool firstWork = true;
-		if (firstWork)
-		{
-			reinterpret_cast<DORenderer*>(gameObject)->SetDORenderNeedInfoFromDevice(&m_ReservedRenders);
-			firstWork = false;
-		}
 	}
 	else if (typeName == typeid(DOFont).name())
 	{
-		static bool firstWork = true;
-		if (firstWork)
-		{
-			reinterpret_cast<DOFont*>(gameObject)->SetDOFontNeedInfoFromDevice(&m_ReservedFonts);
-			firstWork = false;
-		}
+		
 	}
-	else if (typeName == typeid(DOMesh).name())
+	else if (typeName == typeid(DORenderMesh).name())
 	{
-		static MeshWorkFunc meshWork =
-		{
-			std::bind(&GraphicDX12::AddMesh, this,
-			std::placeholders::_1, std::placeholders::_2,std::placeholders::_3,std::placeholders::_4, std::placeholders::_5)
-			,
-			std::bind(&GraphicDX12::AddMaterials, this, std::placeholders::_1, std::placeholders::_2)
-			,
-			std::bind(&GraphicDX12::GetTextureIndex, this, std::placeholders::_1)
-		};
-
-		static bool firstWork = true;
-		if (firstWork)
-		{
-			reinterpret_cast<DOMesh*>(gameObject)->SetDOMeshNeedInfoFromDevice(&meshWork, &m_Meshs);
-			firstWork = false;
-		}
+		
 	}
 	else if (typeName == typeid(DOAnimator).name())
 	{
-		static bool firstWork = true;
-		if (firstWork)
-		{
-			reinterpret_cast<DOAnimator*>(gameObject)->SetDOAnimatorNeedInfoFromDevice(
-				&m_ReservedAniBones, &m_SkinnedDatas, &m_AniTreeDatas);
-			firstWork = false;
-		}
+		
 	}
 }
 
@@ -323,7 +291,7 @@ void GraphicDX12::UnRegisterDeviceObject(CGHScene& scene, DeviceObject* gameObje
 }
 
 bool GraphicDX12::AddMesh(const std::string& meshName, MeshObject& meshinfo,
-	unsigned int dataSize, const void* data, const std::vector<unsigned int>& indices)
+	const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices)
 {
 	ComPtr<ID3D12CommandAllocator>		allocator;
 	ComPtr<ID3D12GraphicsCommandList>	commandList;
@@ -352,11 +320,11 @@ bool GraphicDX12::AddMesh(const std::string& meshName, MeshObject& meshinfo,
 	{
 		baseVertexLocation = m_VertexBuffer->GetNumDatas();
 		baseIndexLocation = m_IndexBuffer->GetNumDatas();
-		numVertices = dataSize / sizeof(Vertex);
+		numVertices = vertices.size();
 		numIndices = indices.size();
 
 		prevVertexBuffer = m_VertexBuffer->AddData(m_D3dDevice.Get(), commandList.Get(),
-			numVertices, reinterpret_cast<const Vertex*>(data));
+			numVertices, vertices.data());
 		prevIndexBuffer = m_IndexBuffer->AddData(m_D3dDevice.Get(), commandList.Get(),
 			numIndices, indices.data());
 	}
@@ -735,13 +703,6 @@ void GraphicDX12::Draw()
 	FlushCommandQueue();
 }
 
-void GraphicDX12::ReservedWorksClear()
-{
-	m_ReservedAniBones.clear();
-	m_ReservedRenders.clear();
-	m_ReservedFonts.clear();
-}
-
 ID3D12Resource* GraphicDX12::CurrentBackBuffer() const
 {
 	return m_SwapChainBuffer[m_CurrBackBuffer].Get();
@@ -1038,7 +999,7 @@ void GraphicDX12::UpdateObjectCB()
 	auto pointCB = m_FrameResource->pointCB.get();
 	m_NumRenderPointObjects = 0;
 
-	for (auto& it : m_ReservedRenders)
+	for (auto& it : m_ReservedRenderInfos)
 	{
 		switch (it.type)
 		{

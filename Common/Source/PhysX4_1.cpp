@@ -3,8 +3,8 @@
 #include "CGHScene.h"
 #include "d3dApp.h"
 #include <Windows.h>
-using namespace physx;
 
+using namespace physx;
 
 PhysX4_1::PhysX4_1()
 {
@@ -57,7 +57,7 @@ bool PhysX4_1::Init(void* graphicDevicePtr)
 
 	m_Cooking = PxCreateCooking(PX_PHYSICS_VERSION, *m_Foundation,
 		PxCookingParams(PxTolerancesScale()));
-
+	
 	m_Material = m_Physics->createMaterial(0.5f, 0.5f, 0.6f);
 
 	return true;
@@ -115,68 +115,17 @@ void PhysX4_1::CreateScene(const CGHScene& scene)
 
 void PhysX4_1::RegisterDeviceObject(CGHScene& scene, DeviceObject* gameObject)
 {
-	static PxTransform identityTransform(PxIDENTITY::PxIdentity);
-	identityTransform.p.y = 4;
-	PxRigidActor* rigidBody = nullptr;
-
-	auto typeName = gameObject->GetTypeName();
-
-	if (typeName == typeid(DORigidDynamic).name())
+	if (gameObject->IsObjectType(GameObject::PHYSICS_OBJECT))
 	{
-		auto pxDynamic = m_Physics->createRigidDynamic(identityTransform);
-		reinterpret_cast<DORigidDynamic*>(gameObject)->SetRigidBody(pxDynamic);
-		rigidBody = pxDynamic;
-	}
-	else if (typeName == typeid(DORigidStatic).name())
-	{
-		auto pxStatic = m_Physics->createRigidStatic(identityTransform);
-		reinterpret_cast<DORigidStatic*>(gameObject)->SetRigidBody(pxStatic);
-		rigidBody = pxStatic;
-	}
-	else if (typeName == typeid(DOUICollision).name())
-	{
-		reinterpret_cast<DOUICollision*>(gameObject)->SetDOUICollisionNeedInfoFromDevice(
-			&m_Scenes[scene.GetSceneName()].reservedToCheckUIs);
-	}
-	else if (typeName == typeid(DOTransform).name())
-	{
-
-	}
-
-	if (rigidBody)
-	{
-		m_Scenes[scene.GetSceneName()].scene->addActor(*rigidBody);
+		
 	}
 }
 
 void PhysX4_1::UnRegisterDeviceObject(CGHScene& scene, DeviceObject* gameObject)
 {
-	PxRigidActor* deletedActor = nullptr;
-
-	auto typeName = gameObject->GetTypeName();
-
-	if (typeName == typeid(DORigidDynamic).name())
+	if (gameObject->IsObjectType(GameObject::PHYSICS_OBJECT))
 	{
-		deletedActor = reinterpret_cast<DORigidDynamic*>(gameObject)->GetRigidBody();
-	}
-	else if (typeName == typeid(DORigidStatic).name())
-	{
-		deletedActor = reinterpret_cast<DORigidStatic*>(gameObject)->GetRigidBody();
-	}
-
-	if (deletedActor)
-	{
-		if (deletedActor->userData)
-		{
-			auto functionlObject = reinterpret_cast<PhysXFunctionalObject*>(deletedActor->userData);
-
-			if (functionlObject->IsValideObject())
-			{
-				delete functionlObject;
-			}
-		}
-
-		m_Scenes[scene.GetSceneName()].scene->removeActor(*deletedActor);
+		
 	}
 }
 
@@ -246,6 +195,16 @@ bool PhysX4_1::ExcuteFuncOfClickedObject(CGHScene& scene, float origin_x, float 
 	}
 
 	return result;
+}
+
+std::vector<UICollisions>* PhysX4_1::GetReservedUICollisionVector(CGHScene& scene)
+{
+	return &m_Scenes[scene.GetSceneName()].reservedToCheckUIs;
+}
+
+physx::PxScene* PhysX4_1::GetScene(CGHScene& scene)
+{
+	return m_Scenes[scene.GetSceneName()].scene.Get();
 }
 
 bool PhysX4_1::CheckUIClicked(std::vector<UICollisions>& collisions, GameObject::CLICKEDSTATE state)

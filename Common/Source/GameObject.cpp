@@ -63,16 +63,9 @@ const GameObject* const GameObject::GetConstructor() const
 	}
 }
 
-void GameObject::CreatedObjectInit(GameObject* object)
+void GameObject::InitObject(GameObject* object)
 {
-	if (object->IsDeviceObject())
-	{
-		m_Scene.RegisterDeviceObject(object->m_TypeName, reinterpret_cast<DeviceObject*>(object));
-	}
-	else
-	{
-		m_Scene.AddGameObject(object);
-	}
+	m_Scene.AddGameObject(object);
 }
 
 void GameObject::Delete()
