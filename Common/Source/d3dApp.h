@@ -11,6 +11,7 @@
 #define GETKEY(T) const DirectX::Keyboard::KeyboardStateTracker* keyboard = (D3DApp::GetApp()->GetKeyBoard(T))
 #define GETMOUSE(T) const DirectX::Mouse::ButtonStateTracker* mouse = (D3DApp::GetApp()->GetMouse(T))
 #define HOLDCANCLE(T) D3DApp::GetApp()->InputDeviceHoldCancle(T)
+#define DEFAULTWINDOWSIZE 900
 
 typedef DirectX::Keyboard::Keys KEYState;
 typedef DirectX::Mouse::ButtonStateTracker::ButtonState MOUSEState;

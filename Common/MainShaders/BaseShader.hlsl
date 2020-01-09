@@ -75,6 +75,7 @@ struct VertexOut
 {
 	float4 PosH : SV_POSITION;
 	float2 TexC : TEXCOORD0;
+	float3 Normal : NORMAL0;
 };
 
 #ifdef SKINNED_VERTEX_SAHDER
@@ -111,6 +112,7 @@ VertexOut VS(SkinnedVertex vin)
 	vout.PosH = mul(float4(vin.PosL, 1.0f), World);
 	vout.PosH = mul(vout.PosH, gViewProj);
 
+	vout.Normal=  mul(float4(vin.NormalL, 1.0f), World);
 	return vout;
 }
 #else
@@ -124,6 +126,7 @@ VertexOut VS(VertexIn vin)
 	vout.PosH = mul(float4(vin.PosL, 1.0f), World);
 	vout.PosH = mul(vout.PosH, gViewProj);
 
+    vout.Normal = mul(float4(vin.NormalL, 1.0f), World);
 	return vout;
 }
 
@@ -131,14 +134,16 @@ VertexOut VS(VertexIn vin)
 
 float4 PS(VertexOut pin) : SV_Target
 {
-	float4 litColor = float4(0,0,0,1);
+	float4 litColor = float4(0,1,0,1);
 	int index = gInstanceData[MaterialIndex].DiffuseMapIndex;
 
-	if (index >= 0)
-	{
-		litColor = gMainTexture[index].Sample(gsamPointWrap, pin.TexC);
-	}
+    if (index >= 0)
+    {
+        litColor = gMainTexture[index].Sample(gsamPointWrap, pin.TexC);
+    }
 
 	clip(litColor.a);
+	
+    litColor.rgb *= dot(normalize(pin.Normal), -normalize(float3(-1, -1, -1)));
 	return litColor;
 }

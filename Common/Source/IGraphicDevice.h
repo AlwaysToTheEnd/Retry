@@ -37,8 +37,8 @@ public: // pure virtual funcs.
 	virtual std::unordered_map<std::string, Ani::SkinnedData>*							GetSkinnedDataMap() = 0;
 	virtual std::unordered_map<std::string, std::unique_ptr<AniTree::AnimationTree>>*	GetAnimationTreeMap() = 0;
 
-	virtual bool	AddMesh(const std::string& meshName, MeshObject& meshinfo, const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices) = 0;
-	virtual bool	AddMaterials(const std::vector<std::string>& materialNames, const std::vector<Material>& materials) = 0;
+	virtual bool	CreateMesh(const std::string& meshName, MeshObject& meshinfo, const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices) = 0;
+	virtual bool	CreateMaterials(const std::vector<std::string>& materialNames, const std::vector<Material>& materials) = 0;
 	
 	virtual int		GetTextureIndex(const std::string& textureName) = 0;
 

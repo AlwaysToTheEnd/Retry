@@ -15,4 +15,6 @@ public:
 private:
 	virtual void Update(float delta) override;
 	virtual void Init() override;
+
+	void TestClickedFunc();
 };

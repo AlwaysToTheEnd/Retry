@@ -106,7 +106,7 @@ class GraphicDX12 final : public IGraphicDevice
 		T1_PASS_CB,
 		T1_OBJECT_CB,
 		T1_TEXTURE_TABLE,
-		T1_ANIBONE_SRV,
+		T1_ANIBONE_CB,
 		T1_ROOT_COUNT
 	};
 
@@ -118,6 +118,14 @@ class GraphicDX12 final : public IGraphicDevice
 		P1_ROOT_COUNT
 	};
 
+	enum DX12_RENDER_TYPE
+	{
+		DX12_RENDER_TYPE_NORMAL_MESH,
+		DX12_RENDER_TYPE_SKINNED_MESH,
+		DX12_RENDER_TYPE_POINT,
+		DX12_RENDER_TYPE_COUNT
+	};
+
 	struct FrameResource
 	{
 		FrameResource(ID3D12Device* device, UINT passCount, UINT objectCount, UINT aniBoneSetNum)
@@ -126,7 +134,12 @@ class GraphicDX12 final : public IGraphicDevice
 				D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(cmdListAlloc.GetAddressOf())));
 
 			passCB = std::make_unique<UploadBuffer<PassConstants>>(device, passCount, true);
-			meshObjectCB = std::make_unique<UploadBuffer<ObjectConstants>>(device, objectCount, true);
+
+			for (int i = 0; i < DX12_RENDER_TYPE_COUNT; i++)
+			{
+				meshObjectCB[i]= std::make_unique<UploadBuffer<ObjectConstants>>(device, objectCount, true);
+			}
+
 			pointCB = std::make_unique<UploadBuffer<OnlyTexObjectConstants>>(device, objectCount, false);
 			aniBoneMatBuffer = std::make_unique<UploadBuffer<AniBoneMat>>(device, aniBoneSetNum, true);
 		}
@@ -137,7 +150,7 @@ class GraphicDX12 final : public IGraphicDevice
 		ComPtr<ID3D12CommandAllocator> cmdListAlloc;
 
 		std::unique_ptr<UploadBuffer<PassConstants>> passCB = nullptr;
-		std::unique_ptr<UploadBuffer<ObjectConstants>> meshObjectCB = nullptr;
+		std::unique_ptr<UploadBuffer<ObjectConstants>> meshObjectCB[DX12_RENDER_TYPE_COUNT];
 		std::unique_ptr<UploadBuffer<OnlyTexObjectConstants>> pointCB = nullptr;
 		std::unique_ptr<UploadBuffer<AniBoneMat>> aniBoneMatBuffer = nullptr;
 	};
@@ -163,8 +176,8 @@ public: // Used from DeviceObject Init
 	virtual std::unordered_map<std::string, Ani::SkinnedData>*							GetSkinnedDataMap() override {return &m_SkinnedDatas;}
 	virtual std::unordered_map<std::string, std::unique_ptr<AniTree::AnimationTree>>*	GetAnimationTreeMap() override {return &m_AniTreeDatas;}
 
-	virtual bool	AddMesh(const std::string& meshName, MeshObject& meshinfo, const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices) override;
-	virtual bool	AddMaterials(const std::vector<std::string>& materialNames, const std::vector<Material>& materials) override;
+	virtual bool	CreateMesh(const std::string& meshName, MeshObject& meshinfo, const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices) override;
+	virtual bool	CreateMaterials(const std::vector<std::string>& materialNames, const std::vector<Material>& materials) override;
 	
 	virtual int		GetTextureIndex(const std::string& textureName) override;
 
@@ -197,7 +210,9 @@ private: // Used in frame.
 	void UpdateAniBoneBuffer();
 
 private:
-	void DrawMeshObjects();
+	void DrawObject(DX12_RENDER_TYPE type);
+	void DrawNormalMesh();
+	void DrawSkinnedMesh();
 	void DrawPointObjects();
 
 private:
@@ -244,8 +259,7 @@ private:
 
 private:
 	std::unordered_map<std::string, ComPtr<ID3D12PipelineState>>	m_PSOs;
-	std::vector<D3D12_INPUT_ELEMENT_DESC>							m_NTVertexInputLayout;
-	std::vector<D3D12_INPUT_ELEMENT_DESC>							m_BPPointInputLayout;
+	std::vector<D3D12_INPUT_ELEMENT_DESC>							m_InputLayout[DX12_RENDER_TYPE_COUNT];
 	std::unordered_map<std::string, ComPtr<ID3DBlob>>				m_Shaders;
 	ComPtr<ID3D12RootSignature>										m_T1RootSignature;
 	ComPtr<ID3D12RootSignature>										m_P1RootSignature;
@@ -262,8 +276,8 @@ private:
 
 
 private:
-	std::vector<ObjectConstants>					m_RenderObjects;
-	std::vector<const SubmeshData*>					m_RenderObjectsSubmesh;
+	std::vector<ObjectConstants>					m_RenderObjects[DX12_RENDER_TYPE_COUNT];
+	std::vector<const SubmeshData*>					m_RenderObjectsSubmesh[DX12_RENDER_TYPE_COUNT];
 	unsigned int									m_NumRenderPointObjects;
 
 private:

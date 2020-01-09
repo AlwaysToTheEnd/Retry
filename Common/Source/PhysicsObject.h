@@ -12,6 +12,7 @@ public:
 	virtual ~PhyscisObject() = default;
 
 	virtual bool	IsObjectType(GAMEOBJECT_TYPE type) const override { return type & (DEVICE_OBJECT | PHYSICS_OBJECT); }
+	virtual void*	GetPxObject() = 0;
 
 protected:
 	virtual void	Update(float delta) = 0;

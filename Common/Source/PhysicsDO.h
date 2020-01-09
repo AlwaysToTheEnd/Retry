@@ -1,10 +1,12 @@
 #pragma once
 #include <vector>
 #include <functional>
+#include <memory>
 #include <foundation/PxMat44.h>
 #include <foundation/PxTransform.h>
-#include "PhysXFunctionalObject.h"
+#include <geometry/PxGeometry.h>
 #include "PhysicsObject.h"
+#include "PhysXFunctionalObject.h"
 
 namespace physx
 {
@@ -13,22 +15,38 @@ namespace physx
 	class PxShape;
 }
 
-class DOMeshCollsion :public PhyscisObject
+class DOCollsionMesh :public PhyscisObject
 {
 public:
-	DOMeshCollsion(CGHScene& scene, GameObject* parent, const char* typeName)
+	DOCollsionMesh(CGHScene& scene, GameObject* parent, const char* typeName, 
+		physx::PxGeometryType::Enum type, physx::PxVec4 halfSize, bool isExclusive)
 		: PhyscisObject(scene, parent, typeName)
 		, m_Shape(nullptr)
+		, m_Type(type)
+		, m_HalfSize(halfSize)
+		, m_IsExclusive(isExclusive)
 	{
 		
 	}
+	virtual ~DOCollsionMesh() = default;
+
+	virtual void	Delete() override;
+
+	bool			IsExclusive() const { return m_IsExclusive; }
+	virtual void*	GetPxObject() override {return m_Shape;}
+
+	void			SetTrigger(bool value);
+	void			SetLocalPos(const physx::PxTransform& localPos);
 
 private:
-	virtual void Update(float delta) override {}
-	virtual void Init(PhysX4_1* physxDevice, IGraphicDevice*);
+	virtual void	Update(float delta) override {}
+	virtual void	Init(PhysX4_1* physxDevice, IGraphicDevice*) override;
 
 private:
-	physx::PxShape* m_Shape;
+	physx::PxGeometryType::Enum	m_Type;
+	physx::PxVec4				m_HalfSize;
+	bool						m_IsExclusive;
+	physx::PxShape*				m_Shape;
 };
 
 class DORigidDynamic :public PhyscisObject
@@ -42,14 +60,23 @@ public:
 	}
 	virtual ~DORigidDynamic() = default;
 
-	virtual void Delete() override;
+	virtual void	Delete() override;
+
+	virtual void*	GetPxObject() override { return m_RigidBody; }
+
+	void			SetPos(const physx::PxTransform& pos);
+
+	void			AddFunc(std::function<void()> func);
+	bool			AttachCollisionMesh(PhyscisObject* mesh);
+	bool			DetachCollisionMesh(PhyscisObject* mesh);
 
 private:
-	virtual void Update(float delta) override;
-	virtual void Init(PhysX4_1* physxDevice, IGraphicDevice*);
+	virtual void	Update(float delta) override;
+	virtual void	Init(PhysX4_1* physxDevice, IGraphicDevice*) override;
 
 private:
-	physx::PxRigidDynamic* m_RigidBody;
+	physx::PxRigidDynamic*					m_RigidBody;
+	std::unique_ptr<PhysXFunctionalObject>	m_Funcs;
 };
 
 class DORigidStatic :public PhyscisObject
@@ -63,11 +90,18 @@ public:
 	}
 	virtual ~DORigidStatic() = default;
 
-	virtual void Delete() override;
+	virtual void	Delete() override;
+
+	virtual void*	GetPxObject() override { return m_RigidBody; }
+
+	void			SetPos(const physx::PxTransform& pos);
+
+	bool			AttachCollisionMesh(PhyscisObject* mesh);
+	bool			DetachCollisionMesh(PhyscisObject* mesh);
 
 private:
-	virtual void Update(float delta) override;
-	virtual void Init(PhysX4_1* physxDevice, IGraphicDevice*);
+	virtual void	Update(float delta) override;
+	virtual void	Init(PhysX4_1* physxDevice, IGraphicDevice*) override;
 
 private:
 	physx::PxRigidStatic* m_RigidBody;
@@ -92,8 +126,8 @@ public:
 	void					AddFunc(std::function<void()> func) { m_VoidFuncs.push_back(func); }
 
 private:
-	virtual void Update(float delta) override;
-	virtual void Init(PhysX4_1* physxDevice, IGraphicDevice*);
+	virtual void	Update(float delta) override;
+	virtual void	Init(PhysX4_1* physxDevice, IGraphicDevice*);
 
 private:
 	std::vector<UICollisions>* 				m_ReservedUICol;

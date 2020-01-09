@@ -7,6 +7,8 @@
 using namespace DirectX;
 using namespace std;
 
+#define ENUMSTR(t) std::string(#t)
+
 GraphicDX12::GraphicDX12()
 {
 }
@@ -290,7 +292,7 @@ void GraphicDX12::UnRegisterDeviceObject(CGHScene& scene, DeviceObject* gameObje
 	
 }
 
-bool GraphicDX12::AddMesh(const std::string& meshName, MeshObject& meshinfo,
+bool GraphicDX12::CreateMesh(const std::string& meshName, MeshObject& meshinfo,
 	const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices)
 {
 	ComPtr<ID3D12CommandAllocator>		allocator;
@@ -301,7 +303,7 @@ bool GraphicDX12::AddMesh(const std::string& meshName, MeshObject& meshinfo,
 	ThrowIfFailed(m_D3dDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, 
 		allocator.Get(), nullptr, IID_PPV_ARGS(commandList.GetAddressOf())));
 
-	if (m_Meshs.find(meshName) == m_Meshs.end())
+	if (m_Meshs.find(meshName) != m_Meshs.end())
 	{
 		return false;
 	}
@@ -359,7 +361,7 @@ bool GraphicDX12::AddMesh(const std::string& meshName, MeshObject& meshinfo,
 	return true;
 }
 
-bool GraphicDX12::AddMaterials(const std::vector<std::string>& materialNames, const std::vector<Material>& materials)
+bool GraphicDX12::CreateMaterials(const std::vector<std::string>& materialNames, const std::vector<Material>& materials)
 {
 	ComPtr<ID3D12CommandAllocator>		allocator;
 	ComPtr<ID3D12GraphicsCommandList>	commandList;
@@ -369,7 +371,7 @@ bool GraphicDX12::AddMaterials(const std::vector<std::string>& materialNames, co
 	ThrowIfFailed(m_D3dDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT,
 		allocator.Get(), nullptr, IID_PPV_ARGS(commandList.GetAddressOf())));
 
-	auto prevBuffer = m_Materials->AddData(m_D3dDevice.Get(), commandList.Get(), materials.size(), materials.data(), materialNames);
+	auto prevBuffer = m_Materials->IndexedAddData(m_D3dDevice.Get(), commandList.Get(), materials.size(), materials.data(), materialNames);
 
 	commandList->Close();
 
@@ -671,23 +673,15 @@ void GraphicDX12::Draw()
 	m_CommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(),
 		D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
 
+	m_CommandList->OMSetRenderTargets(1, &CurrentBackBufferView(), true, &DepthStencilView());
+
 	m_CommandList->ClearRenderTargetView(CurrentBackBufferView(), Colors::Gray, 0, nullptr);
 	m_CommandList->ClearDepthStencilView(DepthStencilView(), D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
 
-	m_CommandList->SetPipelineState(m_PSOs["base"].Get());
-	ID3D12DescriptorHeap* descriptorHeaps[] = { m_TextureBuffer->GetHeap() };
-	m_CommandList->SetDescriptorHeaps(1, descriptorHeaps);
-	m_CommandList->OMSetRenderTargets(1, &CurrentBackBufferView(), true, &DepthStencilView());
+	DrawObject(DX12_RENDER_TYPE_NORMAL_MESH);
+	DrawObject(DX12_RENDER_TYPE_SKINNED_MESH);
+	DrawObject(DX12_RENDER_TYPE_POINT);
 
-	m_CommandList->SetGraphicsRootSignature(m_T1RootSignature.Get());
-
-	auto matBuffer = m_Materials->GetBufferResource();
-	m_CommandList->SetGraphicsRootShaderResourceView(T1_MATERIAL_SRV, matBuffer->GetGPUVirtualAddress());
-	m_CommandList->SetGraphicsRootConstantBufferView(T1_PASS_CB, m_FrameResource->passCB->Resource()->GetGPUVirtualAddress());
-	m_CommandList->SetGraphicsRootDescriptorTable(T1_TEXTURE_TABLE, m_TextureBuffer->GetHeap()->GetGPUDescriptorHandleForHeapStart());
-
-	DrawMeshObjects();
-	DrawPointObjects();
 	m_FontManager->RenderCommandWrite(m_CommandList.Get(), m_ReservedFonts);
 
 	m_CommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(),
@@ -794,7 +788,7 @@ void GraphicDX12::BuildRootSignature()
 	baseRootParam[T1_MATERIAL_SRV].InitAsShaderResourceView(0, 1);
 	baseRootParam[T1_PASS_CB].InitAsConstantBufferView(0);
 	baseRootParam[T1_OBJECT_CB].InitAsConstantBufferView(1);
-	baseRootParam[T1_ANIBONE_SRV].InitAsConstantBufferView(2);
+	baseRootParam[T1_ANIBONE_CB].InitAsConstantBufferView(2);
 	baseRootParam[T1_TEXTURE_TABLE].InitAsDescriptorTable(1, &texTable, D3D12_SHADER_VISIBILITY_PIXEL);
 
 	CD3DX12_ROOT_SIGNATURE_DESC rootDesc;
@@ -849,14 +843,19 @@ void GraphicDX12::BuildShadersAndInputLayout()
 		"SKINNED_VERTEX_SAHDER",NULL,
 		NULL, NULL };
 
-	m_Shaders["baseVS"] = CompileShader(L"../Common/MainShaders/BaseShader.hlsl", macros, "VS", "vs_5_1");
-	m_Shaders["basePS"] = CompileShader(L"../Common/MainShaders/BaseShader.hlsl", macros, "PS", "ps_5_1");
+	m_Shaders[ENUMSTR(DX12_RENDER_TYPE_SKINNED_MESH)+"VS"] = CompileShader(L"../Common/MainShaders/BaseShader.hlsl", macros, "VS", "vs_5_1");
+	m_Shaders[ENUMSTR(DX12_RENDER_TYPE_SKINNED_MESH)+"PS"] = CompileShader(L"../Common/MainShaders/BaseShader.hlsl", macros, "PS", "ps_5_1");
 
-	m_Shaders["pointVS"] = CompileShader(L"../Common/MainShaders/pointShader.hlsl", macros, "VS", "vs_5_1");
-	m_Shaders["pointPS"] = CompileShader(L"../Common/MainShaders/pointShader.hlsl", macros, "PS", "ps_5_1");
-	m_Shaders["pointGS"] = CompileShader(L"../Common/MainShaders/pointShader.hlsl", macros, "GS", "gs_5_1");
+	macros[2] = { NULL, NULL };
 
-	m_NTVertexInputLayout =
+	m_Shaders[ENUMSTR(DX12_RENDER_TYPE_NORMAL_MESH) + "VS"] = CompileShader(L"../Common/MainShaders/BaseShader.hlsl", macros, "VS", "vs_5_1");
+	m_Shaders[ENUMSTR(DX12_RENDER_TYPE_NORMAL_MESH) + "PS"] = CompileShader(L"../Common/MainShaders/BaseShader.hlsl", macros, "PS", "ps_5_1");
+
+	m_Shaders[ENUMSTR(DX12_RENDER_TYPE_POINT) + "VS"] = CompileShader(L"../Common/MainShaders/pointShader.hlsl", macros, "VS", "vs_5_1");
+	m_Shaders[ENUMSTR(DX12_RENDER_TYPE_POINT) + "PS"] = CompileShader(L"../Common/MainShaders/pointShader.hlsl", macros, "PS", "ps_5_1");
+	m_Shaders[ENUMSTR(DX12_RENDER_TYPE_POINT) + "GS"] = CompileShader(L"../Common/MainShaders/pointShader.hlsl", macros, "GS", "gs_5_1");
+
+	m_InputLayout[DX12_RENDER_TYPE_SKINNED_MESH] =
 	{
 		{ "POSITION" ,0,DXGI_FORMAT_R32G32B32_FLOAT,0,0,D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,0},
 		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
@@ -865,7 +864,14 @@ void GraphicDX12::BuildShadersAndInputLayout()
 		{ "BONEINDICES", 0, DXGI_FORMAT_R8G8B8A8_UINT, 0, 44, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
 	};
 
-	m_BPPointInputLayout =
+	m_InputLayout[DX12_RENDER_TYPE_NORMAL_MESH] =
+	{
+		{ "POSITION" ,0,DXGI_FORMAT_R32G32B32_FLOAT,0,0,D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,0},
+		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 24, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+	};
+
+	m_InputLayout[DX12_RENDER_TYPE_POINT] =
 	{
 		{ "MESHTYPE" ,0,DXGI_FORMAT_R32_UINT,0,0,D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,0},
 		{ "CBINDEX", 0, DXGI_FORMAT_R32_UINT, 0, 4, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
@@ -890,20 +896,20 @@ void GraphicDX12::BuildPSOs()
 	transparencyBlendDesc.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
 
 	ZeroMemory(&opaquePsoDesc, sizeof(D3D12_GRAPHICS_PIPELINE_STATE_DESC));
-	opaquePsoDesc.InputLayout = { m_NTVertexInputLayout.data(), (UINT)m_NTVertexInputLayout.size() };
+	opaquePsoDesc.InputLayout = { m_InputLayout[DX12_RENDER_TYPE_NORMAL_MESH].data(), (UINT)m_InputLayout[DX12_RENDER_TYPE_NORMAL_MESH].size() };
 	opaquePsoDesc.pRootSignature = m_T1RootSignature.Get();
 	opaquePsoDesc.VS =
 	{
-		reinterpret_cast<BYTE*>(m_Shaders["baseVS"]->GetBufferPointer()),
-		m_Shaders["baseVS"]->GetBufferSize()
+		reinterpret_cast<BYTE*>(m_Shaders[ENUMSTR(DX12_RENDER_TYPE_NORMAL_MESH)+"VS"]->GetBufferPointer()),
+		m_Shaders[ENUMSTR(DX12_RENDER_TYPE_NORMAL_MESH) + "VS"]->GetBufferSize()
 	};
 	opaquePsoDesc.PS =
 	{
-		reinterpret_cast<BYTE*>(m_Shaders["basePS"]->GetBufferPointer()),
-		m_Shaders["basePS"]->GetBufferSize()
+		reinterpret_cast<BYTE*>(m_Shaders[ENUMSTR(DX12_RENDER_TYPE_NORMAL_MESH) + "PS"]->GetBufferPointer()),
+		m_Shaders[ENUMSTR(DX12_RENDER_TYPE_NORMAL_MESH) + "PS"]->GetBufferSize()
 	};
 	opaquePsoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
-	opaquePsoDesc.RasterizerState.CullMode = D3D12_CULL_MODE_NONE;
+	opaquePsoDesc.RasterizerState.CullMode = D3D12_CULL_MODE_BACK;
 	opaquePsoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
 	opaquePsoDesc.BlendState.RenderTarget[0] = transparencyBlendDesc;
 	opaquePsoDesc.BlendState.AlphaToCoverageEnable = true;
@@ -916,28 +922,41 @@ void GraphicDX12::BuildPSOs()
 	opaquePsoDesc.SampleDesc.Count = m_4xMsaaState ? 4 : 1;
 	opaquePsoDesc.SampleDesc.Quality = m_4xMsaaState ? (m_4xmsaaQuality - 1) : 0;
 	opaquePsoDesc.DSVFormat = m_DepthStencilFormat;
-	ThrowIfFailed(m_D3dDevice->CreateGraphicsPipelineState(&opaquePsoDesc, IID_PPV_ARGS(&m_PSOs["base"])));
+	ThrowIfFailed(m_D3dDevice->CreateGraphicsPipelineState(&opaquePsoDesc, IID_PPV_ARGS(&m_PSOs[ENUMSTR(DX12_RENDER_TYPE_NORMAL_MESH)])));
 
-	opaquePsoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_POINT;
-	opaquePsoDesc.pRootSignature = m_P1RootSignature.Get();
-	opaquePsoDesc.InputLayout = { m_BPPointInputLayout.data(), (UINT)m_BPPointInputLayout.size() };
-
+	opaquePsoDesc.InputLayout = { m_InputLayout[DX12_RENDER_TYPE_SKINNED_MESH].data(), (UINT)m_InputLayout[DX12_RENDER_TYPE_SKINNED_MESH].size() };
 	opaquePsoDesc.VS =
 	{
-		reinterpret_cast<BYTE*>(m_Shaders["pointVS"]->GetBufferPointer()),
-		m_Shaders["pointVS"]->GetBufferSize()
+		reinterpret_cast<BYTE*>(m_Shaders[ENUMSTR(DX12_RENDER_TYPE_SKINNED_MESH) + "VS"]->GetBufferPointer()),
+		m_Shaders[ENUMSTR(DX12_RENDER_TYPE_SKINNED_MESH) + "VS"]->GetBufferSize()
 	};
 	opaquePsoDesc.PS =
 	{
-		reinterpret_cast<BYTE*>(m_Shaders["pointPS"]->GetBufferPointer()),
-		m_Shaders["pointPS"]->GetBufferSize()
+		reinterpret_cast<BYTE*>(m_Shaders[ENUMSTR(DX12_RENDER_TYPE_SKINNED_MESH) + "PS"]->GetBufferPointer()),
+		m_Shaders[ENUMSTR(DX12_RENDER_TYPE_SKINNED_MESH) + "PS"]->GetBufferSize()
+	};
+	ThrowIfFailed(m_D3dDevice->CreateGraphicsPipelineState(&opaquePsoDesc, IID_PPV_ARGS(&m_PSOs[ENUMSTR(DX12_RENDER_TYPE_SKINNED_MESH)])));
+
+	opaquePsoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_POINT;
+	opaquePsoDesc.pRootSignature = m_P1RootSignature.Get();
+	opaquePsoDesc.InputLayout = { m_InputLayout[DX12_RENDER_TYPE_POINT].data(), (UINT)m_InputLayout[DX12_RENDER_TYPE_POINT].size() };
+
+	opaquePsoDesc.VS =
+	{
+		reinterpret_cast<BYTE*>(m_Shaders[ENUMSTR(DX12_RENDER_TYPE_POINT) + "VS"]->GetBufferPointer()),
+		m_Shaders[ENUMSTR(DX12_RENDER_TYPE_POINT) + "VS"]->GetBufferSize()
+	};
+	opaquePsoDesc.PS =
+	{
+		reinterpret_cast<BYTE*>(m_Shaders[ENUMSTR(DX12_RENDER_TYPE_POINT) + "PS"]->GetBufferPointer()),
+		m_Shaders[ENUMSTR(DX12_RENDER_TYPE_POINT) + "PS"]->GetBufferSize()
 	};
 	opaquePsoDesc.GS =
 	{
-		reinterpret_cast<BYTE*>(m_Shaders["pointGS"]->GetBufferPointer()),
-		m_Shaders["pointGS"]->GetBufferSize()
+		reinterpret_cast<BYTE*>(m_Shaders[ENUMSTR(DX12_RENDER_TYPE_POINT) + "GS"]->GetBufferPointer()),
+		m_Shaders[ENUMSTR(DX12_RENDER_TYPE_POINT) + "GS"]->GetBufferSize()
 	};
-	ThrowIfFailed(m_D3dDevice->CreateGraphicsPipelineState(&opaquePsoDesc, IID_PPV_ARGS(&m_PSOs["point"])));
+	ThrowIfFailed(m_D3dDevice->CreateGraphicsPipelineState(&opaquePsoDesc, IID_PPV_ARGS(&m_PSOs[ENUMSTR(DX12_RENDER_TYPE_POINT)])));
 }
 
 void GraphicDX12::UpdateMainPassCB()
@@ -951,7 +970,9 @@ void GraphicDX12::UpdateMainPassCB()
 	XMMATRIX xmProj = XMLoadFloat4x4(proj);
 	XMStoreFloat4x4(viewProj, XMMatrixMultiply(xmView, xmProj));
 
-	physx::PxMat44 invView = view.inverseRT();
+	XMVECTOR deter;
+	physx::PxMat44 invView;
+	XMStoreFloat4x4(invView, XMMatrixInverse(&deter, xmView));
 	physx::PxMat44 invProj = proj.inverseRT();
 	physx::PxMat44 invViewProj = viewProj.inverseRT();
 
@@ -984,7 +1005,7 @@ void GraphicDX12::UpdateMainPassCB()
 	}
 
 	rayOrigin = invView.transform(rayOrigin);
-	ray = invView.transform(ray).getNormalized();
+	ray = invView.rotate(ray).getNormalized();
 
 	m_RayOrigin = rayOrigin;
 	m_Ray = ray;
@@ -992,12 +1013,14 @@ void GraphicDX12::UpdateMainPassCB()
 
 void GraphicDX12::UpdateObjectCB()
 {
-	m_RenderObjects.clear();
-	m_RenderObjectsSubmesh.clear();
+	for (int i = 0; i < DX12_RENDER_TYPE_COUNT; i++)
+	{
+		m_RenderObjects[i].clear();
+		m_RenderObjectsSubmesh[i].clear();
+	}
 
-	auto meshObjectCB = m_FrameResource->meshObjectCB.get();
-	auto pointCB = m_FrameResource->pointCB.get();
 	m_NumRenderPointObjects = 0;
+	auto pointCB = m_FrameResource->pointCB.get();
 
 	for (auto& it : m_ReservedRenderInfos)
 	{
@@ -1012,11 +1035,23 @@ void GraphicDX12::UpdateObjectCB()
 			object.aniBoneIndex = it.mesh.aniBoneIndex;
 			object.primitive = mesh.primitiveType;
 
-			for (auto& it2 : mesh.subs)
+			if (mesh.type == CGH::MESH_NORMAL)
 			{
-				object.materialIndex = m_Materials->GetIndex(it2.second.material);
-				m_RenderObjects.push_back(object);
-				m_RenderObjectsSubmesh.push_back(&it2.second);
+				for (auto& it2 : mesh.subs)
+				{
+					object.materialIndex = m_Materials->GetIndex(it2.second.material);
+					m_RenderObjects[DX12_RENDER_TYPE_NORMAL_MESH].push_back(object);
+					m_RenderObjectsSubmesh[DX12_RENDER_TYPE_NORMAL_MESH].push_back(&it2.second);
+				}
+			}
+			else
+			{
+				for (auto& it2 : mesh.subs)
+				{
+					object.materialIndex = m_Materials->GetIndex(it2.second.material);
+					m_RenderObjects[DX12_RENDER_TYPE_SKINNED_MESH].push_back(object);
+					m_RenderObjectsSubmesh[DX12_RENDER_TYPE_SKINNED_MESH].push_back(&it2.second);
+				}
 			}
 		}
 		break;
@@ -1070,9 +1105,16 @@ void GraphicDX12::UpdateObjectCB()
 		}
 	}
 
-	for (size_t i = 0; i < m_RenderObjects.size(); i++)
+	for (size_t i = 0; i < DX12_RENDER_TYPE_POINT; i++)
 	{
-		meshObjectCB->CopyData(i, m_RenderObjects[i]);
+		auto currMeshOBCB = m_FrameResource->meshObjectCB[i].get();
+		auto& currRenderObjects = m_RenderObjects[i];
+		const size_t numRenders = currRenderObjects.size();
+
+		for (size_t j = 0; j < numRenders; j++)
+		{
+			currMeshOBCB->CopyData(j, currRenderObjects[j]);
+		}
 	}
 
 }
@@ -1088,65 +1130,114 @@ void GraphicDX12::UpdateAniBoneBuffer()
 	}
 }
 
-void GraphicDX12::DrawMeshObjects()
+void GraphicDX12::DrawObject(DX12_RENDER_TYPE type)
 {
+	switch (type)
+	{
+	case GraphicDX12::DX12_RENDER_TYPE_NORMAL_MESH:
+		DrawNormalMesh();
+		break;
+	case GraphicDX12::DX12_RENDER_TYPE_SKINNED_MESH:
+		DrawSkinnedMesh();
+		break;
+	case GraphicDX12::DX12_RENDER_TYPE_POINT:
+		DrawPointObjects();
+		break;
+	default:
+		break;
+	}
+}
+
+void GraphicDX12::DrawNormalMesh()
+{
+	m_CommandList->SetPipelineState(m_PSOs[ENUMSTR(DX12_RENDER_TYPE_NORMAL_MESH)].Get());
+	ID3D12DescriptorHeap* descriptorHeaps[] = { m_TextureBuffer->GetHeap() };
+	m_CommandList->SetDescriptorHeaps(1, descriptorHeaps);
+	m_CommandList->SetGraphicsRootSignature(m_T1RootSignature.Get());
+
+	auto matBuffer = m_Materials->GetBufferResource();
+	m_CommandList->SetGraphicsRootShaderResourceView(T1_MATERIAL_SRV, matBuffer->GetGPUVirtualAddress());
+	m_CommandList->SetGraphicsRootConstantBufferView(T1_PASS_CB, m_FrameResource->passCB->Resource()->GetGPUVirtualAddress());
+	m_CommandList->SetGraphicsRootDescriptorTable(T1_TEXTURE_TABLE, m_TextureBuffer->GetHeap()->GetGPUDescriptorHandleForHeapStart());
+
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView = {};
 	D3D12_INDEX_BUFFER_VIEW indexBufferView = {};
 	indexBufferView.Format = DXGI_FORMAT_R32_UINT;
 
-	auto ObjectCBVritualAD = m_FrameResource->meshObjectCB->Resource()->GetGPUVirtualAddress();
+	auto ObjectCBVritualAD = m_FrameResource->meshObjectCB[DX12_RENDER_TYPE_NORMAL_MESH]->Resource()->GetGPUVirtualAddress();
+	const UINT ObjectStrideSize = m_FrameResource->meshObjectCB[DX12_RENDER_TYPE_NORMAL_MESH]->GetElementByteSize();
+
+	vertexBufferView.BufferLocation = m_VertexBuffer->GetBufferResource()->GetGPUVirtualAddress();
+	vertexBufferView.SizeInBytes = m_VertexBuffer->GetBufferSize();
+	vertexBufferView.StrideInBytes = sizeof(Vertex);
+
+	indexBufferView.BufferLocation = m_IndexBuffer->GetBufferResource()->GetGPUVirtualAddress();
+	indexBufferView.SizeInBytes = m_IndexBuffer->GetBufferSize();
+
+	m_CommandList->IASetVertexBuffers(0, 1, &vertexBufferView);
+	m_CommandList->IASetIndexBuffer(&indexBufferView);
+	m_CommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY::D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+	auto& currRenderObjects = m_RenderObjects[DX12_RENDER_TYPE_NORMAL_MESH];
+	auto& currRenderObjectSubmesh = m_RenderObjectsSubmesh[DX12_RENDER_TYPE_NORMAL_MESH];
+
+	for (size_t i = 0; i < currRenderObjects.size(); i++)
+	{
+		m_CommandList->SetGraphicsRootConstantBufferView(T1_OBJECT_CB, ObjectCBVritualAD);
+		m_CommandList->DrawIndexedInstanced(currRenderObjectSubmesh[i]->numIndex, 1,
+			currRenderObjectSubmesh[i]->indexOffset, currRenderObjectSubmesh[i]->vertexOffset, 0);
+		ObjectCBVritualAD += ObjectStrideSize;
+	}
+}
+
+void GraphicDX12::DrawSkinnedMesh()
+{
+	m_CommandList->SetPipelineState(m_PSOs[ENUMSTR(DX12_RENDER_TYPE_SKINNED_MESH)].Get());
+	ID3D12DescriptorHeap* descriptorHeaps[] = { m_TextureBuffer->GetHeap() };
+	m_CommandList->SetDescriptorHeaps(1, descriptorHeaps);
+	m_CommandList->SetGraphicsRootSignature(m_T1RootSignature.Get());
+
+	auto matBuffer = m_Materials->GetBufferResource();
+	m_CommandList->SetGraphicsRootShaderResourceView(T1_MATERIAL_SRV, matBuffer->GetGPUVirtualAddress());
+	m_CommandList->SetGraphicsRootConstantBufferView(T1_PASS_CB, m_FrameResource->passCB->Resource()->GetGPUVirtualAddress());
+	m_CommandList->SetGraphicsRootDescriptorTable(T1_TEXTURE_TABLE, m_TextureBuffer->GetHeap()->GetGPUDescriptorHandleForHeapStart());
+
+	D3D12_VERTEX_BUFFER_VIEW vertexBufferView = {};
+	D3D12_INDEX_BUFFER_VIEW indexBufferView = {};
+	indexBufferView.Format = DXGI_FORMAT_R32_UINT;
+
+	auto ObjectCBVritualAD = m_FrameResource->meshObjectCB[DX12_RENDER_TYPE_SKINNED_MESH]->Resource()->GetGPUVirtualAddress();
+	const UINT ObjectStrideSize = m_FrameResource->meshObjectCB[DX12_RENDER_TYPE_SKINNED_MESH]->GetElementByteSize();
+
 	auto AniBoneCBVritualAD = m_FrameResource->aniBoneMatBuffer->Resource()->GetGPUVirtualAddress();
-	const UINT ObjectStrideSize = m_FrameResource->meshObjectCB->GetElementByteSize();
 	const UINT AniBoneStrideSize = m_FrameResource->aniBoneMatBuffer->GetElementByteSize();
 
-	CGH::MESH_TYPE currType = CGH::MESH_NONE;
-	D3D_PRIMITIVE_TOPOLOGY currPrimitive = D3D_PRIMITIVE_TOPOLOGY::D3D_PRIMITIVE_TOPOLOGY_UNDEFINED;
+	vertexBufferView.BufferLocation = m_SkinnedVertexBuffer->GetBufferResource()->GetGPUVirtualAddress();
+	vertexBufferView.SizeInBytes = m_SkinnedVertexBuffer->GetBufferSize();
+	vertexBufferView.StrideInBytes = sizeof(SkinnedVertex);
 
-	for (size_t i = 0; i < m_RenderObjects.size(); i++)
+	indexBufferView.BufferLocation = m_SkinnedIndexBuffer->GetBufferResource()->GetGPUVirtualAddress();
+	indexBufferView.SizeInBytes = m_SkinnedIndexBuffer->GetBufferSize();
+
+	m_CommandList->IASetVertexBuffers(0, 1, &vertexBufferView);
+	m_CommandList->IASetIndexBuffer(&indexBufferView);
+	m_CommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY::D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+	auto& currRenderObjects = m_RenderObjects[DX12_RENDER_TYPE_SKINNED_MESH];
+	auto& currRenderObjectSubmesh = m_RenderObjectsSubmesh[DX12_RENDER_TYPE_SKINNED_MESH];
+
+	for (size_t i = 0; i < currRenderObjects.size(); i++)
 	{
-		if (m_RenderObjects[i].meshType != currType)
-		{
-			if (m_RenderObjects[i].meshType == CGH::MESH_SKINED)
-			{
-				vertexBufferView.BufferLocation = m_SkinnedVertexBuffer->GetBufferResource()->GetGPUVirtualAddress();
-				vertexBufferView.SizeInBytes = m_SkinnedVertexBuffer->GetBufferSize();
-				vertexBufferView.StrideInBytes = sizeof(SkinnedVertex);
-
-				indexBufferView.BufferLocation = m_SkinnedIndexBuffer->GetBufferResource()->GetGPUVirtualAddress();
-				indexBufferView.SizeInBytes = m_SkinnedIndexBuffer->GetBufferSize();
-			}
-			else
-			{
-				vertexBufferView.BufferLocation = m_VertexBuffer->GetBufferResource()->GetGPUVirtualAddress();
-				vertexBufferView.SizeInBytes = m_VertexBuffer->GetBufferSize();
-				vertexBufferView.StrideInBytes = sizeof(Vertex);
-
-				indexBufferView.BufferLocation = m_IndexBuffer->GetBufferResource()->GetGPUVirtualAddress();
-				indexBufferView.SizeInBytes = m_IndexBuffer->GetBufferSize();
-			}
-
-			m_CommandList->IASetVertexBuffers(0, 1, &vertexBufferView);
-			m_CommandList->IASetIndexBuffer(&indexBufferView);
-
-			currType = static_cast<CGH::MESH_TYPE>(m_RenderObjects[i].meshType);
-		}
-
-		if (currPrimitive != m_RenderObjects[i].primitive)
-		{
-			currPrimitive = static_cast<D3D_PRIMITIVE_TOPOLOGY>(m_RenderObjects[i].primitive);
-			m_CommandList->IASetPrimitiveTopology(currPrimitive);
-		}
-
 		m_CommandList->SetGraphicsRootConstantBufferView(T1_OBJECT_CB, ObjectCBVritualAD);
 
-		if (m_RenderObjects[i].aniBoneIndex != -1)
+		if (currRenderObjects[i].aniBoneIndex != -1)
 		{
-			m_CommandList->SetGraphicsRootConstantBufferView(T1_ANIBONE_SRV,
-				AniBoneCBVritualAD + (m_RenderObjects[i].aniBoneIndex * AniBoneStrideSize));
+			m_CommandList->SetGraphicsRootConstantBufferView(T1_ANIBONE_CB,
+				AniBoneCBVritualAD + (currRenderObjects[i].aniBoneIndex * AniBoneStrideSize));
 		}
 
-		m_CommandList->DrawIndexedInstanced(m_RenderObjectsSubmesh[i]->numIndex, 1,
-			m_RenderObjectsSubmesh[i]->indexOffset, m_RenderObjectsSubmesh[i]->vertexOffset, 0);
+		m_CommandList->DrawIndexedInstanced(currRenderObjectSubmesh[i]->numIndex, 1,
+			currRenderObjectSubmesh[i]->indexOffset, currRenderObjectSubmesh[i]->vertexOffset, 0);
 		ObjectCBVritualAD += ObjectStrideSize;
 	}
 }
@@ -1155,7 +1246,7 @@ void GraphicDX12::DrawPointObjects()
 {
 	if (m_NumRenderPointObjects)
 	{
-		m_CommandList->SetPipelineState(m_PSOs["point"].Get());
+		m_CommandList->SetPipelineState(m_PSOs[ENUMSTR(DX12_RENDER_TYPE_POINT)].Get());
 		ID3D12DescriptorHeap* descriptorHeaps[] = { m_TextureBuffer->GetHeap() };
 		m_CommandList->SetDescriptorHeaps(1, descriptorHeaps);
 

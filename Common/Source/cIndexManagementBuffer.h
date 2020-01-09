@@ -14,7 +14,7 @@ public:
 		D3D12_RESOURCE_STATES endState = D3D12_RESOURCE_STATE_GENERIC_READ);
 	virtual ~cIndexManagementBuffer() = default;
 
-	Microsoft::WRL::ComPtr<ID3D12Resource> AddData(ID3D12Device* device,
+	Microsoft::WRL::ComPtr<ID3D12Resource> IndexedAddData(ID3D12Device* device,
 		ID3D12GraphicsCommandList* commandList, UINT numData, const T* datas, 
 		const std::vector<std::string>& dataNames);
 
@@ -23,11 +23,8 @@ public:
 	UINT GetDataNum() { return static_cast<UINT>(m_Indices.size()); }
 
 private:
-	virtual Microsoft::WRL::ComPtr<ID3D12Resource> AddData(ID3D12Device* device,
-		ID3D12GraphicsCommandList* commandList, UINT numData, const T* datas);
-
-private:
-	std::unordered_map<std::string, UINT> m_Indices;
+	std::unordered_map<std::string, UINT>	m_Indices;
+	size_t									m_CurrIndex = 0;
 };
 
 template<typename T>
@@ -40,28 +37,23 @@ inline cIndexManagementBuffer<T>::cIndexManagementBuffer(ID3D12Device* device,
 {
 	for (size_t i = 0; i < datas.size(); i++)
 	{
-		m_Indices.insert({ dataNames[i],i });
+		m_Indices.insert({ dataNames[i], m_CurrIndex });
+		m_CurrIndex++;
 	}
 }
 
 template<typename T>
-inline Microsoft::WRL::ComPtr<ID3D12Resource> cIndexManagementBuffer<T>::AddData(ID3D12Device* device, 
+inline Microsoft::WRL::ComPtr<ID3D12Resource> cIndexManagementBuffer<T>::IndexedAddData(ID3D12Device* device,
 	ID3D12GraphicsCommandList* commandList, UINT numData, const T* datas, 
 	const std::vector<std::string>& dataNames)
 {
-	UINT currSize = m_Indices.size();
-	for (size_t i = currSize; i < numData + currSize; i++)
+	auto result = cDefaultBuffer<T>::AddData(device, commandList, numData, datas);
+
+	for (size_t i = 0; i < numData; i++)
 	{
-		m_Indices.insert({ dataNames[i-currSize],i });
+		m_Indices.insert({ dataNames[i], m_CurrIndex });
+		m_CurrIndex++;
 	}
 
-	return cDefaultBuffer<T>::AddData(device, commandList, numData, datas);
-}
-
-template<typename T>
-inline Microsoft::WRL::ComPtr<ID3D12Resource> cIndexManagementBuffer<T>::AddData(ID3D12Device* device, ID3D12GraphicsCommandList* commandList, UINT numData, const T* datas)
-{
-	assert(false);
-
-	return nullptr;
+	return result;
 }

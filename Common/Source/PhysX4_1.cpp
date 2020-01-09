@@ -87,16 +87,12 @@ void PhysX4_1::CreateScene(const CGHScene& scene)
 		cudaDesc.graphicsDevice = m_GraphicsDevice;
 		m_CudaManager = PxCreateCudaContextManager(*m_Foundation, cudaDesc);
 		sceneDesc.gpuDispatcher = m_CudaManager->getGpuDispatcher();
-		sceneDesc.flags |= PxSceneFlag::eENABLE_GPU_DYNAMICS;
 		sceneDesc.flags |= PxSceneFlag::eENABLE_PCM;
-		sceneDesc.flags |= PxSceneFlag::eENABLE_STABILIZATION;
 		sceneDesc.broadPhaseType = PxBroadPhaseType::eGPU;
 		sceneDesc.gpuMaxNumPartitions = 8;
 	}
 
 	auto addedScene = m_Physics->createScene(sceneDesc);
-	auto ground = PxCreatePlane(*m_Physics, PxPlane(0, 1, 0, 0), *m_Material);
-	addedScene->addActor(*ground);
 
 	if (m_Scenes.size() == 0)
 	{
@@ -144,7 +140,7 @@ bool PhysX4_1::ExcuteFuncOfClickedObject(CGHScene& scene, float origin_x, float 
 		PxVec3 origin(origin_x, origin_y, origin_z);
 		PxVec3 ray(ray_x, ray_y, ray_z);
 		PxRaycastBuffer rayBuffer;
-		PxQueryFlags queryFlags = PxQueryFlag::eDYNAMIC | PxQueryFlag::eSTATIC;
+		PxQueryFlags queryFlags = PxQueryFlag::eDYNAMIC;
 		PxQueryFilterData filterData(PxFilterData(), queryFlags);
 
 		currScene->raycast(origin, ray, dist, rayBuffer, PxHitFlags(0), filterData);
