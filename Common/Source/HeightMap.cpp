@@ -118,6 +118,8 @@ void HeightMap::CreateRigidStatic(PhysX4_1* pxd, int fileHeight, int fileWidth, 
 	pxd->GetScene(m_Scene)->addActor(*m_PxStatic);
 
 	shape->release();
+
+	pxd->GetScene(GetScene())->addActor(*m_PxStatic);
 }
 
 void HeightMap::CreateRenderMesh(IGraphicDevice* gd, int fileHeight, int fileWidth, const std::vector<float>& heights)
