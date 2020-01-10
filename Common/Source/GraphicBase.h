@@ -153,10 +153,11 @@ struct MeshObject
 	unsigned int	primitiveType;
 	CGH::MESH_TYPE	type = CGH::MESH_TYPE::MESH_NORMAL;
 
-	size_t GetTotalVertexNum() const;
-	size_t GetStartVertexOffset() const;
-	size_t GetTotalIndexNum() const;
-	size_t GetStartIndexOffset() const;
+	size_t	GetTotalVertexNum() const;
+	size_t	GetStartVertexOffset() const;
+	size_t	GetTotalIndexNum() const;
+	size_t	GetStartIndexOffset() const;
+	bool	IsOneSub() const { return subs.size() == 1; }
 
 	std::unordered_map<std::string, SubmeshData> subs;
 };

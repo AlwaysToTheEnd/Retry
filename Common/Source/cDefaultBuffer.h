@@ -21,7 +21,7 @@ public:
 
 	UINT				GetBufferSize() { return m_BufferSize; }
 	UINT				GetNumDatas() { return (m_BufferSize - m_Redundancy) / sizeof(T); }
-	ID3D12Resource* GetBufferResource() { return m_Resource.Get(); }
+	ID3D12Resource*		GetBufferResource() { return m_Resource.Get(); }
 
 	Microsoft::WRL::ComPtr<ID3D12Resource>	AddData(ID3D12Device* device, ID3D12GraphicsCommandList* commandList, UINT numData, const T* datas);
 	bool									EditData(ID3D12Device* device, ID3D12GraphicsCommandList* commandList, UINT index, const T* data);
