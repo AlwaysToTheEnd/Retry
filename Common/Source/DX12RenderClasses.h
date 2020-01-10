@@ -7,10 +7,12 @@
 struct ObjectConstants
 {
 	physx::PxMat44	world;
+	physx::PxVec3	scale = { 1,1,1 };
 	unsigned int	materialIndex = 0;
 	int				aniBoneIndex = -1;
 	unsigned int	meshType;
 	unsigned int	primitive;
+	int				pad0;
 };
 
 struct OnlyTexObjectConstants

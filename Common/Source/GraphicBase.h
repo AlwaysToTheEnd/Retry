@@ -51,7 +51,9 @@ struct RenderTexturePointInfo
 struct RenderInfo
 {
 	RenderInfo(RENDER_TYPE _type)
-		:type(_type)
+		: type(_type)
+		, world(physx::PxIdentity)
+		, scale(1,1,1)
 	{
 
 	}
@@ -61,6 +63,7 @@ struct RenderInfo
 		std::memcpy(&point, &src.point, sizeof(RenderPointInfo));
 		type = src.type;
 		world = src.world;
+		scale = src.scale;
 		meshOrTextureName = src.meshOrTextureName;
 	}
 
@@ -74,6 +77,7 @@ struct RenderInfo
 		std::memcpy(&point, &src.point, sizeof(RenderPointInfo));
 		type = src.type;
 		world = src.world;
+		scale = src.scale;
 		meshOrTextureName = src.meshOrTextureName;
 
 		return *this;
@@ -81,6 +85,7 @@ struct RenderInfo
 
 	RENDER_TYPE		type;
 	physx::PxMat44	world;
+	physx::PxVec3	scale;
 	std::string		meshOrTextureName;
 
 	union
@@ -147,6 +152,11 @@ struct MeshObject
 {
 	unsigned int	primitiveType;
 	CGH::MESH_TYPE	type = CGH::MESH_TYPE::MESH_NORMAL;
+
+	size_t GetTotalVertexNum() const;
+	size_t GetStartVertexOffset() const;
+	size_t GetTotalIndexNum() const;
+	size_t GetStartIndexOffset() const;
 
 	std::unordered_map<std::string, SubmeshData> subs;
 };

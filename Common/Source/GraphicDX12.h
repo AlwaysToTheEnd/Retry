@@ -178,7 +178,9 @@ public: // Used from DeviceObject Init
 
 	virtual bool	CreateMesh(const std::string& meshName, MeshObject& meshinfo, const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices) override;
 	virtual bool	CreateMaterials(const std::vector<std::string>& materialNames, const std::vector<Material>& materials) override;
-	
+	virtual bool	EditMesh(const std::string& meshName, const std::vector<Vertex>& vertices) override;
+	virtual bool	EditMaterial(const std::string& materialName, const Material& material, const std::string& textureName = "") override;
+
 	virtual int		GetTextureIndex(const std::string& textureName) override;
 
 private: // Used Function by ReadyWorks 

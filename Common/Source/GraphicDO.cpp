@@ -201,7 +201,8 @@ void DORenderer::Update(float delta)
 
 	assert(comTransform != nullptr);
 
-	m_RenderInfo.world = comTransform->GetMatrix().getTranspose();
+	m_RenderInfo.world = comTransform->GetRTMatrix().getTranspose();
+	m_RenderInfo.scale = comTransform->GetScale();
 
 	switch (m_RenderInfo.type)
 	{

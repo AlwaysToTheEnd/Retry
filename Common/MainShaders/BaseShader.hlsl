@@ -49,10 +49,12 @@ cbuffer cbPass : register(b0)
 cbuffer objectData : register(b1)
 {
 	float4x4	World;
+	float3		Scale;
 	uint		MaterialIndex;
 	int			AniBoneIndex;
 	int			PrevAniBone;
 	float		blendFactor;
+	int			Pad0;
 };
 
 struct SkinnedVertex
@@ -123,7 +125,8 @@ VertexOut VS(VertexIn vin)
 
 	vout.TexC = vin.TexC;
 
-	vout.PosH = mul(float4(vin.PosL, 1.0f), World);
+    vout.PosH = float4((vin.PosL * Scale), 1.0f);
+    vout.PosH = mul(vout.PosH, World);
 	vout.PosH = mul(vout.PosH, gViewProj);
 
     vout.Normal = mul(float4(vin.NormalL, 1.0f), World);

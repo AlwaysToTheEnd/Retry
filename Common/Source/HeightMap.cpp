@@ -107,7 +107,7 @@ void HeightMap::CreateRigidStatic(PhysX4_1* pxd, int fileHeight, int fileWidth, 
 
 	for (int i = 0; i < samplesSize; i++)
 	{
-		heights[i] = samples[i].height * m_Scale.y;
+		heights[i] = samples[i].height;
 	}
 	
 	PxHeightFieldGeometry fieldGeo(field, PxMeshGeometryFlags(), m_Scale.y, m_Scale.x, m_Scale.z);
@@ -137,8 +137,8 @@ void HeightMap::CreateRenderMesh(IGraphicDevice* gd, int fileHeight, int fileWid
 		vertices[i].uv.y = (float)indexX / (fileHeight - 1);
 
 		vertices[i].position.y = heights[i];
-		vertices[i].position.z = indexY * m_Scale.x;
-		vertices[i].position.x = indexX * m_Scale.z;
+		vertices[i].position.z = indexY;
+		vertices[i].position.x = indexX;
 	}
 
 	for (size_t i = 0; i < numVertices; i++)
@@ -151,7 +151,17 @@ void HeightMap::CreateRenderMesh(IGraphicDevice* gd, int fileHeight, int fileWid
 			PxVec3 rightVec = vertices[i + 1].position - vertices[i].position;
 			PxVec3 upVec = vertices[i + fileWidth].position - vertices[i].position;
 
-			vertices[i].normal = -upVec.cross(rightVec).getNormalized();
+			upVec.x *= m_Scale.x;
+			upVec.y *= m_Scale.y;
+			upVec.z *= m_Scale.z;
+
+			rightVec.x *= m_Scale.x;
+			rightVec.y *= m_Scale.y;
+			rightVec.z *= m_Scale.z;
+
+			PxVec3 normalVec = -upVec.cross(rightVec);
+
+			vertices[i].normal = normalVec.getNormalized();
 		}
 		else
 		{
@@ -197,6 +207,7 @@ void HeightMap::CreateRenderMesh(IGraphicDevice* gd, int fileHeight, int fileWid
 	auto renderMesh = CreateComponenet<DORenderMesh>();
 	auto renderer = CreateComponenet<DORenderer>();
 	auto transfrom = CreateComponenet<DOTransform>();
+	transfrom->SetScale(m_Scale);
 
 	renderMesh->SelectMesh(meshName);
 

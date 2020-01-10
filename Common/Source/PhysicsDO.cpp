@@ -231,3 +231,7 @@ void DOUICollision::Init(PhysX4_1* physxDevice, IGraphicDevice*)
 	m_ReservedUICol = physxDevice->GetReservedUICollisionVector(m_Scene);
 }
 
+physx::PxMat44 DOTransform::GetRTMatrix() const
+{
+	return physx::PxMat44(m_Transform);
+}

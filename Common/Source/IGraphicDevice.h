@@ -39,18 +39,20 @@ public: // pure virtual funcs.
 
 	virtual bool	CreateMesh(const std::string& meshName, MeshObject& meshinfo, const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices) = 0;
 	virtual bool	CreateMaterials(const std::vector<std::string>& materialNames, const std::vector<Material>& materials) = 0;
-	
+	virtual bool	EditMesh(const std::string& meshName, const std::vector<Vertex>& vertices) = 0;
+	virtual bool	EditMaterial(const std::string& materialName, const Material& material, const std::string& textureName = "") = 0;
+
 	virtual int		GetTextureIndex(const std::string& textureName) = 0;
 
 private: // used by D3DApp.
-	physx::PxVec2 GetClientSize() const { return physx::PxVec2(m_ClientWidth, m_ClientHeight); }
-	void SetCamera(cCamera* camera) { m_CurrCamera = camera; }
-	void ReservedWorksClear();
-	void SetClientSize(UINT width, UINT height) { m_ClientWidth = width, m_ClientHeight = height; }
-	void ReadyWorks(const std::vector<std::wstring>& targetTextureFolders,
-		const std::vector<std::wstring>& targetMeshFolders,
-		const std::vector<std::wstring>& targetFontFolders,
-		const std::wstring& targetAniTreeFolder)
+	physx::PxVec2	GetClientSize() const { return physx::PxVec2(m_ClientWidth, m_ClientHeight); }
+	void			SetCamera(cCamera* camera) { m_CurrCamera = camera; }
+	void			ReservedWorksClear();
+	void			SetClientSize(UINT width, UINT height) { m_ClientWidth = width, m_ClientHeight = height; }
+	void			ReadyWorks(	const std::vector<std::wstring>& targetTextureFolders,
+								const std::vector<std::wstring>& targetMeshFolders,
+								const std::vector<std::wstring>& targetFontFolders,
+								const std::wstring& targetAniTreeFolder)
 	{
 		LoadTextureFromFolder(targetTextureFolders);
 		LoadMeshAndMaterialFromFolder(targetMeshFolders);

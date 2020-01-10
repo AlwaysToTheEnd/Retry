@@ -143,25 +143,29 @@ public:
 	DOTransform(CGHScene& scene, GameObject* parent, const char* typeName)
 		: DeviceObject(scene, parent, typeName)
 		, m_Transform(physx::PxIDENTITY::PxIdentity)
+		, m_Scale(1,1,1)
 	{
 		
 	}
 	virtual ~DOTransform() = default;
 
-	physx::PxMat44				GetMatrix() const { return physx::PxMat44(m_Transform); }
+	physx::PxMat44				GetRTMatrix() const;
+	const physx::PxVec3&		GetScale() const { return m_Scale; }
 	const physx::PxTransform&	GetTransform() const { return m_Transform; }
 
 	void						SetPosX(float x) { m_Transform.p.x = x; }
 	void						SetPosY(float y) { m_Transform.p.y = y; }
 	void						SetPosZ(float z) { m_Transform.p.z = z; }
-	void						SetPos(physx::PxVec3 pos) { m_Transform.p = pos; }
+	void						SetPos(const physx::PxVec3& pos) { m_Transform.p = pos; }
+	void						SetScale(const physx::PxVec3& scale) { m_Scale = scale; }
 	void						SetTransform(const physx::PxTransform& transform) { m_Transform = transform; }
-	void						AddVector(physx::PxVec3 vec) { m_Transform.p += vec; }
+	void						AddVector(const physx::PxVec3& vec) { m_Transform.p += vec; }
 
 private:
 	virtual void Update(float delta) override {}
 	virtual void Init(PhysX4_1*, IGraphicDevice*) {};
 
 private:
-	physx::PxTransform m_Transform;
+	physx::PxTransform	m_Transform;
+	physx::PxVec3		m_Scale;
 };

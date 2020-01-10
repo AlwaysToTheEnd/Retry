@@ -275,21 +275,21 @@ void GraphicDX12::RegisterDeviceObject(CGHScene& scene, DeviceObject* gameObject
 	}
 	else if (typeName == typeid(DOFont).name())
 	{
-		
+
 	}
 	else if (typeName == typeid(DORenderMesh).name())
 	{
-		
+
 	}
 	else if (typeName == typeid(DOAnimator).name())
 	{
-		
+
 	}
 }
 
 void GraphicDX12::UnRegisterDeviceObject(CGHScene& scene, DeviceObject* gameObject)
 {
-	
+
 }
 
 bool GraphicDX12::CreateMesh(const std::string& meshName, MeshObject& meshinfo,
@@ -298,9 +298,9 @@ bool GraphicDX12::CreateMesh(const std::string& meshName, MeshObject& meshinfo,
 	ComPtr<ID3D12CommandAllocator>		allocator;
 	ComPtr<ID3D12GraphicsCommandList>	commandList;
 
-	ThrowIfFailed(m_D3dDevice->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, 
+	ThrowIfFailed(m_D3dDevice->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT,
 		IID_PPV_ARGS(allocator.GetAddressOf())));
-	ThrowIfFailed(m_D3dDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, 
+	ThrowIfFailed(m_D3dDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT,
 		allocator.Get(), nullptr, IID_PPV_ARGS(commandList.GetAddressOf())));
 
 	if (m_Meshs.find(meshName) != m_Meshs.end())
@@ -377,13 +377,93 @@ bool GraphicDX12::CreateMaterials(const std::vector<std::string>& materialNames,
 
 	ID3D12CommandList* cmdLists[] = { commandList.Get() };
 	m_CommandQueue->ExecuteCommandLists(_countof(cmdLists), cmdLists);
-	
+
 	FlushCommandQueue();
 	ThrowIfFailed(allocator->Reset());
 
 	m_Materials->ClearUploadBuffer();
 
 	return true;
+}
+
+bool GraphicDX12::EditMesh(const std::string& meshName, const std::vector<Vertex>& vertices)
+{
+	bool result = false;
+	auto iter = m_Meshs.find(meshName);
+
+	if (iter == m_Meshs.end())
+	{
+		return false;
+	}
+
+	ComPtr<ID3D12CommandAllocator>		allocator;
+	ComPtr<ID3D12GraphicsCommandList>	commandList;
+
+	ThrowIfFailed(m_D3dDevice->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT,
+		IID_PPV_ARGS(allocator.GetAddressOf())));
+	ThrowIfFailed(m_D3dDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT,
+		allocator.Get(), nullptr, IID_PPV_ARGS(commandList.GetAddressOf())));
+
+	switch (iter->second.type)
+	{
+	case CGH::MESH_NORMAL:
+	{
+		result = m_VertexBuffer->EditDatas(m_D3dDevice.Get(), commandList.Get(), 
+			iter->second.GetStartVertexOffset(), vertices.size(), vertices.data());
+	}
+	break;
+	case CGH::MESH_SKINED:
+	case CGH::MESH_NONE:
+		return false;
+		break;
+	default:
+		break;
+	}
+
+	commandList->Close();
+
+	ID3D12CommandList* cmdLists[] = { commandList.Get() };
+	m_CommandQueue->ExecuteCommandLists(_countof(cmdLists), cmdLists);
+
+	FlushCommandQueue();
+	ThrowIfFailed(allocator->Reset());
+
+	m_VertexBuffer->ClearUploadBuffer();
+
+	return result;
+}
+
+bool GraphicDX12::EditMaterial(const std::string& materialName, const Material& material, const std::string& textureName)
+{
+	bool result = false;
+
+	ComPtr<ID3D12CommandAllocator>		allocator;
+	ComPtr<ID3D12GraphicsCommandList>	commandList;
+
+	ThrowIfFailed(m_D3dDevice->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT,
+		IID_PPV_ARGS(allocator.GetAddressOf())));
+	ThrowIfFailed(m_D3dDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT,
+		allocator.Get(), nullptr, IID_PPV_ARGS(commandList.GetAddressOf())));
+
+	Material temp = material;
+	if (textureName.length())
+	{
+		temp.diffuseMapIndex = m_TextureBuffer->GetTextureIndex(textureName);
+	}
+
+	result= m_Materials->EditData(m_D3dDevice.Get(), commandList.Get(), materialName, &temp);
+
+	commandList->Close();
+
+	ID3D12CommandList* cmdLists[] = { commandList.Get() };
+	m_CommandQueue->ExecuteCommandLists(_countof(cmdLists), cmdLists);
+
+	FlushCommandQueue();
+	ThrowIfFailed(allocator->Reset());
+
+	m_Materials->ClearUploadBuffer();
+
+	return result;
 }
 
 int GraphicDX12::GetTextureIndex(const std::string& textureName)
@@ -843,8 +923,8 @@ void GraphicDX12::BuildShadersAndInputLayout()
 		"SKINNED_VERTEX_SAHDER",NULL,
 		NULL, NULL };
 
-	m_Shaders[ENUMSTR(DX12_RENDER_TYPE_SKINNED_MESH)+"VS"] = CompileShader(L"../Common/MainShaders/BaseShader.hlsl", macros, "VS", "vs_5_1");
-	m_Shaders[ENUMSTR(DX12_RENDER_TYPE_SKINNED_MESH)+"PS"] = CompileShader(L"../Common/MainShaders/BaseShader.hlsl", macros, "PS", "ps_5_1");
+	m_Shaders[ENUMSTR(DX12_RENDER_TYPE_SKINNED_MESH) + "VS"] = CompileShader(L"../Common/MainShaders/BaseShader.hlsl", macros, "VS", "vs_5_1");
+	m_Shaders[ENUMSTR(DX12_RENDER_TYPE_SKINNED_MESH) + "PS"] = CompileShader(L"../Common/MainShaders/BaseShader.hlsl", macros, "PS", "ps_5_1");
 
 	macros[2] = { NULL, NULL };
 
@@ -900,7 +980,7 @@ void GraphicDX12::BuildPSOs()
 	opaquePsoDesc.pRootSignature = m_T1RootSignature.Get();
 	opaquePsoDesc.VS =
 	{
-		reinterpret_cast<BYTE*>(m_Shaders[ENUMSTR(DX12_RENDER_TYPE_NORMAL_MESH)+"VS"]->GetBufferPointer()),
+		reinterpret_cast<BYTE*>(m_Shaders[ENUMSTR(DX12_RENDER_TYPE_NORMAL_MESH) + "VS"]->GetBufferPointer()),
 		m_Shaders[ENUMSTR(DX12_RENDER_TYPE_NORMAL_MESH) + "VS"]->GetBufferSize()
 	};
 	opaquePsoDesc.PS =
@@ -1031,6 +1111,7 @@ void GraphicDX12::UpdateObjectCB()
 			MeshObject& mesh = m_Meshs.find(it.meshOrTextureName)->second;
 			ObjectConstants object;
 			object.world = it.world;
+			object.scale = it.scale;
 			object.meshType = mesh.type;
 			object.aniBoneIndex = it.mesh.aniBoneIndex;
 			object.primitive = mesh.primitiveType;
