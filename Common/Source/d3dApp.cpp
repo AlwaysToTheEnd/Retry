@@ -83,10 +83,41 @@ void D3DApp::CreatePhysxDevice()
 	m_PXDevice = new PhysX4_1;
 }
 
+void D3DApp::CameraMove()
+{
+	if (m_CurrInputDeviceHoldObject == nullptr)
+	{
+		float baseSpeed = 20.0f;
+		if (m_KeyboardTracker.lastState.LeftShift)
+		{
+			baseSpeed *= 5;
+		}
+
+		if (m_KeyboardTracker.lastState.W)
+		{
+			m_Camera.MoveCamera(cCamera::CAMERA_MOVE_DIR::DIR_FRONT, m_Timer.DeltaTime()* baseSpeed);
+		}
+		else if (m_KeyboardTracker.lastState.S)
+		{
+			m_Camera.MoveCamera(cCamera::CAMERA_MOVE_DIR::DIR_BACK, m_Timer.DeltaTime()* baseSpeed);
+		}
+
+		if (m_KeyboardTracker.lastState.D)
+		{
+			m_Camera.MoveCamera(cCamera::CAMERA_MOVE_DIR::DIR_RIGHT, m_Timer.DeltaTime()* baseSpeed);
+		}
+		else if (m_KeyboardTracker.lastState.A)
+		{
+			m_Camera.MoveCamera(cCamera::CAMERA_MOVE_DIR::DIR_LEFT, m_Timer.DeltaTime()* baseSpeed);
+		}
+	}
+}
+
 void D3DApp::BaseUpdate()
 {
 	m_MouseTracker.Update(m_Mouse.GetState());
 	m_KeyboardTracker.Update(m_Keyboard.GetState());
+	CameraMove();
 	m_Camera.Update();
 
 	if (m_KeyboardTracker.IsKeyPressed(KEYState::Escape))

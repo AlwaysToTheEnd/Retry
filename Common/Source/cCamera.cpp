@@ -7,33 +7,43 @@ using namespace DirectX;
 
 cCamera::cCamera()
 	: m_ViewMat(physx::PxIDENTITY::PxIdentity)
-	, m_Angles(0,0)
+	, m_Angles(0, 0)
 	, m_EyePos(PxIdentity)
 	, m_CurrMouse(PxIdentity)
 	, m_PrevMouse(PxIdentity)
 	, m_Distance(10)
 	, m_IsRButtonDown(false)
+	, m_TargetObject(nullptr)
 {
 }
 
 
 cCamera::~cCamera()
 {
-
+	
 }
 
 void cCamera::Update()
 {
 	XMVECTOR eyePos = XMVectorSet(0, 0, -m_Distance, 1);
-
-	eyePos = XMVector3TransformCoord(eyePos, XMMatrixRotationRollPitchYawFromVector(XMVectorSet(m_Angles.y, m_Angles.x,0,0)));
 	XMVECTOR lookAt = XMVectorZero();
 
-	/*if (pTarget)
+	eyePos = XMVector3TransformCoord(eyePos, XMMatrixRotationRollPitchYawFromVector(XMVectorSet(m_Angles.y, m_Angles.x, 0, 0)));
+	XMStoreFloat3(reinterpret_cast<XMFLOAT3*>(&m_Dir), XMVector3Normalize(-eyePos));
+
+	if (m_TargetObject)
 	{
-		lookAt = XMLoadFloat3(pTarget);
-		eyePos = XMLoadFloat3(pTarget) + eyePos;
-	}*/
+	/*	lookAt = XMLoadFloat3(pTarget);
+		eyePos = XMLoadFloat3(pTarget) + eyePos;*/
+	}
+	else
+	{
+		eyePos.m128_f32[0] += m_Offset.x;
+		eyePos.m128_f32[1] += m_Offset.y;
+		eyePos.m128_f32[2] += m_Offset.z;
+
+		lookAt = XMVectorSet(m_Offset.x, m_Offset.y, m_Offset.z, 0);
+	}
 
 	XMStoreFloat3(reinterpret_cast<XMFLOAT3*>(&m_EyePos), eyePos);
 	XMStoreFloat4x4(m_ViewMat, XMMatrixLookAtLH(eyePos, lookAt, { 0,1,0,0 }));
@@ -79,6 +89,49 @@ void cCamera::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		m_Distance -= GET_WHEEL_DELTA_WPARAM(wParam) / 100.0f;
 	}
 	break;
+	}
+}
+
+void cCamera::MoveCamera(CAMERA_MOVE_DIR dir, float speed)
+{
+	if (m_TargetObject == nullptr)
+	{
+		switch (dir)
+		{
+		case cCamera::CAMERA_MOVE_DIR::DIR_FRONT:
+		{
+			m_Offset += m_Dir* speed;
+		}
+			break;
+		case cCamera::CAMERA_MOVE_DIR::DIR_BACK:
+		{
+			m_Offset -= m_Dir * speed;
+		}
+			break;
+		case cCamera::CAMERA_MOVE_DIR::DIR_RIGHT:
+		{
+			physx::PxVec3 upVec(0, 1, 0);
+			physx::PxVec3 rightVec = upVec.cross(m_Dir).getNormalized();
+
+			m_Offset += rightVec * speed;
+		}
+			break;
+		case cCamera::CAMERA_MOVE_DIR::DIR_LEFT:
+		{
+			physx::PxVec3 upVec(0, 1, 0);
+			physx::PxVec3 rightVec = upVec.cross(m_Dir).getNormalized();
+
+			m_Offset -= rightVec * speed;
+		}
+			break;
+		case cCamera::CAMERA_MOVE_DIR::DIR_ORIGIN:
+		{
+			m_Offset = { 0,0,0 };
+		}
+			break;
+		default:
+			break;
+		}
 	}
 }
 

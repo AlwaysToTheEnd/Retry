@@ -4,6 +4,7 @@
 #include "PhysX4_1.h"
 #include "PhysicsDO.h"
 #include "AnimationTreeScene/AnimationTreeScene.h"
+#include "HeightMapCreateScene/HeightMapCreateScene.h"
 using namespace std;
 
 mt19937_64 g_random(710);
@@ -36,7 +37,7 @@ void Step2::LoadObjectsFromFile()
 
 void Step2::InitObjects()
 {
-	 testScene = new AniTreeScene(m_GDevice.get(), m_PXDevice);
+	 testScene = new HeightMapCreateScene(m_GDevice.get(), m_PXDevice);
 	 testScene->Init();
 	 SetCurrScene(testScene);
 }

@@ -186,6 +186,9 @@
     <ClCompile Include="..\Common\Source\GraphicBase.cpp">
       <Filter>Common\CodeResources\BaseClass</Filter>
     </ClCompile>
+    <ClCompile Include="..\Common\Source\HeightMapCreateScene\HeightMapCreateScene.cpp">
+      <Filter>Step2\Scenes</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Common\Source\IGraphicDevice.h">
@@ -304,6 +307,9 @@
     </ClInclude>
     <ClInclude Include="..\Common\Source\PhysicsObject.h">
       <Filter>Common\CodeResources\DeviceObject</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\HeightMapCreateScene\HeightMapCreateScene.h">
+      <Filter>Step2\Scenes</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

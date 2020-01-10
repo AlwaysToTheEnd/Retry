@@ -139,7 +139,7 @@ float4 PS(VertexOut pin) : SV_Target
 
     if (index >= 0)
     {
-        litColor = gMainTexture[index].Sample(gsamPointWrap, pin.TexC);
+        litColor = gMainTexture[index].Sample(gsamAnisotropicClamp, pin.TexC);
     }
 
 	clip(litColor.a);

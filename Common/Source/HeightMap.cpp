@@ -178,7 +178,7 @@ void HeightMap::CreateRenderMesh(IGraphicDevice* gd, int fileHeight, int fileWid
 	}
 
 	Material testMaterial;
-	testMaterial.diffuseMapIndex = gd->GetTextureIndex("ice.dds");
+	testMaterial.diffuseMapIndex = gd->GetTextureIndex("HeightMap3.jpg");
 	testMaterial.diffuseAlbedo = { 1,1,1,1 };
 	assert(gd->CreateMaterials({ "testMaterial" }, { testMaterial }));
 
