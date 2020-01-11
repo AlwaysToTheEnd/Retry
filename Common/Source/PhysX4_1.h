@@ -90,6 +90,8 @@ private:
 	virtual void UnRegisterDeviceObject(CGHScene& scene, DeviceObject* gameObject) override;
 
 public:
+	const physx::PxVec3&		GetPickingPos() const { return m_PickingPos; }
+
 	std::vector<UICollisions>*	GetReservedUICollisionVector(CGHScene& scene);
 	physx::PxScene*				GetScene(CGHScene& scene);
 	physx::PxCooking*			GetCooking() { return m_Cooking.Get(); }
@@ -121,5 +123,8 @@ private:
 private:
 	Px1RefPtr<physx::PxMaterial>						m_Material;
 	std::vector<PhysXFunctionalObject*>					m_ReservedFunc;
+
+private:
+	physx::PxVec3										m_PickingPos;
 };
 

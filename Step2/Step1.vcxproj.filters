@@ -67,6 +67,9 @@
     <Filter Include="Step2\HeightMap">
       <UniqueIdentifier>{3ef657c7-f421-4966-a887-9741dd86652f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Common\CodeResources\Xml">
+      <UniqueIdentifier>{6802b842-fe08-4067-827e-423b8282a494}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Step2.cpp">
@@ -189,6 +192,9 @@
     <ClCompile Include="..\Common\Source\HeightMapCreateScene\HeightMapCreateScene.cpp">
       <Filter>Step2\Scenes</Filter>
     </ClCompile>
+    <ClCompile Include="..\Common\Source\Xml\Xml.cpp">
+      <Filter>Common\CodeResources\Xml</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Common\Source\IGraphicDevice.h">
@@ -310,6 +316,9 @@
     </ClInclude>
     <ClInclude Include="..\Common\Source\HeightMapCreateScene\HeightMapCreateScene.h">
       <Filter>Step2\Scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\Xml\Xml.h">
+      <Filter>Common\CodeResources\Xml</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

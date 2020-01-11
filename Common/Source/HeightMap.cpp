@@ -6,6 +6,8 @@
 #include "IGraphicDevice.h"
 #include "d3dUtil.h"
 
+std::function<const physx::PxVec3 & (void)> HeightMap::m_GetPickingPosFunc = nullptr;
+
 using namespace physx;
 
 void HeightMap::Delete()
@@ -19,12 +21,27 @@ void HeightMap::Delete()
 	DeviceObject::Delete();
 }
 
+void HeightMap::AddMapPickingWrok(std::function<void(const physx::PxVec3& pickingPos)> func)
+{
+	m_MapPickingWorks.push_back(func);
+}
+
+void HeightMap::ClearMapPickingWork()
+{
+	m_MapPickingWorks.clear();
+}
+
 void HeightMap::Init(PhysX4_1* pxd, IGraphicDevice* gd)
 {
 	std::wstring extension;
 	m_fileName = GetFileNameFromPath(m_filePath, extension);
 
 	assert(extension == L"raw");
+
+	if (m_GetPickingPosFunc == nullptr)
+	{
+		m_GetPickingPosFunc = std::bind(&PhysX4_1::GetPickingPos, pxd);
+	}
 
 	int fileSizeHight = 0;
 	int fileSizeLow = 0;
@@ -34,7 +51,6 @@ void HeightMap::Init(PhysX4_1* pxd, IGraphicDevice* gd)
 	CreateRigidStatic(pxd, fileSizeHight, fileSizeLow, datas, heights);
 	CreateRenderMesh(gd, fileSizeHight, fileSizeLow, heights);
 }
-
 
 void HeightMap::LoadRAWFile(const std::wstring& filePath, int& fileHeight, int& fileWidth, std::vector<int>& datas)
 {
@@ -111,14 +127,17 @@ void HeightMap::CreateRigidStatic(PhysX4_1* pxd, int fileHeight, int fileWidth, 
 	}
 	
 	PxHeightFieldGeometry fieldGeo(field, PxMeshGeometryFlags(), m_Scale.y, m_Scale.x, m_Scale.z);
-	
+
 	auto shape = pxDevice->createShape(fieldGeo, *pxd->GetBaseMaterial(), true);
 
 	m_PxStatic = PxCreateStatic(*pxDevice, PxTransform(PxIdentity), *shape);
 	pxd->GetScene(m_Scene)->addActor(*m_PxStatic);
-
 	shape->release();
 
+	m_Funcs = std::make_unique<PhysXFunctionalObject>(this);
+	m_Funcs->m_VoidFuncs.push_back(std::bind(&HeightMap::StartMapPickingWork, this));
+
+	m_PxStatic->userData = m_Funcs.get();
 	pxd->GetScene(GetScene())->addActor(*m_PxStatic);
 }
 
@@ -213,4 +232,14 @@ void HeightMap::CreateRenderMesh(IGraphicDevice* gd, int fileHeight, int fileWid
 
 	RenderInfo testRenderInfo(RENDER_MESH);
 	renderer->SetRenderInfo(testRenderInfo);
+}
+
+void HeightMap::StartMapPickingWork()
+{
+	PxVec3 pickingPos = m_GetPickingPosFunc();
+
+	for (auto& it : m_MapPickingWorks)
+	{
+		it(pickingPos);
+	}
 }

@@ -44,6 +44,7 @@
     <ClCompile Include="..\Common\Source\PhysX4_1.cpp" />
     <ClCompile Include="..\Common\Source\StaticObject.cpp" />
     <ClCompile Include="..\Common\Source\XFileParser.cpp" />
+    <ClCompile Include="..\Common\Source\Xml\Xml.cpp" />
     <ClCompile Include="..\Common\Source\zlib\adler32.c" />
     <ClCompile Include="..\Common\Source\zlib\compress.c" />
     <ClCompile Include="..\Common\Source\zlib\crc32.c" />
@@ -95,6 +96,7 @@
     <ClInclude Include="..\Common\Source\StaticObject.h" />
     <ClInclude Include="..\Common\Source\Vertex.h" />
     <ClInclude Include="..\Common\Source\XFileParser.h" />
+    <ClInclude Include="..\Common\Source\Xml\Xml.h" />
     <ClInclude Include="..\Common\UIObjects\UIObject.h" />
     <ClInclude Include="..\Common\UIObjects\UIParam.h" />
     <ClInclude Include="..\Common\UIObjects\UIButton.h" />

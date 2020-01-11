@@ -7,8 +7,9 @@
 using namespace physx;
 
 PhysX4_1::PhysX4_1()
+	: m_GraphicsDevice(nullptr)
+	, m_PickingPos(0,0,0)
 {
-	m_GraphicsDevice = nullptr;
 }
 
 PhysX4_1::~PhysX4_1()
@@ -156,6 +157,7 @@ bool PhysX4_1::ExcuteFuncOfClickedObject(CGHScene& scene, float origin_x, float 
 			{
 				targetActor = hitObject.actor;
 				hitDistance = hitObject.distance;
+				m_PickingPos = origin + ray * hitDistance;
 			}
 		}
 
