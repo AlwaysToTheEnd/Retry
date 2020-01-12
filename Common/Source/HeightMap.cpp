@@ -21,6 +21,25 @@ void HeightMap::Delete()
 	DeviceObject::Delete();
 }
 
+void HeightMap::SetScale(const physx::PxVec3 scale)
+{
+	m_Scale = scale;
+
+	PxHeightFieldGeometry fieldGeo;
+
+	if (m_Shape->getHeightFieldGeometry(fieldGeo))
+	{
+		fieldGeo.heightScale = m_Scale.y;
+		fieldGeo.columnScale = m_Scale.z;
+		fieldGeo.rowScale = m_Scale.x;
+
+		auto transform = GetComponent<DOTransform>();
+		transform->SetScale(m_Scale);
+
+		m_Shape->setGeometry(fieldGeo);
+	}
+}
+
 void HeightMap::AddMapPickingWrok(std::function<void(const physx::PxVec3& pickingPos)> func)
 {
 	m_MapPickingWorks.push_back(func);

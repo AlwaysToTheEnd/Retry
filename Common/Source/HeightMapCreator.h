@@ -15,5 +15,4 @@ private:
 	virtual void Init() override;
 
 private:
-	std::vector<DOTransform*>	m_Transforms;
 };

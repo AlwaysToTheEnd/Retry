@@ -4,7 +4,6 @@
 
 void HeightMapCreateScene::Init()
 {
-	CreateGameObject<TestObject>();
 	CreateGameObject<HeightMap>(L"../Common/HeightMap/HeightMap3.raw", physx::PxVec3(2.0f, 0.3f, 2.0f));
 }
 

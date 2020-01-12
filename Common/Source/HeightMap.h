@@ -34,7 +34,7 @@ public:
 	const physx::PxVec3&	GetScale() const { return m_Scale; }
 	const physx::PxVec2&	GetSize() const { return m_MapOriginSize; }
 
-	void					SetScale(const physx::PxVec3 scale) { m_Scale = scale; }
+	void					SetScale(const physx::PxVec3 scale);
 	void					AddMapPickingWrok(std::function<void(const physx::PxVec3& pickingPos)> func);
 
 private:
