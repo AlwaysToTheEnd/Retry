@@ -17,6 +17,7 @@ class CGHScene
 {
 	friend class GameObject;
 	friend class DeviceObject;
+	static const float m_RayDistance = 1000.0f;
 public:
 	CGHScene(IGraphicDevice* graphicDevice, PhysX4_1* pxDevice, const std::string& name);
 	virtual ~CGHScene();

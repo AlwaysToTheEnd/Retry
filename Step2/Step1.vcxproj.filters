@@ -195,6 +195,9 @@
     <ClCompile Include="..\Common\Source\Xml\Xml.cpp">
       <Filter>Common\CodeResources\Xml</Filter>
     </ClCompile>
+    <ClCompile Include="..\Common\Source\HeightMapCreator.cpp">
+      <Filter>Step2\HeightMap</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Common\Source\IGraphicDevice.h">
@@ -319,6 +322,9 @@
     </ClInclude>
     <ClInclude Include="..\Common\Source\Xml\Xml.h">
       <Filter>Common\CodeResources\Xml</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\HeightMapCreator.h">
+      <Filter>Step2\HeightMap</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

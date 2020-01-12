@@ -141,7 +141,7 @@ bool PhysX4_1::ExcuteFuncOfClickedObject(CGHScene& scene, float origin_x, float 
 		PxVec3 origin(origin_x, origin_y, origin_z);
 		PxVec3 ray(ray_x, ray_y, ray_z);
 		PxRaycastBuffer rayBuffer;
-		PxQueryFlags queryFlags = PxQueryFlag::eDYNAMIC;
+		PxQueryFlags queryFlags = PxQueryFlag::eDYNAMIC | PxQueryFlag::eSTATIC;
 		PxQueryFilterData filterData(PxFilterData(), queryFlags);
 
 		currScene->raycast(origin, ray, dist, rayBuffer, PxHitFlags(0), filterData);

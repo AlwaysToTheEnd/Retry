@@ -12,6 +12,8 @@ namespace physx
 	class PxShape;
 }
 
+class DynamicBufferInfo;
+
 class HeightMap :public PhyscisObject
 {
 public:
@@ -21,19 +23,24 @@ public:
 		, m_filePath(filePath)
 		, m_PxStatic(nullptr)
 		, m_Shape(nullptr)
+		, m_DBInfo(nullptr)
 	{
 		 
 	}
 	virtual			~HeightMap() = default;
 	virtual void	Delete() override;
-
-	void			AddMapPickingWrok(std::function<void(const physx::PxVec3& pickingPos)> func);
 	void			ClearMapPickingWork();
 
+	const physx::PxVec3&	GetScale() const { return m_Scale; }
+	const physx::PxVec2&	GetSize() const { return m_MapOriginSize; }
+
+	void					SetScale(const physx::PxVec3 scale) { m_Scale = scale; }
+	void					AddMapPickingWrok(std::function<void(const physx::PxVec3& pickingPos)> func);
+
 private:
-	virtual void	Update(float delta) override {}
-	virtual void	Init(PhysX4_1* pdx, IGraphicDevice* gd) override;
-	virtual void*	GetPxObject() override { return m_PxStatic; }
+	virtual void			Update(float delta) override {}
+	virtual void			Init(PhysX4_1* pdx, IGraphicDevice* gd) override;
+	virtual void*			GetPxObject() override { return m_PxStatic; }
 
 private:
 	void LoadRAWFile(const std::wstring& filePath, int& fileHeight, int& fileWidth, std::vector<int>& datas);
@@ -42,10 +49,13 @@ private:
 		 
 	void StartMapPickingWork();
 
+	void TestFunc();
+
 private:
 	static std::function<const physx::PxVec3 & (void)>		m_GetPickingPosFunc;
 
 	physx::PxVec3											m_Scale;
+	physx::PxVec2											m_MapOriginSize;
 	std::wstring											m_filePath;
 	std::wstring											m_fileName;
 
@@ -53,4 +63,5 @@ private:
 	std::unique_ptr<PhysXFunctionalObject>					m_Funcs;
 	physx::PxRigidStatic*									m_PxStatic;
 	physx::PxShape*											m_Shape;
+	DynamicBufferInfo*										m_DBInfo;
 };

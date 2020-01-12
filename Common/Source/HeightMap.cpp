@@ -68,6 +68,8 @@ void HeightMap::LoadRAWFile(const std::wstring& filePath, int& fileHeight, int& 
 		fileHeight = fileInfo.nFileSizeHigh;
 	}
 
+	m_MapOriginSize.x = fileWidth;
+	m_MapOriginSize.y = fileHeight;
 	FILE* fp = nullptr;
 
 	_wfopen_s(&fp, filePath.c_str(), L"rb");
@@ -128,14 +130,14 @@ void HeightMap::CreateRigidStatic(PhysX4_1* pxd, int fileHeight, int fileWidth, 
 	
 	PxHeightFieldGeometry fieldGeo(field, PxMeshGeometryFlags(), m_Scale.y, m_Scale.x, m_Scale.z);
 
-	auto shape = pxDevice->createShape(fieldGeo, *pxd->GetBaseMaterial(), true);
+	m_Shape = pxDevice->createShape(fieldGeo, *pxd->GetBaseMaterial(), true);
 
-	m_PxStatic = PxCreateStatic(*pxDevice, PxTransform(PxIdentity), *shape);
+	m_PxStatic = PxCreateStatic(*pxDevice, PxTransform(PxIdentity), *m_Shape);
 	pxd->GetScene(m_Scene)->addActor(*m_PxStatic);
-	shape->release();
 
 	m_Funcs = std::make_unique<PhysXFunctionalObject>(this);
 	m_Funcs->m_VoidFuncs.push_back(std::bind(&HeightMap::StartMapPickingWork, this));
+	m_Funcs->m_VoidFuncs.push_back(std::bind(&HeightMap::TestFunc, this));
 
 	m_PxStatic->userData = m_Funcs.get();
 	pxd->GetScene(GetScene())->addActor(*m_PxStatic);
@@ -209,27 +211,26 @@ void HeightMap::CreateRenderMesh(IGraphicDevice* gd, int fileHeight, int fileWid
 	Material testMaterial;
 	testMaterial.diffuseMapIndex = gd->GetTextureIndex("HeightMap3.jpg");
 	testMaterial.diffuseAlbedo = { 1,1,1,1 };
-	assert(gd->CreateMaterials({ "testMaterial" }, { testMaterial }));
+	assert(gd->CreateMaterials({ "HeightFieldMaterial" }, { testMaterial }));
 
-	DynamicBufferInfo* dbInfo = nullptr;
-	assert(gd->CreateDynamicVIBuffer(vertices.size(), indices.size(), &dbInfo));
+	assert(gd->CreateDynamicVIBuffer(vertices.size(), indices.size(), &m_DBInfo));
 
 	SubmeshData oneSub;
 	oneSub.indexOffset = 0;
 	oneSub.vertexOffset = 0;
 	oneSub.numIndex = indices.size();
 	oneSub.numVertex = vertices.size();
-	oneSub.material = "testMaterial";
+	oneSub.material = "HeightFieldMaterial";
 
-	dbInfo->meshObject.subs["oneSub"] = oneSub;
+	m_DBInfo->meshObject.subs["oneSub"] = oneSub;
 
 	auto renderer = CreateComponenet<DORenderer>();
 	auto transfrom = CreateComponenet<DOTransform>();
 	transfrom->SetScale(m_Scale);
 	
-	std::memcpy(dbInfo->vertices, vertices.data(), sizeof(Vertex) * vertices.size());
-	std::memcpy(dbInfo->indices, indices.data(), sizeof(unsigned int) * indices.size());
-	renderer->SetDynamicMesh(dbInfo);
+	std::memcpy(m_DBInfo->vertices, vertices.data(), sizeof(Vertex) * vertices.size());
+	std::memcpy(m_DBInfo->indices, indices.data(), sizeof(unsigned int) * indices.size());
+	renderer->SetDynamicMesh(m_DBInfo);
 }
 
 void HeightMap::StartMapPickingWork()
@@ -240,4 +241,25 @@ void HeightMap::StartMapPickingWork()
 	{
 		it(pickingPos);
 	}
+}
+
+void HeightMap::TestFunc()
+{
+	/*PxHeightFieldGeometry fieldGeo;
+	
+	if (m_Shape->getHeightFieldGeometry(fieldGeo))
+	{
+		m_Scale.y += 0.02f;
+		m_Scale.x += 0.1f;
+		m_Scale.z += 0.1f;
+
+		fieldGeo.heightScale += 0.02f;
+		fieldGeo.columnScale += 0.1f;
+		fieldGeo.rowScale += 0.1f;
+
+		auto transform = GetComponent<DOTransform>();
+		transform->SetScale(m_Scale);
+
+		m_Shape->setGeometry(fieldGeo);
+	}*/
 }

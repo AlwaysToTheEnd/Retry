@@ -45,22 +45,22 @@ bool CGHScene::Update(const DirectX::Mouse::ButtonStateTracker& mouse, float del
 	if (mouse.leftButton == MOUSEState::UP)
 	{
 		m_PhysicsDevice->ExcuteFuncOfClickedObject(*this, rayOrigin.x, rayOrigin.y, rayOrigin.z,
-			ray.x, ray.y, ray.z, 500.0f, GameObject::CLICKEDSTATE::MOUSEOVER);
+			ray.x, ray.y, ray.z, m_RayDistance, GameObject::CLICKEDSTATE::MOUSEOVER);
 	}
 	else if (mouse.leftButton == MOUSEState::PRESSED)
 	{
 		result = m_PhysicsDevice->ExcuteFuncOfClickedObject(*this, rayOrigin.x, rayOrigin.y, rayOrigin.z,
-			ray.x, ray.y, ray.z, 500.0f, GameObject::CLICKEDSTATE::PRESSED);
+			ray.x, ray.y, ray.z, m_RayDistance, GameObject::CLICKEDSTATE::PRESSED);
 	}
 	else if (mouse.leftButton == MOUSEState::HELD)
 	{
 		m_PhysicsDevice->ExcuteFuncOfClickedObject(*this, rayOrigin.x, rayOrigin.y, rayOrigin.z,
-			ray.x, ray.y, ray.z, 500.0f, GameObject::CLICKEDSTATE::HELD);
+			ray.x, ray.y, ray.z, m_RayDistance, GameObject::CLICKEDSTATE::HELD);
 	}
 	else if (mouse.leftButton == MOUSEState::RELEASED)
 	{
 		result = m_PhysicsDevice->ExcuteFuncOfClickedObject(*this, rayOrigin.x, rayOrigin.y, rayOrigin.z,
-			ray.x, ray.y, ray.z, 500.0f, GameObject::CLICKEDSTATE::RELEASED);
+			ray.x, ray.y, ray.z, m_RayDistance, GameObject::CLICKEDSTATE::RELEASED);
 	}
 
 
