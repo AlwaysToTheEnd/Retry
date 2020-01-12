@@ -408,7 +408,7 @@ bool GraphicDX12::EditMesh(const std::string& meshName, const std::vector<Vertex
 	{
 	case CGH::MESH_NORMAL:
 	{
-		result = m_VertexBuffer->EditDatas(m_D3dDevice.Get(), commandList.Get(), 
+		result = m_VertexBuffer->EditDatas(m_D3dDevice.Get(), commandList.Get(),
 			iter->second.GetStartVertexOffset(), vertices.size(), vertices.data());
 	}
 	break;
@@ -451,7 +451,7 @@ bool GraphicDX12::EditMaterial(const std::string& materialName, const Material& 
 		temp.diffuseMapIndex = m_TextureBuffer->GetTextureIndex(textureName);
 	}
 
-	result= m_Materials->EditData(m_D3dDevice.Get(), commandList.Get(), materialName, &temp);
+	result = m_Materials->EditData(m_D3dDevice.Get(), commandList.Get(), materialName, &temp);
 
 	commandList->Close();
 
@@ -464,6 +464,76 @@ bool GraphicDX12::EditMaterial(const std::string& materialName, const Material& 
 	m_Materials->ClearUploadBuffer();
 
 	return result;
+}
+
+bool GraphicDX12::CreateDynamicVIBuffer(unsigned int vertexNum, unsigned int indexNum, DynamicBufferInfo** out)
+{
+	DynamicBuffer* addedDyanamic = nullptr;
+
+	if (*out)
+	{
+		for (auto& it : m_DynamicBuffers)
+		{
+			if (it->dynamicBufferInfo.get() == *out)
+			{
+				return false;
+			}
+		}
+	}
+
+	for (size_t i = 0; i < m_DynamicBuffers.size(); i++)
+	{
+		if (m_DynamicBuffers[i] == nullptr)
+		{
+			m_DynamicBuffers[i] = make_unique<DynamicBuffer>(m_D3dDevice.Get(), i, vertexNum, indexNum);
+
+			addedDyanamic = m_DynamicBuffers[i].get();
+			break;
+		}
+	}
+
+	if (addedDyanamic == nullptr)
+	{
+		m_DynamicBuffers.emplace_back(make_unique<DynamicBuffer>(m_D3dDevice.Get(),
+			m_DynamicBuffers.size(), vertexNum, indexNum));
+		addedDyanamic = m_DynamicBuffers.back().get();
+	}
+
+	if (addedDyanamic)
+	{
+		*out = addedDyanamic->dynamicBufferInfo.get();
+
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+void GraphicDX12::EditDynamicVIBuffer(const DynamicBufferInfo* dvi, DYNAMIC_BUFFER_EDIT_MOD mode, const std::vector<float>& inputDatas)
+{
+
+}
+
+void GraphicDX12::SaveAndMergeDynamicVIBufferToDefaultVertexBuffer(const std::string& meshName, const DynamicBufferInfo* dvi)
+{
+
+}
+
+void GraphicDX12::ReleaseDynamicVIBuffer(const DynamicBufferInfo* dvi)
+{
+	if (dvi)
+	{
+		for (size_t i = 0; i < m_DynamicBuffers.size(); i++)
+		{
+			if (m_DynamicBuffers[i].get()->dynamicBufferInfo.get() == dvi)
+			{
+				m_DynamicBuffers[i] = nullptr;
+				break;
+			}
+		}
+	}
 }
 
 int GraphicDX12::GetTextureIndex(const std::string& textureName)
@@ -759,6 +829,7 @@ void GraphicDX12::Draw()
 	m_CommandList->ClearDepthStencilView(DepthStencilView(), D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
 
 	DrawObject(DX12_RENDER_TYPE_NORMAL_MESH);
+	DrawObject(DX12_RENDER_TYPE_DYNAMIC_MESH);
 	DrawObject(DX12_RENDER_TYPE_SKINNED_MESH);
 	DrawObject(DX12_RENDER_TYPE_POINT);
 
@@ -1108,11 +1179,10 @@ void GraphicDX12::UpdateObjectCB()
 		{
 		case RENDER_MESH:
 		{
-			MeshObject& mesh = m_Meshs.find(it.meshOrTextureName)->second;
+			const MeshObject& mesh = m_Meshs.find(it.meshOrTextureName)->second;
 			ObjectConstants object;
 			object.world = it.world;
 			object.scale = it.scale;
-			object.meshType = mesh.type;
 			object.aniBoneIndex = it.mesh.aniBoneIndex;
 			object.primitive = mesh.primitiveType;
 
@@ -1125,7 +1195,7 @@ void GraphicDX12::UpdateObjectCB()
 					m_RenderObjectsSubmesh[DX12_RENDER_TYPE_NORMAL_MESH].push_back(&it2.second);
 				}
 			}
-			else
+			else if (mesh.type == CGH::MESH_SKINED)
 			{
 				for (auto& it2 : mesh.subs)
 				{
@@ -1133,6 +1203,23 @@ void GraphicDX12::UpdateObjectCB()
 					m_RenderObjects[DX12_RENDER_TYPE_SKINNED_MESH].push_back(object);
 					m_RenderObjectsSubmesh[DX12_RENDER_TYPE_SKINNED_MESH].push_back(&it2.second);
 				}
+			}
+		}
+		break;
+		case RENDER_DYNAMIC:
+		{
+			ObjectConstants object;
+			object.world = it.world;
+			object.scale = it.scale;
+			object.primitive = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+			object.dynamicBufferIndex = atoi(it.meshOrTextureName.c_str());
+
+			const MeshObject& mesh = m_DynamicBuffers[object.dynamicBufferIndex]->dynamicBufferInfo->meshObject;
+			for (auto& it2 : mesh.subs)
+			{
+				object.materialIndex = m_Materials->GetIndex(it2.second.material);
+				m_RenderObjects[DX12_RENDER_TYPE_DYNAMIC_MESH].push_back(object);
+				m_RenderObjectsSubmesh[DX12_RENDER_TYPE_DYNAMIC_MESH].push_back(&it2.second);
 			}
 		}
 		break;
@@ -1221,6 +1308,9 @@ void GraphicDX12::DrawObject(DX12_RENDER_TYPE type)
 	case GraphicDX12::DX12_RENDER_TYPE_SKINNED_MESH:
 		DrawSkinnedMesh();
 		break;
+	case GraphicDX12::DX12_RENDER_TYPE_DYNAMIC_MESH:
+		DrawDynamicMehs();
+		break;
 	case GraphicDX12::DX12_RENDER_TYPE_POINT:
 		DrawPointObjects();
 		break;
@@ -1264,6 +1354,49 @@ void GraphicDX12::DrawNormalMesh()
 
 	for (size_t i = 0; i < currRenderObjects.size(); i++)
 	{
+		m_CommandList->SetGraphicsRootConstantBufferView(T1_OBJECT_CB, ObjectCBVritualAD);
+		m_CommandList->DrawIndexedInstanced(currRenderObjectSubmesh[i]->numIndex, 1,
+			currRenderObjectSubmesh[i]->indexOffset, currRenderObjectSubmesh[i]->vertexOffset, 0);
+		ObjectCBVritualAD += ObjectStrideSize;
+	}
+}
+
+void GraphicDX12::DrawDynamicMehs()
+{
+	m_CommandList->SetPipelineState(m_PSOs[ENUMSTR(DX12_RENDER_TYPE_NORMAL_MESH)].Get());
+	ID3D12DescriptorHeap* descriptorHeaps[] = { m_TextureBuffer->GetHeap() };
+	m_CommandList->SetDescriptorHeaps(1, descriptorHeaps);
+	m_CommandList->SetGraphicsRootSignature(m_T1RootSignature.Get());
+
+	auto matBuffer = m_Materials->GetBufferResource();
+	m_CommandList->SetGraphicsRootShaderResourceView(T1_MATERIAL_SRV, matBuffer->GetGPUVirtualAddress());
+	m_CommandList->SetGraphicsRootConstantBufferView(T1_PASS_CB, m_FrameResource->passCB->Resource()->GetGPUVirtualAddress());
+	m_CommandList->SetGraphicsRootDescriptorTable(T1_TEXTURE_TABLE, m_TextureBuffer->GetHeap()->GetGPUDescriptorHandleForHeapStart());
+
+	m_CommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY::D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+	auto ObjectCBVritualAD = m_FrameResource->meshObjectCB[DX12_RENDER_TYPE_DYNAMIC_MESH]->Resource()->GetGPUVirtualAddress();
+	const UINT ObjectStrideSize = m_FrameResource->meshObjectCB[DX12_RENDER_TYPE_DYNAMIC_MESH]->GetElementByteSize();
+
+	auto& currRenderObjects = m_RenderObjects[DX12_RENDER_TYPE_DYNAMIC_MESH];
+	auto& currRenderObjectSubmesh = m_RenderObjectsSubmesh[DX12_RENDER_TYPE_DYNAMIC_MESH];
+
+	for (size_t i = 0; i < currRenderObjects.size(); i++)
+	{
+		D3D12_VERTEX_BUFFER_VIEW vertexBufferView = {};
+		D3D12_INDEX_BUFFER_VIEW indexBufferView = {};
+		indexBufferView.Format = DXGI_FORMAT_R32_UINT;
+
+		vertexBufferView.BufferLocation = m_DynamicBuffers[currRenderObjects[i].dynamicBufferIndex]->dynamicVertexBuffer->Resource()->GetGPUVirtualAddress();
+		vertexBufferView.SizeInBytes = m_DynamicBuffers[currRenderObjects[i].dynamicBufferIndex]->dynamicVertexBuffer->GetBufferSize();
+		vertexBufferView.StrideInBytes = sizeof(Vertex);
+
+		indexBufferView.BufferLocation = m_DynamicBuffers[currRenderObjects[i].dynamicBufferIndex]->dynamicIndexBuffer->Resource()->GetGPUVirtualAddress();
+		indexBufferView.SizeInBytes = m_DynamicBuffers[currRenderObjects[i].dynamicBufferIndex]->dynamicIndexBuffer->GetBufferSize();
+
+		m_CommandList->IASetVertexBuffers(0, 1, &vertexBufferView);
+		m_CommandList->IASetIndexBuffer(&indexBufferView);
+
 		m_CommandList->SetGraphicsRootConstantBufferView(T1_OBJECT_CB, ObjectCBVritualAD);
 		m_CommandList->DrawIndexedInstanced(currRenderObjectSubmesh[i]->numIndex, 1,
 			currRenderObjectSubmesh[i]->indexOffset, currRenderObjectSubmesh[i]->vertexOffset, 0);
@@ -1341,8 +1474,6 @@ void GraphicDX12::DrawPointObjects()
 		vertexBufferView.BufferLocation = m_Box_Plane_Vertices->Resource()->GetGPUVirtualAddress();
 		vertexBufferView.SizeInBytes = m_Box_Plane_Vertices->GetBufferSize();
 		vertexBufferView.StrideInBytes = m_Box_Plane_Vertices->GetElementByteSize();
-
-		D3D_PRIMITIVE_TOPOLOGY currPrimitive = D3D_PRIMITIVE_TOPOLOGY::D3D_PRIMITIVE_TOPOLOGY_POINTLIST;
 
 		m_CommandList->IASetVertexBuffers(0, 1, &vertexBufferView);
 		m_CommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_POINTLIST);

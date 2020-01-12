@@ -211,7 +211,9 @@ void HeightMap::CreateRenderMesh(IGraphicDevice* gd, int fileHeight, int fileWid
 	testMaterial.diffuseAlbedo = { 1,1,1,1 };
 	assert(gd->CreateMaterials({ "testMaterial" }, { testMaterial }));
 
-	std::string meshName(m_fileName.begin(), m_fileName.end());
+	DynamicBufferInfo* dbInfo = nullptr;
+	assert(gd->CreateDynamicVIBuffer(vertices.size(), indices.size(), &dbInfo));
+
 	SubmeshData oneSub;
 	oneSub.indexOffset = 0;
 	oneSub.vertexOffset = 0;
@@ -219,19 +221,15 @@ void HeightMap::CreateRenderMesh(IGraphicDevice* gd, int fileHeight, int fileWid
 	oneSub.numVertex = vertices.size();
 	oneSub.material = "testMaterial";
 
-	MeshObject meshOb;
-	meshOb.subs["oneSub"] = oneSub;
-	assert(gd->CreateMesh(meshName.c_str(), meshOb, vertices, indices));
+	dbInfo->meshObject.subs["oneSub"] = oneSub;
 
-	auto renderMesh = CreateComponenet<DORenderMesh>();
 	auto renderer = CreateComponenet<DORenderer>();
 	auto transfrom = CreateComponenet<DOTransform>();
 	transfrom->SetScale(m_Scale);
-
-	renderMesh->SelectMesh(meshName);
-
-	RenderInfo testRenderInfo(RENDER_MESH);
-	renderer->SetRenderInfo(testRenderInfo);
+	
+	std::memcpy(dbInfo->vertices, vertices.data(), sizeof(Vertex) * vertices.size());
+	std::memcpy(dbInfo->indices, indices.data(), sizeof(unsigned int) * indices.size());
+	renderer->SetDynamicMesh(dbInfo);
 }
 
 void HeightMap::StartMapPickingWork()

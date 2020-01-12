@@ -84,9 +84,10 @@ public:
 		std::memcpy(&m_MappedData[offsetIndex * m_ElementByteSize], data, sizeof(T) * numElement);
 	}
 
-	UINT GetElementByteSize() const { return m_ElementByteSize; }
-	UINT GetBufferSize() const { return m_ElementByteSize * m_NumElement; }
-	UINT GetNumElement() const { return m_NumElement; }
+	T*		GetMappedData() { return reinterpret_cast<T*>(m_MappedData); }
+	UINT	GetElementByteSize() const { return m_ElementByteSize; }
+	UINT	GetBufferSize() const { return m_ElementByteSize * m_NumElement; }
+	UINT	GetNumElement() const { return m_NumElement; }
 
 private:
 	ComPtr<ID3D12Resource> m_UploadBuffer;
@@ -121,6 +122,7 @@ class GraphicDX12 final : public IGraphicDevice
 	enum DX12_RENDER_TYPE
 	{
 		DX12_RENDER_TYPE_NORMAL_MESH,
+		DX12_RENDER_TYPE_DYNAMIC_MESH,
 		DX12_RENDER_TYPE_SKINNED_MESH,
 		DX12_RENDER_TYPE_POINT,
 		DX12_RENDER_TYPE_COUNT
@@ -155,6 +157,21 @@ class GraphicDX12 final : public IGraphicDevice
 		std::unique_ptr<UploadBuffer<AniBoneMat>> aniBoneMatBuffer = nullptr;
 	};
 
+	struct DynamicBuffer
+	{
+		DynamicBuffer(ID3D12Device* device, unsigned int _renderID, unsigned int _numVertex, unsigned int _numIndex)
+		{
+			dynamicVertexBuffer = std::make_unique<UploadBuffer<Vertex>>(device, _numVertex, false);
+			dynamicIndexBuffer = std::make_unique<UploadBuffer<UINT>>(device, _numIndex, false);
+			dynamicBufferInfo = std::make_unique<DynamicBufferInfo>(_renderID, _numVertex, _numIndex, 
+				dynamicVertexBuffer->GetMappedData(), dynamicIndexBuffer->GetMappedData());
+		}
+
+		std::unique_ptr<DynamicBufferInfo>			dynamicBufferInfo;
+		std::unique_ptr<UploadBuffer<Vertex>>		dynamicVertexBuffer;
+		std::unique_ptr<UploadBuffer<unsigned int>>	dynamicIndexBuffer;
+	};
+
 public:
 	GraphicDX12();
 	virtual ~GraphicDX12() override;
@@ -181,25 +198,34 @@ public: // Used from DeviceObject Init
 	virtual bool	EditMesh(const std::string& meshName, const std::vector<Vertex>& vertices) override;
 	virtual bool	EditMaterial(const std::string& materialName, const Material& material, const std::string& textureName = "") override;
 
+	virtual bool	CreateDynamicVIBuffer(unsigned int vertexNum, unsigned int indexNum, DynamicBufferInfo** out);
+	virtual void	EditDynamicVIBuffer(const DynamicBufferInfo* dvi, DYNAMIC_BUFFER_EDIT_MOD mode, const std::vector<float>& inputDatas);
+	virtual void	SaveAndMergeDynamicVIBufferToDefaultVertexBuffer(const std::string& meshName, const DynamicBufferInfo* dvi) override;
+	virtual void	ReleaseDynamicVIBuffer(const DynamicBufferInfo* dvi) override;
+
 	virtual int		GetTextureIndex(const std::string& textureName) override;
 
 private: // Used Function by ReadyWorks 
-	virtual void LoadTextureFromFolder(const std::vector<std::wstring>& targetTextureFolders) override;
-	virtual void LoadMeshAndMaterialFromFolder(const std::vector<std::wstring>& targetMeshFolders) override;
-	virtual void LoadFontFromFolder(const std::vector<std::wstring>& targetFontFolders) override;
-	virtual void LoadAniTreeFromFolder(const std::wstring& targetFolder) override;
-	virtual void ReadyWorksEnd() override;
+	virtual void	LoadTextureFromFolder(const std::vector<std::wstring>& targetTextureFolders) override;
+	virtual void	LoadMeshAndMaterialFromFolder(const std::vector<std::wstring>& targetMeshFolders) override;
+	virtual void	LoadFontFromFolder(const std::vector<std::wstring>& targetFontFolders) override;
+	virtual void	LoadAniTreeFromFolder(const std::wstring& targetFolder) override;
+	virtual void	ReadyWorksEnd() override;
 
 private: // Device Base Functions
-	void FlushCommandQueue();
-	void CreateCommandObject();
-	void CreateRtvAndDsvDescriptorHeaps();
-	void CreateSwapChain();
+	void						FlushCommandQueue();
+	void						CreateCommandObject();
+	void						CreateRtvAndDsvDescriptorHeaps();
+	void						CreateSwapChain();
 
-	ID3D12Resource* CurrentBackBuffer() const;
+	ID3D12Resource*				CurrentBackBuffer() const;
 	D3D12_CPU_DESCRIPTOR_HANDLE CurrentBackBufferView() const;
 	D3D12_CPU_DESCRIPTOR_HANDLE DepthStencilView() const;
 
+	ComPtr<ID3DBlob>			CompileShader(	const std::wstring& filename,
+												const D3D_SHADER_MACRO* defines,
+												const std::string& entrypoint,
+												const std::string& target);
 private: // Base object Builds
 	void BuildFrameResources();
 	void BuildRootSignature();
@@ -214,19 +240,15 @@ private: // Used in frame.
 private:
 	void DrawObject(DX12_RENDER_TYPE type);
 	void DrawNormalMesh();
+	void DrawDynamicMehs();
 	void DrawSkinnedMesh();
 	void DrawPointObjects();
 
 private:
-	ComPtr<ID3DBlob> CompileShader(	const std::wstring& filename,
-									const D3D_SHADER_MACRO* defines,
-									const std::string& entrypoint,
-									const std::string& target);
-private:
-	D3D12_VIEWPORT	m_ScreenViewport;
-	D3D12_RECT		m_ScissorRect;
-	std::wstring	m_MainWndCaption = L"DX12";
-	D3D_DRIVER_TYPE	m_D3dDriverType = D3D_DRIVER_TYPE::D3D_DRIVER_TYPE_UNKNOWN;
+	D3D12_VIEWPORT						m_ScreenViewport;
+	D3D12_RECT							m_ScissorRect;
+	std::wstring						m_MainWndCaption = L"DX12";
+	D3D_DRIVER_TYPE						m_D3dDriverType = D3D_DRIVER_TYPE::D3D_DRIVER_TYPE_UNKNOWN;
 
 	ComPtr<IDXGIFactory4>				m_DxgiFactory;
 	ComPtr<IDXGISwapChain>				m_SwapChain;
@@ -290,4 +312,6 @@ private:
 	std::unique_ptr<cDefaultBuffer<UINT>>			m_SkinnedIndexBuffer;
 
 	std::unique_ptr<UploadBuffer<B_P_Vertex>>		m_Box_Plane_Vertices;
+
+	std::vector<std::unique_ptr<DynamicBuffer>>		m_DynamicBuffers;
 };

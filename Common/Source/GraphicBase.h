@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
+#include "Vertex.h"
 #define BONEMAXMATRIX 160
 
 namespace CGH
@@ -21,6 +22,7 @@ enum RENDER_TYPE
 {
 	RENDER_NONE,
 	RENDER_MESH,
+	RENDER_DYNAMIC,
 	RENDER_BOX,
 	RENDER_PLANE,
 	RENDER_TEX_PLANE,
@@ -170,4 +172,37 @@ struct Light
 	float falloffEnd = 10.0f;
 	physx::PxVec3 position = { 0,0,0 };
 	float spotPower = 64.0f;
+};
+
+enum class DYNAMIC_BUFFER_EDIT_MOD
+{
+	CIRCLE_AREA_UP,
+	CIRCLE_AREA_DOWN,
+	CON_SHAPE_UP,
+	CON_SHAPE_DOWN,
+	CIRCLE_AREA_FLATNESS,
+};
+
+struct DynamicBufferInfo
+{
+	DynamicBufferInfo(unsigned int _renderID, unsigned int _numVertex, unsigned int _numIndex,
+		Vertex* _vertices, unsigned int* _indices)
+		: renderID(_renderID)
+ 		, numVertex(_numVertex)
+		, numIndex(_numIndex)
+		, vertices(_vertices)
+		, indices(_indices)
+	{
+		meshObject.type = CGH::MESH_NORMAL;
+		meshObject.primitiveType = 4;
+	}
+
+	std::string GetBufferID() const { return std::to_string(renderID); }
+
+	MeshObject			meshObject;
+	const unsigned int	renderID;
+	const unsigned int	numVertex;
+	const unsigned int	numIndex;
+	Vertex* const		vertices;
+	unsigned int* const	indices;
 };

@@ -42,6 +42,10 @@ public: // pure virtual funcs.
 	virtual bool	EditMesh(const std::string& meshName, const std::vector<Vertex>& vertices) = 0;
 	virtual bool	EditMaterial(const std::string& materialName, const Material& material, const std::string& textureName = "") = 0;
 
+	virtual bool	CreateDynamicVIBuffer(unsigned int vertexNum, unsigned int indexNum, DynamicBufferInfo** out) = 0;
+	virtual void	SaveAndMergeDynamicVIBufferToDefaultVertexBuffer(const std::string& meshName, const DynamicBufferInfo* dvi) = 0;
+	virtual void	ReleaseDynamicVIBuffer(const DynamicBufferInfo* dvi) = 0;
+
 	virtual int		GetTextureIndex(const std::string& textureName) = 0;
 
 private: // used by D3DApp.

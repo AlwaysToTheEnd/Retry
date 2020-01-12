@@ -96,6 +96,7 @@ public:
 	virtual ~DORenderer() = default;
 
 	void				SetRenderInfo(const RenderInfo& info) { m_RenderInfo = info; }
+	void				SetDynamicMesh(const DynamicBufferInfo* dvi);
 	
 	const RenderInfo&	GetRenderInfo() { return m_RenderInfo; }
 
@@ -108,7 +109,7 @@ private:
 
 private:
 	static std::vector<RenderInfo>* m_ReservedRenderObjects;
-	RenderInfo	m_RenderInfo;
+	RenderInfo						m_RenderInfo;
 };
 
 class DOFont :public DeviceObject
