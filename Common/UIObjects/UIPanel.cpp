@@ -15,7 +15,7 @@ void UIPanel::Init()
 
 	m_Trans->SetPosZ(0.8f);
 	m_Font->SetFont(RenderFont::fontNames.front());
-	m_Font->m_FontHeight = 15;
+	m_Font->m_FontHeight = m_TitleSize - 5;
 	RenderInfo info(RENDER_UI);
 	info.point.size = { 100,100,0 };
 	m_Render->SetRenderInfo(info);
@@ -29,38 +29,52 @@ void UIPanel::Delete()
 	GameObject::Delete();
 }
 
-void UIPanel::AddUICom(unsigned int x, unsigned y, UIButton* button)
+void UIPanel::AddUICom(UIObject* ui)
 {
-	m_UIComs.push_back({ UICOMTYPE::UIBUTTON, button });
-	m_UIComOffset.push_back({ static_cast<float>(x),static_cast<float>(y) });
-	button->SetParent(this);
-}
+	bool isHave = false;
 
-void UIPanel::AddUICom(unsigned int x, unsigned y, UIParam* param)
-{
-	m_UIComs.push_back({ UICOMTYPE::UIPARAM, param });
-	m_UIComOffset.push_back({ static_cast<float>(x),static_cast<float>(y) });
-	param->SetParent(this);
-}
+	for (auto& it : m_UIComs)
+	{
+		if (it == ui)
+		{
+			isHave = true;
+			break;
+		}
+	}
 
-void UIPanel::AddUICom(unsigned int x, unsigned y, UIPanel* panel)
-{
-	m_UIComs.push_back({ UICOMTYPE::UIPANEL, panel });
-	m_UIComOffset.push_back({ static_cast<float>(x),static_cast<float>(y) });
-	panel->SetParent(this);
+	if (!isHave)
+	{
+		m_UIComs.push_back(ui);
+		ui->SetParent(this);
 
-	panel->ThisPanalIsStatic();
+		if (ui->Is(typeid(UIPanel).name()))
+		{
+			reinterpret_cast<UIPanel*>(ui)->ThisPanalIsStatic();
+		}
+	}
 }
 
 void UIPanel::DeleteAllComs()
 {
 	for (auto& it : m_UIComs)
 	{
-		it.object->Delete();
+		it->Delete();
 	}
 
-	m_UIComOffset.clear();
 	m_UIComs.clear();
+}
+
+void UIPanel::PopUICom(const UIObject* uiCom)
+{
+	for (size_t i = 0; i < m_UIComs.size(); i++)
+	{
+		if (m_UIComs[i] == uiCom)
+		{
+			m_UIComs[i] = m_UIComs.back();
+			m_UIComs.pop_back();
+			break;
+		}
+	}
 }
 
 physx::PxVec2 UIPanel::GetPos()
@@ -83,9 +97,9 @@ void UIPanel::SetBackGroundColor(const physx::PxVec4& color)
 	m_Render->SetRenderInfo(info);
 }
 
-void UIPanel::SetSize(unsigned int x, unsigned y)
+void UIPanel::SetSize(const physx::PxVec2& size)
 {
-	m_Size = physx::PxVec2(x, y);
+	m_Size = size;
 	auto halfSize = m_Size / 2;
 
 	RenderInfo info = m_Render->GetRenderInfo();
@@ -126,34 +140,41 @@ void UIPanel::ThisPanalIsStatic()
 	}
 }
 
-void UIPanel::UIComsAlignment(physx::PxVec2 startPosition, physx::PxVec2 interval)
-{
-	for (size_t i = 0; i < m_UIComOffset.size(); i++)
-	{
-		m_UIComOffset[i] = startPosition;
-		startPosition += interval;
-	}
-}
-
 void UIPanel::Update(float delta)
 {
-	if (m_Active)
+	physx::PxVec3 comPos = m_Trans->GetTransform().p;
+	auto halfSize = m_Size / 2;
+	comPos.x -= halfSize.x;
+	comPos.y -= halfSize.y;
+	comPos.z -= 0.001f;
+	float topY = comPos.y;
+	m_Font->m_Pos.x = comPos.x;
+	m_Font->m_Pos.y = comPos.y + m_Font->m_FontHeight / 2.0f;
+	m_Font->m_Pos.z = comPos.z;
+
+	comPos.y += m_ComsInterval + m_TitleSize;
+
+	physx::PxVec2 comSize;
+	float mustX = 0;
+	for (size_t i = 0; i < m_UIComs.size(); i++)
 	{
-		physx::PxTransform panelTransform = m_Trans->GetTransform();
-		auto halfSize = m_Size / 2;
-		m_Font->m_Pos.x = panelTransform.p.x - halfSize.x;
-		m_Font->m_Pos.y = panelTransform.p.y - halfSize.y + m_Font->m_FontHeight / 2.0f;
-		m_Font->m_Pos.z = panelTransform.p.z - 0.001f;
+		comSize = m_UIComs[i]->GetSize();
 
-		for (size_t i = 0; i < m_UIComs.size(); i++)
+		m_UIComs[i]->SetPos(comPos);
+
+		comPos.y += comSize.y + m_ComsInterval;
+
+		if (comSize.x > mustX)
 		{
-			auto transform = m_UIComs[i].object->GetComponent<DOTransform>();
-
-			m_UIComs[i].object->SetPos(physx::PxVec3(
-				m_UIComOffset[i].x - halfSize.x + panelTransform.p.x, 
-				m_UIComOffset[i].y - halfSize.y + panelTransform.p.y,
-				panelTransform.p.z -0.001f));
+			mustX = comSize.x;
 		}
+	}
+	//#TODO Scroll.
+	float currHeight = comPos.y - (comSize.y / 2) - topY;
+	if (m_Size.y < currHeight || m_Size.x < mustX)
+	{
+		SetSize(physx::PxVec2(m_Size.x < mustX ? mustX : m_Size.x,
+			m_Size.y < currHeight ? currHeight : m_Size.y));
 	}
 }
 
@@ -230,7 +251,7 @@ void UIPanel::UIPanelController::Update(float delta)
 					m_CurrPanel = it;
 					SortPanels(it);
 				}
-				
+
 				break;
 			}
 		}

@@ -75,6 +75,7 @@ public:
 	virtual			~UIParam() = default;
 	virtual void	Delete() override;
 
+	void						AddUIParam(UIParam* param);
 	virtual void				SetPos(const physx::PxVec3& pos) override;
 	template<typename T> void	SetTargetParam(const std::wstring& paramName, T* data);
 	void						SetEnumParam(const std::wstring& paramName, const std::vector<ENUM_ELEMENT>* elementInfo, int* data);
@@ -92,6 +93,7 @@ private:
 	template<typename T> std::wstring	GetStringFromValue();
 
 private:
+	static const int	m_ParamInterval = 3;
 	const UIPARAMTYPE	m_Type;
 	UICONTROLTYPE		m_ControlType;
 	std::wstring		m_ParamName;

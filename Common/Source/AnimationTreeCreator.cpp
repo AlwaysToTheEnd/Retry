@@ -104,7 +104,7 @@ void AniNodeVisual::SetTargetAninode(AniNode* node)
 	m_TargetAniNode = node;
 
 	m_Panel->SetBackGroundTexture(InputTN::Get("AniNodeVisualPanel"));
-	m_Panel->SetSize(100, 60);
+	m_Panel->SetSize(physx::PxVec2(100, 60));
 	m_Panel->SetPos({ 300,300 });
 
 #pragma region AddPanel
@@ -115,21 +115,21 @@ void AniNodeVisual::SetTargetAninode(AniNode* node)
 		auto closeButton = m_Panel->CreateComponenet<UIButton>(true);
 		closeButton->AddFunc(std::bind(&AniNodeVisual::Delete, this));
 		closeButton->SetTexture(InputTN::Get("AniNodeVisualPanel_Delete"), { 10,10 });
-		m_Panel->AddUICom(m_Panel->GetSize().x - 10, 10, closeButton);
+		m_Panel->AddUICom(closeButton);
 
 		auto roofControlButton = m_Panel->CreateComponenet<UIButton>(true);
 		roofControlButton->OnlyFontMode();
 		roofControlButton->SetTextHeight(ElementSize);
 		roofControlButton->SetText(L"AniRoof:" + std::wstring(m_TargetAniNode->IsRoofAni() ? L"true" : L"false"));
 		roofControlButton->AddFunc(std::bind(&AniNodeVisual::ChangeAniRoof, this, m_TargetAniNode, roofControlButton));
-		m_Panel->AddUICom(m_Panel->GetSize().x / 2, m_Panel->GetSize().y / 2, roofControlButton);
+		m_Panel->AddUICom(roofControlButton);
 
 		auto aniNameParam = m_Panel->CreateComponenet<UIParam>(true, UIParam::UIPARAMTYPE::MODIFIER);
 		aniNameParam->SetStringParam(L"Animation", m_CurrSkinAnimationNames, &m_CurrAniName);
 		aniNameParam->SetDirtyCall(std::bind(&AniNodeVisual::ChangedTargetAni, this));
 		aniNameParam->SetTextHeight(ElementSize);
 
-		m_Panel->AddUICom(0, 8, aniNameParam);
+		m_Panel->AddUICom(aniNameParam);
 	}
 #pragma endregion
 }
@@ -399,11 +399,6 @@ void AniTreeArowVisual::AniTreeArrowArttributeEditer::CreateAttributePanel()
 	m_AttributePanel->DeleteAllComs();
 	m_AttributePanel->UIOn();
 
-	const int propertyInterval = 2;
-	const int objectSetInterval = 8;
-	const int offsetX = 5;
-	int posY = 10;
-
 	const static std::vector<ENUM_ELEMENT> triggerTypeNames =
 	{
 		{static_cast<int>(AniTree::TRIGGER_TYPE::TRIGGER_TYPE_GRATER), L"TRIGGER_TYPE_GRATER" },
@@ -433,14 +428,12 @@ void AniTreeArowVisual::AniTreeArrowArttributeEditer::CreateAttributePanel()
 		auto endIsParam = m_AttributePanel->CreateComponenet<UIParam>(true, UIParam::UIPARAMTYPE::MODIFIER);
 		endIsParam->SetTargetParam(L"AniEndIsChange", &it.aniEndIsChange);
 		endIsParam->SetTextHeight(m_FontSize);
-		m_AttributePanel->AddUICom(offsetX, posY, endIsParam);
-		posY += m_FontSize + propertyInterval;
+		m_AttributePanel->AddUICom(endIsParam);
 
 		auto arrowTypeParam = m_AttributePanel->CreateComponenet<UIParam>(true, UIParam::UIPARAMTYPE::MODIFIER);
 		arrowTypeParam->SetEnumParam(L"ArrowType", &arrowTypeNames, reinterpret_cast<int*>(&it.type));
 		arrowTypeParam->SetTextHeight(m_FontSize);
-		m_AttributePanel->AddUICom(offsetX, posY, arrowTypeParam);
-		posY += m_FontSize + objectSetInterval;
+		m_AttributePanel->AddUICom(arrowTypeParam);
 
 		for (auto& it2 : it.trigger)
 		{
@@ -448,14 +441,12 @@ void AniTreeArowVisual::AniTreeArrowArttributeEditer::CreateAttributePanel()
 			funcParam->SetTextHeight(m_FontSize);
 			funcParam->SetEnumParam(L"Func", &triggerTypeNames, reinterpret_cast<int*>(&it2.m_TriggerType));
 
-			m_AttributePanel->AddUICom(offsetX, posY, funcParam);
-			posY += m_FontSize + propertyInterval;
+			m_AttributePanel->AddUICom(funcParam);
 
 			auto triggerType = m_AttributePanel->CreateComponenet<UIParam>(true, UIParam::UIPARAMTYPE::MODIFIER);
 			triggerType->SetTextHeight(m_FontSize);
 			triggerType->SetEnumParam(L"DataType", &dataTypeNames, reinterpret_cast<int*>(&it2.m_Standard.type));
-			m_AttributePanel->AddUICom(offsetX, posY, triggerType);
-			posY += m_FontSize + propertyInterval;
+			m_AttributePanel->AddUICom(triggerType);
 
 			auto triggerParam = m_AttributePanel->CreateComponenet<UIParam>(true, UIParam::UIPARAMTYPE::MODIFIER);
 			triggerParam->SetTextHeight(m_FontSize);
@@ -481,12 +472,9 @@ void AniTreeArowVisual::AniTreeArrowArttributeEditer::CreateAttributePanel()
 			triggerParam->GetComponent<DOUICollision>()->AddFunc(std::bind(
 				&AniTreeArowVisual::AniTreeArrowArttributeEditer::ChangeType, this, triggerParam, &it2.m_Standard));
 
-			m_AttributePanel->AddUICom(offsetX, posY, triggerParam);
-			posY += m_FontSize + objectSetInterval;
+			m_AttributePanel->AddUICom(triggerParam);
 		}
 	}
-
-	m_AttributePanel->SetSize(230, posY + m_FontSize * 3);
 
 	auto addButton = m_AttributePanel->CreateComponenet<UIButton>(true);
 	addButton->SetTexture(
@@ -494,8 +482,7 @@ void AniTreeArowVisual::AniTreeArrowArttributeEditer::CreateAttributePanel()
 		{ 10,5 });
 	addButton->AddFunc(std::bind(&AniTreeArowVisual::AniTreeArrowArttributeEditer::AddParam, this));
 
-	m_AttributePanel->AddUICom(m_AttributePanel->GetSize().x / 2, posY, addButton);
-	posY += m_FontSize + propertyInterval;
+	m_AttributePanel->AddUICom(addButton);
 
 	auto deleteButton = m_AttributePanel->CreateComponenet<UIButton>(true);
 	deleteButton->SetTexture(
@@ -507,7 +494,7 @@ void AniTreeArowVisual::AniTreeArrowArttributeEditer::CreateAttributePanel()
 			this->WorkClear();
 		});
 
-	m_AttributePanel->AddUICom(m_AttributePanel->GetSize().x / 2, posY, deleteButton);
+	m_AttributePanel->AddUICom(deleteButton);
 }
 
 void AniTreeArowVisual::AniTreeArrowArttributeEditer::AddParam()
@@ -603,7 +590,7 @@ void VisualizedAniTreeCreator::Init()
 	nullTreeButton->OnlyFontMode();
 	nullTreeButton->SetTextHeight(15);
 	nullTreeButton->AddFunc(std::bind(&VisualizedAniTreeCreator::SelectNullTree, this));
-	m_WorkPanel->AddUICom(50, posY, nullTreeButton);
+	m_WorkPanel->AddUICom(nullTreeButton);
 	posY += 20;
 
 	SetAnimationTreeListsParamToPanel(10, posY, m_WorkPanel);
@@ -614,7 +601,7 @@ void VisualizedAniTreeCreator::Init()
 	button->OnlyFontMode();
 	button->SetTextHeight(15);
 	button->AddFunc(std::bind(&VisualizedAniTreeCreator::AddNode, this));
-	m_WorkPanel->AddUICom(50, posY, button);
+	m_WorkPanel->AddUICom(button);
 	posY += 20;
 
 	for (auto& it : m_SkinNames)
@@ -627,7 +614,7 @@ void VisualizedAniTreeCreator::Init()
 		skinbutton->OnlyFontMode();
 		skinbutton->SetTextHeight(15);
 		skinbutton->AddFunc(std::bind(&VisualizedAniTreeCreator::SelectSkinnedData, this, it));
-		m_WorkPanel->AddUICom(50, posY, skinbutton);
+		m_WorkPanel->AddUICom(skinbutton);
 		posY += 20;
 	}
 
@@ -636,10 +623,7 @@ void VisualizedAniTreeCreator::Init()
 	testbutton->OnlyFontMode();
 	testbutton->SetTextHeight(15);
 	testbutton->AddFunc(std::bind(&VisualizedAniTreeCreator::SaveTree, this));
-	m_WorkPanel->AddUICom(50, posY, testbutton);
-	posY += 20;
-
-	m_WorkPanel->SetSize(100, posY);
+	m_WorkPanel->AddUICom(testbutton);
 
 	m_Renderer->SetActive(false);
 }
@@ -712,7 +696,7 @@ void VisualizedAniTreeCreator::SetAnimationTreeListsParamToPanel(int posX, int p
 		m_AniTreeParam->SetStringParam(L"CurrTree", &m_TreeNames, &m_CurrTreeName);
 		m_AniTreeParam->SetDirtyCall(std::bind(&VisualizedAniTreeCreator::ChangedTree, this));
 
-		workPanel->AddUICom(posX, posY, m_AniTreeParam);
+		workPanel->AddUICom(m_AniTreeParam);
 	}
 }
 

@@ -1,3 +1,4 @@
+#include "d3dApp.h"
 #include "HeightMapControlPanel.h"
 #include "HeightMap.h"
 #include "d3dUtil.h"
@@ -18,7 +19,8 @@ void HeightMapControlPanel::Init()
 	UIPanel::Init();
 
 	SetBackGroundTexture(InputTN::Get("CommonPanelBackground"));
-	SetSize(200, 200);
+	SetSize(physx::PxVec2(200, 200));
+	SetBenchUV({ 1.0f, 0 });
 	std::vector<std::wstring> heightMapPath;
 	SearchAllFileFromFolder(L"../Common/HeightMap", true, heightMapPath);
 
@@ -55,10 +57,10 @@ void HeightMapControlPanel::Init()
 	scaleZ->SetTextHeight(15);
 	scaleZ->SetDirtyCall(std::bind(&HeightMapControlPanel::DirtyScale, this));
 
-	AddUICom(0, 0, heightMapSelect);
-	AddUICom(0, 0, scaleX);
-	AddUICom(0, 0, scaleY);
-	AddUICom(0, 0, scaleZ);
+	AddUICom(heightMapSelect);
+	AddUICom(scaleX);
+	AddUICom(scaleY);
+	AddUICom(scaleZ);
 
 	SetPos(physx::PxVec2(GETAPP->GetClientSize().x, 0));
 }

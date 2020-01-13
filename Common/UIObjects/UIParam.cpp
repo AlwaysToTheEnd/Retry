@@ -17,6 +17,20 @@ void UIParam::Delete()
 	GameObject::Delete();
 }
 
+void UIParam::AddUIParam(UIParam* param)
+{
+	if (param)
+	{
+		if (param->m_Parent->Is(typeid(UIPanel).name()))
+		{
+			reinterpret_cast<UIPanel*>(param->m_Parent)->PopUICom(param);
+		}
+
+		param->SetParent(this);
+		param->m_Font->m_FontHeight = m_Font->m_FontHeight;
+	}
+}
+
 void UIParam::SetPos(const physx::PxVec3& pos)
 {
 	physx::PxVec2 uv = m_BenchUV - physx::PxVec2(0.5f, 0.5f);
@@ -71,10 +85,11 @@ void UIParam::Init()
 
 void UIParam::Update(float delta)
 {
+	physx::PxVec3 pos = m_Trans->GetTransform().p;
+	float topY = pos.y;
+
 	if (m_ParamPtr)
 	{
-		physx::PxVec3 pos = m_Trans->GetTransform().p;
-
 		m_Font->m_Pos.x = pos.x;
 		m_Font->m_Pos.y = pos.y;
 		m_Font->m_Pos.z = pos.z;
@@ -112,6 +127,25 @@ void UIParam::Update(float delta)
 
 		m_Font->m_Text = text;
 	}
+
+	auto childParam = GetComponents<UIParam>();
+	pos.x += 25;
+	pos.y += m_Font->m_FontHeight + m_ParamInterval;
+
+	float mustX = 0;
+	for (auto& it : childParam)
+	{
+		it->SetPos(pos);
+		pos.y += m_Font->m_FontHeight + m_ParamInterval;
+
+		if (mustX < it->m_Font->m_DrawSize.x)
+		{
+			mustX = it->m_Font->m_DrawSize.x;
+		}
+	}
+
+	m_Size.x = 25 + mustX < m_Font->m_DrawSize.x ? m_Font->m_DrawSize.x : 25 + mustX;
+	m_Size.y = pos.y - topY + m_Font->m_FontHeight;
 }
 
 void UIParam::SetUIParamToController()
@@ -336,9 +370,6 @@ void UIParam::ParamController::CreateSubPanel(UIParam* param)
 	m_EnumSelectPanel->SetPos(GETAPP->GetMousePos());
 	m_EnumSelectPanel->GetComponent<DOTransform>()->SetPosZ(0.1f);
 
-	const int propertyIntervale = 15;
-	int posY = 10;
-
 	switch (param->m_ControlType)
 	{
 	case UIParam::UICONTROLTYPE::ENUM_DATA:
@@ -356,8 +387,7 @@ void UIParam::ParamController::CreateSubPanel(UIParam* param)
 				button->AddFunc(param->m_DirtyCall);
 			}
 
-			m_EnumSelectPanel->AddUICom(60, posY, button);
-			posY += propertyIntervale;
+			m_EnumSelectPanel->AddUICom(button);
 		}
 	}
 	break;
@@ -378,14 +408,11 @@ void UIParam::ParamController::CreateSubPanel(UIParam* param)
 				button->AddFunc(param->m_DirtyCall);
 			}
 
-			m_EnumSelectPanel->AddUICom(60, posY, button);
-			posY += propertyIntervale;
+			m_EnumSelectPanel->AddUICom(button);
 		}
 	}
 	break;
 	}
-
-	m_EnumSelectPanel->SetSize(120, posY + propertyIntervale);
 }
 
 void UIParam::ParamController::SetEnumData(int value)

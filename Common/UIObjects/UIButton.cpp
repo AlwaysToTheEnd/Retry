@@ -21,6 +21,8 @@ void UIButton::Update(float delta)
 	if (m_isOnlyFontMode)
 	{
 		m_UICollision->SetSize({ m_Font->m_DrawSize.x / 2, m_Font->m_DrawSize.y / 2 });
+		m_UICollision->SetOffset({ m_Font->m_DrawSize.x / 2, 0 });
+		m_Size = m_Font->m_DrawSize;
 	}
 }
 
@@ -67,6 +69,7 @@ void UIButton::OnlyFontMode()
 		ExceptComponent(m_Render);
 	}
 
+	m_Font->SetBenchmark(RenderFont::FONTBENCHMARK::LEFT);
 	m_Render = nullptr;
 	m_isOnlyFontMode = true;
 }

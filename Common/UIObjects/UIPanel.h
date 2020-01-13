@@ -38,25 +38,6 @@ protected:
 
 	} s_PanelController;
 
-protected:
-	enum class UICOMTYPE
-	{
-		UIBUTTON,
-		UIPARAM,
-		UIPANEL,
-	};
-
-	struct UIComObjects
-	{
-		UIComObjects(UICOMTYPE _type, UIObject* _object)
-		{
-			type = _type;
-			object = _object;
-		}
-		UICOMTYPE type;
-		UIObject* object;
-	};
-
 public:
 	UIPanel(CGHScene& scene, GameObject* parent, const char* typeName)
 		: UIObject(scene, parent, typeName)
@@ -64,7 +45,6 @@ public:
 		, m_Font(nullptr)
 		, m_Render(nullptr)
 		, m_UICollision(nullptr)
-		, m_Active(true)
 	{
 		s_PanelController.AddPanel(this);
 	}
@@ -72,20 +52,17 @@ public:
 	virtual			~UIPanel() = default;
 	virtual void	Delete() override;
 	void			DeleteAllComs();
+	void			PopUICom(const UIObject* uiCom);
 
-	void			AddUICom(unsigned int x, unsigned y, UIButton* button);
-	void			AddUICom(unsigned int x, unsigned y, UIParam* param);
-	void			AddUICom(unsigned int x, unsigned y, UIPanel* panel);
-	void			UIComsAlignment(physx::PxVec2 startPosition, physx::PxVec2 interval);
+	void			AddUICom(UIObject* ui);
 
 	physx::PxVec2	GetSize() { return m_Size; }
 	physx::PxVec2	GetPos();
 	unsigned int	GetNumAddedComs() { return m_UIComs.size(); }
 
-
 	void			SetBackGroundTexture(const std::string& name);
 	void			SetBackGroundColor(const physx::PxVec4& color);
-	void			SetSize(unsigned int x, unsigned y);
+	void			SetSize(const physx::PxVec2& size);
 	void			SetName(const std::wstring& name);
 	void			SetPos(const physx::PxVec2& pos);
 	virtual void	SetPos(const physx::PxVec3& pos) override;
@@ -97,12 +74,12 @@ protected:
 	virtual void Update(float delta) override;
 
 protected:
-	bool			m_Active;
-	DOTransform*	m_Trans;
-	DOFont*			m_Font;
-	DORenderer*		m_Render;
-	DOUICollision*	m_UICollision;
+	static const int		m_ComsInterval = 3;
+	static const int		m_TitleSize = 20;
+	DOTransform*			m_Trans;
+	DOFont*					m_Font;
+	DORenderer*				m_Render;
+	DOUICollision*			m_UICollision;
 
-	std::vector<UIComObjects>	m_UIComs;
-	std::vector<physx::PxVec2>	m_UIComOffset;
+	std::vector<UIObject*>	m_UIComs;
 };
