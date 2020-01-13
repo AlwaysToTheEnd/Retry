@@ -1,10 +1,10 @@
 #include "HeightMapCreateScene.h"
 #include "../../Step2/TestObject.h"
-#include "HeightMap.h"
+#include  "GameCreator.h"
 
 void HeightMapCreateScene::Init()
 {
-	CreateGameObject<HeightMap>(L"../Common/HeightMap/HeightMap3.raw", physx::PxVec3(2.0f, 0.3f, 2.0f));
+	CreateGameObject<GameCreator>();
 }
 
 bool HeightMapCreateScene::Update(const DirectX::Mouse::ButtonStateTracker& mouse, float delta)

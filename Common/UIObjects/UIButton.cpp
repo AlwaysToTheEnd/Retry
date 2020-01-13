@@ -24,6 +24,14 @@ void UIButton::Update(float delta)
 	}
 }
 
+void UIButton::SetPos(const physx::PxVec3& pos)
+{
+	physx::PxVec2 uv = m_BenchUV - physx::PxVec2(0.5f, 0.5f);
+	m_Trans->SetPosX(pos.x - m_Size.x * uv.x);
+	m_Trans->SetPosY(pos.y - m_Size.y * uv.y);
+	m_Trans->SetPosZ(pos.z);
+}
+
 void UIButton::SetTexture(const std::string& name, const physx::PxVec2& halfSize, bool colliderSizeIsEqualTexture)
 {
 	if (!m_Render)
@@ -40,6 +48,9 @@ void UIButton::SetTexture(const std::string& name, const physx::PxVec2& halfSize
 	{
 		m_UICollision->SetSize(halfSize);
 	}
+
+	m_Size.x = halfSize.x * 2;
+	m_Size.y = halfSize.y * 2;
 
 	m_isOnlyFontMode = false;
 }

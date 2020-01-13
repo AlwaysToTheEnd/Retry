@@ -7,6 +7,7 @@
 #include "d3dUtil.h"
 
 std::function<const physx::PxVec3 & (void)> HeightMap::m_GetPickingPosFunc = nullptr;
+std::function<void(const DynamicBufferInfo*)> HeightMap::m_DynamicBufferReleaseFunc = nullptr;
 
 using namespace physx;
 
@@ -16,6 +17,12 @@ void HeightMap::Delete()
 	{
 		m_PxStatic->getScene()->removeActor(*m_PxStatic);
 		m_PxStatic = nullptr;
+	}
+
+	if (m_DBInfo)
+	{
+		m_DynamicBufferReleaseFunc(m_DBInfo);
+		m_DBInfo = nullptr;
 	}
 
 	DeviceObject::Delete();
@@ -60,6 +67,7 @@ void HeightMap::Init(PhysX4_1* pxd, IGraphicDevice* gd)
 	if (m_GetPickingPosFunc == nullptr)
 	{
 		m_GetPickingPosFunc = std::bind(&PhysX4_1::GetPickingPos, pxd);
+		m_DynamicBufferReleaseFunc = std::bind(&IGraphicDevice::ReleaseDynamicVIBuffer, gd, std::placeholders::_1);
 	}
 
 	int fileSizeHight = 0;
@@ -156,7 +164,6 @@ void HeightMap::CreateRigidStatic(PhysX4_1* pxd, int fileHeight, int fileWidth, 
 
 	m_Funcs = std::make_unique<PhysXFunctionalObject>(this);
 	m_Funcs->m_VoidFuncs.push_back(std::bind(&HeightMap::StartMapPickingWork, this));
-	m_Funcs->m_VoidFuncs.push_back(std::bind(&HeightMap::TestFunc, this));
 
 	m_PxStatic->userData = m_Funcs.get();
 	pxd->GetScene(GetScene())->addActor(*m_PxStatic);
@@ -228,18 +235,18 @@ void HeightMap::CreateRenderMesh(IGraphicDevice* gd, int fileHeight, int fileWid
 	}
 
 	Material testMaterial;
-	testMaterial.diffuseMapIndex = gd->GetTextureIndex("HeightMap3.jpg");
 	testMaterial.diffuseAlbedo = { 1,1,1,1 };
 	assert(gd->CreateMaterials({ "HeightFieldMaterial" }, { testMaterial }));
 
 	assert(gd->CreateDynamicVIBuffer(vertices.size(), indices.size(), &m_DBInfo));
-
+	
 	SubmeshData oneSub;
 	oneSub.indexOffset = 0;
 	oneSub.vertexOffset = 0;
 	oneSub.numIndex = indices.size();
 	oneSub.numVertex = vertices.size();
 	oneSub.material = "HeightFieldMaterial";
+	oneSub.diffuseMap = "HeightMap3.jpg";
 
 	m_DBInfo->meshObject.subs["oneSub"] = oneSub;
 
@@ -260,25 +267,4 @@ void HeightMap::StartMapPickingWork()
 	{
 		it(pickingPos);
 	}
-}
-
-void HeightMap::TestFunc()
-{
-	/*PxHeightFieldGeometry fieldGeo;
-	
-	if (m_Shape->getHeightFieldGeometry(fieldGeo))
-	{
-		m_Scale.y += 0.02f;
-		m_Scale.x += 0.1f;
-		m_Scale.z += 0.1f;
-
-		fieldGeo.heightScale += 0.02f;
-		fieldGeo.columnScale += 0.1f;
-		fieldGeo.rowScale += 0.1f;
-
-		auto transform = GetComponent<DOTransform>();
-		transform->SetScale(m_Scale);
-
-		m_Shape->setGeometry(fieldGeo);
-	}*/
 }

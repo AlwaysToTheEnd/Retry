@@ -17,12 +17,14 @@ public:
 	}
 	virtual ~UIButton() = default;
 
-	void SetTexture(const std::string& name, const physx::PxVec2& halfSize, bool colliderSizeIsEqualTexture = true);
-	void SetText(const std::wstring& text);
-	void OnlyFontMode();
-	void SetTextHeight(int height);
-	void SetColliderSize(const physx::PxVec2& halfSize);
-	void AddFunc(std::function<void()> func);
+	virtual void	SetPos(const physx::PxVec3& pos) override;
+	void			SetTexture(const std::string& name, const physx::PxVec2& halfSize, bool colliderSizeIsEqualTexture = true);
+	void			SetText(const std::wstring& text);
+	void			SetColliderSize(const physx::PxVec2& halfSize);
+	void			SetTextHeight(int height);
+
+	void			AddFunc(std::function<void()> func);
+	void			OnlyFontMode();
 
 private:
 	virtual void Init() override;

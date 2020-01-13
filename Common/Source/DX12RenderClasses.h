@@ -8,11 +8,15 @@ struct ObjectConstants
 {
 	physx::PxMat44	world;
 	physx::PxVec3	scale = { 1,1,1 };
-	unsigned int	materialIndex = 0;
+	int				diffuseMapIndex = -1;
+	int				normalMapIndex = -1;
+	int				materialIndex = -1;
 	int				aniBoneIndex = -1;
 	unsigned int	primitive;
 	int				dynamicBufferIndex;
 	int				pad0;
+	int				pad1;
+	int				pad2;
 };
 
 struct OnlyTexObjectConstants

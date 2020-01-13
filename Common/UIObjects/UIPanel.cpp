@@ -13,7 +13,7 @@ void UIPanel::Init()
 	m_UICollision = CreateComponenet<DOUICollision>();
 	m_Render = CreateComponenet<DORenderer>();
 
-	m_Trans->SetPosZ(0.9f);
+	m_Trans->SetPosZ(0.8f);
 	m_Font->SetFont(RenderFont::fontNames.front());
 	m_Font->m_FontHeight = 15;
 	RenderInfo info(RENDER_UI);
@@ -104,9 +104,17 @@ void UIPanel::SetName(const std::wstring& name)
 
 void UIPanel::SetPos(const physx::PxVec2& pos)
 {
-	m_Trans->SetPosX(pos.x);
-	m_Trans->SetPosY(pos.y);
+	physx::PxVec2 uv = m_BenchUV - physx::PxVec2(0.5f, 0.5f);
+	m_Trans->SetPosX(pos.x - m_Size.x * uv.x);
+	m_Trans->SetPosY(pos.y - m_Size.y * uv.y);
+}
 
+void UIPanel::SetPos(const physx::PxVec3& pos)
+{
+	physx::PxVec2 uv = m_BenchUV - physx::PxVec2(0.5f, 0.5f);
+	m_Trans->SetPosX(pos.x - m_Size.x * uv.x);
+	m_Trans->SetPosY(pos.y - m_Size.y * uv.y);
+	m_Trans->SetPosZ(pos.z);
 }
 
 void UIPanel::ThisPanalIsStatic()
@@ -115,6 +123,15 @@ void UIPanel::ThisPanalIsStatic()
 	{
 		ExceptComponent(m_UICollision);
 		m_UICollision = nullptr;
+	}
+}
+
+void UIPanel::UIComsAlignment(physx::PxVec2 startPosition, physx::PxVec2 interval)
+{
+	for (size_t i = 0; i < m_UIComOffset.size(); i++)
+	{
+		m_UIComOffset[i] = startPosition;
+		startPosition += interval;
 	}
 }
 
@@ -132,9 +149,10 @@ void UIPanel::Update(float delta)
 		{
 			auto transform = m_UIComs[i].object->GetComponent<DOTransform>();
 
-			transform->SetTransform(
-				physx::PxTransform(m_UIComOffset[i].x - halfSize.x, m_UIComOffset[i].y - halfSize.y, -0.001f)
-				* panelTransform);
+			m_UIComs[i].object->SetPos(physx::PxVec3(
+				m_UIComOffset[i].x - halfSize.x + panelTransform.p.x, 
+				m_UIComOffset[i].y - halfSize.y + panelTransform.p.y,
+				panelTransform.p.z -0.001f));
 		}
 	}
 }

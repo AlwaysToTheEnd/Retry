@@ -196,7 +196,7 @@ public: // Used from DeviceObject Init
 	virtual bool	CreateMesh(const std::string& meshName, MeshObject& meshinfo, const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices) override;
 	virtual bool	CreateMaterials(const std::vector<std::string>& materialNames, const std::vector<Material>& materials) override;
 	virtual bool	EditMesh(const std::string& meshName, const std::vector<Vertex>& vertices) override;
-	virtual bool	EditMaterial(const std::string& materialName, const Material& material, const std::string& textureName = "") override;
+	virtual bool	EditMaterial(const std::string& materialName, const Material& material) override;
 
 	virtual bool	CreateDynamicVIBuffer(unsigned int vertexNum, unsigned int indexNum, DynamicBufferInfo** out);
 	virtual void	EditDynamicVIBuffer(const DynamicBufferInfo* dvi, DYNAMIC_BUFFER_EDIT_MOD mode, const std::vector<float>& inputDatas);

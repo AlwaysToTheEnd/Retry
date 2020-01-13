@@ -59,12 +59,13 @@ VertexIn VS(VertexIn vin)
 
 //enum RENDER_TYPE
 //{
-//	RENDER_NONE,
+//    RENDER_NONE,
 //	RENDER_MESH,
+//	RENDER_DYNAMIC,
 //	RENDER_BOX,
 //	RENDER_PLANE,
 //	RENDER_TEX_PLANE,
-//	RENDER_UI
+//	RENDER_UI,
 //};
 
 void CreateBox(uint cbIndex, float3 size, float4 color, inout TriangleStream<VertexOut> output)
@@ -207,14 +208,14 @@ void GS(point VertexIn input[1], inout TriangleStream<VertexOut> output)
 {
 	switch (input[0].type)
 	{
-	case 2: //BOX
+	case 3: //BOX
 		CreateBox(input[0].cbIndex, input[0].size, input[0].color, output);
 		break;
-	case 3: //PLANE
-	case 4: //TEX_PLANE
+	case 4: //PLANE
+	case 5: //TEX_PLANE
 		CreatePlane(input[0].cbIndex, float2(input[0].size.x, input[0].size.y), input[0].color, output);
 		break;
-	case 5: //UI
+	case 6: //UI
 		CreateUIPlane(input[0].cbIndex, float2(input[0].size.x, input[0].size.y), input[0].color, output);
 		break;
 	}

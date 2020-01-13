@@ -433,7 +433,7 @@ bool GraphicDX12::EditMesh(const std::string& meshName, const std::vector<Vertex
 	return result;
 }
 
-bool GraphicDX12::EditMaterial(const std::string& materialName, const Material& material, const std::string& textureName)
+bool GraphicDX12::EditMaterial(const std::string& materialName, const Material& material)
 {
 	bool result = false;
 
@@ -446,10 +446,6 @@ bool GraphicDX12::EditMaterial(const std::string& materialName, const Material& 
 		allocator.Get(), nullptr, IID_PPV_ARGS(commandList.GetAddressOf())));
 
 	Material temp = material;
-	if (textureName.length())
-	{
-		temp.diffuseMapIndex = m_TextureBuffer->GetTextureIndex(textureName);
-	}
 
 	result = m_Materials->EditData(m_D3dDevice.Get(), commandList.Get(), materialName, &temp);
 
@@ -633,7 +629,7 @@ void GraphicDX12::LoadMeshAndMaterialFromFolder(const std::vector<std::wstring>&
 			for (auto& it2 : subsets)
 			{
 				UINT faceCount = 0;
-				UINT num = 0;
+
 				for (auto& materalIndex : it2.materialIndexCount)
 				{
 					SubmeshData sub;
@@ -644,7 +640,7 @@ void GraphicDX12::LoadMeshAndMaterialFromFolder(const std::vector<std::wstring>&
 					sub.numVertex = it2.vertexCount;
 
 					faceCount += materalIndex.second;
-					meshObject.subs.insert({ materalIndex.first + to_string(num++),sub });
+					meshObject.subs.insert({ materalIndex.first ,sub });
 				}
 			}
 
@@ -655,11 +651,11 @@ void GraphicDX12::LoadMeshAndMaterialFromFolder(const std::vector<std::wstring>&
 				{
 					if (textureIter.isNormalMap)
 					{
-						material.normalMapIndex = m_TextureBuffer->GetTextureIndex(textureIter.name);
+						meshObject.subs[it2.name].normalMap = textureIter.name;
 					}
 					else
 					{
-						material.diffuseMapIndex = m_TextureBuffer->GetTextureIndex(textureIter.name);
+						meshObject.subs[it2.name].diffuseMap = textureIter.name;
 					}
 				}
 
@@ -1190,6 +1186,8 @@ void GraphicDX12::UpdateObjectCB()
 			{
 				for (auto& it2 : mesh.subs)
 				{
+					object.diffuseMapIndex = m_TextureBuffer->GetTextureIndex(it2.second.diffuseMap);
+					object.normalMapIndex = m_TextureBuffer->GetTextureIndex(it2.second.normalMap);
 					object.materialIndex = m_Materials->GetIndex(it2.second.material);
 					m_RenderObjects[DX12_RENDER_TYPE_NORMAL_MESH].push_back(object);
 					m_RenderObjectsSubmesh[DX12_RENDER_TYPE_NORMAL_MESH].push_back(&it2.second);
@@ -1199,6 +1197,8 @@ void GraphicDX12::UpdateObjectCB()
 			{
 				for (auto& it2 : mesh.subs)
 				{
+					object.diffuseMapIndex = m_TextureBuffer->GetTextureIndex(it2.second.diffuseMap);
+					object.normalMapIndex = m_TextureBuffer->GetTextureIndex(it2.second.normalMap);
 					object.materialIndex = m_Materials->GetIndex(it2.second.material);
 					m_RenderObjects[DX12_RENDER_TYPE_SKINNED_MESH].push_back(object);
 					m_RenderObjectsSubmesh[DX12_RENDER_TYPE_SKINNED_MESH].push_back(&it2.second);
@@ -1217,6 +1217,8 @@ void GraphicDX12::UpdateObjectCB()
 			const MeshObject& mesh = m_DynamicBuffers[object.dynamicBufferIndex]->dynamicBufferInfo->meshObject;
 			for (auto& it2 : mesh.subs)
 			{
+				object.diffuseMapIndex = m_TextureBuffer->GetTextureIndex(it2.second.diffuseMap);
+				object.normalMapIndex = m_TextureBuffer->GetTextureIndex(it2.second.normalMap);
 				object.materialIndex = m_Materials->GetIndex(it2.second.material);
 				m_RenderObjects[DX12_RENDER_TYPE_DYNAMIC_MESH].push_back(object);
 				m_RenderObjectsSubmesh[DX12_RENDER_TYPE_DYNAMIC_MESH].push_back(&it2.second);

@@ -195,7 +195,10 @@
     <ClCompile Include="..\Common\Source\Xml\Xml.cpp">
       <Filter>Common\CodeResources\Xml</Filter>
     </ClCompile>
-    <ClCompile Include="..\Common\Source\HeightMapCreator.cpp">
+    <ClCompile Include="..\Common\Source\GameCreator.cpp">
+      <Filter>Step2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\UIObjects\HeightMapControlPanel.cpp">
       <Filter>Step2\HeightMap</Filter>
     </ClCompile>
   </ItemGroup>
@@ -323,7 +326,10 @@
     <ClInclude Include="..\Common\Source\Xml\Xml.h">
       <Filter>Common\CodeResources\Xml</Filter>
     </ClInclude>
-    <ClInclude Include="..\Common\Source\HeightMapCreator.h">
+    <ClInclude Include="..\Common\Source\GameCreator.h">
+      <Filter>Step2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\UIObjects\HeightMapControlPanel.h">
       <Filter>Step2\HeightMap</Filter>
     </ClInclude>
   </ItemGroup>

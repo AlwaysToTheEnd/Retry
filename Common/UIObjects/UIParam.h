@@ -72,29 +72,31 @@ public:
 	{
 		
 	}
-	virtual ~UIParam() = default;
-	virtual void Delete() override;
+	virtual			~UIParam() = default;
+	virtual void	Delete() override;
 
-	template<typename T> void SetTargetParam(const std::wstring& paramName, T* data);
-	void SetEnumParam(const std::wstring& paramName, const std::vector<ENUM_ELEMENT>* elementInfo, int* data);
-	void SetStringParam(const std::wstring& paramName, const std::vector<std::string>* strings, std::string* data);
-	void SetTextHeight(int height);
-	void SetDirtyCall(std::function<void()> dirtyCall);
+	virtual void				SetPos(const physx::PxVec3& pos) override;
+	template<typename T> void	SetTargetParam(const std::wstring& paramName, T* data);
+	void						SetEnumParam(const std::wstring& paramName, const std::vector<ENUM_ELEMENT>* elementInfo, int* data);
+	void						SetStringParam(const std::wstring& paramName, const std::vector<std::string>* strings, std::string* data);
+	void						SetTextHeight(int height);
+	void						SetDirtyCall(std::function<void()> dirtyCall);
 
 private:
-	virtual void Init() override;
-	virtual void Update(float delta) override;
-	void SetUIParamToController();
-	void Selected(bool value) { m_Selected = value; }
+	virtual void	Init() override;
+	virtual void	Update(float delta) override;
+	void			SetUIParamToController();
+	void			Selected(bool value) { m_Selected = value; }
 
-	std::wstring GetDataString();
-	template<typename T> std::wstring GetStringFromValue();
+	std::wstring						GetDataString();
+	template<typename T> std::wstring	GetStringFromValue();
+
 private:
 	const UIPARAMTYPE	m_Type;
 	UICONTROLTYPE		m_ControlType;
 	std::wstring		m_ParamName;
 	DOTransform*		m_Trans;
-	DOFont*			m_Font;
+	DOFont*				m_Font;
 	DOUICollision*		m_UICollision;
 	void*				m_ParamPtr;
 	CGH::DATA_TYPE		m_DataType;

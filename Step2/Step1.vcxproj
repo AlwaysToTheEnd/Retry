@@ -25,7 +25,7 @@
     <ClCompile Include="..\Common\Source\AnimationTreeScene\AnimationTreeScene.cpp" />
     <ClCompile Include="..\Common\Source\GraphicBase.cpp" />
     <ClCompile Include="..\Common\Source\HeightMapCreateScene\HeightMapCreateScene.cpp" />
-    <ClCompile Include="..\Common\Source\HeightMapCreator.cpp" />
+    <ClCompile Include="..\Common\Source\GameCreator.cpp" />
     <ClCompile Include="..\Common\Source\IGraphicDevice.cpp" />
     <ClCompile Include="..\Common\Source\PhysicsDO.cpp" />
     <ClCompile Include="..\Common\Source\cCamera.cpp" />
@@ -55,6 +55,7 @@
     <ClCompile Include="..\Common\Source\zlib\inftrees.c" />
     <ClCompile Include="..\Common\Source\zlib\trees.c" />
     <ClCompile Include="..\Common\Source\zlib\zutil.c" />
+    <ClCompile Include="..\Common\UIObjects\HeightMapControlPanel.cpp" />
     <ClCompile Include="..\Common\UIObjects\UIButton.cpp" />
     <ClCompile Include="..\Common\UIObjects\UIObject.cpp" />
     <ClCompile Include="..\Common\UIObjects\UIPanel.cpp" />
@@ -70,7 +71,7 @@
     <ClInclude Include="..\Common\Source\BaseClass.h" />
     <ClInclude Include="..\Common\Source\GraphicBase.h" />
     <ClInclude Include="..\Common\Source\HeightMapCreateScene\HeightMapCreateScene.h" />
-    <ClInclude Include="..\Common\Source\HeightMapCreator.h" />
+    <ClInclude Include="..\Common\Source\GameCreator.h" />
     <ClInclude Include="..\Common\Source\PhysicsDO.h" />
     <ClInclude Include="..\Common\Source\cCamera.h" />
     <ClInclude Include="..\Common\Source\cDefaultBuffer.h" />
@@ -99,6 +100,7 @@
     <ClInclude Include="..\Common\Source\Vertex.h" />
     <ClInclude Include="..\Common\Source\XFileParser.h" />
     <ClInclude Include="..\Common\Source\Xml\Xml.h" />
+    <ClInclude Include="..\Common\UIObjects\HeightMapControlPanel.h" />
     <ClInclude Include="..\Common\UIObjects\UIObject.h" />
     <ClInclude Include="..\Common\UIObjects\UIParam.h" />
     <ClInclude Include="..\Common\UIObjects\UIButton.h" />

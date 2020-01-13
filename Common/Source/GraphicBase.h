@@ -134,16 +134,13 @@ struct Material
 	physx::PxVec4	diffuseAlbedo = { 1,1,1,1 };
 	physx::PxVec3	fresnel0 = { 0.01f,0.01f,0.01f };
 	float			roughness = 0.25f;
-
-	int				diffuseMapIndex = -1;
-	int				normalMapIndex = -1;
-	int				materialPad1;
-	int				materialPad2;
 };
 
 struct SubmeshData
 {
 	std::string		material;
+	std::string		diffuseMap;
+	std::string		normalMap;
 	unsigned int	numVertex = 0;
 	unsigned int	vertexOffset = 0;
 	unsigned int	numIndex = 0;

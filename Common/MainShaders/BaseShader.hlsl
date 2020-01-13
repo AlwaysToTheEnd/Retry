@@ -4,10 +4,6 @@ struct MaterialData
 	float4		DriffuseAlbedo;
 	float3		FresnelR0;
 	float		Roughness;
-	int			DiffuseMapIndex;
-	int			NormalMapIndex;
-	uint		MaterialPad1;
-	uint		MaterialPad2;
 };
 
 StructuredBuffer<MaterialData> gInstanceData : register(t0, space1);
@@ -24,24 +20,24 @@ SamplerComparisonState gsamShadow : register(s6);
 
 cbuffer cbSkinned : register(b2)
 {
-	float4x4 gAniBoneMat[BONEMAXMATRIX];
+	float4x4	gAniBoneMat[BONEMAXMATRIX];
 };
 
 cbuffer cbPass : register(b0)
 {
-	float4x4 gView;
-	float4x4 gInvView;
-	float4x4 gProj;
-	float4x4 gInvProj;
-	float4x4 gViewProj;
-	float4x4 gInvViewProj;
-	float4x4 gRightViewProj;
-	float4x4 gOrthoMatrix;
-	float3 gEyePosW;
-	float cbPerObjectPad1;
-	float2 gRenderTargetSize;
-	float2 gInvRenderTargetSize;
-	float4 gAmbientLight;
+	float4x4	gView;
+	float4x4	gInvView;
+	float4x4	gProj;
+	float4x4	gInvProj;
+	float4x4	gViewProj;
+	float4x4	gInvViewProj;
+	float4x4	gRightViewProj;
+	float4x4	gOrthoMatrix;
+	float3		gEyePosW;
+	float		cbPerObjectPad1;
+	float2		gRenderTargetSize;
+	float2		gInvRenderTargetSize;
+	float4		gAmbientLight;
 
 	//Light gLights[MaxLights];
 };
@@ -50,11 +46,15 @@ cbuffer objectData : register(b1)
 {
 	float4x4	World;
 	float3		Scale;
+	int			TextureIndex;
+    int			NormalMapIndex;
 	uint		MaterialIndex;
 	int			AniBoneIndex;
 	int			PrevAniBone;
 	float		blendFactor;
-	int			Pad0;
+    int			pad0;
+    int			pad1;
+    int			pad2;
 };
 
 struct SkinnedVertex
@@ -138,11 +138,10 @@ VertexOut VS(VertexIn vin)
 float4 PS(VertexOut pin) : SV_Target
 {
 	float4 litColor = float4(0,1,0,1);
-	int index = gInstanceData[MaterialIndex].DiffuseMapIndex;
 
-    if (index >= 0)
+    if (TextureIndex >= 0)
     {
-        litColor = gMainTexture[index].Sample(gsamAnisotropicClamp, pin.TexC);
+        litColor = gMainTexture[TextureIndex].Sample(gsamAnisotropicClamp, pin.TexC);
     }
 
 	clip(litColor.a);

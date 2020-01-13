@@ -33,6 +33,7 @@ public:
 
 	const physx::PxVec3&	GetScale() const { return m_Scale; }
 	const physx::PxVec2&	GetSize() const { return m_MapOriginSize; }
+	std::string				GetFileName() const { return std::string(m_fileName.begin(), m_fileName.end()); }
 
 	void					SetScale(const physx::PxVec3 scale);
 	void					AddMapPickingWrok(std::function<void(const physx::PxVec3& pickingPos)> func);
@@ -49,10 +50,9 @@ private:
 		 
 	void StartMapPickingWork();
 
-	void TestFunc();
-
 private:
 	static std::function<const physx::PxVec3 & (void)>		m_GetPickingPosFunc;
+	static std::function<void(const DynamicBufferInfo*)>	m_DynamicBufferReleaseFunc;
 
 	physx::PxVec3											m_Scale;
 	physx::PxVec2											m_MapOriginSize;

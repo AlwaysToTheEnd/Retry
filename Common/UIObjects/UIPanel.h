@@ -6,7 +6,7 @@
 
 class UIPanel :public UIObject
 {
-private:
+protected:
 	static class UIPanelController :public StaticGameObjectController
 	{
 	public:
@@ -20,13 +20,15 @@ private:
 		}
 		virtual ~UIPanelController() = default;
 
-		void AddPanel(UIPanel* panel);
-		void DeletedPanel(UIPanel* panel);
+		void			AddPanel(UIPanel* panel);
+		void			DeletedPanel(UIPanel* panel);
 
-		virtual void WorkClear() override;
+		virtual void	WorkClear() override;
+
 	private:
-		virtual void Update(float delta) override;
-		void SortPanels(UIPanel* currPanel);
+		virtual void	Update(float delta) override;
+
+		void			SortPanels(UIPanel* currPanel);
 
 	private:
 		UIPanel*			m_CurrPanel;
@@ -36,7 +38,7 @@ private:
 
 	} s_PanelController;
 
-private:
+protected:
 	enum class UICOMTYPE
 	{
 		UIBUTTON,
@@ -63,36 +65,39 @@ public:
 		, m_Render(nullptr)
 		, m_UICollision(nullptr)
 		, m_Active(true)
-		, m_Size(10, 10)
 	{
 		s_PanelController.AddPanel(this);
 	}
 
-	virtual ~UIPanel() = default;
-	virtual void Delete() override;
+	virtual			~UIPanel() = default;
+	virtual void	Delete() override;
+	void			DeleteAllComs();
 
-	void AddUICom(unsigned int x, unsigned y, UIButton* button);
-	void AddUICom(unsigned int x, unsigned y, UIParam* param);
-	void AddUICom(unsigned int x, unsigned y, UIPanel* panel);
-	void DeleteAllComs();
+	void			AddUICom(unsigned int x, unsigned y, UIButton* button);
+	void			AddUICom(unsigned int x, unsigned y, UIParam* param);
+	void			AddUICom(unsigned int x, unsigned y, UIPanel* panel);
+	void			UIComsAlignment(physx::PxVec2 startPosition, physx::PxVec2 interval);
 
-	physx::PxVec2 GetSize() { return m_Size; }
-	physx::PxVec2 GetPos();
-	unsigned int GetNumAddedComs() { return m_UIComs.size(); }
-	void SetBackGroundTexture(const std::string& name);
-	void SetBackGroundColor(const physx::PxVec4& color);
-	void SetSize(unsigned int x, unsigned y);
-	void SetName(const std::wstring& name);
-	void SetPos(const physx::PxVec2& pos);
-	void ThisPanalIsStatic();
+	physx::PxVec2	GetSize() { return m_Size; }
+	physx::PxVec2	GetPos();
+	unsigned int	GetNumAddedComs() { return m_UIComs.size(); }
 
-private:
+
+	void			SetBackGroundTexture(const std::string& name);
+	void			SetBackGroundColor(const physx::PxVec4& color);
+	void			SetSize(unsigned int x, unsigned y);
+	void			SetName(const std::wstring& name);
+	void			SetPos(const physx::PxVec2& pos);
+	virtual void	SetPos(const physx::PxVec3& pos) override;
+
+	void			ThisPanalIsStatic();
+
+protected:
 	virtual void Init() override;
 	virtual void Update(float delta) override;
 
-private:
+protected:
 	bool			m_Active;
-	physx::PxVec2	m_Size;
 	DOTransform*	m_Trans;
 	DOFont*			m_Font;
 	DORenderer*		m_Render;

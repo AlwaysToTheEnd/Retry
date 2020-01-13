@@ -17,6 +17,14 @@ void UIParam::Delete()
 	GameObject::Delete();
 }
 
+void UIParam::SetPos(const physx::PxVec3& pos)
+{
+	physx::PxVec2 uv = m_BenchUV - physx::PxVec2(0.5f, 0.5f);
+	m_Trans->SetPosX(pos.x - m_Size.x * uv.x);
+	m_Trans->SetPosY(pos.y - m_Size.y * uv.y);
+	m_Trans->SetPosZ(pos.z);
+}
+
 void UIParam::SetEnumParam(const std::wstring& paramName, const std::vector<ENUM_ELEMENT>* elementInfo, int* data)
 {
 	m_ControlType = UICONTROLTYPE::ENUM_DATA;
