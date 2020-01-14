@@ -3,7 +3,6 @@
 #include <d3dx12.h>
 #include <wrl.h>
 #include <dxgi1_4.h>
-#include <D3Dcompiler.h>
 #include <DirectXMath.h>
 #include <DirectXPackedVector.h>
 #include <DirectXColors.h>
@@ -12,11 +11,12 @@
 #include <functional>
 
 #include "IGraphicDevice.h"
-#include "DX12FontMG.h"
 #include "XFileParser.h"
-#include "cIndexManagementBuffer.h"
-#include "DX12RenderClasses.h"
+#include "DX12/DX12FontMG.h"
+#include "DX12/cIndexManagementBuffer.h"
+#include "DX12/DX12RenderClasses.h"
 
+#include <D3Dcompiler.h>
 #pragma comment(lib,"d3dcompiler.lib")
 #pragma comment(lib, "D3D12.lib")
 #pragma comment(lib, "dxgi.lib")
@@ -125,6 +125,7 @@ class GraphicDX12 final : public IGraphicDevice
 		DX12_RENDER_TYPE_DYNAMIC_MESH,
 		DX12_RENDER_TYPE_SKINNED_MESH,
 		DX12_RENDER_TYPE_POINT,
+		DX12_RENDER_TYPE_UI,
 		DX12_RENDER_TYPE_COUNT
 	};
 

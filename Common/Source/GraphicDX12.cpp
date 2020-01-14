@@ -1,6 +1,6 @@
 #include "GraphicDX12.h"
 #include "cCamera.h"
-#include "cTextureBuffer.h"
+#include "DX12/cTextureBuffer.h"
 #include "GraphicDO.h"
 #include "BaseClass.h"
 
@@ -1041,7 +1041,7 @@ void GraphicDX12::BuildPSOs()
 	transparencyBlendDesc.BlendOpAlpha = D3D12_BLEND_OP_ADD;
 	transparencyBlendDesc.LogicOp = D3D12_LOGIC_OP_NOOP;
 	transparencyBlendDesc.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
-
+	
 	ZeroMemory(&opaquePsoDesc, sizeof(D3D12_GRAPHICS_PIPELINE_STATE_DESC));
 	opaquePsoDesc.InputLayout = { m_InputLayout[DX12_RENDER_TYPE_NORMAL_MESH].data(), (UINT)m_InputLayout[DX12_RENDER_TYPE_NORMAL_MESH].size() };
 	opaquePsoDesc.pRootSignature = m_T1RootSignature.Get();
@@ -1132,6 +1132,7 @@ void GraphicDX12::UpdateMainPassCB()
 	m_MainPassCB.orthoMatrix = m_OrthoProjectionMat.getTranspose();
 	m_MainPassCB.renderTargetSize = physx::PxVec2((float)m_ClientWidth, (float)m_ClientHeight);
 	m_MainPassCB.invRenderTargetSize = physx::PxVec2(1.0f / m_ClientWidth, 1.0f / m_ClientHeight);
+	m_MainPassCB.samplerIndex = CGH::GO.graphic.samplerIndex;
 
 	m_MainPassCB.ambientLight = { 0.25f, 0.25f, 0.35f, 1.0f };
 	//m_MainPassCB.Lights[0].direction = { 0.57735f, -0.57735f, 0.57735f };

@@ -1,3 +1,4 @@
+#include "Header.hlsli"
 
 struct MaterialData
 {
@@ -7,39 +8,10 @@ struct MaterialData
 };
 
 StructuredBuffer<MaterialData> gInstanceData : register(t0, space1);
-Texture2D gMainTexture[MAXTEXTURE] : register(t0);
-
-SamplerState gsamPointWrap : register(s0);
-SamplerState gsamPointClamp : register(s1);
-SamplerState gsamLinearWrap : register(s2);
-SamplerState gsamLinearClamp : register(s3);
-SamplerState gsamAnisotropicWrap : register(s4);
-SamplerState gsamAnisotropicClamp : register(s5);
-SamplerComparisonState gsamShadow : register(s6);
-
 
 cbuffer cbSkinned : register(b2)
 {
 	float4x4	gAniBoneMat[BONEMAXMATRIX];
-};
-
-cbuffer cbPass : register(b0)
-{
-	float4x4	gView;
-	float4x4	gInvView;
-	float4x4	gProj;
-	float4x4	gInvProj;
-	float4x4	gViewProj;
-	float4x4	gInvViewProj;
-	float4x4	gRightViewProj;
-	float4x4	gOrthoMatrix;
-	float3		gEyePosW;
-	float		cbPerObjectPad1;
-	float2		gRenderTargetSize;
-	float2		gInvRenderTargetSize;
-	float4		gAmbientLight;
-
-	//Light gLights[MaxLights];
 };
 
 cbuffer objectData : register(b1)
@@ -141,7 +113,7 @@ float4 PS(VertexOut pin) : SV_Target
 
     if (TextureIndex >= 0)
     {
-        litColor = gMainTexture[TextureIndex].Sample(gsamAnisotropicClamp, pin.TexC);
+        litColor = GetTexel(TextureIndex, pin.TexC);
     }
 
 	clip(litColor.a);

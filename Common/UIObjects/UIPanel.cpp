@@ -15,7 +15,7 @@ void UIPanel::Init()
 
 	m_Trans->SetPosZ(0.8f);
 	m_Font->SetFont(RenderFont::fontNames.front());
-	m_Font->m_FontHeight = m_TitleSize - 5;
+	m_Font->m_FontHeight = CGH::GO.ui.panelTitleTextHeight;
 	RenderInfo info(RENDER_UI);
 	info.point.size = { 100,100,0 };
 	m_Render->SetRenderInfo(info);

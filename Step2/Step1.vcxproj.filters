@@ -108,9 +108,6 @@
     <ClCompile Include="..\Common\Source\GameObject.cpp">
       <Filter>Common\GameObject</Filter>
     </ClCompile>
-    <ClCompile Include="..\Common\Source\cTextureBuffer.cpp">
-      <Filter>Common\DeviceInstance\DX12Supporters\Buffer</Filter>
-    </ClCompile>
     <ClCompile Include="..\Common\Source\AnimationTree.cpp">
       <Filter>Common\GameObject\AnimationTree</Filter>
     </ClCompile>
@@ -122,9 +119,6 @@
     </ClCompile>
     <ClCompile Include="..\Common\Source\d3dUtil.cpp">
       <Filter>Common\CodeResources\BaseClass</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Common\Source\DX12FontMG.cpp">
-      <Filter>Common\DeviceInstance\DX12Supporters</Filter>
     </ClCompile>
     <ClCompile Include="..\Common\Source\cCamera.cpp">
       <Filter>Common\CodeResources\Procedure Class</Filter>
@@ -201,13 +195,19 @@
     <ClCompile Include="..\Common\UIObjects\HeightMapControlPanel.cpp">
       <Filter>Step2\HeightMap</Filter>
     </ClCompile>
+    <ClCompile Include="..\Common\Source\DX12\cTextureBuffer.cpp">
+      <Filter>Common\DeviceInstance\DX12Supporters\Buffer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Source\DX12\DX12FontMG.cpp">
+      <Filter>Common\DeviceInstance\DX12Supporters</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Source\DX12\PSOController.cpp">
+      <Filter>Common\DeviceInstance\DX12Supporters</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Common\Source\IGraphicDevice.h">
       <Filter>Common\DeviceInstance\_Interface</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Common\Source\DX12RenderClasses.h">
-      <Filter>Common\DeviceInstance\DX12Supporters</Filter>
     </ClInclude>
     <ClInclude Include="Step2.h">
       <Filter>Step2</Filter>
@@ -220,15 +220,6 @@
     </ClInclude>
     <ClInclude Include="..\Common\Source\cCamera.h">
       <Filter>Common\CodeResources\Procedure Class</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Common\Source\cTextureBuffer.h">
-      <Filter>Common\DeviceInstance\DX12Supporters\Buffer</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Common\Source\cDefaultBuffer.h">
-      <Filter>Common\DeviceInstance\DX12Supporters\Buffer</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Common\Source\cIndexManagementBuffer.h">
-      <Filter>Common\DeviceInstance\DX12Supporters\Buffer</Filter>
     </ClInclude>
     <ClInclude Include="..\Common\Source\AnimationTree.h">
       <Filter>Common\GameObject\AnimationTree</Filter>
@@ -250,9 +241,6 @@
     </ClInclude>
     <ClInclude Include="..\Common\Source\Px1RefPtr.h">
       <Filter>Common\CodeResources\BaseClass</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Common\Source\DX12FontMG.h">
-      <Filter>Common\DeviceInstance\DX12Supporters</Filter>
     </ClInclude>
     <ClInclude Include="..\Common\Source\GraphicDX12.h">
       <Filter>Common\DeviceInstance\DX12Supporters</Filter>
@@ -332,12 +320,36 @@
     <ClInclude Include="..\Common\UIObjects\HeightMapControlPanel.h">
       <Filter>Step2\HeightMap</Filter>
     </ClInclude>
+    <ClInclude Include="..\Common\Source\DX12\cDefaultBuffer.h">
+      <Filter>Common\DeviceInstance\DX12Supporters\Buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\DX12\cIndexManagementBuffer.h">
+      <Filter>Common\DeviceInstance\DX12Supporters\Buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\DX12\cTextureBuffer.h">
+      <Filter>Common\DeviceInstance\DX12Supporters\Buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\DX12\DX12RenderClasses.h">
+      <Filter>Common\DeviceInstance\DX12Supporters</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\DX12\DX12FontMG.h">
+      <Filter>Common\DeviceInstance\DX12Supporters</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\DX12\PSOController.h">
+      <Filter>Common\DeviceInstance\DX12Supporters</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Common\MainShaders\BaseShader.hlsl">
       <Filter>Shader</Filter>
     </None>
     <None Include="..\Common\MainShaders\pointShader.hlsl">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="..\Common\MainShaders\UIShader.hlsl">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="..\Common\MainShaders\Header.hlsli">
       <Filter>Shader</Filter>
     </None>
   </ItemGroup>

@@ -32,4 +32,41 @@ namespace CGH
 			unsigned int _u;
 		};
 	};
+
+	static struct GlobalOptions
+	{
+		struct ClientOption
+		{
+			float defaultCameraDim = 50.0f;
+
+		}client;
+
+		struct UIOption
+		{
+			physx::PxVec4	panelTitleColor = { 0,0,0,1 };
+			int				panelTitleHeight = 20;
+			int				panelTitleTextHeight = 15;
+			int				panelCloseButtonHalfSize = panelTitleHeight / 2;
+			int				panelComponentsInterval = 3;
+		}ui;
+
+		struct GraphicOption
+		{
+			physx::PxVec3	dirLight = { 0,-1,0 };
+			physx::PxVec3	dirLightPower = { 1,1,1 };
+			unsigned int	samplerIndex = 0;
+			bool			shadowMap = true;
+			bool			dirLightOn = true;
+			bool			cullMode = true;
+			bool			wireFrameMode = false;
+
+		}graphic;
+
+		struct PhysicsOption
+		{
+			bool drawCollisionShapeWireFrame = false;
+
+		}physics;
+
+	} GO;
 }
