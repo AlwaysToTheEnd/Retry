@@ -32,26 +32,47 @@ UIInfomation VS(UIInfomation vin)
 
 void CreatePanel(UIInfomation vin, inout TriangleStream<VertexOut> output)
 {
-    VertexOut vertices[9];
+    VertexOut vertices[12];
 
+    const float edgeSize = 5.0f;
+    
     vertices[0].posH = float4(-vin.size.x, -vin.size.y, 0.0f, 1.0f);
-    vertices[1].posH = float4(vin.size.x, -vin.size.y, 0.0f, 1.0f);
+    vertices[1].posH = vertices[0].posH;
     
     vertices[2].posH = vertices[0].posH;
     vertices[2].posH.y += gPanelTitleHeight;
-    vertices[3].posH = vertices[1].posH;
-    vertices[3].posH.y += gPanelTitleHeight;
-
-    vertices[4].posH = float4(0, gPanelTitleHeight, 0, 1);
     
-    vertices[5].posH = vertices[2].posH;
-    vertices[6].posH = vertices[3].posH;
+    vertices[3].posH = float4(vin.size.x, -vin.size.y, 0.0f, 1.0f);
+    vertices[4].posH = vertices[3].posH;
     
-    vertices[7].posH = float4(-vin.size.x, vin.size.y, 0.0f, 1.0f);
-    vertices[8].posH = float4(vin.size.x, vin.size.y, 0.0f, 1.0f);
-   
-    [unroll(4)]
-    for (int i = 0; i < 4; i++)
+    vertices[5].posH = vertices[3].posH;
+    
+    vertices[4].posH.y += gPanelTitleHeight;
+    
+    vertices[0].posH.y += edgeSize;
+    vertices[1].posH.x += edgeSize;
+    
+    vertices[3].posH.x -= edgeSize;
+    vertices[5].posH.y += edgeSize;
+    
+    /////////////////////////////////////////////////////////////
+    
+    vertices[6].posH = float4(-vin.size.x, vin.size.y, 0.0f, 1.0f);
+    vertices[7].posH = vertices[2].posH;
+    vertices[8].posH = vertices[6].posH;
+    
+    vertices[9].posH = vertices[5].posH;
+    vertices[10].posH = float4(vin.size.x, vin.size.y, 0.0f, 1.0f);
+    vertices[11].posH = vertices[10].posH;
+    
+    vertices[6].posH.y -= edgeSize;
+    vertices[8].posH.x += edgeSize;
+    
+    vertices[10].posH.x -= edgeSize;
+    vertices[11].posH.y -= edgeSize;
+    
+    [unroll(6)]
+    for (int i = 0; i < 6; i++)
     {
         vertices[i].texIndex = -1;
         vertices[i].color = gPanelTitleColor;
@@ -59,8 +80,8 @@ void CreatePanel(UIInfomation vin, inout TriangleStream<VertexOut> output)
         vertices[i].posH = mul(vertices[i].posH, gOrthoMatrix);
     }
     
-    [unroll(5)]
-    for (int j = 4; j < 9; j++)
+    [unroll(6)]
+    for (int j = 6; j < 12; j++)
     {
         vertices[j].texIndex = vin.textureIndex;
         vertices[j].color = vin.color;
@@ -74,18 +95,16 @@ void CreatePanel(UIInfomation vin, inout TriangleStream<VertexOut> output)
     output.Append(vertices[1]);
     output.Append(vertices[2]);
     output.Append(vertices[3]);
+    output.Append(vertices[4]);
+    output.Append(vertices[5]);
     output.RestartStrip();
     
-    output.Append(vertices[5]);
     output.Append(vertices[6]);
-    output.Append(vertices[4]);
-    output.Append(vertices[8]);
-    output.RestartStrip();
-    
-    output.Append(vertices[8]);
     output.Append(vertices[7]);
-    output.Append(vertices[4]);
-    output.Append(vertices[5]);
+    output.Append(vertices[8]);
+    output.Append(vertices[9]);
+    output.Append(vertices[10]);
+    output.Append(vertices[11]);
 }
 
 void CreateUI(UIInfomation vin, inout TriangleStream<VertexOut> output)

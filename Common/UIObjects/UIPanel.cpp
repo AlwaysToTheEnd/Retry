@@ -19,7 +19,7 @@ void UIPanel::Init()
 	auto& render = m_Render->GetRenderInfo();
 	render.type = RENDER_UI;
 	render.uiInfo.uiType = UIPANEL;
-	render.uiInfo.color = { 0.2f, 0.2f, 0.2f, 1.0f };
+	render.uiInfo.color = { 0.2f, 0.2f, 0.2f, 0.7f };
 }
 
 void UIPanel::Delete()
