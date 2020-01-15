@@ -60,7 +60,6 @@ public:
 	physx::PxVec2	GetPos();
 	unsigned int	GetNumAddedComs() { return m_UIComs.size(); }
 
-	void			SetBackGroundTexture(const std::string& name);
 	void			SetBackGroundColor(const physx::PxVec4& color);
 	void			SetSize(const physx::PxVec2& size);
 	void			SetName(const std::wstring& name);
@@ -75,7 +74,6 @@ protected:
 
 protected:
 	static const int		m_ComsInterval = 3;
-	static const int		m_TitleSize = 20;
 	DOTransform*			m_Trans;
 	DOFont*					m_Font;
 	DORenderer*				m_Render;

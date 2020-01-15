@@ -98,7 +98,7 @@ public:
 	void				SetRenderInfo(const RenderInfo& info) { m_RenderInfo = info; }
 	void				SetDynamicMesh(const DynamicBufferInfo* dvi);
 	
-	const RenderInfo&	GetRenderInfo() { return m_RenderInfo; }
+	RenderInfo&			GetRenderInfo() { return m_RenderInfo; }
 
 private:
 	virtual void Update(float delta) override;
@@ -119,7 +119,7 @@ public:
 		: DeviceObject(scene, parent, typeName)
 		, m_Pos(0,0,0)
 		, m_FontHeight(-1)
-		, m_Color(0,0,0,1)
+		, m_Color(1,1,1,1)
 		, m_DrawSize(0,0)
 		, m_Benchmark(RenderFont::FONTBENCHMARK::LEFT)
 	{

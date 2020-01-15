@@ -45,6 +45,13 @@ struct RenderPointInfo
 	physx::PxVec4 color;
 };
 
+struct RenderUIInfo
+{
+	int				uiType;
+	physx::PxVec2	size;
+	physx::PxVec4	color;
+};
+
 struct RenderTexturePointInfo
 {
 	physx::PxVec3 size;
@@ -62,7 +69,7 @@ struct RenderInfo
 
 	RenderInfo(const RenderInfo& src)
 	{
-		std::memcpy(&point, &src.point, sizeof(RenderPointInfo));
+		std::memcpy(&uiInfo, &src.uiInfo, sizeof(RenderUIInfo));
 		type = src.type;
 		world = src.world;
 		scale = src.scale;
@@ -92,9 +99,10 @@ struct RenderInfo
 
 	union
 	{
-		RenderMeshInfo mesh;
-		RenderPointInfo point;
-		RenderTexturePointInfo texPoint;
+		RenderMeshInfo			mesh;
+		RenderPointInfo			point;
+		RenderUIInfo			uiInfo;
+		RenderTexturePointInfo	texPoint;
 	};
 };
 

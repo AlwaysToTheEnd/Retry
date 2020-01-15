@@ -15,9 +15,8 @@
 #include "DX12/DX12FontMG.h"
 #include "DX12/cIndexManagementBuffer.h"
 #include "DX12/DX12RenderClasses.h"
+#include "DX12/PSOController.h"
 
-#include <D3Dcompiler.h>
-#pragma comment(lib,"d3dcompiler.lib")
 #pragma comment(lib, "D3D12.lib")
 #pragma comment(lib, "dxgi.lib")
 
@@ -119,6 +118,14 @@ class GraphicDX12 final : public IGraphicDevice
 		P1_ROOT_COUNT
 	};
 
+	enum
+	{
+		UI_PASS_CB,
+		UI_UIPASS_CB,
+		UI_TEXTURE_TABLE,
+		UI_ROOT_COUNT
+	};
+
 	enum DX12_RENDER_TYPE
 	{
 		DX12_RENDER_TYPE_NORMAL_MESH,
@@ -137,6 +144,7 @@ class GraphicDX12 final : public IGraphicDevice
 				D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(cmdListAlloc.GetAddressOf())));
 
 			passCB = std::make_unique<UploadBuffer<PassConstants>>(device, passCount, true);
+			uiPassCB = std::make_unique<UploadBuffer<CGH::GlobalOptions::UIOption>>(device, 1, true);
 
 			for (int i = 0; i < DX12_RENDER_TYPE_COUNT; i++)
 			{
@@ -153,6 +161,7 @@ class GraphicDX12 final : public IGraphicDevice
 		ComPtr<ID3D12CommandAllocator> cmdListAlloc;
 
 		std::unique_ptr<UploadBuffer<PassConstants>> passCB = nullptr;
+		std::unique_ptr<UploadBuffer<CGH::GlobalOptions::UIOption>> uiPassCB = nullptr;
 		std::unique_ptr<UploadBuffer<ObjectConstants>> meshObjectCB[DX12_RENDER_TYPE_COUNT];
 		std::unique_ptr<UploadBuffer<OnlyTexObjectConstants>> pointCB = nullptr;
 		std::unique_ptr<UploadBuffer<AniBoneMat>> aniBoneMatBuffer = nullptr;
@@ -223,15 +232,12 @@ private: // Device Base Functions
 	D3D12_CPU_DESCRIPTOR_HANDLE CurrentBackBufferView() const;
 	D3D12_CPU_DESCRIPTOR_HANDLE DepthStencilView() const;
 
-	ComPtr<ID3DBlob>			CompileShader(	const std::wstring& filename,
-												const D3D_SHADER_MACRO* defines,
-												const std::string& entrypoint,
-												const std::string& target);
 private: // Base object Builds
 	void BuildFrameResources();
 	void BuildRootSignature();
 	void BuildShadersAndInputLayout();
-	void BuildPSOs();
+	void BuildDepthStencilAndBlendsAndRasterizer();
+	void BuildUploadBuffers();
 
 private: // Used in frame.
 	void UpdateMainPassCB();
@@ -244,6 +250,7 @@ private:
 	void DrawDynamicMehs();
 	void DrawSkinnedMesh();
 	void DrawPointObjects();
+	void DrawUIs();
 
 private:
 	D3D12_VIEWPORT						m_ScreenViewport;
@@ -276,34 +283,29 @@ private:
 	UINT								m_DSVDescriptorSize = 0;
 	UINT								m_CBV_SRV_UAV_DescriptorSize = 0;
 
-	bool								m_4xMsaaState = false;
-	UINT								m_4xmsaaQuality = 0;
-
 	physx::PxVec3						m_RayOrigin;
 	physx::PxVec3						m_Ray;
 
 private:
-	std::unordered_map<std::string, ComPtr<ID3D12PipelineState>>	m_PSOs;
-	std::vector<D3D12_INPUT_ELEMENT_DESC>							m_InputLayout[DX12_RENDER_TYPE_COUNT];
-	std::unordered_map<std::string, ComPtr<ID3DBlob>>				m_Shaders;
-	ComPtr<ID3D12RootSignature>										m_T1RootSignature;
-	ComPtr<ID3D12RootSignature>										m_P1RootSignature;
-	
-	PassConstants													m_MainPassCB;
-	std::unique_ptr<FrameResource>									m_FrameResource;
-	std::unique_ptr<DX12FontManager>								m_FontManager;
+	std::unique_ptr<PSOController>						m_PSOCon;
 
-	std::unique_ptr<cTextureBuffer>												m_TextureBuffer;
-	std::unique_ptr<cIndexManagementBuffer<Material>>							m_Materials;
-	std::unordered_map<std::string, MeshObject>									m_Meshs;
+	PassConstants										m_MainPassCB;
+	std::unique_ptr<FrameResource>						m_FrameResource;
+	std::unique_ptr<DX12FontManager>					m_FontManager;
+
+	std::unique_ptr<cTextureBuffer>						m_TextureBuffer;
+	std::unique_ptr<cTextureBuffer>						m_UITextureBuffer;
+	std::unique_ptr<cIndexManagementBuffer<Material>>	m_Materials;
+	std::unordered_map<std::string, MeshObject>			m_Meshs;
+
 	std::unordered_map<std::string, Ani::SkinnedData>							m_SkinnedDatas;
 	std::unordered_map<std::string, std::unique_ptr<AniTree::AnimationTree>>	m_AniTreeDatas;
-
 
 private:
 	std::vector<ObjectConstants>					m_RenderObjects[DX12_RENDER_TYPE_COUNT];
 	std::vector<const SubmeshData*>					m_RenderObjectsSubmesh[DX12_RENDER_TYPE_COUNT];
 	unsigned int									m_NumRenderPointObjects;
+	unsigned int									m_NumRenderUIs;
 
 private:
 	std::unique_ptr<cDefaultBuffer<Vertex>>			m_VertexBuffer;
@@ -313,6 +315,7 @@ private:
 	std::unique_ptr<cDefaultBuffer<UINT>>			m_SkinnedIndexBuffer;
 
 	std::unique_ptr<UploadBuffer<B_P_Vertex>>		m_Box_Plane_Vertices;
+	std::unique_ptr<UploadBuffer<UIInfomation>>		m_UIInfomation;
 
 	std::vector<std::unique_ptr<DynamicBuffer>>		m_DynamicBuffers;
 };

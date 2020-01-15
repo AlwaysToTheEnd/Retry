@@ -4,6 +4,14 @@
 
 class UIObject :public GameObject
 {
+protected:
+	enum UITYPE
+	{
+		UIPANEL,
+		UIBUTTON,
+		UIPARAM,
+	};
+
 public:
 	UIObject(CGHScene& scene, GameObject* parent, const char* typeName)
 		: GameObject(scene, parent, typeName)

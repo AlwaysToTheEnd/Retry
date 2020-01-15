@@ -32,17 +32,6 @@ VertexIn VS(VertexIn vin)
 	return vin;
 }
 
-//enum RENDER_TYPE
-//{
-//    RENDER_NONE,
-//	RENDER_MESH,
-//	RENDER_DYNAMIC,
-//	RENDER_BOX,
-//	RENDER_PLANE,
-//	RENDER_TEX_PLANE,
-//	RENDER_UI,
-//};
-
 void CreateBox(uint cbIndex, float3 size, float4 color, inout TriangleStream<VertexOut> output)
 {
 	VertexOut vertices[8];
@@ -135,49 +124,6 @@ void CreatePlane(uint cbIndex, float2 size, float4 color, inout TriangleStream<V
 	output.Append(vertices[3]);
 }
 
-void CreateUIPlane(uint cbIndex, float2 size, float4 color, inout TriangleStream<VertexOut> output)
-{
-	VertexOut vertices[4];
-
-	// 1  3
-	// |\ |
-	// 0 \2
-
-	vertices[0].posH = float4(-size.x, size.y, 0.0f, 1.0f);
-	vertices[1].posH = float4(-size.x, -size.y, 0.0f, 1.0f);
-	vertices[2].posH = float4(size.x, size.y, 0.0f, 1.0f);
-	vertices[3].posH = float4(size.x, -size.y, 0.0f, 1.0f);
-
-	[unroll]
-	for (int i = 0; i < 4; i++)
-	{
-		vertices[i].texIndex = gObjectData[cbIndex].TextureIndex;
-		vertices[i].posH = mul(vertices[i].posH, gObjectData[cbIndex].World);
-		vertices[i].posH = mul(vertices[i].posH, gOrthoMatrix);
-	}
-
-	if (gObjectData[cbIndex].TextureIndex > -1)
-	{
-		vertices[0].color = float4(0.0f, 1.0f, 0.0f, 0.0f);
-		vertices[1].color = float4(0.0f, 0.0f, 0.0f, 0.0f);
-		vertices[2].color = float4(1.0f, 1.0f, 0.0f, 0.0f);
-		vertices[3].color = float4(1.0f, 0.0f, 0.0f, 0.0f);
-	}
-	else
-	{
-		[unroll]
-		for (int i = 0; i < 4; i++)
-		{
-			vertices[i].color = color;
-		}
-	}
-
-	output.Append(vertices[0]);
-	output.Append(vertices[1]);
-	output.Append(vertices[2]);
-	output.Append(vertices[3]);
-}
-
 [maxvertexcount(18)]
 void GS(point VertexIn input[1], inout TriangleStream<VertexOut> output)
 {
@@ -189,9 +135,6 @@ void GS(point VertexIn input[1], inout TriangleStream<VertexOut> output)
 	case 4: //PLANE
 	case 5: //TEX_PLANE
 		CreatePlane(input[0].cbIndex, float2(input[0].size.x, input[0].size.y), input[0].color, output);
-		break;
-	case 6: //UI
-		CreateUIPlane(input[0].cbIndex, float2(input[0].size.x, input[0].size.y), input[0].color, output);
 		break;
 	}
 }

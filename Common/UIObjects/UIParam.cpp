@@ -112,7 +112,7 @@ void UIParam::Update(float delta)
 			if (!m_Selected)
 			{
 				text += GetDataString();
-				m_Font->m_Color = { 0,0,0,1 };
+				m_Font->m_Color = { 1,1,1,1 };
 			}
 			else
 			{
@@ -362,7 +362,6 @@ void UIParam::ParamController::CreateSubPanel(UIParam* param)
 	if (m_EnumSelectPanel == nullptr)
 	{
 		m_EnumSelectPanel = param->CreateComponenet<UIPanel>(true);
-		m_EnumSelectPanel->SetBackGroundTexture(InputTN::Get("UIParamSubPanel"));
 	}
 
 	m_EnumSelectPanel->DeleteAllComs();
@@ -399,7 +398,7 @@ void UIParam::ParamController::CreateSubPanel(UIParam* param)
 			temp.insert(temp.end(), it.begin(), it.end());
 			auto button = m_EnumSelectPanel->CreateComponenet<UIButton>(true);
 			button->SetText(temp);
-			button->SetTextHeight(10);
+			button->SetTextHeight(15);
 			button->OnlyFontMode();
 			button->AddFunc(std::bind(&UIParam::ParamController::SetStringData, this, it));
 

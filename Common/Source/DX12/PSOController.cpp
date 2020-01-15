@@ -3,6 +3,7 @@
 #include <D3Dcompiler.h>
 #pragma comment(lib,"d3dcompiler.lib")
 
+using namespace std;
 
 PSOController::PSOController(ID3D12Device* device)
 	:m_Device(device)
@@ -14,37 +15,113 @@ PSOController::~PSOController()
 
 }
 
-ID3D12PipelineState* PSOController::GetPSO(
+void PSOController::SetPSOToCommnadList(ID3D12GraphicsCommandList* cmd,
+	const std::vector<DXGI_FORMAT>& rtvFormats, DXGI_FORMAT dsvFormat, D3D12_PRIMITIVE_TOPOLOGY_TYPE primitive,
 	const std::string& input, const std::string& rootSig, 
 	const std::string& rasterizer, const std::string& blend, const std::string& depthStencil, 
 	const std::string& vs, const std::string& ps, 
 	const std::string& gs, const std::string& hs, const std::string& ds)
 {
-	ID3D12PipelineState* result = nullptr;
-
 	std::string keyName =	input + ',' +	
 							rootSig + ',' + 
 							rasterizer + ',' + 
 							blend + ',' + 
 							depthStencil + ',' +
-							vs + ',' + ps + ','+ gs + ',' + hs + ',' + ds;
+							vs + ',' + ps + ',' + 
+							gs + ',' + hs + ',' + ds + ',' + 
+							to_string(primitive)+ ',' + to_string(dsvFormat) + ',';
 
-
-	auto iter = m_PSOs.find(keyName);
-
-	if (iter == m_PSOs.end())
+	for (auto& it : rtvFormats)
 	{
-		result = CreatePSO(keyName, input, rootSig, rasterizer, blend, depthStencil, vs, ps, gs, hs, ds);
-	}
-	else
-	{
-		result = iter->second.Get();
+		keyName += to_string(it) + ',';
 	}
 
-	return result;
+	auto psoI = m_PSOs.find(keyName);
+	auto rootSigI = m_RootSignature.find(rootSig);
+
+	if (psoI == m_PSOs.end())
+	{
+		D3D12_GRAPHICS_PIPELINE_STATE_DESC newPSO = {};
+
+		auto inputI = m_InputLayouts.find(input);
+
+		auto rasterI = m_Rasterizers.find(rasterizer);
+		auto blendI = m_Blends.find(blend);
+		auto depthStencilI = m_DepthStencils.find(depthStencil);
+
+		auto vsI = m_Shaders[DX12_SHADER_VERTEX].find(vs);
+		auto psI = m_Shaders[DX12_SHADER_PIXEL].find(ps);
+
+		assert(rootSigI != m_RootSignature.end());
+		assert(inputI != m_InputLayouts.end());
+		assert(rasterI != m_Rasterizers.end());
+		assert(blendI != m_Blends.end());
+		assert(depthStencilI != m_DepthStencils.end());
+		assert(vsI != m_Shaders[DX12_SHADER_VERTEX].end());
+		assert(psI != m_Shaders[DX12_SHADER_PIXEL].end());
+
+		D3D12_INPUT_LAYOUT_DESC inputDesc;
+		inputDesc.NumElements = inputI->second.size();
+		inputDesc.pInputElementDescs = inputI->second.data();
+		newPSO.InputLayout = inputDesc;
+		newPSO.pRootSignature = rootSigI->second.Get();
+
+		newPSO.RasterizerState = rasterI->second;
+		newPSO.BlendState = blendI->second;
+		newPSO.DepthStencilState = depthStencilI->second;
+
+		newPSO.PrimitiveTopologyType = primitive;
+		newPSO.NumRenderTargets = rtvFormats.size();
+		memcpy(newPSO.RTVFormats, rtvFormats.data(), rtvFormats.size() * sizeof(DXGI_FORMAT));
+
+		newPSO.VS.BytecodeLength = vsI->second.shader->GetBufferSize();
+		newPSO.VS.pShaderBytecode = vsI->second.shader->GetBufferPointer();
+
+		newPSO.PS.BytecodeLength = psI->second.shader->GetBufferSize();
+		newPSO.PS.pShaderBytecode = psI->second.shader->GetBufferPointer();
+
+		if (gs.size())
+		{
+			auto gsI = m_Shaders[DX12_SHADER_GEOMETRY].find(gs);
+			assert(gsI != m_Shaders[DX12_SHADER_GEOMETRY].end());
+
+			newPSO.GS.BytecodeLength = gsI->second.shader->GetBufferSize();
+			newPSO.GS.pShaderBytecode = gsI->second.shader->GetBufferPointer();
+		}
+
+		if (hs.size())
+		{
+			auto hsI = m_Shaders[DX12_SHADER_HULL].find(hs);
+			assert(hsI != m_Shaders[DX12_SHADER_HULL].end());
+
+			newPSO.HS.BytecodeLength = hsI->second.shader->GetBufferSize();
+			newPSO.HS.pShaderBytecode = hsI->second.shader->GetBufferPointer();
+		}
+
+		if (ds.size())
+		{
+			auto dsI = m_Shaders[DX12_SHADER_DOMAIN].find(ds);
+			assert(dsI != m_Shaders[DX12_SHADER_DOMAIN].end());
+
+			newPSO.DS.BytecodeLength = dsI->second.shader->GetBufferSize();
+			newPSO.DS.pShaderBytecode = dsI->second.shader->GetBufferPointer();
+		}
+
+		newPSO.SampleMask = UINT_MAX;
+		newPSO.SampleDesc.Count = 1;
+		newPSO.SampleDesc.Quality = 0;
+
+		ThrowIfFailed(m_Device->CreateGraphicsPipelineState(&newPSO, IID_PPV_ARGS(m_PSOs[keyName].GetAddressOf())));
+		psoI = m_PSOs.find(keyName);
+	}
+
+	cmd->SetPipelineState(psoI->second.Get());
+	cmd->SetGraphicsRootSignature(rootSigI->second.Get());
 }
 
-void PSOController::AddShader(const std::string& shaderName, DX12_SHADER_TYPE type, const std::wstring& filename, const D3D_SHADER_MACRO* defines, const std::string& entrypoint, const std::string& target)
+void PSOController::AddShader(const std::string& shaderName, DX12_SHADER_TYPE type, 
+	const std::wstring& filename, const D3D_SHADER_MACRO* defines, 
+	const std::string& entrypoint, const std::string& target)
 {
 	auto iter = m_Shaders[type].find(shaderName);
 	assert(iter == m_Shaders[type].end());
@@ -119,40 +196,4 @@ void PSOController::AddRootSignature(const std::string& name, const D3D12_ROOT_S
 
 	ThrowIfFailed(m_Device->CreateRootSignature(0, serializedRootSig->GetBufferPointer(),
 		serializedRootSig->GetBufferSize(), IID_PPV_ARGS(m_RootSignature[name].GetAddressOf())));
-}
-
-ID3D12PipelineState* PSOController::CreatePSO(const std::string& name,
-	const std::string& input, const std::string& rootSig, const std::string& rasterizer, 
-	const std::string& blend, const std::string& depthStencil, 
-	const std::string& vs, const std::string& ps, 
-	const std::string& gs, const std::string& hs, const std::string& ds)
-{
-	D3D12_GRAPHICS_PIPELINE_STATE_DESC newPSO = {};
-
-	auto inputI = m_InputLayouts.find(input);
-	auto rooSigI = m_RootSignature.find(rootSig);
-	auto rasterI = m_Rasterizers.find(rasterizer);
-
-	auto blendI = m_Blends.find(blend);
-	auto depthStencilI = m_DepthStencils.find(depthStencil);
-
-	auto vsI = m_Shaders[DX12_SHADER_VERTEX].find(vs);
-	auto psI = m_Shaders[DX12_SHADER_PIXEL].find(ps);
-
-	if (gs.size())
-	{
-
-	}
-
-	if (hs.size())
-	{
-
-	}
-
-	if (ds.size())
-	{
-
-	}
-
-	m_Device->CreateGraphicsPipelineState(&newPSO, IID_PPV_ARGS(m_PSOs[name].GetAddressOf()));
 }

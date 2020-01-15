@@ -43,7 +43,7 @@ namespace CGH
 
 		struct UIOption
 		{
-			physx::PxVec4	panelTitleColor = { 0,0,0,1 };
+			physx::PxVec4	panelTitleColor = { 0.1f, 0.1f, 0.1f, 1.0f };
 			int				panelTitleHeight = 20;
 			int				panelTitleTextHeight = 15;
 			int				panelCloseButtonHalfSize = panelTitleHeight / 2;

@@ -86,7 +86,7 @@ VertexOut VS(SkinnedVertex vin)
 	vout.PosH = mul(float4(vin.PosL, 1.0f), World);
 	vout.PosH = mul(vout.PosH, gViewProj);
 
-	vout.Normal=  mul(float4(vin.NormalL, 1.0f), World);
+	vout.Normal=  mul(float4(vin.NormalL, 1.0f), World).xyz;
 	return vout;
 }
 #else

@@ -7,8 +7,6 @@
 using namespace DirectX;
 using namespace std;
 
-#define ENUMSTR(t) std::string(#t)
-
 GraphicDX12::GraphicDX12()
 {
 }
@@ -58,20 +56,6 @@ bool GraphicDX12::Init(HWND hWnd, UINT windowWidth, UINT windowHeight)
 	m_DSVDescriptorSize = m_D3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
 	m_CBV_SRV_UAV_DescriptorSize = m_D3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
-	//멀티 샘플링 여부 체크
-	D3D12_FEATURE_DATA_MULTISAMPLE_QUALITY_LEVELS msQualityLevels;
-
-	msQualityLevels.Flags = D3D12_MULTISAMPLE_QUALITY_LEVELS_FLAG_NONE;
-	msQualityLevels.Format = m_BackBufferFormat;
-	msQualityLevels.SampleCount = 4;
-	msQualityLevels.NumQualityLevels = 0;
-
-	ThrowIfFailed(m_D3dDevice->CheckFeatureSupport(D3D12_FEATURE_MULTISAMPLE_QUALITY_LEVELS,
-		&msQualityLevels, sizeof(D3D12_FEATURE_DATA_MULTISAMPLE_QUALITY_LEVELS)));
-
-	m_4xmsaaQuality = msQualityLevels.NumQualityLevels;
-	assert(m_4xmsaaQuality > 0 && "Unexpected MSAA quality level.");
-
 	// GPU에 실행 명령을 내리기 위한 오브젝트 생성( commandList, queue 등 )
 	CreateCommandObject();
 
@@ -83,6 +67,8 @@ bool GraphicDX12::Init(HWND hWnd, UINT windowWidth, UINT windowHeight)
 
 	// 랜더타겟이 될 리소스를 현재 클라이언트 사이즈에 맞게 생성하고 스왑체인에 묶어준다
 	OnResize();
+
+	m_PSOCon = make_unique<PSOController>(m_D3dDevice.Get());
 
 	ThrowIfFailed(m_DirectCmdListAlloc->Reset());
 
@@ -127,8 +113,8 @@ void GraphicDX12::CreateSwapChain()
 	sd.BufferDesc.Format = m_BackBufferFormat;
 	sd.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
 	sd.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
-	sd.SampleDesc.Count = m_4xMsaaState ? 4 : 1;
-	sd.SampleDesc.Quality = m_4xMsaaState ? (m_4xmsaaQuality - 1) : 0;
+	sd.SampleDesc.Count = 1;
+	sd.SampleDesc.Quality = 0;
 	sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 	sd.BufferCount = SwapChainBufferCount;
 	sd.OutputWindow = m_MainWndHandle;
@@ -207,8 +193,8 @@ void GraphicDX12::OnResize()
 	dsvDesc.Height = m_ClientHeight;
 	dsvDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
 	dsvDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
-	dsvDesc.SampleDesc.Count = m_4xMsaaState ? 4 : 1;
-	dsvDesc.SampleDesc.Quality = m_4xMsaaState ? (m_4xmsaaQuality - 1) : 0;
+	dsvDesc.SampleDesc.Count = 1;
+	dsvDesc.SampleDesc.Quality = 0;
 
 	D3D12_CLEAR_VALUE clearValue;
 	clearValue.Format = m_DepthStencilFormat;
@@ -766,8 +752,8 @@ void GraphicDX12::ReadyWorksEnd()
 	BuildFrameResources();
 	BuildRootSignature();
 	BuildShadersAndInputLayout();
-	BuildPSOs();
-	m_Box_Plane_Vertices = make_unique<UploadBuffer<B_P_Vertex>>(m_D3dDevice.Get(), 100, false);
+	BuildDepthStencilAndBlendsAndRasterizer();
+	BuildUploadBuffers();
 
 	ThrowIfFailed(m_CommandList->Close());
 	ID3D12CommandList* cmdsLists[] = { m_CommandList.Get() };
@@ -828,6 +814,7 @@ void GraphicDX12::Draw()
 	DrawObject(DX12_RENDER_TYPE_DYNAMIC_MESH);
 	DrawObject(DX12_RENDER_TYPE_SKINNED_MESH);
 	DrawObject(DX12_RENDER_TYPE_POINT);
+	DrawObject(DX12_RENDER_TYPE_UI);
 
 	m_FontManager->RenderCommandWrite(m_CommandList.Get(), m_ReservedFonts);
 
@@ -942,23 +929,8 @@ void GraphicDX12::BuildRootSignature()
 	rootDesc.Init(T1_ROOT_COUNT, baseRootParam, _countof(staticSamplers),
 		staticSamplers, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
-	ComPtr<ID3DBlob> serializedRootSig = nullptr;
-	ComPtr<ID3DBlob> error = nullptr;
-
-	HRESULT hr = D3D12SerializeRootSignature(&rootDesc, D3D_ROOT_SIGNATURE_VERSION_1,
-		serializedRootSig.GetAddressOf(), error.GetAddressOf());
-
-	if (error != nullptr)
-	{
-		::OutputDebugStringA((char*)error->GetBufferPointer());
-	}
-	ThrowIfFailed(hr);
-
-	ThrowIfFailed(m_D3dDevice->CreateRootSignature(0, serializedRootSig->GetBufferPointer(),
-		serializedRootSig->GetBufferSize(), IID_PPV_ARGS(m_T1RootSignature.GetAddressOf())));
-
 	///////////////////////////////////////////////////////////////////////////
-	CD3DX12_ROOT_PARAMETER pointRenderRootParam[3];
+	CD3DX12_ROOT_PARAMETER pointRenderRootParam[P1_ROOT_COUNT];
 	pointRenderRootParam[P1_OBJECT_SRV].InitAsShaderResourceView(0, 1);
 	pointRenderRootParam[P1_PASS_CB].InitAsConstantBufferView(0);
 	pointRenderRootParam[P1_TEXTURE_TABLE].InitAsDescriptorTable(1, &texTable, D3D12_SHADER_VISIBILITY_PIXEL);
@@ -967,17 +939,20 @@ void GraphicDX12::BuildRootSignature()
 	pointRenderrootDesc.Init(P1_ROOT_COUNT, pointRenderRootParam, _countof(staticSamplers),
 		staticSamplers, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
-	hr = D3D12SerializeRootSignature(&pointRenderrootDesc, D3D_ROOT_SIGNATURE_VERSION_1,
-		serializedRootSig.GetAddressOf(), error.GetAddressOf());
+	///////////////////////////////////////////////////////////////////////////
 
-	if (error != nullptr)
-	{
-		::OutputDebugStringA((char*)error->GetBufferPointer());
-	}
-	ThrowIfFailed(hr);
+	CD3DX12_ROOT_PARAMETER uiRenderRootparam[UI_ROOT_COUNT];
+	uiRenderRootparam[UI_PASS_CB].InitAsConstantBufferView(0);
+	uiRenderRootparam[UI_UIPASS_CB].InitAsConstantBufferView(1);
+	uiRenderRootparam[UI_TEXTURE_TABLE].InitAsDescriptorTable(1, &texTable, D3D12_SHADER_VISIBILITY_PIXEL);
 
-	ThrowIfFailed(m_D3dDevice->CreateRootSignature(0, serializedRootSig->GetBufferPointer(),
-		serializedRootSig->GetBufferSize(), IID_PPV_ARGS(m_P1RootSignature.GetAddressOf())));
+	CD3DX12_ROOT_SIGNATURE_DESC uiRenderRootDesc;
+	uiRenderRootDesc.Init(UI_ROOT_COUNT, uiRenderRootparam, _countof(staticSamplers),
+		staticSamplers, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+
+	m_PSOCon->AddRootSignature("T1", rootDesc);
+	m_PSOCon->AddRootSignature("P1", pointRenderrootDesc);
+	m_PSOCon->AddRootSignature("UI", uiRenderRootDesc);
 }
 
 void GraphicDX12::BuildShadersAndInputLayout()
@@ -990,120 +965,90 @@ void GraphicDX12::BuildShadersAndInputLayout()
 		"SKINNED_VERTEX_SAHDER",NULL,
 		NULL, NULL };
 
-	m_Shaders[ENUMSTR(DX12_RENDER_TYPE_SKINNED_MESH) + "VS"] = CompileShader(L"../Common/MainShaders/BaseShader.hlsl", macros, "VS", "vs_5_1");
-	m_Shaders[ENUMSTR(DX12_RENDER_TYPE_SKINNED_MESH) + "PS"] = CompileShader(L"../Common/MainShaders/BaseShader.hlsl", macros, "PS", "ps_5_1");
+	m_PSOCon->AddShader(to_string(DX12_RENDER_TYPE_SKINNED_MESH), DX12_SHADER_VERTEX, L"../Common/MainShaders/BaseShader.hlsl", macros, "VS", "vs_5_1");
+	m_PSOCon->AddShader(to_string(DX12_RENDER_TYPE_SKINNED_MESH), DX12_SHADER_PIXEL, L"../Common/MainShaders/BaseShader.hlsl", macros, "PS", "ps_5_1");
 
 	macros[2] = { NULL, NULL };
+	m_PSOCon->AddShader(to_string(DX12_RENDER_TYPE_NORMAL_MESH), DX12_SHADER_VERTEX, L"../Common/MainShaders/BaseShader.hlsl", macros, "VS", "vs_5_1");
+	m_PSOCon->AddShader(to_string(DX12_RENDER_TYPE_NORMAL_MESH), DX12_SHADER_PIXEL, L"../Common/MainShaders/BaseShader.hlsl", macros, "PS", "ps_5_1");
 
-	m_Shaders[ENUMSTR(DX12_RENDER_TYPE_NORMAL_MESH) + "VS"] = CompileShader(L"../Common/MainShaders/BaseShader.hlsl", macros, "VS", "vs_5_1");
-	m_Shaders[ENUMSTR(DX12_RENDER_TYPE_NORMAL_MESH) + "PS"] = CompileShader(L"../Common/MainShaders/BaseShader.hlsl", macros, "PS", "ps_5_1");
+	m_PSOCon->AddShader(to_string(DX12_RENDER_TYPE_POINT), DX12_SHADER_VERTEX, L"../Common/MainShaders/pointShader.hlsl", macros, "VS", "vs_5_1");
+	m_PSOCon->AddShader(to_string(DX12_RENDER_TYPE_POINT), DX12_SHADER_PIXEL, L"../Common/MainShaders/pointShader.hlsl", macros, "PS", "ps_5_1");
+	m_PSOCon->AddShader(to_string(DX12_RENDER_TYPE_POINT), DX12_SHADER_GEOMETRY, L"../Common/MainShaders/pointShader.hlsl", macros, "GS", "gs_5_1");
 
-	m_Shaders[ENUMSTR(DX12_RENDER_TYPE_POINT) + "VS"] = CompileShader(L"../Common/MainShaders/pointShader.hlsl", macros, "VS", "vs_5_1");
-	m_Shaders[ENUMSTR(DX12_RENDER_TYPE_POINT) + "PS"] = CompileShader(L"../Common/MainShaders/pointShader.hlsl", macros, "PS", "ps_5_1");
-	m_Shaders[ENUMSTR(DX12_RENDER_TYPE_POINT) + "GS"] = CompileShader(L"../Common/MainShaders/pointShader.hlsl", macros, "GS", "gs_5_1");
+	m_PSOCon->AddShader(to_string(DX12_RENDER_TYPE_UI), DX12_SHADER_VERTEX, L"../Common/MainShaders/UIShader.hlsl", macros, "VS", "vs_5_1");
+	m_PSOCon->AddShader(to_string(DX12_RENDER_TYPE_UI), DX12_SHADER_PIXEL, L"../Common/MainShaders/UIShader.hlsl", macros, "PS", "ps_5_1");
+	m_PSOCon->AddShader(to_string(DX12_RENDER_TYPE_UI), DX12_SHADER_GEOMETRY, L"../Common/MainShaders/UIShader.hlsl", macros, "GS", "gs_5_1");
 
-	m_InputLayout[DX12_RENDER_TYPE_SKINNED_MESH] =
-	{
-		{ "POSITION" ,0,DXGI_FORMAT_R32G32B32_FLOAT,0,0,D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,0},
-		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 24, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-		{ "WEIGHTS", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 32, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-		{ "BONEINDICES", 0, DXGI_FORMAT_R8G8B8A8_UINT, 0, 44, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
-	};
+	m_PSOCon->AddInputLayout(to_string(DX12_RENDER_TYPE_SKINNED_MESH),
+		{
+			{ "POSITION" ,0,DXGI_FORMAT_R32G32B32_FLOAT,0,0,D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,0},
+			{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+			{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 24, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+			{ "WEIGHTS", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 32, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+			{ "BONEINDICES", 0, DXGI_FORMAT_R8G8B8A8_UINT, 0, 44, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
+		});
 
-	m_InputLayout[DX12_RENDER_TYPE_NORMAL_MESH] =
-	{
-		{ "POSITION" ,0,DXGI_FORMAT_R32G32B32_FLOAT,0,0,D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,0},
-		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 24, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-	};
+	m_PSOCon->AddInputLayout(to_string(DX12_RENDER_TYPE_NORMAL_MESH),
+		{
+			{ "POSITION" ,0,DXGI_FORMAT_R32G32B32_FLOAT,0,0,D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,0},
+			{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+			{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 24, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		});
 
-	m_InputLayout[DX12_RENDER_TYPE_POINT] =
-	{
-		{ "MESHTYPE" ,0,DXGI_FORMAT_R32_UINT,0,0,D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,0},
-		{ "CBINDEX", 0, DXGI_FORMAT_R32_UINT, 0, 4, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-		{ "MESHSIZE", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 8, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-		{ "MESHCOLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 20, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-	};
+	m_PSOCon->AddInputLayout(to_string(DX12_RENDER_TYPE_POINT),
+		{
+			{ "MESHTYPE" ,0,DXGI_FORMAT_R32_UINT,0,0,D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,0},
+			{ "CBINDEX", 0, DXGI_FORMAT_R32_UINT, 0, 4, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+			{ "MESHSIZE", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 8, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+			{ "MESHCOLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 20, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		});
+
+	m_PSOCon->AddInputLayout(to_string(DX12_RENDER_TYPE_UI),
+		{
+			{ "UICOLOR" ,0,DXGI_FORMAT_R32G32B32A32_FLOAT,0,0,D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,0},
+			{ "UIPOS", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 16, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+			{ "UISIZE", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 28, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+			{ "UITYPE", 0, DXGI_FORMAT_R32_SINT, 0, 36, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+			{ "UITEXTURE", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 40, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		});
 }
 
-void GraphicDX12::BuildPSOs()
+void GraphicDX12::BuildDepthStencilAndBlendsAndRasterizer()
 {
-	D3D12_GRAPHICS_PIPELINE_STATE_DESC opaquePsoDesc;
-	D3D12_RENDER_TARGET_BLEND_DESC transparencyBlendDesc;
-	transparencyBlendDesc.BlendEnable = true;
-	transparencyBlendDesc.LogicOpEnable = false;
-	transparencyBlendDesc.SrcBlend = D3D12_BLEND_SRC_ALPHA;
-	transparencyBlendDesc.DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
-	transparencyBlendDesc.BlendOp = D3D12_BLEND_OP_ADD;
-	transparencyBlendDesc.SrcBlendAlpha = D3D12_BLEND_ONE;
-	transparencyBlendDesc.DestBlendAlpha = D3D12_BLEND_ZERO;
-	transparencyBlendDesc.BlendOpAlpha = D3D12_BLEND_OP_ADD;
-	transparencyBlendDesc.LogicOp = D3D12_LOGIC_OP_NOOP;
-	transparencyBlendDesc.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+	CD3DX12_BLEND_DESC baseBlendDesc(D3D12_DEFAULT);
+	D3D12_RENDER_TARGET_BLEND_DESC baseBlendTargetDesc;
+	baseBlendTargetDesc.BlendEnable = true;
+	baseBlendTargetDesc.LogicOpEnable = false;
+	baseBlendTargetDesc.SrcBlend = D3D12_BLEND_SRC_ALPHA;
+	baseBlendTargetDesc.DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
+	baseBlendTargetDesc.BlendOp = D3D12_BLEND_OP_ADD;
+	baseBlendTargetDesc.SrcBlendAlpha = D3D12_BLEND_ONE;
+	baseBlendTargetDesc.DestBlendAlpha = D3D12_BLEND_ZERO;
+	baseBlendTargetDesc.BlendOpAlpha = D3D12_BLEND_OP_ADD;
+	baseBlendTargetDesc.LogicOp = D3D12_LOGIC_OP_NOOP;
+	baseBlendTargetDesc.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
 	
-	ZeroMemory(&opaquePsoDesc, sizeof(D3D12_GRAPHICS_PIPELINE_STATE_DESC));
-	opaquePsoDesc.InputLayout = { m_InputLayout[DX12_RENDER_TYPE_NORMAL_MESH].data(), (UINT)m_InputLayout[DX12_RENDER_TYPE_NORMAL_MESH].size() };
-	opaquePsoDesc.pRootSignature = m_T1RootSignature.Get();
-	opaquePsoDesc.VS =
-	{
-		reinterpret_cast<BYTE*>(m_Shaders[ENUMSTR(DX12_RENDER_TYPE_NORMAL_MESH) + "VS"]->GetBufferPointer()),
-		m_Shaders[ENUMSTR(DX12_RENDER_TYPE_NORMAL_MESH) + "VS"]->GetBufferSize()
-	};
-	opaquePsoDesc.PS =
-	{
-		reinterpret_cast<BYTE*>(m_Shaders[ENUMSTR(DX12_RENDER_TYPE_NORMAL_MESH) + "PS"]->GetBufferPointer()),
-		m_Shaders[ENUMSTR(DX12_RENDER_TYPE_NORMAL_MESH) + "PS"]->GetBufferSize()
-	};
-	opaquePsoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
-	opaquePsoDesc.RasterizerState.CullMode = D3D12_CULL_MODE_BACK;
-	opaquePsoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
-	opaquePsoDesc.BlendState.RenderTarget[0] = transparencyBlendDesc;
-	opaquePsoDesc.BlendState.AlphaToCoverageEnable = true;
-	opaquePsoDesc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
-	opaquePsoDesc.SampleMask = UINT_MAX;
-	opaquePsoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-	opaquePsoDesc.RasterizerState.FillMode = D3D12_FILL_MODE_SOLID;
-	opaquePsoDesc.NumRenderTargets = 1;
-	opaquePsoDesc.RTVFormats[0] = m_BackBufferFormat;
-	opaquePsoDesc.SampleDesc.Count = m_4xMsaaState ? 4 : 1;
-	opaquePsoDesc.SampleDesc.Quality = m_4xMsaaState ? (m_4xmsaaQuality - 1) : 0;
-	opaquePsoDesc.DSVFormat = m_DepthStencilFormat;
-	ThrowIfFailed(m_D3dDevice->CreateGraphicsPipelineState(&opaquePsoDesc, IID_PPV_ARGS(&m_PSOs[ENUMSTR(DX12_RENDER_TYPE_NORMAL_MESH)])));
+	baseBlendDesc.RenderTarget[0] = baseBlendTargetDesc;
+	baseBlendDesc.AlphaToCoverageEnable = true;
 
-	opaquePsoDesc.InputLayout = { m_InputLayout[DX12_RENDER_TYPE_SKINNED_MESH].data(), (UINT)m_InputLayout[DX12_RENDER_TYPE_SKINNED_MESH].size() };
-	opaquePsoDesc.VS =
-	{
-		reinterpret_cast<BYTE*>(m_Shaders[ENUMSTR(DX12_RENDER_TYPE_SKINNED_MESH) + "VS"]->GetBufferPointer()),
-		m_Shaders[ENUMSTR(DX12_RENDER_TYPE_SKINNED_MESH) + "VS"]->GetBufferSize()
-	};
-	opaquePsoDesc.PS =
-	{
-		reinterpret_cast<BYTE*>(m_Shaders[ENUMSTR(DX12_RENDER_TYPE_SKINNED_MESH) + "PS"]->GetBufferPointer()),
-		m_Shaders[ENUMSTR(DX12_RENDER_TYPE_SKINNED_MESH) + "PS"]->GetBufferSize()
-	};
-	ThrowIfFailed(m_D3dDevice->CreateGraphicsPipelineState(&opaquePsoDesc, IID_PPV_ARGS(&m_PSOs[ENUMSTR(DX12_RENDER_TYPE_SKINNED_MESH)])));
+	m_PSOCon->AddBlend("0", baseBlendDesc);
 
-	opaquePsoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_POINT;
-	opaquePsoDesc.pRootSignature = m_P1RootSignature.Get();
-	opaquePsoDesc.InputLayout = { m_InputLayout[DX12_RENDER_TYPE_POINT].data(), (UINT)m_InputLayout[DX12_RENDER_TYPE_POINT].size() };
+	//////////////////////////////////////////////////////////////////////////
+	CD3DX12_RASTERIZER_DESC baseRasterizer(D3D12_DEFAULT);
+	baseRasterizer.CullMode = D3D12_CULL_MODE_BACK;
 
-	opaquePsoDesc.VS =
-	{
-		reinterpret_cast<BYTE*>(m_Shaders[ENUMSTR(DX12_RENDER_TYPE_POINT) + "VS"]->GetBufferPointer()),
-		m_Shaders[ENUMSTR(DX12_RENDER_TYPE_POINT) + "VS"]->GetBufferSize()
-	};
-	opaquePsoDesc.PS =
-	{
-		reinterpret_cast<BYTE*>(m_Shaders[ENUMSTR(DX12_RENDER_TYPE_POINT) + "PS"]->GetBufferPointer()),
-		m_Shaders[ENUMSTR(DX12_RENDER_TYPE_POINT) + "PS"]->GetBufferSize()
-	};
-	opaquePsoDesc.GS =
-	{
-		reinterpret_cast<BYTE*>(m_Shaders[ENUMSTR(DX12_RENDER_TYPE_POINT) + "GS"]->GetBufferPointer()),
-		m_Shaders[ENUMSTR(DX12_RENDER_TYPE_POINT) + "GS"]->GetBufferSize()
-	};
-	ThrowIfFailed(m_D3dDevice->CreateGraphicsPipelineState(&opaquePsoDesc, IID_PPV_ARGS(&m_PSOs[ENUMSTR(DX12_RENDER_TYPE_POINT)])));
+	m_PSOCon->AddRasterizer("0", baseRasterizer);
+
+	////////////////////////////////////////////////////////////////////////////
+	CD3DX12_DEPTH_STENCIL_DESC baseDepthStencil(D3D12_DEFAULT);
+	m_PSOCon->AddDepthStencil("0", baseDepthStencil);
+}
+
+void GraphicDX12::BuildUploadBuffers()
+{
+	m_Box_Plane_Vertices = make_unique<UploadBuffer<B_P_Vertex>>(m_D3dDevice.Get(), 100, false);
+	m_UIInfomation = make_unique<UploadBuffer<UIInfomation>>(m_D3dDevice.Get(), 150, false);
 }
 
 void GraphicDX12::UpdateMainPassCB()
@@ -1143,6 +1088,7 @@ void GraphicDX12::UpdateMainPassCB()
 	//m_MainPassCB.Lights[2].strength = { 0.2f, 0.2f, 0.2f };
 
 	m_FrameResource->passCB->CopyData(0, m_MainPassCB);
+	m_FrameResource->uiPassCB->CopyData(0, CGH::GO.ui);
 
 	physx::PxVec3 rayOrigin(0, 0, 0);
 	physx::PxVec3 ray(0, 0, 1);
@@ -1168,6 +1114,8 @@ void GraphicDX12::UpdateObjectCB()
 	}
 
 	m_NumRenderPointObjects = 0;
+	m_NumRenderUIs = 0;
+
 	auto pointCB = m_FrameResource->pointCB.get();
 
 	for (auto& it : m_ReservedRenderInfos)
@@ -1244,7 +1192,6 @@ void GraphicDX12::UpdateObjectCB()
 		}
 		break;
 		case RENDER_TEX_PLANE:
-		case RENDER_UI:
 		{
 			B_P_Vertex temp;
 			OnlyTexObjectConstants OTObjectConstnat;
@@ -1270,6 +1217,26 @@ void GraphicDX12::UpdateObjectCB()
 			m_NumRenderPointObjects++;
 		}
 		break;
+		case RENDER_UI:
+		{
+			UIInfomation temp;
+			temp.uiType = it.uiInfo.uiType;
+			temp.size =it.uiInfo.size;
+			temp.pos = it.world.getPosition();
+
+			if (it.meshOrTextureName.size())
+			{
+				temp.textureIndex = m_TextureBuffer->GetTextureIndex(it.meshOrTextureName);
+			}
+			else
+			{
+				temp.color = it.uiInfo.color;
+			}
+
+			m_UIInfomation->CopyData(m_NumRenderUIs, &temp);
+			m_NumRenderUIs++;
+		}
+		break;
 		default:
 			assert(false);
 			break;
@@ -1287,7 +1254,6 @@ void GraphicDX12::UpdateObjectCB()
 			currMeshOBCB->CopyData(j, currRenderObjects[j]);
 		}
 	}
-
 }
 
 void GraphicDX12::UpdateAniBoneBuffer()
@@ -1317,6 +1283,9 @@ void GraphicDX12::DrawObject(DX12_RENDER_TYPE type)
 	case GraphicDX12::DX12_RENDER_TYPE_POINT:
 		DrawPointObjects();
 		break;
+	case GraphicDX12::DX12_RENDER_TYPE_UI:
+		DrawUIs();
+		break;
 	default:
 		break;
 	}
@@ -1324,10 +1293,14 @@ void GraphicDX12::DrawObject(DX12_RENDER_TYPE type)
 
 void GraphicDX12::DrawNormalMesh()
 {
-	m_CommandList->SetPipelineState(m_PSOs[ENUMSTR(DX12_RENDER_TYPE_NORMAL_MESH)].Get());
+	m_PSOCon->SetPSOToCommnadList(m_CommandList.Get(),
+		{ m_BackBufferFormat }, m_DepthStencilFormat, D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE,
+		to_string(DX12_RENDER_TYPE_NORMAL_MESH), "T1", "0", "0", "0",
+		to_string(DX12_RENDER_TYPE_NORMAL_MESH), 
+		to_string(DX12_RENDER_TYPE_NORMAL_MESH));
+
 	ID3D12DescriptorHeap* descriptorHeaps[] = { m_TextureBuffer->GetHeap() };
 	m_CommandList->SetDescriptorHeaps(1, descriptorHeaps);
-	m_CommandList->SetGraphicsRootSignature(m_T1RootSignature.Get());
 
 	auto matBuffer = m_Materials->GetBufferResource();
 	m_CommandList->SetGraphicsRootShaderResourceView(T1_MATERIAL_SRV, matBuffer->GetGPUVirtualAddress());
@@ -1366,10 +1339,14 @@ void GraphicDX12::DrawNormalMesh()
 
 void GraphicDX12::DrawDynamicMehs()
 {
-	m_CommandList->SetPipelineState(m_PSOs[ENUMSTR(DX12_RENDER_TYPE_NORMAL_MESH)].Get());
+	m_PSOCon->SetPSOToCommnadList(m_CommandList.Get(),
+		{ m_BackBufferFormat }, m_DepthStencilFormat, D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE,
+		to_string(DX12_RENDER_TYPE_NORMAL_MESH), "T1", "0", "0", "0",
+		to_string(DX12_RENDER_TYPE_NORMAL_MESH),
+		to_string(DX12_RENDER_TYPE_NORMAL_MESH));
+
 	ID3D12DescriptorHeap* descriptorHeaps[] = { m_TextureBuffer->GetHeap() };
 	m_CommandList->SetDescriptorHeaps(1, descriptorHeaps);
-	m_CommandList->SetGraphicsRootSignature(m_T1RootSignature.Get());
 
 	auto matBuffer = m_Materials->GetBufferResource();
 	m_CommandList->SetGraphicsRootShaderResourceView(T1_MATERIAL_SRV, matBuffer->GetGPUVirtualAddress());
@@ -1409,10 +1386,14 @@ void GraphicDX12::DrawDynamicMehs()
 
 void GraphicDX12::DrawSkinnedMesh()
 {
-	m_CommandList->SetPipelineState(m_PSOs[ENUMSTR(DX12_RENDER_TYPE_SKINNED_MESH)].Get());
+	m_PSOCon->SetPSOToCommnadList(m_CommandList.Get(),
+		{ m_BackBufferFormat }, m_DepthStencilFormat, D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE,
+		to_string(DX12_RENDER_TYPE_SKINNED_MESH), "T1", "0", "0", "0",
+		to_string(DX12_RENDER_TYPE_SKINNED_MESH),
+		to_string(DX12_RENDER_TYPE_SKINNED_MESH));
+
 	ID3D12DescriptorHeap* descriptorHeaps[] = { m_TextureBuffer->GetHeap() };
 	m_CommandList->SetDescriptorHeaps(1, descriptorHeaps);
-	m_CommandList->SetGraphicsRootSignature(m_T1RootSignature.Get());
 
 	auto matBuffer = m_Materials->GetBufferResource();
 	m_CommandList->SetGraphicsRootShaderResourceView(T1_MATERIAL_SRV, matBuffer->GetGPUVirtualAddress());
@@ -1463,11 +1444,16 @@ void GraphicDX12::DrawPointObjects()
 {
 	if (m_NumRenderPointObjects)
 	{
-		m_CommandList->SetPipelineState(m_PSOs[ENUMSTR(DX12_RENDER_TYPE_POINT)].Get());
+		m_PSOCon->SetPSOToCommnadList(m_CommandList.Get(),
+			{ m_BackBufferFormat }, m_DepthStencilFormat, D3D12_PRIMITIVE_TOPOLOGY_TYPE_POINT,
+			to_string(DX12_RENDER_TYPE_POINT), "P1", "0", "0", "0",
+			to_string(DX12_RENDER_TYPE_POINT),
+			to_string(DX12_RENDER_TYPE_POINT),
+			to_string(DX12_RENDER_TYPE_POINT));
+
 		ID3D12DescriptorHeap* descriptorHeaps[] = { m_TextureBuffer->GetHeap() };
 		m_CommandList->SetDescriptorHeaps(1, descriptorHeaps);
 
-		m_CommandList->SetGraphicsRootSignature(m_P1RootSignature.Get());
 		m_CommandList->SetGraphicsRootShaderResourceView(P1_OBJECT_SRV, m_FrameResource->pointCB->Resource()->GetGPUVirtualAddress());
 		m_CommandList->SetGraphicsRootConstantBufferView(P1_PASS_CB, m_FrameResource->passCB->Resource()->GetGPUVirtualAddress());
 		m_CommandList->SetGraphicsRootDescriptorTable(P1_TEXTURE_TABLE, m_TextureBuffer->GetHeap()->GetGPUDescriptorHandleForHeapStart());
@@ -1485,28 +1471,33 @@ void GraphicDX12::DrawPointObjects()
 	}
 }
 
-ComPtr<ID3DBlob> GraphicDX12::CompileShader(
-	const std::wstring& filename,
-	const D3D_SHADER_MACRO* defines,
-	const std::string& entrypoint,
-	const std::string& target)
+void GraphicDX12::DrawUIs()
 {
-	UINT compileFlags = 0;
-#if defined(DEBUG) || defined(_DEBUG)  
-	compileFlags = D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
-#endif
+	if (m_NumRenderUIs)
+	{
+		m_PSOCon->SetPSOToCommnadList(m_CommandList.Get(),
+			{ m_BackBufferFormat }, m_DepthStencilFormat, D3D12_PRIMITIVE_TOPOLOGY_TYPE_POINT,
+			to_string(DX12_RENDER_TYPE_UI), "UI", "0", "0", "0",
+			to_string(DX12_RENDER_TYPE_UI),
+			to_string(DX12_RENDER_TYPE_UI),
+			to_string(DX12_RENDER_TYPE_UI));
 
-	HRESULT hr = S_OK;
+		ID3D12DescriptorHeap* descriptorHeaps[] = { m_TextureBuffer->GetHeap() };
+		m_CommandList->SetDescriptorHeaps(1, descriptorHeaps);
 
-	ComPtr<ID3DBlob> byteCode = nullptr;
-	ComPtr<ID3DBlob> errors;
-	hr = D3DCompileFromFile(filename.c_str(), defines, D3D_COMPILE_STANDARD_FILE_INCLUDE,
-		entrypoint.c_str(), target.c_str(), compileFlags, 0, &byteCode, &errors);
+		m_CommandList->SetGraphicsRootConstantBufferView(UI_PASS_CB, m_FrameResource->passCB->Resource()->GetGPUVirtualAddress());
+		m_CommandList->SetGraphicsRootConstantBufferView(UI_UIPASS_CB, m_FrameResource->uiPassCB->Resource()->GetGPUVirtualAddress());
+		m_CommandList->SetGraphicsRootDescriptorTable(UI_TEXTURE_TABLE, m_TextureBuffer->GetHeap()->GetGPUDescriptorHandleForHeapStart());
 
-	if (errors != nullptr)
-		OutputDebugStringA((char*)errors->GetBufferPointer());
+		D3D12_VERTEX_BUFFER_VIEW vertexBufferView = {};
 
-	ThrowIfFailed(hr);
+		vertexBufferView.BufferLocation = m_UIInfomation->Resource()->GetGPUVirtualAddress();
+		vertexBufferView.SizeInBytes = m_UIInfomation->GetBufferSize();
+		vertexBufferView.StrideInBytes = m_UIInfomation->GetElementByteSize();
 
-	return byteCode;
+		m_CommandList->IASetVertexBuffers(0, 1, &vertexBufferView);
+		m_CommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_POINTLIST);
+
+		m_CommandList->DrawInstanced(m_NumRenderUIs, 1, 0, 0);
+	}
 }

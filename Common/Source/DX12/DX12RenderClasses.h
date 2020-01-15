@@ -33,7 +33,7 @@ struct UIInfomation
 	physx::PxVec4	color;
 	physx::PxVec3	pos;
 	physx::PxVec2	size;
-	bool			isPanelUI = false;
+	int				uiType = 0;
 	int				textureIndex = -1;
 };
 

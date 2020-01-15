@@ -103,7 +103,6 @@ void AniNodeVisual::SetTargetAninode(AniNode* node)
 {
 	m_TargetAniNode = node;
 
-	m_Panel->SetBackGroundTexture(InputTN::Get("AniNodeVisualPanel"));
 	m_Panel->SetSize(physx::PxVec2(100, 60));
 	m_Panel->SetPos({ 300,300 });
 
@@ -393,7 +392,6 @@ void AniTreeArowVisual::AniTreeArrowArttributeEditer::CreateAttributePanel()
 		m_AttributePanel = m_CurrArrow->CreateComponenet<UIPanel>(false);
 
 		m_AttributePanel->SetPos(physx::PxVec2(GETAPP->GetClientSize().x - 230, 200));
-		m_AttributePanel->SetBackGroundTexture(InputTN::Get("AniTreeArrowArttributePanel"));
 	}
 
 	m_AttributePanel->DeleteAllComs();
@@ -577,7 +575,6 @@ void VisualizedAniTreeCreator::Init()
 
 	m_Renderer->SetRenderInfo(RenderInfo(RENDER_MESH));
 
-	m_WorkPanel->SetBackGroundTexture(InputTN::Get("AniTreeCreatorWorkPanel"));
 	m_WorkPanel->SetPos({ 50,50 });
 
 	m_Animator->GetAnimationTreeNames(m_TreeNames);

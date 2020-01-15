@@ -207,13 +207,12 @@ void DORenderer::Update(float delta)
 
 	assert(comTransform != nullptr);
 
-	m_RenderInfo.world = comTransform->GetRTMatrix().getTranspose();
-	m_RenderInfo.scale = comTransform->GetScale();
-
 	switch (m_RenderInfo.type)
 	{
 	case RENDER_MESH:
 	{
+		m_RenderInfo.world = comTransform->GetRTMatrix().getTranspose();
+		m_RenderInfo.scale = comTransform->GetScale();
 		RenderMesh();
 	}
 	break;
@@ -221,7 +220,11 @@ void DORenderer::Update(float delta)
 	case RENDER_BOX:
 	case RENDER_PLANE:
 	case RENDER_TEX_PLANE:
+		m_RenderInfo.world = comTransform->GetRTMatrix().getTranspose();
+		m_RenderInfo.scale = comTransform->GetScale();
+		break;
 	case RENDER_UI:
+		m_RenderInfo.world = comTransform->GetRTMatrix();
 		break;
 	default:
 		return;

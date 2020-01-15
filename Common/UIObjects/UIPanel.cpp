@@ -16,9 +16,10 @@ void UIPanel::Init()
 	m_Trans->SetPosZ(0.8f);
 	m_Font->SetFont(RenderFont::fontNames.front());
 	m_Font->m_FontHeight = CGH::GO.ui.panelTitleTextHeight;
-	RenderInfo info(RENDER_UI);
-	info.point.size = { 100,100,0 };
-	m_Render->SetRenderInfo(info);
+	auto& render = m_Render->GetRenderInfo();
+	render.type = RENDER_UI;
+	render.uiInfo.uiType = UIPANEL;
+	render.uiInfo.color = { 0.2f, 0.2f, 0.2f, 1.0f };
 }
 
 void UIPanel::Delete()
@@ -82,19 +83,11 @@ physx::PxVec2 UIPanel::GetPos()
 	return { m_Trans->GetTransform().p.x,m_Trans->GetTransform().p.y };
 }
 
-void UIPanel::SetBackGroundTexture(const std::string& name)
-{
-	RenderInfo info = m_Render->GetRenderInfo();
-	info.meshOrTextureName = name;
-	m_Render->SetRenderInfo(info);
-}
-
 void UIPanel::SetBackGroundColor(const physx::PxVec4& color)
 {
-	RenderInfo info = m_Render->GetRenderInfo();
+	RenderInfo& info = m_Render->GetRenderInfo();
 	info.meshOrTextureName = "";
-	info.point.color = color;
-	m_Render->SetRenderInfo(info);
+	info.uiInfo.color = color;
 }
 
 void UIPanel::SetSize(const physx::PxVec2& size)
@@ -103,7 +96,7 @@ void UIPanel::SetSize(const physx::PxVec2& size)
 	auto halfSize = m_Size / 2;
 
 	RenderInfo info = m_Render->GetRenderInfo();
-	info.point.size = { halfSize.x, halfSize.y,0 };
+	info.uiInfo.size = halfSize;
 	if (m_UICollision)
 	{
 		m_UICollision->SetSize({ halfSize.x, halfSize.y });
@@ -149,10 +142,15 @@ void UIPanel::Update(float delta)
 	comPos.z -= 0.001f;
 	float topY = comPos.y;
 	m_Font->m_Pos.x = comPos.x;
-	m_Font->m_Pos.y = comPos.y + m_Font->m_FontHeight / 2.0f;
+	m_Font->m_Pos.y = comPos.y + CGH::GO.ui.panelTitleHeight / 2.0f;
 	m_Font->m_Pos.z = comPos.z;
 
-	comPos.y += m_ComsInterval + m_TitleSize;
+	comPos.y += CGH::GO.ui.panelTitleHeight + m_ComsInterval;
+
+	if (m_UIComs.size())
+	{
+		comPos.y += m_UIComs.front()->GetSize().y / 2;
+	}
 
 	physx::PxVec2 comSize;
 	float mustX = 0;
@@ -176,6 +174,9 @@ void UIPanel::Update(float delta)
 		SetSize(physx::PxVec2(m_Size.x < mustX ? mustX : m_Size.x,
 			m_Size.y < currHeight ? currHeight : m_Size.y));
 	}
+
+	auto& render = m_Render->GetRenderInfo();
+	render.uiInfo.size = m_Size/2;
 }
 
 void UIPanel::UIPanelController::AddPanel(UIPanel* panel)

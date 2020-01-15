@@ -2,14 +2,9 @@
 #include <assert.h>
 std::unordered_map<std::string, std::string> InputTN::textures =
 {
-	{"CommonPanelBackground",					"ice.dds"},
-	{"UIParamSubPanel",							"ice.dds"},
-	{"AniTreeCreatorWorkPanel",					"ice.dds"},
-	{"AniTreeCreatorWorkPanel_AddButton",		"ice.dds"},
-	{"AniNodeVisualPanel",						"ice.dds"},
+	{"AniTreeCreatorWorkPanel_AddButton",		"closeButton.png"},
 	{"AniNodeVisualPanel_Delete",				"closeButton.png"},
 	{"AniTreeArrowVisual",						"AniTreeArrow.png"},
-	{"AniTreeArrowArttributePanel",				"ice.dds"},
 	{"AniTreeArrowArttributePanel_AddButton",	"closeButton.png"},
 	{"AniTreeArrowArttributePanel_DeleteButton","closeButton.png"},
 };

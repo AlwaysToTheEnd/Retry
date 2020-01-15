@@ -29,7 +29,8 @@ public:
 	PSOController(ID3D12Device* device);
 	~PSOController();
 	
-	ID3D12PipelineState* GetPSO(
+	void SetPSOToCommnadList(ID3D12GraphicsCommandList* cmd,
+		const std::vector<DXGI_FORMAT>& rtvFormats, DXGI_FORMAT dsvFormat, D3D12_PRIMITIVE_TOPOLOGY_TYPE primitive,
 		const std::string& input, const std::string& rootSig, const std::string& rasterizer,
 		const std::string& blend, const std::string& depthStencil, 
 		const std::string& vs, const std::string& ps, 
@@ -42,12 +43,6 @@ public:
 	void AddRasterizer(const std::string& name, const D3D12_RASTERIZER_DESC& rasterizer);
 	void AddRootSignature(const std::string& name, const D3D12_ROOT_SIGNATURE_DESC& rootSignature);
 
-private:
-	ID3D12PipelineState* CreatePSO(const std::string& name,
-		const std::string& input, const std::string& rootSig, const std::string& rasterizer,
-		const std::string& blend, const std::string& depthStencil,
-		const std::string& vs, const std::string& ps,
-		const std::string& gs, const std::string& hs, const std::string& ds);
 
 private:
 	ID3D12Device* m_Device;

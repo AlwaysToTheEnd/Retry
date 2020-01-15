@@ -1,5 +1,6 @@
 #include "d3dApp.h"
 #include "HeightMapControlPanel.h"
+#include "GraphicDO.h"
 #include "HeightMap.h"
 #include "d3dUtil.h"
 
@@ -17,8 +18,8 @@ void HeightMapControlPanel::Delete()
 void HeightMapControlPanel::Init()
 {
 	UIPanel::Init();
+	m_Font->m_Text = L"heightMapCP";
 
-	SetBackGroundTexture(InputTN::Get("CommonPanelBackground"));
 	SetSize(physx::PxVec2(200, 200));
 	SetBenchUV({ 1.0f, 0 });
 	std::vector<std::wstring> heightMapPath;

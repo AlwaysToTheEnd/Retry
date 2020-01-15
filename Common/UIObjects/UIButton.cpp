@@ -43,7 +43,8 @@ void UIButton::SetTexture(const std::string& name, const physx::PxVec2& halfSize
 
 	RenderInfo info(RENDER_TYPE::RENDER_UI);
 	info.meshOrTextureName = name;
-	info.texPoint.size = { halfSize.x, halfSize.y, 0.0f };
+	info.uiInfo.size = halfSize;
+	info.uiInfo.uiType = UIBUTTON;
 	m_Render->SetRenderInfo(info);
 
 	if (colliderSizeIsEqualTexture)
@@ -66,7 +67,7 @@ void UIButton::OnlyFontMode()
 {
 	if (m_Render)
 	{
-		ExceptComponent(m_Render);
+		m_Render->Delete();
 	}
 
 	m_Font->SetBenchmark(RenderFont::FONTBENCHMARK::LEFT);
