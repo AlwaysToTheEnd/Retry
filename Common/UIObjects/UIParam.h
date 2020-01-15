@@ -70,7 +70,6 @@ public:
 		, m_EnumElementInfo(nullptr)
 		, m_Strings(nullptr)
 	{
-		
 	}
 	virtual			~UIParam() = default;
 	virtual void	Delete() override;

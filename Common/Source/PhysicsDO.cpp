@@ -219,9 +219,9 @@ void DOUICollision::Update(float delta)
 
 	if (transform)
 	{
-		physx::PxTransform offset(m_Offset.x, m_Offset.y, 0);
 		physx::PxTransform wPos = transform->GetTransform();
-		wPos = offset * wPos;
+		wPos.p.x += m_Offset.x;
+		wPos.p.y += m_Offset.y;
 		m_ReservedUICol->push_back(UICollisions(m_Parent, wPos, m_Size, m_VoidFuncs));
 	}
 }

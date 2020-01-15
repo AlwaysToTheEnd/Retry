@@ -108,17 +108,10 @@ struct RenderInfo
 
 struct RenderFont
 {
-	enum class FONTBENCHMARK
-	{
-		LEFT,
-		CENTER,
-		RIGHT
-	};
-
 	RenderFont(const std::wstring& fontName, const std::wstring& text)
 		: printString(text)
 		, fontIndex(GetFontIndex(fontName))
-		, benchmark(FONTBENCHMARK::LEFT)
+		, benchmark(0,0)
 	{
 
 	}
@@ -130,7 +123,7 @@ struct RenderFont
 	std::wstring		printString;
 	float				rotation = 0;
 	int					fontHeight = -1;
-	FONTBENCHMARK		benchmark;
+	physx::PxVec2		benchmark;
 	physx::PxVec3		pos = { 0, 0, 0 };
 	physx::PxVec4		color = { 0,0,0,1 };
 	physx::PxVec2*		drawSize = nullptr; //Output: If not nullptr, Get font drawSize from Device 

@@ -18,9 +18,9 @@ public:
 	virtual ~UIButton() = default;
 
 	virtual void	SetPos(const physx::PxVec3& pos) override;
-	void			SetTexture(const std::string& name, const physx::PxVec2& halfSize, bool colliderSizeIsEqualTexture = true);
+	void			SetTexture(const std::string& name, const physx::PxVec2& size, bool colliderSizeIsEqualTexture = true);
 	void			SetText(const std::wstring& text);
-	void			SetColliderSize(const physx::PxVec2& halfSize);
+	void			SetSize(const physx::PxVec2& size);
 	void			SetTextHeight(int height);
 
 	void			AddFunc(std::function<void()> func);

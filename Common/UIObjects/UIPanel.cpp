@@ -93,15 +93,14 @@ void UIPanel::SetBackGroundColor(const physx::PxVec4& color)
 void UIPanel::SetSize(const physx::PxVec2& size)
 {
 	m_Size = size;
-	auto halfSize = m_Size / 2;
 
-	RenderInfo info = m_Render->GetRenderInfo();
-	info.uiInfo.size = halfSize;
+	RenderInfo& info = m_Render->GetRenderInfo();
+	info.uiInfo.size = m_Size;
+
 	if (m_UICollision)
 	{
-		m_UICollision->SetSize({ halfSize.x, halfSize.y });
+		SetUICollisionSize(m_UICollision);
 	}
-	m_Render->SetRenderInfo(info);
 }
 
 void UIPanel::SetName(const std::wstring& name)
@@ -111,16 +110,14 @@ void UIPanel::SetName(const std::wstring& name)
 
 void UIPanel::SetPos(const physx::PxVec2& pos)
 {
-	physx::PxVec2 uv = m_BenchUV - physx::PxVec2(0.5f, 0.5f);
-	m_Trans->SetPosX(pos.x - m_Size.x * uv.x);
-	m_Trans->SetPosY(pos.y - m_Size.y * uv.y);
+	m_Trans->SetPosX(pos.x - m_Size.x * m_BenchUV.x);
+	m_Trans->SetPosY(pos.y - m_Size.y * m_BenchUV.y);
 }
 
 void UIPanel::SetPos(const physx::PxVec3& pos)
 {
-	physx::PxVec2 uv = m_BenchUV - physx::PxVec2(0.5f, 0.5f);
-	m_Trans->SetPosX(pos.x - m_Size.x * uv.x);
-	m_Trans->SetPosY(pos.y - m_Size.y * uv.y);
+	m_Trans->SetPosX(pos.x - m_Size.x * m_BenchUV.x);
+	m_Trans->SetPosY(pos.y - m_Size.y * m_BenchUV.y);
 	m_Trans->SetPosZ(pos.z);
 }
 
@@ -136,21 +133,14 @@ void UIPanel::ThisPanalIsStatic()
 void UIPanel::Update(float delta)
 {
 	physx::PxVec3 comPos = m_Trans->GetTransform().p;
-	auto halfSize = m_Size / 2;
-	comPos.x -= halfSize.x;
-	comPos.y -= halfSize.y;
+	comPos.x += CGH::GO.ui.panelComponentsInterval;
 	comPos.z -= 0.001f;
 	float topY = comPos.y;
 	m_Font->m_Pos.x = comPos.x;
-	m_Font->m_Pos.y = comPos.y + CGH::GO.ui.panelTitleHeight / 2.0f;
+	m_Font->m_Pos.y = comPos.y + (CGH::GO.ui.panelTitleHeight-CGH::GO.ui.panelTitleTextHeight)/2.0f;
 	m_Font->m_Pos.z = comPos.z;
 
-	comPos.y += CGH::GO.ui.panelTitleHeight + m_ComsInterval;
-
-	if (m_UIComs.size())
-	{
-		comPos.y += m_UIComs.front()->GetSize().y / 2;
-	}
+	comPos.y += CGH::GO.ui.panelTitleHeight + CGH::GO.ui.panelComponentsInterval;
 
 	physx::PxVec2 comSize;
 	float mustX = 0;
@@ -160,13 +150,17 @@ void UIPanel::Update(float delta)
 
 		m_UIComs[i]->SetPos(comPos);
 
-		comPos.y += comSize.y + m_ComsInterval;
+		comPos.y += comSize.y + CGH::GO.ui.panelComponentsInterval;
 
 		if (comSize.x > mustX)
 		{
 			mustX = comSize.x;
 		}
 	}
+
+	mustX += CGH::GO.ui.panelComponentsInterval * 2;
+	comPos.y += CGH::GO.ui.panelComponentsInterval;
+
 	//#TODO Scroll.
 	float currHeight = comPos.y - (comSize.y / 2) - topY;
 	if (m_Size.y < currHeight || m_Size.x < mustX)
@@ -176,7 +170,7 @@ void UIPanel::Update(float delta)
 	}
 
 	auto& render = m_Render->GetRenderInfo();
-	render.uiInfo.size = m_Size/2;
+	render.uiInfo.size = m_Size;
 }
 
 void UIPanel::UIPanelController::AddPanel(UIPanel* panel)

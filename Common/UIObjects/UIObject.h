@@ -1,6 +1,7 @@
 #pragma once
 #include "GameObject.h"
 
+class DOUICollision;
 
 class UIObject :public GameObject
 {
@@ -16,7 +17,7 @@ public:
 	UIObject(CGHScene& scene, GameObject* parent, const char* typeName)
 		: GameObject(scene, parent, typeName)
 		, m_Size(1,1)
-		, m_BenchUV(0.5f,0.5f)
+		, m_BenchUV(0.0f,0.0f)
 	{
 	}
 	virtual ~UIObject() = default;
@@ -31,6 +32,7 @@ public:
 
 protected:
 	virtual void	SetActive(bool value, bool components = false) override { GameObject::SetActive(value, components); }
+	void			SetUICollisionSize(DOUICollision* uiCol);
 
 protected:
 	physx::PxVec2 m_Size;

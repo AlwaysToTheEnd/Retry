@@ -121,13 +121,13 @@ public:
 		, m_FontHeight(-1)
 		, m_Color(1,1,1,1)
 		, m_DrawSize(0,0)
-		, m_Benchmark(RenderFont::FONTBENCHMARK::LEFT)
+		, m_Benchmark(0,0)
 	{
 	}
 	virtual ~DOFont() = default;
 
 	void			SetFont(std::wstring fontName) { m_FontName = fontName; }
-	void			SetBenchmark(RenderFont::FONTBENCHMARK mark) { m_Benchmark = mark; }
+	void			SetBenchmark(const physx::PxVec2& uv) { m_Benchmark = uv; }
 
 private:
 	virtual void Update(float delta) override;
@@ -142,6 +142,6 @@ public:
 
 private:
 	static std::vector<RenderFont>*	m_ReservedRenderFonts;
-	RenderFont::FONTBENCHMARK		m_Benchmark;
+	physx::PxVec2					m_Benchmark;
 	std::wstring					m_FontName;
 };

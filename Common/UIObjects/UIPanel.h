@@ -73,7 +73,6 @@ protected:
 	virtual void Update(float delta) override;
 
 protected:
-	static const int		m_ComsInterval = 3;
 	DOTransform*			m_Trans;
 	DOFont*					m_Font;
 	DORenderer*				m_Render;

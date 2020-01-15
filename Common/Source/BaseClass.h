@@ -47,7 +47,7 @@ namespace CGH
 			int				panelTitleHeight = 20;
 			int				panelTitleTextHeight = 15;
 			int				panelCloseButtonHalfSize = panelTitleHeight / 2;
-			int				panelComponentsInterval = 3;
+			int				panelComponentsInterval = 5;
 		}ui;
 
 		struct GraphicOption

@@ -36,13 +36,12 @@ public:
 		const std::string& vs, const std::string& ps, 
 		const std::string& gs="", const std::string& hs="", const std::string& ds = "");
 
-	void AddShader(const std::string& shaderName, DX12_SHADER_TYPE type, const std::wstring& filename, const D3D_SHADER_MACRO* defines, const std::string& entrypoint, const std::string& target);
+	void AddShader(const std::string& shaderName, DX12_SHADER_TYPE type, const std::wstring& filename, const D3D_SHADER_MACRO* defines, const std::string& entrypoint);
 	void AddInputLayout(const std::string& name, const std::vector<D3D12_INPUT_ELEMENT_DESC>& inputLayout);
 	void AddBlend(const std::string& name, const D3D12_BLEND_DESC& blend);
 	void AddDepthStencil(const std::string& name, const D3D12_DEPTH_STENCIL_DESC& depthStencil);
 	void AddRasterizer(const std::string& name, const D3D12_RASTERIZER_DESC& rasterizer);
 	void AddRootSignature(const std::string& name, const D3D12_ROOT_SIGNATURE_DESC& rootSignature);
-
 
 private:
 	ID3D12Device* m_Device;

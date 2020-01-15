@@ -71,6 +71,7 @@ void PSOController::SetPSOToCommnadList(ID3D12GraphicsCommandList* cmd,
 		newPSO.DepthStencilState = depthStencilI->second;
 
 		newPSO.PrimitiveTopologyType = primitive;
+		newPSO.DSVFormat = dsvFormat;
 		newPSO.NumRenderTargets = rtvFormats.size();
 		memcpy(newPSO.RTVFormats, rtvFormats.data(), rtvFormats.size() * sizeof(DXGI_FORMAT));
 
@@ -121,8 +122,33 @@ void PSOController::SetPSOToCommnadList(ID3D12GraphicsCommandList* cmd,
 
 void PSOController::AddShader(const std::string& shaderName, DX12_SHADER_TYPE type, 
 	const std::wstring& filename, const D3D_SHADER_MACRO* defines, 
-	const std::string& entrypoint, const std::string& target)
+	const std::string& entrypoint)
 {
+	string target;
+
+	switch (type)
+	{
+	case DX12_SHADER_VERTEX:
+		target = "vs_5_1";
+		break;
+	case DX12_SHADER_PIXEL:
+		target = "ps_5_1";
+		break;
+	case DX12_SHADER_GEOMETRY:
+		target = "gs_5_1";
+		break;
+	case DX12_SHADER_HULL:
+		target = "hs_5_1";
+		break;
+	case DX12_SHADER_DOMAIN:
+		target = "ds_5_1";
+		break;
+	case DX12_SHADER_TYPE_COUNT:
+	default:
+		assert(false);
+		break;
+	}
+
 	auto iter = m_Shaders[type].find(shaderName);
 	assert(iter == m_Shaders[type].end());
 

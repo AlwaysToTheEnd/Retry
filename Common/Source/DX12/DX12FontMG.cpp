@@ -119,21 +119,9 @@ void DX12FontManager::RenderCommandWrite(ID3D12GraphicsCommandList* cmdList,
 			*it.drawSize = { size.x, size.y };
 		}
 
-		switch (it.benchmark)
-		{
-		case RenderFont::FONTBENCHMARK::LEFT:
-			break;
-		case RenderFont::FONTBENCHMARK::CENTER:
-			pos.x -= size.x / 2;
-			break;
-		case RenderFont::FONTBENCHMARK::RIGHT:
-			pos.x += size.x / 2;
-			break;
-		default:
-			break;
-		}
 
-		pos.y -= size.y / 2;
+		pos.x -= size.x * it.benchmark.x;
+		pos.y -= size.y * it.benchmark.y;
 		
 		m_Fonts[it.fontIndex].DrawString(m_SpriteBatch.get(), it.printString.c_str(), pos,
 			color, it.rotation, origin, scale, DirectX::SpriteEffects_None, pos.z);

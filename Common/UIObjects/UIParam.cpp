@@ -33,9 +33,8 @@ void UIParam::AddUIParam(UIParam* param)
 
 void UIParam::SetPos(const physx::PxVec3& pos)
 {
-	physx::PxVec2 uv = m_BenchUV - physx::PxVec2(0.5f, 0.5f);
-	m_Trans->SetPosX(pos.x - m_Size.x * uv.x);
-	m_Trans->SetPosY(pos.y - m_Size.y * uv.y);
+	m_Trans->SetPosX(pos.x - m_Size.x * m_BenchUV.x);
+	m_Trans->SetPosY(pos.y - m_Size.y * m_BenchUV.y);
 	m_Trans->SetPosZ(pos.z);
 }
 
@@ -72,7 +71,6 @@ void UIParam::Init()
 	m_Trans = CreateComponenet<DOTransform>();
 	m_Font = CreateComponenet<DOFont>();
 	m_Font->SetFont(RenderFont::fontNames.front());
-	m_Font->SetBenchmark(RenderFont::FONTBENCHMARK::LEFT);
 
 	auto Trans = GetComponent<DOTransform>();
 
@@ -105,9 +103,8 @@ void UIParam::Update(float delta)
 		break;
 		case UIParam::UIPARAMTYPE::MODIFIER:
 		{
-			physx::PxVec2 fontDrawSize = m_Font->m_DrawSize;
-			m_UICollision->SetSize({ fontDrawSize.x / 2, fontDrawSize.y / 2 });
-			m_UICollision->SetOffset({ fontDrawSize.x / 2, 0 });
+			m_Size = m_Font->m_DrawSize;
+			SetUICollisionSize(m_UICollision);
 
 			if (!m_Selected)
 			{

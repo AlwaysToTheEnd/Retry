@@ -36,13 +36,13 @@ void CreatePanel(UIInfomation vin, inout TriangleStream<VertexOut> output)
 
     const float edgeSize = 5.0f;
     
-    vertices[0].posH = float4(-vin.size.x, -vin.size.y, 0.0f, 1.0f);
+    vertices[0].posH = float4(0, 0, 0.0f, 1.0f);
     vertices[1].posH = vertices[0].posH;
     
     vertices[2].posH = vertices[0].posH;
     vertices[2].posH.y += gPanelTitleHeight;
     
-    vertices[3].posH = float4(vin.size.x, -vin.size.y, 0.0f, 1.0f);
+    vertices[3].posH = float4(vin.size.x, 0, 0.0f, 1.0f);
     vertices[4].posH = vertices[3].posH;
     
     vertices[5].posH = vertices[3].posH;
@@ -57,7 +57,7 @@ void CreatePanel(UIInfomation vin, inout TriangleStream<VertexOut> output)
     
     /////////////////////////////////////////////////////////////
     
-    vertices[6].posH = float4(-vin.size.x, vin.size.y, 0.0f, 1.0f);
+    vertices[6].posH = float4(0, vin.size.y, 0.0f, 1.0f);
     vertices[7].posH = vertices[2].posH;
     vertices[8].posH = vertices[6].posH;
     

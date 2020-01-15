@@ -965,20 +965,20 @@ void GraphicDX12::BuildShadersAndInputLayout()
 		"SKINNED_VERTEX_SAHDER",NULL,
 		NULL, NULL };
 
-	m_PSOCon->AddShader(to_string(DX12_RENDER_TYPE_SKINNED_MESH), DX12_SHADER_VERTEX, L"../Common/MainShaders/BaseShader.hlsl", macros, "VS", "vs_5_1");
-	m_PSOCon->AddShader(to_string(DX12_RENDER_TYPE_SKINNED_MESH), DX12_SHADER_PIXEL, L"../Common/MainShaders/BaseShader.hlsl", macros, "PS", "ps_5_1");
+	m_PSOCon->AddShader(to_string(DX12_RENDER_TYPE_SKINNED_MESH), DX12_SHADER_VERTEX, L"../Common/MainShaders/BaseShader.hlsl", macros, "VS");
+	m_PSOCon->AddShader(to_string(DX12_RENDER_TYPE_SKINNED_MESH), DX12_SHADER_PIXEL, L"../Common/MainShaders/BaseShader.hlsl", macros, "PS");
 
 	macros[2] = { NULL, NULL };
-	m_PSOCon->AddShader(to_string(DX12_RENDER_TYPE_NORMAL_MESH), DX12_SHADER_VERTEX, L"../Common/MainShaders/BaseShader.hlsl", macros, "VS", "vs_5_1");
-	m_PSOCon->AddShader(to_string(DX12_RENDER_TYPE_NORMAL_MESH), DX12_SHADER_PIXEL, L"../Common/MainShaders/BaseShader.hlsl", macros, "PS", "ps_5_1");
+	m_PSOCon->AddShader(to_string(DX12_RENDER_TYPE_NORMAL_MESH), DX12_SHADER_VERTEX, L"../Common/MainShaders/BaseShader.hlsl", macros, "VS");
+	m_PSOCon->AddShader(to_string(DX12_RENDER_TYPE_NORMAL_MESH), DX12_SHADER_PIXEL, L"../Common/MainShaders/BaseShader.hlsl", macros, "PS");
 
-	m_PSOCon->AddShader(to_string(DX12_RENDER_TYPE_POINT), DX12_SHADER_VERTEX, L"../Common/MainShaders/pointShader.hlsl", macros, "VS", "vs_5_1");
-	m_PSOCon->AddShader(to_string(DX12_RENDER_TYPE_POINT), DX12_SHADER_PIXEL, L"../Common/MainShaders/pointShader.hlsl", macros, "PS", "ps_5_1");
-	m_PSOCon->AddShader(to_string(DX12_RENDER_TYPE_POINT), DX12_SHADER_GEOMETRY, L"../Common/MainShaders/pointShader.hlsl", macros, "GS", "gs_5_1");
+	m_PSOCon->AddShader(to_string(DX12_RENDER_TYPE_POINT), DX12_SHADER_VERTEX, L"../Common/MainShaders/pointShader.hlsl", macros, "VS");
+	m_PSOCon->AddShader(to_string(DX12_RENDER_TYPE_POINT), DX12_SHADER_PIXEL, L"../Common/MainShaders/pointShader.hlsl", macros, "PS");
+	m_PSOCon->AddShader(to_string(DX12_RENDER_TYPE_POINT), DX12_SHADER_GEOMETRY, L"../Common/MainShaders/pointShader.hlsl", macros, "GS");
 
-	m_PSOCon->AddShader(to_string(DX12_RENDER_TYPE_UI), DX12_SHADER_VERTEX, L"../Common/MainShaders/UIShader.hlsl", macros, "VS", "vs_5_1");
-	m_PSOCon->AddShader(to_string(DX12_RENDER_TYPE_UI), DX12_SHADER_PIXEL, L"../Common/MainShaders/UIShader.hlsl", macros, "PS", "ps_5_1");
-	m_PSOCon->AddShader(to_string(DX12_RENDER_TYPE_UI), DX12_SHADER_GEOMETRY, L"../Common/MainShaders/UIShader.hlsl", macros, "GS", "gs_5_1");
+	m_PSOCon->AddShader(to_string(DX12_RENDER_TYPE_UI), DX12_SHADER_VERTEX, L"../Common/MainShaders/UIShader.hlsl", macros, "VS");
+	m_PSOCon->AddShader(to_string(DX12_RENDER_TYPE_UI), DX12_SHADER_PIXEL, L"../Common/MainShaders/UIShader.hlsl", macros, "PS");
+	m_PSOCon->AddShader(to_string(DX12_RENDER_TYPE_UI), DX12_SHADER_GEOMETRY, L"../Common/MainShaders/UIShader.hlsl", macros, "GS");
 
 	m_PSOCon->AddInputLayout(to_string(DX12_RENDER_TYPE_SKINNED_MESH),
 		{
@@ -1010,7 +1010,7 @@ void GraphicDX12::BuildShadersAndInputLayout()
 			{ "UIPOS", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 16, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
 			{ "UISIZE", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 28, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
 			{ "UITYPE", 0, DXGI_FORMAT_R32_SINT, 0, 36, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-			{ "UITEXTURE", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 40, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+			{ "UITEXTURE", 0, DXGI_FORMAT_R32_SINT, 0, 40, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
 		});
 }
 
