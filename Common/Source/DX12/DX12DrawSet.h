@@ -53,11 +53,14 @@ public:
 	virtual void	ReserveRender(const RenderInfo& info) = 0;
 	virtual	void	UploadBuffersClear() = 0;
 
+	void						UpdateFrameCount();
+	D3D12_GPU_VIRTUAL_ADDRESS	GetCurrMainPassAddress() const;
+
 protected:
 	void			SetPSO(ID3D12GraphicsCommandList* cmd);
 
 protected:
-	static D3D12_STATIC_SAMPLER_DESC		m_StaticSmaplers[7];
+	static D3D12_STATIC_SAMPLER_DESC		m_StaticSamplers[7];
 	const unsigned int						m_NumFrame;
 	unsigned int							m_CurrFrame = 0;
 	PSOAttributeNames						m_PSOA;

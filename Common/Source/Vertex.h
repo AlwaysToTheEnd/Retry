@@ -27,7 +27,7 @@ struct SkinnedVertex
 };
 
 
-struct B_P_Vertex
+struct PointBaseVertex
 {
 	unsigned int		type = 0;
 	unsigned int		cbIndex = 0;

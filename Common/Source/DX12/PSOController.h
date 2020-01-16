@@ -23,7 +23,7 @@ public:
 		const std::vector<DXGI_FORMAT>& rtvFormats, DXGI_FORMAT dsvFormat, D3D12_PRIMITIVE_TOPOLOGY_TYPE primitive,
 		const std::string& input, const std::string& rootSig, const std::string& rasterizer,
 		const std::string& blend, const std::string& depthStencil, 
-		const std::string& vs, const std::string& ps, 
+		const std::string& vs="", const std::string& ps="", 
 		const std::string& gs="", const std::string& hs="", const std::string& ds = "");
 
 	void AddShader(const std::string& shaderName, DX12_SHADER_TYPE type, const std::wstring& filename, const D3D_SHADER_MACRO* defines, const std::string& entrypoint);

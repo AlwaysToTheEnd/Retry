@@ -36,7 +36,7 @@ public:
 	std::unordered_map<std::string, std::unique_ptr<AniTree::AnimationTree>>*	GetAnimationTreeMap() { return &m_AniTreeDatas; }
 
 public: // pure virtual funcs. 
-	virtual const std::unordered_map<std::string, MeshObject>*					GetMeshDataMap() = 0;
+	virtual const std::unordered_map<std::string, MeshObject>*					GetMeshDataMap(CGH::MESH_TYPE type) = 0;
 
 	virtual bool	CreateMesh(const std::string& meshName, MeshObject& meshinfo, const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices) = 0;
 	virtual bool	CreateMaterials(const std::vector<std::string>& materialNames, const std::vector<Material>& materials) = 0;

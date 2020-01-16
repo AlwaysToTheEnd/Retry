@@ -8,6 +8,16 @@
 #include "Vertex.h"
 #define BONEMAXMATRIX 160
 
+namespace CGH
+{
+	enum MESH_TYPE
+	{
+		NORMAL_MESH,
+		SKINNED_MESH,
+		MESH_TYPE_COUNT,
+	};
+};
+
 enum RENDER_TYPE
 {
 	RENDER_NONE,

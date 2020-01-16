@@ -1,7 +1,8 @@
 #include "DX12DrawSet.h"
+#include "DX12RenderClasses.h"
 #include <d3dx12.h>
 
-D3D12_STATIC_SAMPLER_DESC DX12DrawSet::m_StaticSmaplers[7] =
+D3D12_STATIC_SAMPLER_DESC DX12DrawSet::m_StaticSamplers[7] =
 {
 	CD3DX12_STATIC_SAMPLER_DESC(
 	0,
@@ -60,6 +61,18 @@ D3D12_STATIC_SAMPLER_DESC DX12DrawSet::m_StaticSmaplers[7] =
 	D3D12_COMPARISON_FUNC_LESS_EQUAL,
 	D3D12_STATIC_BORDER_COLOR_OPAQUE_BLACK)
 };
+
+void DX12DrawSet::UpdateFrameCount()
+{
+	m_CurrFrame = (m_CurrFrame + 1) % m_NumFrame;
+}
+
+D3D12_GPU_VIRTUAL_ADDRESS DX12DrawSet::GetCurrMainPassAddress() const
+{
+	static unsigned int mainPassStride= (sizeof(PassConstants) + 255) & ~255;
+
+	return m_MainPassCB->GetGPUVirtualAddress() + (mainPassStride * m_CurrFrame);
+}
 
 void DX12DrawSet::SetPSO(ID3D12GraphicsCommandList* cmd)
 {

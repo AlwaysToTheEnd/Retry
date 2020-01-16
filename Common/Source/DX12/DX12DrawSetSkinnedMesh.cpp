@@ -29,8 +29,8 @@ void DX12DrawSetSkinnedMesh::Init(ID3D12Device* device, PSOController* psoCon,
 	baseRootParam[ANIBONE_CB].InitAsConstantBufferView(2);
 
 	CD3DX12_ROOT_SIGNATURE_DESC rootDesc;
-	rootDesc.Init(ROOT_COUNT, baseRootParam, _countof(m_StaticSmaplers),
-		m_StaticSmaplers, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+	rootDesc.Init(ROOT_COUNT, baseRootParam, _countof(m_StaticSamplers),
+		m_StaticSamplers, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
 	std::string boneMaxMatrixNum = std::to_string(BONEMAXMATRIX);
 	std::string textureNum = std::to_string(m_TextureBuffer->GetTexturesNum());
@@ -66,7 +66,7 @@ void DX12DrawSetSkinnedMesh::Draw(ID3D12GraphicsCommandList* cmd)
 	cmd->SetDescriptorHeaps(1, descriptorHeaps);
 
 	cmd->SetGraphicsRootShaderResourceView(MATERIAL_SRV, m_MaterialBuffer->GetBufferResource()->GetGPUVirtualAddress());
-	cmd->SetGraphicsRootConstantBufferView(PASS_CB, m_MainPassCB->GetGPUVirtualAddress());
+	cmd->SetGraphicsRootConstantBufferView(PASS_CB, GetCurrMainPassAddress());
 	cmd->SetGraphicsRootDescriptorTable(TEXTURE_TABLE, m_TextureBuffer->GetHeap()->GetGPUDescriptorHandleForHeapStart());
 
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView = {};

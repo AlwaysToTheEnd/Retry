@@ -24,32 +24,16 @@
 class DX12TextureBuffer;
 class DX12DrawSetNormalMesh;
 class DX12DrawSetSkinnedMesh;
+class DX12DrawSetPointBase;
+class DX12DrawSetUI;
 
 using Microsoft::WRL::ComPtr;
 
 class GraphicDX12 final : public IGraphicDevice
 {
-	enum
-	{
-		P1_OBJECT_SRV,
-		P1_PASS_CB,
-		P1_TEXTURE_TABLE,
-		P1_ROOT_COUNT
-	};
-
-	enum
-	{
-		UI_PASS_CB,
-		UI_UIPASS_CB,
-		UI_TEXTURE_TABLE,
-		UI_ROOT_COUNT
-	};
-
 	enum DX12_RENDER_TYPE
 	{
 		DX12_RENDER_TYPE_DYNAMIC_MESH,
-		DX12_RENDER_TYPE_POINT,
-		DX12_RENDER_TYPE_UI,
 		DX12_RENDER_TYPE_COUNT
 	};
 
@@ -61,14 +45,6 @@ class GraphicDX12 final : public IGraphicDevice
 				D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(cmdListAlloc.GetAddressOf())));
 
 			passCB = std::make_unique<DX12UploadBuffer<PassConstants>>(device, passCount, true);
-			uiPassCB = std::make_unique<DX12UploadBuffer<CGH::GlobalOptions::UIOption>>(device, 1, true);
-
-			for (int i = 0; i < DX12_RENDER_TYPE_COUNT; i++)
-			{
-				meshObjectCB[i]= std::make_unique<DX12UploadBuffer<ObjectConstants>>(device, objectCount, true);
-			}
-
-			pointCB = std::make_unique<DX12UploadBuffer<OnlyTexObjectConstants>>(device, objectCount, false);
 		}
 
 		FrameResource(const FrameResource& rhs) = delete;
@@ -77,9 +53,6 @@ class GraphicDX12 final : public IGraphicDevice
 		ComPtr<ID3D12CommandAllocator> cmdListAlloc;
 
 		std::unique_ptr<DX12UploadBuffer<PassConstants>> passCB = nullptr;
-		std::unique_ptr<DX12UploadBuffer<CGH::GlobalOptions::UIOption>> uiPassCB = nullptr;
-		std::unique_ptr<DX12UploadBuffer<ObjectConstants>> meshObjectCB[DX12_RENDER_TYPE_COUNT];
-		std::unique_ptr<DX12UploadBuffer<OnlyTexObjectConstants>> pointCB = nullptr;
 	};
 
 	struct DynamicBuffer
@@ -114,7 +87,7 @@ private:
 	virtual void	UnRegisterDeviceObject(CGHScene& scene, DeviceObject* gameObject) override;
 
 public: // Used from DeviceObject Init
-	virtual const std::unordered_map<std::string, MeshObject>* GetMeshDataMap() override;
+	virtual const std::unordered_map<std::string, MeshObject>* GetMeshDataMap(CGH::MESH_TYPE type) override;
 
 	virtual bool	CreateMesh(const std::string& meshName, MeshObject& meshinfo, const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices) override;
 	virtual bool	CreateMaterials(const std::vector<std::string>& materialNames, const std::vector<Material>& materials) override;
@@ -142,20 +115,12 @@ private: // Device Base Functions
 private: // Base object Builds
 	void BuildDrawSets();
 	void BuildFrameResources();
-	void BuildRootSignature();
-	void BuildShadersAndInputLayout();
 	void BuildDepthStencilAndBlendsAndRasterizer();
-	void BuildUploadBuffers();
 
 private: // Used in frame.
 	void UpdateMainPassCB();
 	void UpdateObjectCB();
 
-private:
-	void DrawObject(DX12_RENDER_TYPE type);
-	void DrawDynamicMehs();
-	void DrawPointObjects();
-	void DrawUIs();
 
 private:
 	D3D12_VIEWPORT						m_ScreenViewport;
@@ -180,11 +145,11 @@ private:
 	physx::PxVec3						m_Ray;
 
 private:
-	std::unique_ptr<PSOController>						m_PSOCon;
+	std::unique_ptr<PSOController>							m_PSOCon;
 
-	PassConstants										m_MainPassCB;
-	std::unique_ptr<FrameResource>						m_FrameResource;
-	std::unique_ptr<DX12FontManager>					m_FontManager;
+	PassConstants											m_MainPassCB;
+	std::unique_ptr<FrameResource>							m_FrameResource;
+	std::unique_ptr<DX12FontManager>						m_FontManager;
 
 	std::unique_ptr<DX12TextureBuffer>						m_TextureBuffer;
 	std::unique_ptr<DX12TextureBuffer>						m_UITextureBuffer;
@@ -192,16 +157,9 @@ private:
 
 	std::unique_ptr<DX12DrawSetNormalMesh>					m_NormalMeshDrawSet;
 	std::unique_ptr<DX12DrawSetSkinnedMesh>					m_SkinnedMeshDrawSet;
+	std::unique_ptr<DX12DrawSetPointBase>					m_PointBaseDrawSet;
+	std::unique_ptr<DX12DrawSetUI>							m_UIDrawSet;
 
 private:
-	std::vector<ObjectConstants>					m_RenderObjects[DX12_RENDER_TYPE_COUNT];
-	std::vector<const SubmeshData*>					m_RenderObjectsSubmesh[DX12_RENDER_TYPE_COUNT];
-	unsigned int									m_NumRenderPointObjects;
-	unsigned int									m_NumRenderUIs;
-
-private:
-	std::unique_ptr<DX12UploadBuffer<B_P_Vertex>>		m_Box_Plane_Vertices;
-	std::unique_ptr<DX12UploadBuffer<UIInfomation>>		m_UIInfomation;
-
 	std::vector<std::unique_ptr<DynamicBuffer>>		m_DynamicBuffers;
 };

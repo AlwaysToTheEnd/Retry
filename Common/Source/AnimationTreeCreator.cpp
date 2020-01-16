@@ -558,7 +558,7 @@ void VisualizedAniTreeCreator::SelectSkinnedData(const std::string& name)
 			m_AniEndTimes.push_back(m_CurrSkin->GetClipEndTime(it));
 		}
 
-		GetComponent<DORenderMesh>()->SelectMesh(name);
+		GetComponent<DORenderMesh>()->SelectMesh(CGH::SKINNED_MESH,name);
 		m_Animator->SelectSkin(name);
 
 		m_CurrTree->SetCurrMeshName(name);
@@ -725,7 +725,7 @@ void VisualizedAniTreeCreator::SelectNullTree()
 
 	if (meshName.size())
 	{
-		GetComponent<DORenderMesh>()->SelectMesh(meshName);
+		GetComponent<DORenderMesh>()->SelectMesh(CGH::SKINNED_MESH, meshName);
 	}
 
 	unsigned int numNodes = m_CurrTree->GetNumNodes();
@@ -795,7 +795,7 @@ void VisualizedAniTreeCreator::ChangedTree()
 
 		if (meshName.size())
 		{
-			GetComponent<DORenderMesh>()->SelectMesh(meshName);
+			GetComponent<DORenderMesh>()->SelectMesh(CGH::SKINNED_MESH,meshName);
 		}
 
 		unsigned int numNodes = m_CurrTree->GetNumNodes();

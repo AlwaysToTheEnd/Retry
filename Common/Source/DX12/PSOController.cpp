@@ -49,16 +49,12 @@ void PSOController::SetPSOToCommnadList(ID3D12GraphicsCommandList* cmd,
 		auto blendI = m_Blends.find(blend);
 		auto depthStencilI = m_DepthStencils.find(depthStencil);
 
-		auto vsI = m_Shaders[DX12_SHADER_VERTEX].find(vs);
-		auto psI = m_Shaders[DX12_SHADER_PIXEL].find(ps);
 
 		assert(rootSigI != m_RootSignature.end());
 		assert(inputI != m_InputLayouts.end());
 		assert(rasterI != m_Rasterizers.end());
 		assert(blendI != m_Blends.end());
 		assert(depthStencilI != m_DepthStencils.end());
-		assert(vsI != m_Shaders[DX12_SHADER_VERTEX].end());
-		assert(psI != m_Shaders[DX12_SHADER_PIXEL].end());
 
 		D3D12_INPUT_LAYOUT_DESC inputDesc;
 		inputDesc.NumElements = inputI->second.size();
@@ -75,11 +71,23 @@ void PSOController::SetPSOToCommnadList(ID3D12GraphicsCommandList* cmd,
 		newPSO.NumRenderTargets = rtvFormats.size();
 		memcpy(newPSO.RTVFormats, rtvFormats.data(), rtvFormats.size() * sizeof(DXGI_FORMAT));
 
-		newPSO.VS.BytecodeLength = vsI->second.shader->GetBufferSize();
-		newPSO.VS.pShaderBytecode = vsI->second.shader->GetBufferPointer();
+		if (vs.size())
+		{
+			auto vsI = m_Shaders[DX12_SHADER_VERTEX].find(vs);
+			assert(vsI != m_Shaders[DX12_SHADER_VERTEX].end());
 
-		newPSO.PS.BytecodeLength = psI->second.shader->GetBufferSize();
-		newPSO.PS.pShaderBytecode = psI->second.shader->GetBufferPointer();
+			newPSO.VS.BytecodeLength = vsI->second.shader->GetBufferSize();
+			newPSO.VS.pShaderBytecode = vsI->second.shader->GetBufferPointer();
+		}
+
+		if (ps.size())
+		{
+			auto psI = m_Shaders[DX12_SHADER_PIXEL].find(ps);
+			assert(psI != m_Shaders[DX12_SHADER_PIXEL].end());
+
+			newPSO.PS.BytecodeLength = psI->second.shader->GetBufferSize();
+			newPSO.PS.pShaderBytecode = psI->second.shader->GetBufferPointer();
+		}
 
 		if (gs.size())
 		{

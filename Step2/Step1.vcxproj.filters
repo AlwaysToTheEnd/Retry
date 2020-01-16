@@ -219,6 +219,12 @@
     <ClCompile Include="..\Common\Source\DX12\DX12DrawSetSkinnedMesh.cpp">
       <Filter>Common\DeviceInstance\DX12Supporters\DrawSets</Filter>
     </ClCompile>
+    <ClCompile Include="..\Common\Source\DX12\DX12DrawSetPointBase.cpp">
+      <Filter>Common\DeviceInstance\DX12Supporters\DrawSets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Source\DX12\DX12DrawSetUI.cpp">
+      <Filter>Common\DeviceInstance\DX12Supporters\DrawSets</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Common\Source\IGraphicDevice.h">
@@ -366,6 +372,12 @@
       <Filter>Common\DeviceInstance\DX12Supporters\DrawSets</Filter>
     </ClInclude>
     <ClInclude Include="..\Common\Source\DX12\DX12DrawSetSkinnedMesh.h">
+      <Filter>Common\DeviceInstance\DX12Supporters\DrawSets</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\DX12\DX12DrawSetPointBase.h">
+      <Filter>Common\DeviceInstance\DX12Supporters\DrawSets</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\DX12\DX12DrawSetUI.h">
       <Filter>Common\DeviceInstance\DX12Supporters\DrawSets</Filter>
     </ClInclude>
   </ItemGroup>

@@ -16,24 +16,28 @@ class DORenderMesh :public DeviceObject
 public:
 	DORenderMesh(CGHScene& scene, GameObject* parent, const char* typeName)
 		: DeviceObject(scene, parent, typeName)
+		, m_CurrMeshType(CGH::NORMAL_MESH)
+		, m_CurrMesh(nullptr)
 	{
 	
 	}
 	virtual ~DORenderMesh() = default;
 
-	void				GetMeshNames(std::vector<std::string>& out);
+	void				GetMeshNames(CGH::MESH_TYPE type, std::vector<std::string>& out);
 	const std::string&	GetCurrMeshName() const { return m_CurrMeshName; }
+	CGH::MESH_TYPE		GetCurrMeshType() const {}
 
-	bool				SelectMesh(const std::string& name);
+	bool				SelectMesh(CGH::MESH_TYPE type ,const std::string& name);
 
 private:
 	virtual void Update(float delta) override {}
 	virtual void Init(PhysX4_1*, IGraphicDevice* graphicDevice);
 
 private:
-	static const std::unordered_map<std::string, MeshObject>*	m_Meshs;
+	static const std::unordered_map<std::string, MeshObject>*	m_Meshs[CGH::MESH_TYPE_COUNT];
 
 	std::string			m_CurrMeshName;
+	CGH::MESH_TYPE		m_CurrMeshType;
 	const MeshObject*	m_CurrMesh;
 };
 

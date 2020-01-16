@@ -40,6 +40,8 @@ public:
 							const std::vector<Vertex>& vertices, const std::vector<UINT>& indices);
 
 	bool			EditMesh(ID3D12Device* device, ID3D12GraphicsCommandList* commandList, const std::string& meshName, const std::vector<Vertex>& vertices);
+	
+	const std::unordered_map<std::string, MeshObject>* GetMeshs() const { return &m_Meshs; }
 
 private:
 	void CreateVertexIndexBuffer(ID3D12Device* device, ID3D12GraphicsCommandList* commandList,

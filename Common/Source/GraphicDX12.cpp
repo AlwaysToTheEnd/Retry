@@ -3,6 +3,8 @@
 #include "DX12/DX12TextureBuffer.h"
 #include "DX12/DX12DrawSetNormalMesh.h"
 #include "DX12/DX12DrawSetSkinnedMesh.h"
+#include "DX12/DX12DrawSetPointBase.h"
+#include "DX12/DX12DrawSetUI.h"
 #include "GraphicDO.h"
 #include "BaseClass.h"
 
@@ -145,9 +147,22 @@ void GraphicDX12::UnRegisterDeviceObject(CGHScene& scene, DeviceObject* gameObje
 
 }
 
-const std::unordered_map<std::string, MeshObject>* GraphicDX12::GetMeshDataMap()
+const std::unordered_map<std::string, MeshObject>* GraphicDX12::GetMeshDataMap(CGH::MESH_TYPE type)
 {
-	return m_SkinnedMeshDrawSet->GetMeshs();
+	switch (type)
+	{
+	case CGH::NORMAL_MESH:
+		return m_NormalMeshDrawSet->GetMeshs();
+		break;
+	case CGH::SKINNED_MESH:
+		return m_SkinnedMeshDrawSet->GetMeshs();
+		break;
+	case CGH::MESH_TYPE_COUNT:
+	default:
+		return nullptr;
+		assert(false);
+		break;
+	}
 }
 
 bool GraphicDX12::CreateMesh(const std::string& meshName, MeshObject& meshinfo,
@@ -561,10 +576,7 @@ void GraphicDX12::ReadyWorksEnd()
 {
 	ThrowIfFailed(m_CommandList->Reset(m_DirectCmdListAlloc.Get(), nullptr));
 
-	BuildRootSignature();
-	BuildShadersAndInputLayout();
 	BuildDepthStencilAndBlendsAndRasterizer();
-	BuildUploadBuffers();
 
 	ThrowIfFailed(m_CommandList->Close());
 	ID3D12CommandList* cmdsLists[] = { m_CommandList.Get() };
@@ -623,9 +635,8 @@ void GraphicDX12::Draw()
 
 	m_NormalMeshDrawSet->Draw(m_CommandList.Get());
 	m_SkinnedMeshDrawSet->Draw(m_CommandList.Get());
-
-	DrawObject(DX12_RENDER_TYPE_POINT);
-	DrawObject(DX12_RENDER_TYPE_UI);
+	m_PointBaseDrawSet->Draw(m_CommandList.Get());
+	m_UIDrawSet->Draw(m_CommandList.Get());
 
 	m_FontManager->RenderCommandWrite(m_CommandList.Get(), m_ReservedFonts);
 
@@ -646,145 +657,25 @@ void GraphicDX12::BuildDrawSets()
 {
 	m_NormalMeshDrawSet = std::make_unique<DX12DrawSetNormalMesh>(1);
 	m_SkinnedMeshDrawSet = std::make_unique<DX12DrawSetSkinnedMesh>(1);
+	m_PointBaseDrawSet = std::make_unique<DX12DrawSetPointBase>(1);
+	m_UIDrawSet = std::make_unique<DX12DrawSetUI>(1);
 
 	m_NormalMeshDrawSet->Init(m_D3dDevice.Get(), m_PSOCon.get(), m_BackBufferFormat, m_DepthStencilFormat,
 		m_TextureBuffer.get(), m_Materials.get(), m_FrameResource->passCB->Resource());
 
 	m_SkinnedMeshDrawSet->Init(m_D3dDevice.Get(), m_PSOCon.get(), m_BackBufferFormat, m_DepthStencilFormat,
 		m_TextureBuffer.get(), m_Materials.get(), m_FrameResource->passCB->Resource());
+
+	m_PointBaseDrawSet->Init(m_D3dDevice.Get(), m_PSOCon.get(), m_BackBufferFormat, m_DepthStencilFormat,
+		m_TextureBuffer.get(), m_Materials.get(), m_FrameResource->passCB->Resource());
+
+	m_UIDrawSet->Init(m_D3dDevice.Get(), m_PSOCon.get(), m_BackBufferFormat, m_DepthStencilFormat,
+		m_TextureBuffer.get(), m_Materials.get(), m_FrameResource->passCB->Resource());
 }
 
 void GraphicDX12::BuildFrameResources()
 {
 	m_FrameResource = make_unique<FrameResource>(m_D3dDevice.Get(), 1, 100);
-}
-
-void GraphicDX12::BuildRootSignature()
-{
-#pragma region StaticSamplers
-	CD3DX12_STATIC_SAMPLER_DESC staticSamplers[7] = {};
-
-	staticSamplers[0] = CD3DX12_STATIC_SAMPLER_DESC(
-		0,
-		D3D12_FILTER_MIN_MAG_MIP_POINT,
-		D3D12_TEXTURE_ADDRESS_MODE_WRAP,
-		D3D12_TEXTURE_ADDRESS_MODE_WRAP,
-		D3D12_TEXTURE_ADDRESS_MODE_WRAP);
-
-	staticSamplers[1] = CD3DX12_STATIC_SAMPLER_DESC(
-		1,
-		D3D12_FILTER_MIN_MAG_MIP_POINT,
-		D3D12_TEXTURE_ADDRESS_MODE_CLAMP,
-		D3D12_TEXTURE_ADDRESS_MODE_CLAMP,
-		D3D12_TEXTURE_ADDRESS_MODE_CLAMP);
-
-	staticSamplers[2] = CD3DX12_STATIC_SAMPLER_DESC(
-		2,
-		D3D12_FILTER_MIN_MAG_MIP_LINEAR,
-		D3D12_TEXTURE_ADDRESS_MODE_WRAP,
-		D3D12_TEXTURE_ADDRESS_MODE_WRAP,
-		D3D12_TEXTURE_ADDRESS_MODE_WRAP);
-
-	staticSamplers[3] = CD3DX12_STATIC_SAMPLER_DESC(
-		3,
-		D3D12_FILTER_MIN_MAG_MIP_LINEAR,
-		D3D12_TEXTURE_ADDRESS_MODE_CLAMP,
-		D3D12_TEXTURE_ADDRESS_MODE_CLAMP,
-		D3D12_TEXTURE_ADDRESS_MODE_CLAMP);
-
-	staticSamplers[4] = CD3DX12_STATIC_SAMPLER_DESC(
-		4,
-		D3D12_FILTER_ANISOTROPIC,
-		D3D12_TEXTURE_ADDRESS_MODE_WRAP,
-		D3D12_TEXTURE_ADDRESS_MODE_WRAP,
-		D3D12_TEXTURE_ADDRESS_MODE_WRAP,
-		0.0f,
-		8);
-
-	staticSamplers[5] = CD3DX12_STATIC_SAMPLER_DESC(
-		5,
-		D3D12_FILTER_ANISOTROPIC,
-		D3D12_TEXTURE_ADDRESS_MODE_CLAMP,
-		D3D12_TEXTURE_ADDRESS_MODE_CLAMP,
-		D3D12_TEXTURE_ADDRESS_MODE_CLAMP,
-		0.0f,
-		8);
-
-	staticSamplers[6] = CD3DX12_STATIC_SAMPLER_DESC(
-		6,
-		D3D12_FILTER_COMPARISON_MIN_MAG_LINEAR_MIP_POINT,
-		D3D12_TEXTURE_ADDRESS_MODE_BORDER,
-		D3D12_TEXTURE_ADDRESS_MODE_BORDER,
-		D3D12_TEXTURE_ADDRESS_MODE_BORDER,
-		0.0f,
-		16,
-		D3D12_COMPARISON_FUNC_LESS_EQUAL,
-		D3D12_STATIC_BORDER_COLOR_OPAQUE_BLACK);
-#pragma endregion
-
-	CD3DX12_DESCRIPTOR_RANGE texTable;
-	texTable.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, m_TextureBuffer->GetTexturesNum(), 0);
-
-	CD3DX12_ROOT_PARAMETER pointRenderRootParam[P1_ROOT_COUNT];
-	pointRenderRootParam[P1_OBJECT_SRV].InitAsShaderResourceView(0, 1);
-	pointRenderRootParam[P1_PASS_CB].InitAsConstantBufferView(0);
-	pointRenderRootParam[P1_TEXTURE_TABLE].InitAsDescriptorTable(1, &texTable, D3D12_SHADER_VISIBILITY_PIXEL);
-
-	CD3DX12_ROOT_SIGNATURE_DESC pointRenderrootDesc;
-	pointRenderrootDesc.Init(P1_ROOT_COUNT, pointRenderRootParam, _countof(staticSamplers),
-		staticSamplers, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
-
-	///////////////////////////////////////////////////////////////////////////
-
-	CD3DX12_ROOT_PARAMETER uiRenderRootparam[UI_ROOT_COUNT];
-	uiRenderRootparam[UI_PASS_CB].InitAsConstantBufferView(0);
-	uiRenderRootparam[UI_UIPASS_CB].InitAsConstantBufferView(1);
-	uiRenderRootparam[UI_TEXTURE_TABLE].InitAsDescriptorTable(1, &texTable, D3D12_SHADER_VISIBILITY_PIXEL);
-
-	CD3DX12_ROOT_SIGNATURE_DESC uiRenderRootDesc;
-	uiRenderRootDesc.Init(UI_ROOT_COUNT, uiRenderRootparam, _countof(staticSamplers),
-		staticSamplers, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
-
-	m_PSOCon->AddRootSignature("P1", pointRenderrootDesc);
-	m_PSOCon->AddRootSignature("UI", uiRenderRootDesc);
-}
-
-void GraphicDX12::BuildShadersAndInputLayout()
-{
-	string textureNum = to_string(m_TextureBuffer->GetTexturesNum());
-	string boneMaxMatrixNum = to_string(BONEMAXMATRIX);
-	D3D_SHADER_MACRO macros[] = {
-		"MAXTEXTURE", textureNum.c_str(),
-		"BONEMAXMATRIX", boneMaxMatrixNum.c_str(),
-		"SKINNED_VERTEX_SAHDER",NULL,
-		NULL, NULL };
-
-	macros[2] = { NULL, NULL };
-
-	m_PSOCon->AddShader(to_string(DX12_RENDER_TYPE_POINT), DX12_SHADER_VERTEX, L"../Common/MainShaders/pointShader.hlsl", macros, "VS");
-	m_PSOCon->AddShader(to_string(DX12_RENDER_TYPE_POINT), DX12_SHADER_PIXEL, L"../Common/MainShaders/pointShader.hlsl", macros, "PS");
-	m_PSOCon->AddShader(to_string(DX12_RENDER_TYPE_POINT), DX12_SHADER_GEOMETRY, L"../Common/MainShaders/pointShader.hlsl", macros, "GS");
-
-	m_PSOCon->AddShader(to_string(DX12_RENDER_TYPE_UI), DX12_SHADER_VERTEX, L"../Common/MainShaders/UIShader.hlsl", macros, "VS");
-	m_PSOCon->AddShader(to_string(DX12_RENDER_TYPE_UI), DX12_SHADER_PIXEL, L"../Common/MainShaders/UIShader.hlsl", macros, "PS");
-	m_PSOCon->AddShader(to_string(DX12_RENDER_TYPE_UI), DX12_SHADER_GEOMETRY, L"../Common/MainShaders/UIShader.hlsl", macros, "GS");
-
-	m_PSOCon->AddInputLayout(to_string(DX12_RENDER_TYPE_POINT),
-		{
-			{ "MESHTYPE" ,0,DXGI_FORMAT_R32_UINT,0,0,D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,0},
-			{ "CBINDEX", 0, DXGI_FORMAT_R32_UINT, 0, 4, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-			{ "MESHSIZE", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 8, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-			{ "MESHCOLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 20, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-		});
-
-	m_PSOCon->AddInputLayout(to_string(DX12_RENDER_TYPE_UI),
-		{
-			{ "UICOLOR" ,0,DXGI_FORMAT_R32G32B32A32_FLOAT,0,0,D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,0},
-			{ "UIPOS", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 16, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-			{ "UISIZE", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 28, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-			{ "UITYPE", 0, DXGI_FORMAT_R32_SINT, 0, 36, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-			{ "UITEXTURE", 0, DXGI_FORMAT_R32_SINT, 0, 40, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-		});
 }
 
 void GraphicDX12::BuildDepthStencilAndBlendsAndRasterizer()
@@ -809,19 +700,13 @@ void GraphicDX12::BuildDepthStencilAndBlendsAndRasterizer()
 
 	//////////////////////////////////////////////////////////////////////////
 	CD3DX12_RASTERIZER_DESC baseRasterizer(D3D12_DEFAULT);
-	baseRasterizer.CullMode = D3D12_CULL_MODE_NONE;
+	baseRasterizer.CullMode = D3D12_CULL_MODE_BACK;
 
 	m_PSOCon->AddRasterizer("0", baseRasterizer);
 
 	////////////////////////////////////////////////////////////////////////////
 	CD3DX12_DEPTH_STENCIL_DESC baseDepthStencil(D3D12_DEFAULT);
 	m_PSOCon->AddDepthStencil("0", baseDepthStencil);
-}
-
-void GraphicDX12::BuildUploadBuffers()
-{
-	m_Box_Plane_Vertices = make_unique<DX12UploadBuffer<B_P_Vertex>>(m_D3dDevice.Get(), 100, false);
-	m_UIInfomation = make_unique<DX12UploadBuffer<UIInfomation>>(m_D3dDevice.Get(), 150, false);
 }
 
 void GraphicDX12::UpdateMainPassCB()
@@ -861,7 +746,7 @@ void GraphicDX12::UpdateMainPassCB()
 	//m_MainPassCB.Lights[2].strength = { 0.2f, 0.2f, 0.2f };
 
 	m_FrameResource->passCB->CopyData(0, m_MainPassCB);
-	m_FrameResource->uiPassCB->CopyData(0, CGH::GO.ui);
+	m_UIDrawSet->UpdateUIPassCB(CGH::GO.ui);
 
 	physx::PxVec3 rayOrigin(0, 0, 0);
 	physx::PxVec3 ray(0, 0, 1);
@@ -880,17 +765,6 @@ void GraphicDX12::UpdateMainPassCB()
 
 void GraphicDX12::UpdateObjectCB()
 {
-	for (int i = 0; i < DX12_RENDER_TYPE_COUNT; i++)
-	{
-		m_RenderObjects[i].clear();
-		m_RenderObjectsSubmesh[i].clear();
-	}
-
-	m_NumRenderPointObjects = 0;
-	m_NumRenderUIs = 0;
-
-	auto pointCB = m_FrameResource->pointCB.get();
-
 	for (auto& it : m_ReservedRenderInfos)
 	{
 		switch (it.type)
@@ -912,7 +786,7 @@ void GraphicDX12::UpdateObjectCB()
 			object.scale = it.scale;
 			object.PrevAniBone = atoi(it.meshOrTextureName.c_str());
 
-			const MeshObject& mesh = m_DynamicBuffers[object.PrevAniBone]->dynamicBufferInfo->meshObject;
+			/*const MeshObject& mesh = m_DynamicBuffers[object.PrevAniBone]->dynamicBufferInfo->meshObject;
 			for (auto& it2 : mesh.subs)
 			{
 				object.diffuseMapIndex = m_TextureBuffer->GetTextureIndex(it2.second.diffuseMap);
@@ -920,55 +794,19 @@ void GraphicDX12::UpdateObjectCB()
 				object.materialIndex = m_Materials->GetIndex(it2.second.material);
 				m_RenderObjects[DX12_RENDER_TYPE_DYNAMIC_MESH].push_back(object);
 				m_RenderObjectsSubmesh[DX12_RENDER_TYPE_DYNAMIC_MESH].push_back(&it2.second);
-			}
+			}*/
 		}
 		break;
 		case RENDER_BOX:
 		case RENDER_PLANE:
 		case RENDER_2DPLANE:
 		{
-			B_P_Vertex temp;
-			OnlyTexObjectConstants OTObjectConstnat;
-
-			temp.type = it.type;
-			temp.cbIndex = m_NumRenderPointObjects;
-			temp.size = it.point.size;
-
-			OTObjectConstnat.world = it.world;
-
-			if (it.meshOrTextureName.size())
-			{
-				OTObjectConstnat.textureIndex = m_TextureBuffer->GetTextureIndex(it.meshOrTextureName);
-			}
-
-			if (OTObjectConstnat.textureIndex == -1)
-			{
-				temp.color = it.point.color;
-			}
-
-			m_Box_Plane_Vertices->CopyData(m_NumRenderPointObjects, &temp);
-			pointCB->CopyData(m_NumRenderPointObjects, &OTObjectConstnat);
-			m_NumRenderPointObjects++;
+			m_PointBaseDrawSet->ReserveRender(it);
 		}
 		break;
 		case RENDER_UI:
 		{
-			UIInfomation temp;
-			temp.uiType = it.uiInfo.uiType;
-			temp.size = it.uiInfo.size;
-			temp.pos = it.world.getPosition();
-
-			if (it.meshOrTextureName.size())
-			{
-				temp.textureIndex = m_TextureBuffer->GetTextureIndex(it.meshOrTextureName);
-			}
-			else
-			{
-				temp.color = it.uiInfo.color;
-			}
-
-			m_UIInfomation->CopyData(m_NumRenderUIs, &temp);
-			m_NumRenderUIs++;
+			m_UIDrawSet->ReserveRender(it);
 		}
 		break;
 		default:
@@ -976,151 +814,59 @@ void GraphicDX12::UpdateObjectCB()
 			break;
 		}
 	}
-
-	for (size_t i = 0; i < DX12_RENDER_TYPE_POINT; i++)
-	{
-		auto currMeshOBCB = m_FrameResource->meshObjectCB[i].get();
-		auto& currRenderObjects = m_RenderObjects[i];
-		const size_t numRenders = currRenderObjects.size();
-
-		for (size_t j = 0; j < numRenders; j++)
-		{
-			currMeshOBCB->CopyData(j, currRenderObjects[j]);
-		}
-	}
-}
-
-void GraphicDX12::DrawObject(DX12_RENDER_TYPE type)
-{
-	switch (type)
-	{
-	case GraphicDX12::DX12_RENDER_TYPE_DYNAMIC_MESH:
-		DrawDynamicMehs();
-		break;
-	case GraphicDX12::DX12_RENDER_TYPE_POINT:
-		DrawPointObjects();
-		break;
-	case GraphicDX12::DX12_RENDER_TYPE_UI:
-		DrawUIs();
-		break;
-	default:
-		break;
-	}
 }
 
 
-void GraphicDX12::DrawDynamicMehs()
-{
-	m_PSOCon->SetPSOToCommnadList(m_CommandList.Get(),
-		{ m_BackBufferFormat }, m_DepthStencilFormat, D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE,
-		"normal", "normal", "0", "0", "0",
-		"normal", "normal");
-	enum
-	{
-		PASS_CB,
-		TEXTURE_TABLE,
-		MATERIAL_SRV,
-		OBJECT_CB,
-		ROOT_COUNT
-	};
-
-	ID3D12DescriptorHeap* descriptorHeaps[] = { m_TextureBuffer->GetHeap() };
-	m_CommandList->SetDescriptorHeaps(1, descriptorHeaps);
-
-	auto matBuffer = m_Materials->GetBufferResource();
-	m_CommandList->SetGraphicsRootConstantBufferView(PASS_CB, m_FrameResource->passCB->Resource()->GetGPUVirtualAddress());
-	m_CommandList->SetGraphicsRootShaderResourceView(MATERIAL_SRV, matBuffer->GetGPUVirtualAddress());
-	m_CommandList->SetGraphicsRootDescriptorTable(TEXTURE_TABLE, m_TextureBuffer->GetHeap()->GetGPUDescriptorHandleForHeapStart());
-
-	m_CommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY::D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-	auto ObjectCBVritualAD = m_FrameResource->meshObjectCB[DX12_RENDER_TYPE_DYNAMIC_MESH]->Resource()->GetGPUVirtualAddress();
-	const UINT ObjectStrideSize = m_FrameResource->meshObjectCB[DX12_RENDER_TYPE_DYNAMIC_MESH]->GetElementByteSize();
-
-	auto& currRenderObjects = m_RenderObjects[DX12_RENDER_TYPE_DYNAMIC_MESH];
-	auto& currRenderObjectSubmesh = m_RenderObjectsSubmesh[DX12_RENDER_TYPE_DYNAMIC_MESH];
-
-	for (size_t i = 0; i < currRenderObjects.size(); i++)
-	{
-		D3D12_VERTEX_BUFFER_VIEW vertexBufferView = {};
-		D3D12_INDEX_BUFFER_VIEW indexBufferView = {};
-		indexBufferView.Format = DXGI_FORMAT_R32_UINT;
-
-		vertexBufferView.BufferLocation = m_DynamicBuffers[currRenderObjects[i].PrevAniBone]->dynamicVertexBuffer->Resource()->GetGPUVirtualAddress();
-		vertexBufferView.SizeInBytes = m_DynamicBuffers[currRenderObjects[i].PrevAniBone]->dynamicVertexBuffer->GetBufferSize();
-		vertexBufferView.StrideInBytes = sizeof(Vertex);
-
-		indexBufferView.BufferLocation = m_DynamicBuffers[currRenderObjects[i].PrevAniBone]->dynamicIndexBuffer->Resource()->GetGPUVirtualAddress();
-		indexBufferView.SizeInBytes = m_DynamicBuffers[currRenderObjects[i].PrevAniBone]->dynamicIndexBuffer->GetBufferSize();
-
-		m_CommandList->IASetVertexBuffers(0, 1, &vertexBufferView);
-		m_CommandList->IASetIndexBuffer(&indexBufferView);
-
-		m_CommandList->SetGraphicsRootConstantBufferView(OBJECT_CB, ObjectCBVritualAD);
-		m_CommandList->DrawIndexedInstanced(currRenderObjectSubmesh[i]->numIndex, 1,
-			currRenderObjectSubmesh[i]->indexOffset, currRenderObjectSubmesh[i]->vertexOffset, 0);
-		ObjectCBVritualAD += ObjectStrideSize;
-	}
-}
-
-void GraphicDX12::DrawPointObjects()
-{
-	if (m_NumRenderPointObjects)
-	{
-		m_PSOCon->SetPSOToCommnadList(m_CommandList.Get(),
-			{ m_BackBufferFormat }, m_DepthStencilFormat, D3D12_PRIMITIVE_TOPOLOGY_TYPE_POINT,
-			to_string(DX12_RENDER_TYPE_POINT), "P1", "0", "0", "0",
-			to_string(DX12_RENDER_TYPE_POINT),
-			to_string(DX12_RENDER_TYPE_POINT),
-			to_string(DX12_RENDER_TYPE_POINT));
-
-		ID3D12DescriptorHeap* descriptorHeaps[] = { m_TextureBuffer->GetHeap() };
-		m_CommandList->SetDescriptorHeaps(1, descriptorHeaps);
-
-		m_CommandList->SetGraphicsRootShaderResourceView(P1_OBJECT_SRV, m_FrameResource->pointCB->Resource()->GetGPUVirtualAddress());
-		m_CommandList->SetGraphicsRootConstantBufferView(P1_PASS_CB, m_FrameResource->passCB->Resource()->GetGPUVirtualAddress());
-		m_CommandList->SetGraphicsRootDescriptorTable(P1_TEXTURE_TABLE, m_TextureBuffer->GetHeap()->GetGPUDescriptorHandleForHeapStart());
-
-		D3D12_VERTEX_BUFFER_VIEW vertexBufferView = {};
-
-		vertexBufferView.BufferLocation = m_Box_Plane_Vertices->Resource()->GetGPUVirtualAddress();
-		vertexBufferView.SizeInBytes = m_Box_Plane_Vertices->GetBufferSize();
-		vertexBufferView.StrideInBytes = m_Box_Plane_Vertices->GetElementByteSize();
-
-		m_CommandList->IASetVertexBuffers(0, 1, &vertexBufferView);
-		m_CommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_POINTLIST);
-
-		m_CommandList->DrawInstanced(m_NumRenderPointObjects, 1, 0, 0);
-	}
-}
-
-void GraphicDX12::DrawUIs()
-{
-	if (m_NumRenderUIs)
-	{
-		m_PSOCon->SetPSOToCommnadList(m_CommandList.Get(),
-			{ m_BackBufferFormat }, m_DepthStencilFormat, D3D12_PRIMITIVE_TOPOLOGY_TYPE_POINT,
-			to_string(DX12_RENDER_TYPE_UI), "UI", "0", "0", "0",
-			to_string(DX12_RENDER_TYPE_UI),
-			to_string(DX12_RENDER_TYPE_UI),
-			to_string(DX12_RENDER_TYPE_UI));
-
-		ID3D12DescriptorHeap* descriptorHeaps[] = { m_TextureBuffer->GetHeap() };
-		m_CommandList->SetDescriptorHeaps(1, descriptorHeaps);
-
-		m_CommandList->SetGraphicsRootConstantBufferView(UI_PASS_CB, m_FrameResource->passCB->Resource()->GetGPUVirtualAddress());
-		m_CommandList->SetGraphicsRootConstantBufferView(UI_UIPASS_CB, m_FrameResource->uiPassCB->Resource()->GetGPUVirtualAddress());
-		m_CommandList->SetGraphicsRootDescriptorTable(UI_TEXTURE_TABLE, m_TextureBuffer->GetHeap()->GetGPUDescriptorHandleForHeapStart());
-
-		D3D12_VERTEX_BUFFER_VIEW vertexBufferView = {};
-
-		vertexBufferView.BufferLocation = m_UIInfomation->Resource()->GetGPUVirtualAddress();
-		vertexBufferView.SizeInBytes = m_UIInfomation->GetBufferSize();
-		vertexBufferView.StrideInBytes = m_UIInfomation->GetElementByteSize();
-
-		m_CommandList->IASetVertexBuffers(0, 1, &vertexBufferView);
-		m_CommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_POINTLIST);
-
-		m_CommandList->DrawInstanced(m_NumRenderUIs, 1, 0, 0);
-	}
-}
+//void GraphicDX12::DrawDynamicMehs()
+//{
+//	m_PSOCon->SetPSOToCommnadList(m_CommandList.Get(),
+//		{ m_BackBufferFormat }, m_DepthStencilFormat, D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE,
+//		"normal", "normal", "0", "0", "0",
+//		"normal", "normal");
+//	enum
+//	{
+//		PASS_CB,
+//		TEXTURE_TABLE,
+//		MATERIAL_SRV,
+//		OBJECT_CB,
+//		ROOT_COUNT
+//	};
+//
+//	ID3D12DescriptorHeap* descriptorHeaps[] = { m_TextureBuffer->GetHeap() };
+//	m_CommandList->SetDescriptorHeaps(1, descriptorHeaps);
+//
+//	auto matBuffer = m_Materials->GetBufferResource();
+//	m_CommandList->SetGraphicsRootConstantBufferView(PASS_CB, m_FrameResource->passCB->Resource()->GetGPUVirtualAddress());
+//	m_CommandList->SetGraphicsRootShaderResourceView(MATERIAL_SRV, matBuffer->GetGPUVirtualAddress());
+//	m_CommandList->SetGraphicsRootDescriptorTable(TEXTURE_TABLE, m_TextureBuffer->GetHeap()->GetGPUDescriptorHandleForHeapStart());
+//
+//	m_CommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY::D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+//
+//	auto ObjectCBVritualAD = m_FrameResource->meshObjectCB[DX12_RENDER_TYPE_DYNAMIC_MESH]->Resource()->GetGPUVirtualAddress();
+//	const UINT ObjectStrideSize = m_FrameResource->meshObjectCB[DX12_RENDER_TYPE_DYNAMIC_MESH]->GetElementByteSize();
+//
+//	auto& currRenderObjects = m_RenderObjects[DX12_RENDER_TYPE_DYNAMIC_MESH];
+//	auto& currRenderObjectSubmesh = m_RenderObjectsSubmesh[DX12_RENDER_TYPE_DYNAMIC_MESH];
+//
+//	for (size_t i = 0; i < currRenderObjects.size(); i++)
+//	{
+//		D3D12_VERTEX_BUFFER_VIEW vertexBufferView = {};
+//		D3D12_INDEX_BUFFER_VIEW indexBufferView = {};
+//		indexBufferView.Format = DXGI_FORMAT_R32_UINT;
+//
+//		vertexBufferView.BufferLocation = m_DynamicBuffers[currRenderObjects[i].PrevAniBone]->dynamicVertexBuffer->Resource()->GetGPUVirtualAddress();
+//		vertexBufferView.SizeInBytes = m_DynamicBuffers[currRenderObjects[i].PrevAniBone]->dynamicVertexBuffer->GetBufferSize();
+//		vertexBufferView.StrideInBytes = sizeof(Vertex);
+//
+//		indexBufferView.BufferLocation = m_DynamicBuffers[currRenderObjects[i].PrevAniBone]->dynamicIndexBuffer->Resource()->GetGPUVirtualAddress();
+//		indexBufferView.SizeInBytes = m_DynamicBuffers[currRenderObjects[i].PrevAniBone]->dynamicIndexBuffer->GetBufferSize();
+//
+//		m_CommandList->IASetVertexBuffers(0, 1, &vertexBufferView);
+//		m_CommandList->IASetIndexBuffer(&indexBufferView);
+//
+//		m_CommandList->SetGraphicsRootConstantBufferView(OBJECT_CB, ObjectCBVritualAD);
+//		m_CommandList->DrawIndexedInstanced(currRenderObjectSubmesh[i]->numIndex, 1,
+//			currRenderObjectSubmesh[i]->indexOffset, currRenderObjectSubmesh[i]->vertexOffset, 0);
+//		ObjectCBVritualAD += ObjectStrideSize;
+//	}
+//}

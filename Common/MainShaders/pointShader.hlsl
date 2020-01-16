@@ -118,8 +118,8 @@ void CreatePlane(uint cbIndex, float2 size, float4 color, inout TriangleStream<V
 	}
 
 	output.Append(vertices[0]);
-	output.Append(vertices[1]);
 	output.Append(vertices[2]);
+	output.Append(vertices[1]);
 	output.Append(vertices[3]);
 }
 
@@ -162,8 +162,8 @@ void Create2DPlane(uint cbIndex, float2 size, float4 color, inout TriangleStream
     }
 
     output.Append(vertices[0]);
-    output.Append(vertices[1]);
     output.Append(vertices[2]);
+    output.Append(vertices[1]);
     output.Append(vertices[3]);
 }
 //enum RENDER_TYPE

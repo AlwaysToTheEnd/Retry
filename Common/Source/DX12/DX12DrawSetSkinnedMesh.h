@@ -41,7 +41,7 @@ public:
 								const std::vector<std::string> & meshNames, const std::vector<MeshObject> & meshs,
 								const std::vector<SkinnedVertex> & vertices, const std::vector<UINT> & indices);
 
-	const std::unordered_map<std::string, MeshObject>* GetMeshs() { return &m_Meshs; }
+	const std::unordered_map<std::string, MeshObject>* GetMeshs() const { return &m_Meshs; }
 
 private:
 	void CreateVertexIndexBuffer(ID3D12Device * device, ID3D12GraphicsCommandList * commandList,

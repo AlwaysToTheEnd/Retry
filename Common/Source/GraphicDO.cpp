@@ -3,7 +3,7 @@
 #include "GameObject.h"
 #include "d3dApp.h"
 
-const std::unordered_map<std::string, MeshObject>* DORenderMesh::m_Meshs = nullptr;
+const std::unordered_map<std::string, MeshObject>* DORenderMesh::m_Meshs[CGH::MESH_TYPE_COUNT] = {};
 
 std::vector<RenderInfo>* DORenderer::m_ReservedRenderObjects = nullptr;
 
@@ -13,18 +13,18 @@ std::vector<AniBoneMat>* DOAnimator::m_ReservedAniBone = nullptr;
 
 std::vector<RenderFont>* DOFont::m_ReservedRenderFonts = nullptr;
 
-void DORenderMesh::GetMeshNames(std::vector<std::string>& out)
+void DORenderMesh::GetMeshNames(CGH::MESH_TYPE type, std::vector<std::string>& out)
 {
-	for (auto& it : *m_Meshs)
+	for (auto& it : *m_Meshs[type])
 	{
 		out.push_back(it.first);
 	}
 }
 
-bool DORenderMesh::SelectMesh(const std::string& name)
+bool DORenderMesh::SelectMesh(CGH::MESH_TYPE type, const std::string& name)
 {
-	auto iter = m_Meshs->find(name);
-	if (iter == m_Meshs->end())
+	auto iter = m_Meshs[type]->find(name);
+	if (iter == m_Meshs[type]->end())
 	{
 		m_CurrMesh = nullptr;
 		m_CurrMeshName.clear();
@@ -38,9 +38,12 @@ bool DORenderMesh::SelectMesh(const std::string& name)
 
 void DORenderMesh::Init(PhysX4_1*, IGraphicDevice* graphicDevice)
 {
-	if (m_Meshs == nullptr)
+	if (m_Meshs[0] == nullptr)
 	{
-		m_Meshs = graphicDevice->GetMeshDataMap();
+		for (int i = 0; i < CGH::MESH_TYPE_COUNT; i++)
+		{
+			m_Meshs[i] = graphicDevice->GetMeshDataMap(static_cast<CGH::MESH_TYPE>(i));
+		}
 	}
 }
 
