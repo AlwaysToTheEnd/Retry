@@ -3,19 +3,9 @@
 #include <string>
 #include <unordered_map>
 #include <wrl.h>
+#include "DX12RenderClasses.h"
 
 using Microsoft::WRL::ComPtr;
-
-
-enum DX12_SHADER_TYPE
-{
-	DX12_SHADER_VERTEX,
-	DX12_SHADER_PIXEL,
-	DX12_SHADER_GEOMETRY,
-	DX12_SHADER_HULL,
-	DX12_SHADER_DOMAIN,
-	DX12_SHADER_TYPE_COUNT
-};
 
 class PSOController
 {

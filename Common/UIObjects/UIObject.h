@@ -25,7 +25,7 @@ public:
 	virtual void	UIOn();
 	virtual void	UIOff();
 
-	physx::PxVec2	GetSize() { return m_Size; }
+	const physx::PxVec2&	GetSize() { return m_Size; }
 
 	virtual void	SetPos(const physx::PxVec3& pos) = 0;
 	void			SetBenchUV(const physx::PxVec2& benchUV) { m_BenchUV = benchUV; }

@@ -57,7 +57,9 @@ void UIPanel::AddUICom(UIObject* ui)
 
 void UIPanel::DeleteAllComs()
 {
-	for (auto& it : m_UIComs)
+	auto UIComs = m_UIComs;
+
+	for (auto& it : UIComs)
 	{
 		it->Delete();
 	}

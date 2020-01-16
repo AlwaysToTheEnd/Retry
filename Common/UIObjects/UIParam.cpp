@@ -358,9 +358,10 @@ void UIParam::ParamController::CreateSubPanel(UIParam* param)
 {
 	if (m_EnumSelectPanel == nullptr)
 	{
-		m_EnumSelectPanel = param->CreateComponenet<UIPanel>(true);
+		m_EnumSelectPanel = param->CreateComponenet<UIPanel>();
 	}
 
+	m_EnumSelectPanel->SetParent(param);
 	m_EnumSelectPanel->DeleteAllComs();
 	m_EnumSelectPanel->UIOn();
 	m_EnumSelectPanel->SetPos(GETAPP->GetMousePos());

@@ -70,6 +70,9 @@
     <Filter Include="Common\CodeResources\Xml">
       <UniqueIdentifier>{6802b842-fe08-4067-827e-423b8282a494}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Common\DeviceInstance\DX12Supporters\DrawSets">
+      <UniqueIdentifier>{8dd33bbf-4c74-4e87-8038-0ce714fbe2d8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Step2.cpp">
@@ -195,14 +198,26 @@
     <ClCompile Include="..\Common\UIObjects\HeightMapControlPanel.cpp">
       <Filter>Step2\HeightMap</Filter>
     </ClCompile>
-    <ClCompile Include="..\Common\Source\DX12\cTextureBuffer.cpp">
-      <Filter>Common\DeviceInstance\DX12Supporters\Buffer</Filter>
-    </ClCompile>
     <ClCompile Include="..\Common\Source\DX12\DX12FontMG.cpp">
       <Filter>Common\DeviceInstance\DX12Supporters</Filter>
     </ClCompile>
     <ClCompile Include="..\Common\Source\DX12\PSOController.cpp">
       <Filter>Common\DeviceInstance\DX12Supporters</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Source\DX12\DX12SwapChain.cpp">
+      <Filter>Common\DeviceInstance\DX12Supporters</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Source\DX12\DX12TextureBuffer.cpp">
+      <Filter>Common\DeviceInstance\DX12Supporters\Buffer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Source\DX12\DX12DrawSet.cpp">
+      <Filter>Common\DeviceInstance\DX12Supporters\DrawSets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Source\DX12\DX12DrawSetNormalMesh.cpp">
+      <Filter>Common\DeviceInstance\DX12Supporters\DrawSets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Source\DX12\DX12DrawSetSkinnedMesh.cpp">
+      <Filter>Common\DeviceInstance\DX12Supporters\DrawSets</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -320,15 +335,6 @@
     <ClInclude Include="..\Common\UIObjects\HeightMapControlPanel.h">
       <Filter>Step2\HeightMap</Filter>
     </ClInclude>
-    <ClInclude Include="..\Common\Source\DX12\cDefaultBuffer.h">
-      <Filter>Common\DeviceInstance\DX12Supporters\Buffer</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Common\Source\DX12\cIndexManagementBuffer.h">
-      <Filter>Common\DeviceInstance\DX12Supporters\Buffer</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Common\Source\DX12\cTextureBuffer.h">
-      <Filter>Common\DeviceInstance\DX12Supporters\Buffer</Filter>
-    </ClInclude>
     <ClInclude Include="..\Common\Source\DX12\DX12RenderClasses.h">
       <Filter>Common\DeviceInstance\DX12Supporters</Filter>
     </ClInclude>
@@ -337,6 +343,30 @@
     </ClInclude>
     <ClInclude Include="..\Common\Source\DX12\PSOController.h">
       <Filter>Common\DeviceInstance\DX12Supporters</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\DX12\DX12SwapChain.h">
+      <Filter>Common\DeviceInstance\DX12Supporters</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\DX12\DX12DrawSet.h">
+      <Filter>Common\DeviceInstance\DX12Supporters\DrawSets</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\DX12\DX12UploadBuffer.h">
+      <Filter>Common\DeviceInstance\DX12Supporters\Buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\DX12\DX12TextureBuffer.h">
+      <Filter>Common\DeviceInstance\DX12Supporters\Buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\DX12\DX12DefaultBuffer.h">
+      <Filter>Common\DeviceInstance\DX12Supporters\Buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\DX12\DX12IndexManagementBuffer.h">
+      <Filter>Common\DeviceInstance\DX12Supporters\Buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\DX12\DX12DrawSetNormalMesh.h">
+      <Filter>Common\DeviceInstance\DX12Supporters\DrawSets</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\DX12\DX12DrawSetSkinnedMesh.h">
+      <Filter>Common\DeviceInstance\DX12Supporters\DrawSets</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

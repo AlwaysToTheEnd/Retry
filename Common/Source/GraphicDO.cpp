@@ -209,6 +209,7 @@ void DORenderer::Update(float delta)
 
 	switch (m_RenderInfo.type)
 	{
+	case RENDER_SKIN:
 	case RENDER_MESH:
 	{
 		m_RenderInfo.world = comTransform->GetRTMatrix().getTranspose();
@@ -219,7 +220,7 @@ void DORenderer::Update(float delta)
 	case RENDER_DYNAMIC:
 	case RENDER_BOX:
 	case RENDER_PLANE:
-	case RENDER_TEX_PLANE:
+	case RENDER_2DPLANE:
 		m_RenderInfo.world = comTransform->GetRTMatrix().getTranspose();
 		m_RenderInfo.scale = comTransform->GetScale();
 		break;
@@ -259,7 +260,7 @@ void DORenderer::RenderMesh()
 
 	if (comAnimator != nullptr)
 	{
-		m_RenderInfo.mesh.aniBoneIndex = comAnimator->GetBoneMatStoredIndex();
+		m_RenderInfo.skin.aniBoneIndex = comAnimator->GetBoneMatStoredIndex();
 	}
 }
 

@@ -32,10 +32,11 @@ public:
 	std::vector<AniBoneMat>* GetReservedAniBoneMatVector() { return &m_ReservedAniBones; }
 	std::vector<RenderInfo>* GetReservedRenderInfoVector() { return &m_ReservedRenderInfos; }
 
+	std::unordered_map<std::string, Ani::SkinnedData>*							GetSkinnedDataMap() { return &m_SkinnedDatas; }
+	std::unordered_map<std::string, std::unique_ptr<AniTree::AnimationTree>>*	GetAnimationTreeMap() { return &m_AniTreeDatas; }
+
 public: // pure virtual funcs. 
-	virtual std::unordered_map<std::string, MeshObject>*								GetMeshDataMap() = 0;
-	virtual std::unordered_map<std::string, Ani::SkinnedData>*							GetSkinnedDataMap() = 0;
-	virtual std::unordered_map<std::string, std::unique_ptr<AniTree::AnimationTree>>*	GetAnimationTreeMap() = 0;
+	virtual const std::unordered_map<std::string, MeshObject>*					GetMeshDataMap() = 0;
 
 	virtual bool	CreateMesh(const std::string& meshName, MeshObject& meshinfo, const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices) = 0;
 	virtual bool	CreateMaterials(const std::vector<std::string>& materialNames, const std::vector<Material>& materials) = 0;
@@ -82,7 +83,10 @@ protected:
 	cCamera*					m_CurrCamera = nullptr;
 
 	std::vector<RenderFont>		m_ReservedFonts;
-	std::vector<AniBoneMat>		m_ReservedAniBones;
 	std::vector<RenderInfo>		m_ReservedRenderInfos;
+
+	std::vector<AniBoneMat>														m_ReservedAniBones;
+	std::unordered_map<std::string, Ani::SkinnedData>							m_SkinnedDatas;
+	std::unordered_map<std::string, std::unique_ptr<AniTree::AnimationTree>>	m_AniTreeDatas;
 };
 

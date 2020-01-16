@@ -56,7 +56,6 @@ public:
 
 	void			AddUICom(UIObject* ui);
 
-	physx::PxVec2	GetSize() { return m_Size; }
 	physx::PxVec2	GetPos();
 	unsigned int	GetNumAddedComs() { return m_UIComs.size(); }
 

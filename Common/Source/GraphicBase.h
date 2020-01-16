@@ -8,35 +8,26 @@
 #include "Vertex.h"
 #define BONEMAXMATRIX 160
 
-namespace CGH
-{
-	enum MESH_TYPE
-	{
-		MESH_NORMAL,
-		MESH_SKINED,
-		MESH_NONE
-	};
-}
-
 enum RENDER_TYPE
 {
 	RENDER_NONE,
 	RENDER_MESH,
 	RENDER_DYNAMIC,
+	RENDER_SKIN,
 	RENDER_BOX,
 	RENDER_PLANE,
-	RENDER_TEX_PLANE,
+	RENDER_2DPLANE,
 	RENDER_UI,
+};
+
+struct RenderSkinnedMeshInfo
+{
+	int	aniBoneIndex = -1;
 };
 
 struct AniBoneMat
 {
 	physx::PxMat44		bones[BONEMAXMATRIX];
-};
-
-struct RenderMeshInfo
-{
-	int	aniBoneIndex = -1;
 };
 
 struct RenderPointInfo
@@ -50,11 +41,6 @@ struct RenderUIInfo
 	int				uiType;
 	physx::PxVec2	size;
 	physx::PxVec4	color;
-};
-
-struct RenderTexturePointInfo
-{
-	physx::PxVec3 size;
 };
 
 struct RenderInfo
@@ -99,10 +85,9 @@ struct RenderInfo
 
 	union
 	{
-		RenderMeshInfo			mesh;
+		RenderSkinnedMeshInfo	skin;
 		RenderPointInfo			point;
 		RenderUIInfo			uiInfo;
-		RenderTexturePointInfo	texPoint;
 	};
 };
 
@@ -150,8 +135,7 @@ struct SubmeshData
 
 struct MeshObject
 {
-	unsigned int	primitiveType;
-	CGH::MESH_TYPE	type = CGH::MESH_TYPE::MESH_NORMAL;
+	unsigned int	primitiveType = 0;
 
 	size_t	GetTotalVertexNum() const;
 	size_t	GetStartVertexOffset() const;
@@ -191,7 +175,6 @@ struct DynamicBufferInfo
 		, vertices(_vertices)
 		, indices(_indices)
 	{
-		meshObject.type = CGH::MESH_NORMAL;
 		meshObject.primitiveType = 4;
 	}
 

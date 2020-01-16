@@ -75,7 +75,7 @@ public:
 
 	AniTree::AniNode*		GetNode() { return m_TargetAniNode; }
 	physx::PxVec2			GetPos() const;
-	const physx::PxVec3&	GetSize() const;
+	const physx::PxVec2&	GetSize() const;
 
 private:
 	virtual void Init() override;
@@ -157,7 +157,7 @@ private:
 	std::string			m_Name;
 	DOTransform*		m_Transform;
 	DOUICollision*		m_UICollison;
-	DORenderer*		m_Renderer;
+	DORenderer*			m_Renderer;
 	AniNodeVisual*		m_From;
 	AniNodeVisual*		m_To;
 	physx::PxVec2		m_MousePos;

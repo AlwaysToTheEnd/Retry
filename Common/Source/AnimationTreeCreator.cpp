@@ -151,9 +151,9 @@ physx::PxVec2 AniNodeVisual::GetPos() const
 	return { p.x, p.y };
 }
 
-const physx::PxVec3& AniNodeVisual::GetSize() const
+const physx::PxVec2& AniNodeVisual::GetSize() const
 {
-	return m_Panel->GetComponent<DORenderer>()->GetRenderInfo().point.size;
+	return m_Panel->GetSize();
 }
 
 void AniNodeVisual::AddArrow(AniTreeArowVisual* arrow)
@@ -228,16 +228,19 @@ void AniTreeArowVisual::Init()
 
 void AniTreeArowVisual::Update(float delta)
 {
-	RenderInfo renderInfo(RENDER_UI);
+	RenderInfo renderInfo(RENDER_2DPLANE);
 	physx::PxVec2 from = m_From->GetPos();
 	physx::PxVec2 to;
 	physx::PxVec2 directionVec;
 	physx::PxVec2 directionNormal;
 	physx::PxVec2 halfVec;
 
+	from += m_From->GetSize() / 2;
+
 	if (m_To)
 	{
 		to = m_To->GetPos();
+		to += m_To->GetSize() / 2;
 	}
 	else
 	{
@@ -250,7 +253,7 @@ void AniTreeArowVisual::Update(float delta)
 
 	{
 		physx::PxVec2 toToVec = directionVec;
-		physx::PxVec3 size = m_From->GetSize();
+		physx::PxVec2 size = m_From->GetSize()/2;
 
 		float vecYabs = abs(toToVec.y);
 
@@ -273,7 +276,7 @@ void AniTreeArowVisual::Update(float delta)
 	if (m_To)
 	{
 		physx::PxVec2 toFromVec = -directionVec;
-		physx::PxVec3 size = m_To->GetSize();
+		physx::PxVec2 size = m_To->GetSize()/2;
 
 		float vecYabs = abs(toFromVec.y);
 
@@ -303,8 +306,8 @@ void AniTreeArowVisual::Update(float delta)
 	m_Transform->SetTransform(world);
 
 	renderInfo.meshOrTextureName = InputTN::Get("AniTreeArrowVisual");
-	renderInfo.texPoint.size.x = halfLength;
-	renderInfo.texPoint.size.y = 10;
+	renderInfo.point.size.x = halfLength;
+	renderInfo.point.size.y = 10;
 
 	if (m_UICollison)
 	{
@@ -573,7 +576,7 @@ void VisualizedAniTreeCreator::Init()
 	m_WorkPanel = CreateComponenet<UIPanel>(false);
 	m_NullTree = std::make_unique<AnimationTree>();
 
-	m_Renderer->SetRenderInfo(RenderInfo(RENDER_MESH));
+	m_Renderer->SetRenderInfo(RenderInfo(RENDER_SKIN));
 
 	m_WorkPanel->SetPos({ 50,50 });
 

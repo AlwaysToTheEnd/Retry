@@ -9,24 +9,15 @@ struct MaterialData
 
 StructuredBuffer<MaterialData> gInstanceData : register(t0, space1);
 
-cbuffer cbSkinned : register(b2)
-{
-	float4x4	gAniBoneMat[BONEMAXMATRIX];
-};
-
 cbuffer objectData : register(b1)
 {
 	float4x4	World;
 	float3		Scale;
 	int			TextureIndex;
     int			NormalMapIndex;
-	uint		MaterialIndex;
-	int			AniBoneIndex;
+    int			MaterialIndex;
 	int			PrevAniBone;
 	float		blendFactor;
-    int			pad0;
-    int			pad1;
-    int			pad2;
 };
 
 struct SkinnedVertex
@@ -53,6 +44,11 @@ struct VertexOut
 };
 
 #ifdef SKINNED_VERTEX_SAHDER
+cbuffer cbSkinned : register(b2)
+{
+	float4x4	gAniBoneMat[BONEMAXMATRIX];
+};
+
 VertexOut VS(SkinnedVertex vin)
 {
 	VertexOut vout = (VertexOut)0.0f;
@@ -65,28 +61,21 @@ VertexOut VS(SkinnedVertex vin)
 	weights[2] = vin.BoneWeights.z;
 	weights[3] = 1.0f - weights[0] - weights[1] - weights[2];
 
-	if (AniBoneIndex != -1)
+	float3 posL = float3(0.0f, 0.0f, 0.0f);
+	float3 normalL = float3(0.0f, 0.0f, 0.0f);
+
+	for (int i = 0; i < 4; ++i)
 	{
-		float3 posL = float3(0.0f, 0.0f, 0.0f);
-		//float3 normalL = float3(0.0f, 0.0f, 0.0f);
-		//float3 tangentL = float3(0.0f, 0.0f, 0.0f);
-		for (int i = 0; i < 4; ++i)
-		{
-			// Assume no nonuniform scaling when transforming normals, so 
-			// that we do not have to use the inverse-transpose.
-
-			posL += weights[i] * mul(float4(vin.PosL, 1.0f), gAniBoneMat[vin.BoneIndices[i]]).xyz;
-			//normalL += weights[i] * mul(vin.NormalL, (float3x3)gAniBoneMat[AniBoneIndex].AniBoneMats[vin.BoneIndices[i]]);
-			//tangentL += weights[i] * mul(vin.TangentL.xyz, (float3x3)gAniBoneMat[AniBoneIndex].AniBoneMats[vin.BoneIndices[i]]);
-		}
-
-		vin.PosL = posL;
+		posL += weights[i] * mul(float4(vin.PosL, 1.0f), gAniBoneMat[vin.BoneIndices[i]]).xyz;
+		normalL += weights[i] * mul(vin.NormalL, (float3x3)gAniBoneMat[vin.BoneIndices[i]]);
 	}
+
+	vin.PosL = posL;
 
 	vout.PosH = mul(float4(vin.PosL, 1.0f), World);
 	vout.PosH = mul(vout.PosH, gViewProj);
 
-	vout.Normal=  mul(float4(vin.NormalL, 1.0f), World).xyz;
+	vout.Normal=  mul(float4(normalL, 1.0f), World).xyz;
 	return vout;
 }
 #else
@@ -118,6 +107,6 @@ float4 PS(VertexOut pin) : SV_Target
 
 	clip(litColor.a);
 	
-    litColor.rgb *= dot(normalize(pin.Normal), -normalize(float3(-1, -1, -1)));
+    //litColor.rgb *= dot(normalize(pin.Normal), -normalize(float3(-1, -1, -1)));
 	return litColor;
 }

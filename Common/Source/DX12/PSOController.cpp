@@ -17,19 +17,19 @@ PSOController::~PSOController()
 
 void PSOController::SetPSOToCommnadList(ID3D12GraphicsCommandList* cmd,
 	const std::vector<DXGI_FORMAT>& rtvFormats, DXGI_FORMAT dsvFormat, D3D12_PRIMITIVE_TOPOLOGY_TYPE primitive,
-	const std::string& input, const std::string& rootSig, 
-	const std::string& rasterizer, const std::string& blend, const std::string& depthStencil, 
-	const std::string& vs, const std::string& ps, 
+	const std::string& input, const std::string& rootSig,
+	const std::string& rasterizer, const std::string& blend, const std::string& depthStencil,
+	const std::string& vs, const std::string& ps,
 	const std::string& gs, const std::string& hs, const std::string& ds)
 {
-	std::string keyName =	input + ',' +	
-							rootSig + ',' + 
-							rasterizer + ',' + 
-							blend + ',' + 
-							depthStencil + ',' +
-							vs + ',' + ps + ',' + 
-							gs + ',' + hs + ',' + ds + ',' + 
-							to_string(primitive)+ ',' + to_string(dsvFormat) + ',';
+	std::string keyName = input + ',' +
+		rootSig + ',' +
+		rasterizer + ',' +
+		blend + ',' +
+		depthStencil + ',' +
+		vs + ',' + ps + ',' +
+		gs + ',' + hs + ',' + ds + ',' +
+		to_string(primitive) + ',' + to_string(dsvFormat) + ',';
 
 	for (auto& it : rtvFormats)
 	{
@@ -116,12 +116,15 @@ void PSOController::SetPSOToCommnadList(ID3D12GraphicsCommandList* cmd,
 		psoI = m_PSOs.find(keyName);
 	}
 
-	cmd->SetPipelineState(psoI->second.Get());
-	cmd->SetGraphicsRootSignature(rootSigI->second.Get());
+	if (cmd)
+	{
+		cmd->SetPipelineState(psoI->second.Get());
+		cmd->SetGraphicsRootSignature(rootSigI->second.Get());
+	}
 }
 
-void PSOController::AddShader(const std::string& shaderName, DX12_SHADER_TYPE type, 
-	const std::wstring& filename, const D3D_SHADER_MACRO* defines, 
+void PSOController::AddShader(const std::string& shaderName, DX12_SHADER_TYPE type,
+	const std::wstring& filename, const D3D_SHADER_MACRO* defines,
 	const std::string& entrypoint)
 {
 	string target;

@@ -11,12 +11,8 @@ struct ObjectConstants
 	int				diffuseMapIndex = -1;
 	int				normalMapIndex = -1;
 	int				materialIndex = -1;
-	int				aniBoneIndex = -1;
-	unsigned int	primitive;
-	int				dynamicBufferIndex;
-	int				pad0;
-	int				pad1;
-	int				pad2;
+	int				PrevAniBone;
+	float			blendFactor;
 };
 
 struct OnlyTexObjectConstants
@@ -54,4 +50,14 @@ struct PassConstants
 	unsigned int	samplerIndex = 0;
 
 	//Light Lights[16];
+};
+
+enum DX12_SHADER_TYPE
+{
+	DX12_SHADER_VERTEX,
+	DX12_SHADER_PIXEL,
+	DX12_SHADER_GEOMETRY,
+	DX12_SHADER_HULL,
+	DX12_SHADER_DOMAIN,
+	DX12_SHADER_TYPE_COUNT
 };
