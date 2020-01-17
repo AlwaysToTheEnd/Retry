@@ -74,9 +74,70 @@ D3D12_GPU_VIRTUAL_ADDRESS DX12DrawSet::GetCurrMainPassAddress() const
 	return m_MainPassCB->GetGPUVirtualAddress() + (mainPassStride * m_CurrFrame);
 }
 
-void DX12DrawSet::SetPSO(ID3D12GraphicsCommandList* cmd)
+void DX12DrawSet::SetPSO(ID3D12GraphicsCommandList* cmd, const PSOAttributeNames* custom)
 {
-	m_PSOCon->SetPSOToCommnadList(cmd, m_PSOA.rtvFormats, m_PSOA.dsvFormat,
-		m_PSOA.primitive, m_PSOA.input, m_PSOA.rootSig, m_PSOA.rasterizer, m_PSOA.blend,
-		m_PSOA.depthStencil, m_PSOA.vs, m_PSOA.ps, m_PSOA.gs, m_PSOA.hs, m_PSOA.ds);
+	if (custom)
+	{
+		PSOAttributeNames temp;
+
+		temp.rtvFormats = custom->rtvFormats;
+		temp.dsvFormat = custom->dsvFormat;
+
+		temp.primitive = m_PSOA.primitive;
+		temp.input = m_PSOA.input;
+		temp.rootSig = m_PSOA.rootSig;
+		
+		if (custom->rasterizer.empty())
+		{
+			temp.rasterizer = m_PSOA.rasterizer;
+		}
+
+		if (custom->blend.empty())
+		{
+			temp.blend = m_PSOA.blend;
+		}
+
+		if (custom->depthStencil.empty())
+		{
+			temp.depthStencil = m_PSOA.depthStencil;
+		}
+
+		if (custom->vs.empty())
+		{
+			temp.vs = m_PSOA.vs;
+		}
+
+		if (custom->ps.empty())
+		{
+			temp.ps = m_PSOA.ps;
+		}
+
+		if (custom->gs.empty())
+		{
+			temp.gs = m_PSOA.gs;
+		}
+
+		if (custom->hs.empty())
+		{
+			temp.hs = m_PSOA.hs;
+		}
+
+		if (custom->ds.empty())
+		{
+			temp.ds = m_PSOA.ds;
+		}
+
+		AttributeSetToPSO(cmd, temp);
+	}
+	else
+	{
+		AttributeSetToPSO(cmd, m_PSOA);
+	}
+}
+
+void DX12DrawSet::AttributeSetToPSO(ID3D12GraphicsCommandList* cmd, const PSOAttributeNames& custom)
+{
+	m_PSOCon->SetPSOToCommnadList(cmd, custom.rtvFormats, custom.dsvFormat,
+		custom.primitive, custom.input, custom.rootSig, custom.rasterizer, custom.blend,
+		custom.depthStencil, custom.vs, custom.ps, custom.gs, custom.hs, custom.ds);
 }

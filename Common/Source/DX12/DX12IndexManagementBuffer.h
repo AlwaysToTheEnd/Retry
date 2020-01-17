@@ -17,7 +17,7 @@ public:
 	int										GetIndex(const std::string& name) const;
 	UINT									GetDataNum() const { return static_cast<UINT>(m_Indices.size()); }
 
-	bool									IndexedAddData(ID3D12Device* device, ID3D12GraphicsCommandList* commandList, UINT numData, const T* datas, const std::vector<std::string>& dataNames);
+	Microsoft::WRL::ComPtr<ID3D12Resource>	IndexedAddData(ID3D12Device* device, ID3D12GraphicsCommandList* commandList, UINT numData, const T* datas, const std::vector<std::string>& dataNames);
 	bool									EditData(ID3D12Device* device, ID3D12GraphicsCommandList* commandList, std::string name, const T* data);
 
 private:
@@ -41,7 +41,7 @@ inline DX12IndexManagementBuffer<T>::DX12IndexManagementBuffer(ID3D12Device* dev
 }
 
 template<typename T>
-inline bool DX12IndexManagementBuffer<T>::IndexedAddData(ID3D12Device* device,
+inline  Microsoft::WRL::ComPtr<ID3D12Resource> DX12IndexManagementBuffer<T>::IndexedAddData(ID3D12Device* device,
 	ID3D12GraphicsCommandList* commandList, UINT numData, const T* datas, 
 	const std::vector<std::string>& dataNames)
 {

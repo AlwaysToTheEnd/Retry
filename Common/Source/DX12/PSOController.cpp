@@ -1,5 +1,6 @@
 #include "PSOController.h"
 #include "d3dUtil.h"
+#include <d3dx12.h>
 #include <D3Dcompiler.h>
 #pragma comment(lib,"d3dcompiler.lib")
 
@@ -13,6 +14,37 @@ PSOController::PSOController(ID3D12Device* device)
 PSOController::~PSOController()
 {
 
+}
+
+void PSOController::InitBase_Raster_Blend_Depth()
+{
+	CD3DX12_BLEND_DESC baseBlendDesc(D3D12_DEFAULT);
+	D3D12_RENDER_TARGET_BLEND_DESC baseBlendTargetDesc;
+	baseBlendTargetDesc.BlendEnable = true;
+	baseBlendTargetDesc.LogicOpEnable = false;
+	baseBlendTargetDesc.SrcBlend = D3D12_BLEND_SRC_ALPHA;
+	baseBlendTargetDesc.DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
+	baseBlendTargetDesc.BlendOp = D3D12_BLEND_OP_ADD;
+	baseBlendTargetDesc.SrcBlendAlpha = D3D12_BLEND_ONE;
+	baseBlendTargetDesc.DestBlendAlpha = D3D12_BLEND_ZERO;
+	baseBlendTargetDesc.BlendOpAlpha = D3D12_BLEND_OP_ADD;
+	baseBlendTargetDesc.LogicOp = D3D12_LOGIC_OP_NOOP;
+	baseBlendTargetDesc.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+
+	baseBlendDesc.RenderTarget[0] = baseBlendTargetDesc;
+	baseBlendDesc.AlphaToCoverageEnable = true;
+
+	AddBlend(baseAttributeName, baseBlendDesc);
+
+	//////////////////////////////////////////////////////////////////////////
+	CD3DX12_RASTERIZER_DESC baseRasterizer(D3D12_DEFAULT);
+	baseRasterizer.CullMode = D3D12_CULL_MODE_BACK;
+
+	AddRasterizer(baseAttributeName, baseRasterizer);
+
+	////////////////////////////////////////////////////////////////////////////
+	CD3DX12_DEPTH_STENCIL_DESC baseDepthStencil(D3D12_DEFAULT);
+	AddDepthStencil(baseAttributeName, baseDepthStencil);
 }
 
 void PSOController::SetPSOToCommnadList(ID3D12GraphicsCommandList* cmd,
@@ -45,10 +77,36 @@ void PSOController::SetPSOToCommnadList(ID3D12GraphicsCommandList* cmd,
 
 		auto inputI = m_InputLayouts.find(input);
 
-		auto rasterI = m_Rasterizers.find(rasterizer);
-		auto blendI = m_Blends.find(blend);
-		auto depthStencilI = m_DepthStencils.find(depthStencil);
+		auto rasterI = m_Rasterizers.end();
+		auto blendI = m_Blends.end();
+		auto depthStencilI = m_DepthStencils.end();
 
+		if (rasterizer.empty())
+		{
+			rasterI = m_Rasterizers.find(baseAttributeName);
+		}
+		else
+		{
+			rasterI = m_Rasterizers.find(rasterizer);
+		}
+
+		if (blend.empty())
+		{
+			blendI = m_Blends.find(baseAttributeName);
+		}
+		else
+		{
+			blendI = m_Blends.find(blend);
+		}
+
+		if (depthStencil.empty())
+		{
+			depthStencilI = m_DepthStencils.find(baseAttributeName);
+		}
+		else
+		{
+			depthStencilI = m_DepthStencils.find(blend);
+		}
 
 		assert(rootSigI != m_RootSignature.end());
 		assert(inputI != m_InputLayouts.end());
@@ -76,8 +134,8 @@ void PSOController::SetPSOToCommnadList(ID3D12GraphicsCommandList* cmd,
 			auto vsI = m_Shaders[DX12_SHADER_VERTEX].find(vs);
 			assert(vsI != m_Shaders[DX12_SHADER_VERTEX].end());
 
-			newPSO.VS.BytecodeLength = vsI->second.shader->GetBufferSize();
-			newPSO.VS.pShaderBytecode = vsI->second.shader->GetBufferPointer();
+			newPSO.VS.BytecodeLength = vsI->second->GetBufferSize();
+			newPSO.VS.pShaderBytecode = vsI->second->GetBufferPointer();
 		}
 
 		if (ps.size())
@@ -85,8 +143,8 @@ void PSOController::SetPSOToCommnadList(ID3D12GraphicsCommandList* cmd,
 			auto psI = m_Shaders[DX12_SHADER_PIXEL].find(ps);
 			assert(psI != m_Shaders[DX12_SHADER_PIXEL].end());
 
-			newPSO.PS.BytecodeLength = psI->second.shader->GetBufferSize();
-			newPSO.PS.pShaderBytecode = psI->second.shader->GetBufferPointer();
+			newPSO.PS.BytecodeLength = psI->second->GetBufferSize();
+			newPSO.PS.pShaderBytecode = psI->second->GetBufferPointer();
 		}
 
 		if (gs.size())
@@ -94,8 +152,8 @@ void PSOController::SetPSOToCommnadList(ID3D12GraphicsCommandList* cmd,
 			auto gsI = m_Shaders[DX12_SHADER_GEOMETRY].find(gs);
 			assert(gsI != m_Shaders[DX12_SHADER_GEOMETRY].end());
 
-			newPSO.GS.BytecodeLength = gsI->second.shader->GetBufferSize();
-			newPSO.GS.pShaderBytecode = gsI->second.shader->GetBufferPointer();
+			newPSO.GS.BytecodeLength = gsI->second->GetBufferSize();
+			newPSO.GS.pShaderBytecode = gsI->second->GetBufferPointer();
 		}
 
 		if (hs.size())
@@ -103,8 +161,8 @@ void PSOController::SetPSOToCommnadList(ID3D12GraphicsCommandList* cmd,
 			auto hsI = m_Shaders[DX12_SHADER_HULL].find(hs);
 			assert(hsI != m_Shaders[DX12_SHADER_HULL].end());
 
-			newPSO.HS.BytecodeLength = hsI->second.shader->GetBufferSize();
-			newPSO.HS.pShaderBytecode = hsI->second.shader->GetBufferPointer();
+			newPSO.HS.BytecodeLength = hsI->second->GetBufferSize();
+			newPSO.HS.pShaderBytecode = hsI->second->GetBufferPointer();
 		}
 
 		if (ds.size())
@@ -112,8 +170,8 @@ void PSOController::SetPSOToCommnadList(ID3D12GraphicsCommandList* cmd,
 			auto dsI = m_Shaders[DX12_SHADER_DOMAIN].find(ds);
 			assert(dsI != m_Shaders[DX12_SHADER_DOMAIN].end());
 
-			newPSO.DS.BytecodeLength = dsI->second.shader->GetBufferSize();
-			newPSO.DS.pShaderBytecode = dsI->second.shader->GetBufferPointer();
+			newPSO.DS.BytecodeLength = dsI->second->GetBufferSize();
+			newPSO.DS.pShaderBytecode = dsI->second->GetBufferPointer();
 		}
 
 		newPSO.SampleMask = UINT_MAX;
@@ -180,7 +238,7 @@ void PSOController::AddShader(const std::string& shaderName, DX12_SHADER_TYPE ty
 
 	ThrowIfFailed(hr);
 
-	m_Shaders[type].insert({ { shaderName }, { type, byteCode } });
+	m_Shaders[type].insert({ shaderName, byteCode });
 }
 
 void PSOController::AddInputLayout(const std::string& name, const std::vector<D3D12_INPUT_ELEMENT_DESC>& inputLayout)

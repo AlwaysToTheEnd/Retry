@@ -29,7 +29,7 @@ public:
 								DXGI_FORMAT rtvFormat, DXGI_FORMAT dsvFormat,
 								DX12TextureBuffer * textureBuffer,
 								DX12IndexManagementBuffer<Material>* material, ID3D12Resource * mainPass) override;
-	virtual void	Draw(ID3D12GraphicsCommandList * cmd) override;
+	virtual void	Draw(ID3D12GraphicsCommandList * cmd, const PSOAttributeNames* custom = nullptr) override;
 	virtual void	ReserveRender(const RenderInfo& info) override;
 	virtual	void	UploadBuffersClear() override;
 

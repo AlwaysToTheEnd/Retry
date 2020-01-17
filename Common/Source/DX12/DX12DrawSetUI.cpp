@@ -47,7 +47,7 @@ void DX12DrawSetUI::Init(ID3D12Device* device, PSOController* psoCon, DXGI_FORMA
 	m_PSOA.input = "UI";
 	m_PSOCon->AddInputLayout("UI",
 		{
-			{ "UICOLOR" ,0,DXGI_FORMAT_R32G32B32A32_FLOAT,0,0,D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,0},
+			{ "UICOLOR" ,0, DXGI_FORMAT_R32G32B32A32_FLOAT,0,0,D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,0},
 			{ "UIPOS", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 16, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
 			{ "UISIZE", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 28, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
 			{ "UITYPE", 0, DXGI_FORMAT_R32_SINT, 0, 36, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
@@ -55,11 +55,11 @@ void DX12DrawSetUI::Init(ID3D12Device* device, PSOController* psoCon, DXGI_FORMA
 		});
 }
 
-void DX12DrawSetUI::Draw(ID3D12GraphicsCommandList* cmd)
+void DX12DrawSetUI::Draw(ID3D12GraphicsCommandList* cmd, const PSOAttributeNames* custom)
 {
 	if (m_NumRenderUIs)
 	{
-		SetPSO(cmd);
+		SetPSO(cmd, custom);
 
 		ID3D12DescriptorHeap* descriptorHeaps[] = { m_TextureBuffer->GetHeap() };
 		cmd->SetDescriptorHeaps(1, descriptorHeaps);
@@ -67,7 +67,7 @@ void DX12DrawSetUI::Draw(ID3D12GraphicsCommandList* cmd)
 		static unsigned int uiPassStride = (sizeof(CGH::GlobalOptions::UIOption) + 255) & ~255;
 
 		cmd->SetGraphicsRootConstantBufferView(UI_PASS_CB, GetCurrMainPassAddress());
-		cmd->SetGraphicsRootConstantBufferView(UI_UIPASS_CB, m_UIPass->Resource()->GetGPUVirtualAddress() + (m_CurrFrame*uiPassStride));
+		cmd->SetGraphicsRootConstantBufferView(UI_UIPASS_CB, m_UIPass->Resource()->GetGPUVirtualAddress() + (m_CurrFrame * uiPassStride));
 		cmd->SetGraphicsRootDescriptorTable(UI_TEXTURE_TABLE, m_TextureBuffer->GetHeap()->GetGPUDescriptorHandleForHeapStart());
 
 		D3D12_VERTEX_BUFFER_VIEW vertexBufferView = {};

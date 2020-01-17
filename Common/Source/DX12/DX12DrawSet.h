@@ -20,12 +20,12 @@ struct PSOAttributeNames
 {
 	std::vector<DXGI_FORMAT>		rtvFormats;
 	DXGI_FORMAT						dsvFormat;
-	D3D12_PRIMITIVE_TOPOLOGY_TYPE	primitive = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+	D3D12_PRIMITIVE_TOPOLOGY_TYPE	primitive = D3D12_PRIMITIVE_TOPOLOGY_TYPE_UNDEFINED;
 	std::string						input = "";
 	std::string						rootSig = "";
-	std::string						rasterizer = "0";
-	std::string						blend = "0";
-	std::string						depthStencil = "0";
+	std::string						rasterizer = "";
+	std::string						blend = "";
+	std::string						depthStencil = "";
 	std::string						vs = "";
 	std::string						ps = "";
 	std::string						gs = "";
@@ -49,15 +49,16 @@ public:
 						 DXGI_FORMAT rtvFormat, DXGI_FORMAT dsvFormat,
 						 DX12TextureBuffer* textureBuffer, 
 						 DX12IndexManagementBuffer<Material>* material, ID3D12Resource* mainPass) = 0;
-	virtual void	Draw(ID3D12GraphicsCommandList* cmd) = 0;
+	virtual void	Draw(ID3D12GraphicsCommandList* cmd, const PSOAttributeNames* custom=nullptr) = 0;
 	virtual void	ReserveRender(const RenderInfo& info) = 0;
 	virtual	void	UploadBuffersClear() = 0;
 
 	void						UpdateFrameCount();
 	D3D12_GPU_VIRTUAL_ADDRESS	GetCurrMainPassAddress() const;
+	void						SetPSO(ID3D12GraphicsCommandList* cmd, const PSOAttributeNames* custom);
 
-protected:
-	void			SetPSO(ID3D12GraphicsCommandList* cmd);
+private:
+	void						AttributeSetToPSO(ID3D12GraphicsCommandList* cmd, const PSOAttributeNames& custom);
 
 protected:
 	static D3D12_STATIC_SAMPLER_DESC		m_StaticSamplers[7];

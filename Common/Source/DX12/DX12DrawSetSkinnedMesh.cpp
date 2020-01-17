@@ -40,6 +40,7 @@ void DX12DrawSetSkinnedMesh::Init(ID3D12Device* device, PSOController* psoCon,
 	"SKINNED_VERTEX_SAHDER",NULL,
 	NULL, NULL };
 
+	m_PSOA.primitive = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
 	m_PSOA.rootSig = "skin";
 	m_PSOA.vs = "skin";
 	m_PSOA.ps = "skin";
@@ -58,9 +59,9 @@ void DX12DrawSetSkinnedMesh::Init(ID3D12Device* device, PSOController* psoCon,
 		});
 }
 
-void DX12DrawSetSkinnedMesh::Draw(ID3D12GraphicsCommandList* cmd)
+void DX12DrawSetSkinnedMesh::Draw(ID3D12GraphicsCommandList* cmd, const PSOAttributeNames* custom)
 {
-	SetPSO(cmd);
+	SetPSO(cmd, custom);
 
 	ID3D12DescriptorHeap* descriptorHeaps[] = { m_TextureBuffer->GetHeap() };
 	cmd->SetDescriptorHeaps(1, descriptorHeaps);

@@ -234,10 +234,10 @@ void HeightMap::CreateRenderMesh(IGraphicDevice* gd, int fileHeight, int fileWid
 		}
 	}
 
+
 	Material testMaterial;
 	testMaterial.diffuseAlbedo = { 1,1,1,1 };
 	assert(gd->CreateMaterials({ "HeightFieldMaterial" }, { testMaterial }));
-
 	assert(gd->CreateDynamicVIBuffer(vertices.size(), indices.size(), &m_DBInfo));
 	
 	SubmeshData oneSub;

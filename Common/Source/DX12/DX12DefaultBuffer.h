@@ -23,7 +23,7 @@ public:
 	UINT				GetNumDatas() { return (m_BufferSize - m_Redundancy) / sizeof(T); }
 	ID3D12Resource*		GetBufferResource() { return m_Resource.Get(); }
 
-	bool									AddData(ID3D12Device* device, ID3D12GraphicsCommandList* commandList, UINT numData, const T* datas);
+	Microsoft::WRL::ComPtr<ID3D12Resource>	AddData(ID3D12Device* device, ID3D12GraphicsCommandList* commandList, UINT numData, const T* datas);
 	bool									EditData(ID3D12Device* device, ID3D12GraphicsCommandList* commandList, UINT index, const T* data);
 	bool									EditDatas(ID3D12Device* device, ID3D12GraphicsCommandList* commandList, UINT objectNumOffset, UINT dataNum, const T* datas);
 
@@ -86,7 +86,7 @@ inline DX12DefaultBuffer<T>::DX12DefaultBuffer(
 }
 
 template<typename T>
-inline bool DX12DefaultBuffer<T>::AddData(ID3D12Device* device,
+inline Microsoft::WRL::ComPtr<ID3D12Resource> DX12DefaultBuffer<T>::AddData(ID3D12Device* device,
 	ID3D12GraphicsCommandList* commandList, UINT numData, const T* datas)
 {
 	Microsoft::WRL::ComPtr<ID3D12Resource> result = nullptr;
@@ -100,19 +100,18 @@ inline bool DX12DefaultBuffer<T>::AddData(ID3D12Device* device,
 		m_BufferSize = (m_BufferSize * 2) > (m_BufferSize + addDataByteSize) ? (m_BufferSize * 2) : (m_BufferSize + addDataByteSize);
 		m_Redundancy = m_BufferSize - usingByte;
 
-		Microsoft::WRL::ComPtr<ID3D12Resource> newResource;
+		Microsoft::WRL::ComPtr<ID3D12Resource> temp = m_Resource;
 		ThrowIfFailed(device->CreateCommittedResource(
 			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
 			D3D12_HEAP_FLAG_NONE,
 			&CD3DX12_RESOURCE_DESC::Buffer(m_BufferSize),
 			D3D12_RESOURCE_STATE_COPY_DEST, nullptr,
-			IID_PPV_ARGS(newResource.GetAddressOf())));
+			IID_PPV_ARGS(result.GetAddressOf())));
 
-		commandList->CopyBufferRegion(newResource.Get(), 0, m_Resource.Get(), 0, usingByte);
+		commandList->CopyBufferRegion(result.Get(), 0, m_Resource.Get(), 0, usingByte);
 
-		result = m_Resource;
-		m_Resource = nullptr;
-		m_Resource = newResource;
+		m_Resource = result;
+		result = temp;
 	}
 	else
 	{
@@ -140,12 +139,7 @@ inline bool DX12DefaultBuffer<T>::AddData(ID3D12Device* device,
 
 	m_Redundancy -= addDataByteSize;
 
-	if (result)
-	{
-		result->Release();
-	}
-
-	return true;
+	return result;
 }
 
 template<typename T>

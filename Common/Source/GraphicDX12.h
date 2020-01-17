@@ -29,47 +29,23 @@ class DX12DrawSetUI;
 
 using Microsoft::WRL::ComPtr;
 
+struct DynamicBuffer
+{
+	DynamicBuffer(ID3D12Device* device, unsigned int _renderID, unsigned int _numVertex, unsigned int _numIndex)
+	{
+		dynamicIndexBuffer = std::make_unique<DX12UploadBuffer<UINT>>(device, _numIndex, false);
+		dynamicVertexBuffer = std::make_unique<DX12UploadBuffer<Vertex>>(device, _numVertex, false);
+		dynamicBufferInfo = std::make_unique<DynamicBufferInfo>(_renderID, _numVertex, _numIndex,
+			dynamicVertexBuffer->GetMappedData(), dynamicIndexBuffer->GetMappedData());
+	}
+
+	std::unique_ptr<DynamicBufferInfo>			dynamicBufferInfo;
+	std::unique_ptr<DX12UploadBuffer<Vertex>>		dynamicVertexBuffer;
+	std::unique_ptr<DX12UploadBuffer<unsigned int>>	dynamicIndexBuffer;
+};
+
 class GraphicDX12 final : public IGraphicDevice
 {
-	enum DX12_RENDER_TYPE
-	{
-		DX12_RENDER_TYPE_DYNAMIC_MESH,
-		DX12_RENDER_TYPE_COUNT
-	};
-
-	struct FrameResource
-	{
-		FrameResource(ID3D12Device* device, UINT passCount, UINT objectCount)
-		{
-			ThrowIfFailed(device->CreateCommandAllocator(
-				D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(cmdListAlloc.GetAddressOf())));
-
-			passCB = std::make_unique<DX12UploadBuffer<PassConstants>>(device, passCount, true);
-		}
-
-		FrameResource(const FrameResource& rhs) = delete;
-		FrameResource& operator=(const FrameResource& rhs) = delete;
-
-		ComPtr<ID3D12CommandAllocator> cmdListAlloc;
-
-		std::unique_ptr<DX12UploadBuffer<PassConstants>> passCB = nullptr;
-	};
-
-	struct DynamicBuffer
-	{
-		DynamicBuffer(ID3D12Device* device, unsigned int _renderID, unsigned int _numVertex, unsigned int _numIndex)
-		{
-			dynamicIndexBuffer = std::make_unique<DX12UploadBuffer<UINT>>(device, _numIndex, false);
-			dynamicVertexBuffer = std::make_unique<DX12UploadBuffer<Vertex>>(device, _numVertex, false);
-			dynamicBufferInfo = std::make_unique<DynamicBufferInfo>(_renderID, _numVertex, _numIndex, 
-				dynamicVertexBuffer->GetMappedData(), dynamicIndexBuffer->GetMappedData());
-		}
-
-		std::unique_ptr<DynamicBufferInfo>			dynamicBufferInfo;
-		std::unique_ptr<DX12UploadBuffer<Vertex>>		dynamicVertexBuffer;
-		std::unique_ptr<DX12UploadBuffer<unsigned int>>	dynamicIndexBuffer;
-	};
-
 public:
 	GraphicDX12();
 	virtual ~GraphicDX12() override;
@@ -114,7 +90,6 @@ private: // Device Base Functions
 
 private: // Base object Builds
 	void BuildDrawSets();
-	void BuildFrameResources();
 	void BuildDepthStencilAndBlendsAndRasterizer();
 
 private: // Used in frame.
@@ -137,6 +112,8 @@ private:
 	ComPtr<ID3D12CommandAllocator>		m_DirectCmdListAlloc;
 	ComPtr<ID3D12GraphicsCommandList>	m_CommandList;
 
+	const UINT							m_NumFrameResource = 1;
+	UINT								m_CurrFrame = 0;
 	std::unique_ptr<DX12SwapChain>		m_Swap;
 	DXGI_FORMAT							m_BackBufferFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
 	DXGI_FORMAT							m_DepthStencilFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
@@ -147,9 +124,8 @@ private:
 private:
 	std::unique_ptr<PSOController>							m_PSOCon;
 
-	PassConstants											m_MainPassCB;
-	std::unique_ptr<FrameResource>							m_FrameResource;
-	std::unique_ptr<DX12FontManager>						m_FontManager;
+	std::vector<ComPtr<ID3D12CommandAllocator>>				m_CmdListAllocs;
+	std::unique_ptr<DX12UploadBuffer<PassConstants>>		m_PassCB;
 
 	std::unique_ptr<DX12TextureBuffer>						m_TextureBuffer;
 	std::unique_ptr<DX12TextureBuffer>						m_UITextureBuffer;
@@ -159,7 +135,7 @@ private:
 	std::unique_ptr<DX12DrawSetSkinnedMesh>					m_SkinnedMeshDrawSet;
 	std::unique_ptr<DX12DrawSetPointBase>					m_PointBaseDrawSet;
 	std::unique_ptr<DX12DrawSetUI>							m_UIDrawSet;
+	std::unique_ptr<DX12FontManager>						m_FontManager;
 
-private:
-	std::vector<std::unique_ptr<DynamicBuffer>>		m_DynamicBuffers;
+	std::vector<std::unique_ptr<DynamicBuffer>>				m_DynamicBuffers;
 };

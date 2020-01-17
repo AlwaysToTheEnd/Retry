@@ -53,6 +53,15 @@ bool GraphicDX12::Init(HWND hWnd, UINT windowWidth, UINT windowHeight)
 	ThrowIfFailed(m_DirectCmdListAlloc->Reset());
 
 	m_PSOCon = make_unique<PSOController>(m_D3dDevice.Get());
+	m_PSOCon->InitBase_Raster_Blend_Depth();
+	m_PassCB = make_unique<DX12UploadBuffer<PassConstants>>(m_D3dDevice.Get(), m_NumFrameResource, true);
+	m_CmdListAllocs.resize(m_NumFrameResource);
+
+	for (UINT i = 0; i < m_NumFrameResource; i++)
+	{
+		ThrowIfFailed(m_D3dDevice->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT,
+			IID_PPV_ARGS(m_CmdListAllocs[i].GetAddressOf())));
+	}
 
 	return true;
 }
@@ -202,7 +211,7 @@ bool GraphicDX12::CreateMaterials(const std::vector<std::string>& materialNames,
 	ThrowIfFailed(m_D3dDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT,
 		allocator.Get(), nullptr, IID_PPV_ARGS(commandList.GetAddressOf())));
 
-	auto prevBuffer = m_Materials->IndexedAddData(m_D3dDevice.Get(), commandList.Get(), materials.size(), materials.data(), materialNames);
+	auto result = m_Materials->IndexedAddData(m_D3dDevice.Get(), commandList.Get(), materials.size(), materials.data(), materialNames);
 
 	commandList->Close();
 
@@ -290,7 +299,9 @@ bool GraphicDX12::CreateDynamicVIBuffer(unsigned int vertexNum, unsigned int ind
 	{
 		if (m_DynamicBuffers[i] == nullptr)
 		{
-			m_DynamicBuffers[i] = make_unique<DynamicBuffer>(m_D3dDevice.Get(), i, vertexNum, indexNum);
+			auto temp= make_unique<DynamicBuffer>(m_D3dDevice.Get(), i, vertexNum, indexNum);
+
+			m_DynamicBuffers[i] = std::move(temp);
 
 			addedDyanamic = m_DynamicBuffers[i].get();
 			break;
@@ -299,7 +310,8 @@ bool GraphicDX12::CreateDynamicVIBuffer(unsigned int vertexNum, unsigned int ind
 
 	if (addedDyanamic == nullptr)
 	{
-		m_DynamicBuffers.push_back(make_unique<DynamicBuffer>(m_D3dDevice.Get(), m_DynamicBuffers.size(), vertexNum, indexNum));
+		auto newDynamic = new DynamicBuffer(m_D3dDevice.Get(), m_DynamicBuffers.size(), vertexNum, indexNum);
+		m_DynamicBuffers.push_back(std::unique_ptr<DynamicBuffer>(newDynamic));
 		addedDyanamic = m_DynamicBuffers.back().get();
 	}
 
@@ -509,8 +521,6 @@ void GraphicDX12::LoadMeshAndMaterialFromFolder(const std::vector<std::wstring>&
 	m_Materials = make_unique<DX12IndexManagementBuffer<Material>>(m_D3dDevice.Get(),
 		m_CommandList.Get(), matNames, matDatas);
 
-	BuildFrameResources();
-
 	BuildDrawSets();
 
 	m_NormalMeshDrawSet->AddMeshs(m_D3dDevice.Get(), m_CommandList.Get(),
@@ -616,7 +626,7 @@ void GraphicDX12::Update(const CGHScene& scene)
 
 void GraphicDX12::Draw()
 {
-	auto cmdListAlloc = m_FrameResource->cmdListAlloc.Get();
+	auto cmdListAlloc = m_CmdListAllocs[m_CurrFrame].Get();
 
 	ThrowIfFailed(cmdListAlloc->Reset());
 
@@ -650,6 +660,13 @@ void GraphicDX12::Draw()
 	m_Swap->Presnet();
 
 	FlushCommandQueue();
+
+	m_CurrFrame = (m_CurrFrame + 1) % m_NumFrameResource;
+
+	m_NormalMeshDrawSet->UpdateFrameCount();
+	m_SkinnedMeshDrawSet->UpdateFrameCount();
+	m_PointBaseDrawSet->UpdateFrameCount();
+	m_UIDrawSet->UpdateFrameCount();
 }
 
 
@@ -661,52 +678,21 @@ void GraphicDX12::BuildDrawSets()
 	m_UIDrawSet = std::make_unique<DX12DrawSetUI>(1);
 
 	m_NormalMeshDrawSet->Init(m_D3dDevice.Get(), m_PSOCon.get(), m_BackBufferFormat, m_DepthStencilFormat,
-		m_TextureBuffer.get(), m_Materials.get(), m_FrameResource->passCB->Resource());
+		m_TextureBuffer.get(), m_Materials.get(), m_PassCB->Resource());
 
 	m_SkinnedMeshDrawSet->Init(m_D3dDevice.Get(), m_PSOCon.get(), m_BackBufferFormat, m_DepthStencilFormat,
-		m_TextureBuffer.get(), m_Materials.get(), m_FrameResource->passCB->Resource());
+		m_TextureBuffer.get(), m_Materials.get(), m_PassCB->Resource());
 
 	m_PointBaseDrawSet->Init(m_D3dDevice.Get(), m_PSOCon.get(), m_BackBufferFormat, m_DepthStencilFormat,
-		m_TextureBuffer.get(), m_Materials.get(), m_FrameResource->passCB->Resource());
+		m_TextureBuffer.get(), m_Materials.get(), m_PassCB->Resource());
 
 	m_UIDrawSet->Init(m_D3dDevice.Get(), m_PSOCon.get(), m_BackBufferFormat, m_DepthStencilFormat,
-		m_TextureBuffer.get(), m_Materials.get(), m_FrameResource->passCB->Resource());
-}
-
-void GraphicDX12::BuildFrameResources()
-{
-	m_FrameResource = make_unique<FrameResource>(m_D3dDevice.Get(), 1, 100);
+		m_TextureBuffer.get(), m_Materials.get(), m_PassCB->Resource());
 }
 
 void GraphicDX12::BuildDepthStencilAndBlendsAndRasterizer()
 {
-	CD3DX12_BLEND_DESC baseBlendDesc(D3D12_DEFAULT);
-	D3D12_RENDER_TARGET_BLEND_DESC baseBlendTargetDesc;
-	baseBlendTargetDesc.BlendEnable = true;
-	baseBlendTargetDesc.LogicOpEnable = false;
-	baseBlendTargetDesc.SrcBlend = D3D12_BLEND_SRC_ALPHA;
-	baseBlendTargetDesc.DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
-	baseBlendTargetDesc.BlendOp = D3D12_BLEND_OP_ADD;
-	baseBlendTargetDesc.SrcBlendAlpha = D3D12_BLEND_ONE;
-	baseBlendTargetDesc.DestBlendAlpha = D3D12_BLEND_ZERO;
-	baseBlendTargetDesc.BlendOpAlpha = D3D12_BLEND_OP_ADD;
-	baseBlendTargetDesc.LogicOp = D3D12_LOGIC_OP_NOOP;
-	baseBlendTargetDesc.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
-
-	baseBlendDesc.RenderTarget[0] = baseBlendTargetDesc;
-	baseBlendDesc.AlphaToCoverageEnable = true;
-
-	m_PSOCon->AddBlend("0", baseBlendDesc);
-
-	//////////////////////////////////////////////////////////////////////////
-	CD3DX12_RASTERIZER_DESC baseRasterizer(D3D12_DEFAULT);
-	baseRasterizer.CullMode = D3D12_CULL_MODE_BACK;
-
-	m_PSOCon->AddRasterizer("0", baseRasterizer);
-
-	////////////////////////////////////////////////////////////////////////////
-	CD3DX12_DEPTH_STENCIL_DESC baseDepthStencil(D3D12_DEFAULT);
-	m_PSOCon->AddDepthStencil("0", baseDepthStencil);
+	
 }
 
 void GraphicDX12::UpdateMainPassCB()
@@ -725,19 +711,20 @@ void GraphicDX12::UpdateMainPassCB()
 	XMStoreFloat4x4(invView, XMMatrixInverse(&deter, xmView));
 	physx::PxMat44 invProj = proj.inverseRT();
 	physx::PxMat44 invViewProj = viewProj.inverseRT();
+	PassConstants mainPass;
 
-	m_MainPassCB.view = view.getTranspose();
-	m_MainPassCB.invView = invView.getTranspose();
-	m_MainPassCB.proj = proj.getTranspose();
-	m_MainPassCB.invProj = invProj.getTranspose();
-	m_MainPassCB.viewProj = viewProj.getTranspose();
-	m_MainPassCB.invViewProj = invViewProj.getTranspose();
-	m_MainPassCB.orthoMatrix = m_OrthoProjectionMat.getTranspose();
-	m_MainPassCB.renderTargetSize = physx::PxVec2((float)m_ClientWidth, (float)m_ClientHeight);
-	m_MainPassCB.invRenderTargetSize = physx::PxVec2(1.0f / m_ClientWidth, 1.0f / m_ClientHeight);
-	m_MainPassCB.samplerIndex = CGH::GO.graphic.samplerIndex;
+	mainPass.view = view.getTranspose();
+	mainPass.invView = invView.getTranspose();
+	mainPass.proj = proj.getTranspose();
+	mainPass.invProj = invProj.getTranspose();
+	mainPass.viewProj = viewProj.getTranspose();
+	mainPass.invViewProj = invViewProj.getTranspose();
+	mainPass.orthoMatrix = m_OrthoProjectionMat.getTranspose();
+	mainPass.renderTargetSize = physx::PxVec2((float)m_ClientWidth, (float)m_ClientHeight);
+	mainPass.invRenderTargetSize = physx::PxVec2(1.0f / m_ClientWidth, 1.0f / m_ClientHeight);
+	mainPass.samplerIndex = CGH::GO.graphic.samplerIndex;
 
-	m_MainPassCB.ambientLight = { 0.25f, 0.25f, 0.35f, 1.0f };
+	mainPass.ambientLight = { 0.25f, 0.25f, 0.35f, 1.0f };
 	//m_MainPassCB.Lights[0].direction = { 0.57735f, -0.57735f, 0.57735f };
 	//m_MainPassCB.Lights[0].strength = { 0.9f, 0.9f, 0.9f };
 	//m_MainPassCB.Lights[1].direction = { -0.57735f, -0.57735f, 0.57735f };
@@ -745,7 +732,7 @@ void GraphicDX12::UpdateMainPassCB()
 	//m_MainPassCB.Lights[2].direction = { 0.0f, -0.707f, -0.707f };
 	//m_MainPassCB.Lights[2].strength = { 0.2f, 0.2f, 0.2f };
 
-	m_FrameResource->passCB->CopyData(0, m_MainPassCB);
+	m_PassCB->CopyData(0, mainPass);
 	m_UIDrawSet->UpdateUIPassCB(CGH::GO.ui);
 
 	physx::PxVec3 rayOrigin(0, 0, 0);
@@ -786,15 +773,15 @@ void GraphicDX12::UpdateObjectCB()
 			object.scale = it.scale;
 			object.PrevAniBone = atoi(it.meshOrTextureName.c_str());
 
-			/*const MeshObject& mesh = m_DynamicBuffers[object.PrevAniBone]->dynamicBufferInfo->meshObject;
+			const MeshObject& mesh = m_DynamicBuffers[object.PrevAniBone]->dynamicBufferInfo->meshObject;
 			for (auto& it2 : mesh.subs)
 			{
-				object.diffuseMapIndex = m_TextureBuffer->GetTextureIndex(it2.second.diffuseMap);
+				/*object.diffuseMapIndex = m_TextureBuffer->GetTextureIndex(it2.second.diffuseMap);
 				object.normalMapIndex = m_TextureBuffer->GetTextureIndex(it2.second.normalMap);
 				object.materialIndex = m_Materials->GetIndex(it2.second.material);
 				m_RenderObjects[DX12_RENDER_TYPE_DYNAMIC_MESH].push_back(object);
-				m_RenderObjectsSubmesh[DX12_RENDER_TYPE_DYNAMIC_MESH].push_back(&it2.second);
-			}*/
+				m_RenderObjectsSubmesh[DX12_RENDER_TYPE_DYNAMIC_MESH].push_back(&it2.second);*/
+			}
 		}
 		break;
 		case RENDER_BOX:

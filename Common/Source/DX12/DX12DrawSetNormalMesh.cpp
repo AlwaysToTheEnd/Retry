@@ -36,6 +36,7 @@ void DX12DrawSetNormalMesh::Init(ID3D12Device* device, PSOController* psoCon,
 		"MAXTEXTURE", textureNum.c_str(),
 		NULL, NULL };
 
+	m_PSOA.primitive = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
 	m_PSOA.rootSig = "normal";
 	m_PSOA.vs = "normal";
 	m_PSOA.ps = "normal";
@@ -52,9 +53,9 @@ void DX12DrawSetNormalMesh::Init(ID3D12Device* device, PSOController* psoCon,
 		});
 }
 
-void DX12DrawSetNormalMesh::Draw(ID3D12GraphicsCommandList* cmd)
+void DX12DrawSetNormalMesh::Draw(ID3D12GraphicsCommandList* cmd, const PSOAttributeNames* custom)
 {
-	SetPSO(cmd);
+	SetPSO(cmd, custom);
 
 	ID3D12DescriptorHeap* descriptorHeaps[] = { m_TextureBuffer->GetHeap() };
 	cmd->SetDescriptorHeaps(1, descriptorHeaps);

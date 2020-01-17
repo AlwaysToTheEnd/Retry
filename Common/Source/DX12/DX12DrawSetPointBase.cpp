@@ -54,11 +54,11 @@ void DX12DrawSetPointBase::Init(ID3D12Device* device, PSOController* psoCon, DXG
 		});
 }
 
-void DX12DrawSetPointBase::Draw(ID3D12GraphicsCommandList* cmd)
+void DX12DrawSetPointBase::Draw(ID3D12GraphicsCommandList* cmd, const PSOAttributeNames* custom)
 {
 	if (m_NumRenderPointObjects)
 	{
-		SetPSO(cmd);
+		SetPSO(cmd, custom);
 
 		auto& currFrameSource = m_FrameResource[m_CurrFrame];
 

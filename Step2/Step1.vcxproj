@@ -24,6 +24,7 @@
     <ClCompile Include="..\Common\Source\AnimationTreeCreator.cpp" />
     <ClCompile Include="..\Common\Source\AnimationTreeScene\AnimationTreeScene.cpp" />
     <ClCompile Include="..\Common\Source\DX12\DX12DrawSet.cpp" />
+    <ClCompile Include="..\Common\Source\DX12\DX12DrawSetHeightField.cpp" />
     <ClCompile Include="..\Common\Source\DX12\DX12DrawSetNormalMesh.cpp" />
     <ClCompile Include="..\Common\Source\DX12\DX12DrawSetPointBase.cpp" />
     <ClCompile Include="..\Common\Source\DX12\DX12DrawSetSkinnedMesh.cpp" />
@@ -77,6 +78,7 @@
     <ClInclude Include="..\Common\Source\AnimationTreeScene\AnimationTreeScene.h" />
     <ClInclude Include="..\Common\Source\BaseClass.h" />
     <ClInclude Include="..\Common\Source\DX12\DX12DefaultBuffer.h" />
+    <ClInclude Include="..\Common\Source\DX12\DX12DrawSetHeightField.h" />
     <ClInclude Include="..\Common\Source\DX12\DX12DrawSetPointBase.h" />
     <ClInclude Include="..\Common\Source\DX12\DX12DrawSetSkinnedMesh.h" />
     <ClInclude Include="..\Common\Source\DX12\DX12DrawSetUI.h" />
