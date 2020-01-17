@@ -29,7 +29,6 @@ public:
 
 	const std::string&	GetSceneName() const { return m_SceneName; }
 
-protected:
 	template<typename T, typename ...Types> T*	CreateGameObject(Types... args);
 	void										AddGameObject(GameObject* object);
 

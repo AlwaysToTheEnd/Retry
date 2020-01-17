@@ -1,5 +1,4 @@
 #pragma once
-#include "Vertex.h"
 #include "DX12DrawSet.h"
 #include "DX12RenderClasses.h"
 #include "DX12DefaultBuffer.h"
@@ -29,7 +28,6 @@ public:
 		DX12IndexManagementBuffer<Material>* material, ID3D12Resource* mainPass) override;
 	virtual void	Draw(ID3D12GraphicsCommandList* cmd, const PSOAttributeNames* custom = nullptr) override;
 	virtual void	ReserveRender(const RenderInfo& info) override;
-	virtual	void	UploadBuffersClear() override {}
 
 private:
 

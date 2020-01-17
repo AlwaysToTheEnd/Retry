@@ -51,7 +51,6 @@ public:
 						 DX12IndexManagementBuffer<Material>* material, ID3D12Resource* mainPass) = 0;
 	virtual void	Draw(ID3D12GraphicsCommandList* cmd, const PSOAttributeNames* custom=nullptr) = 0;
 	virtual void	ReserveRender(const RenderInfo& info) = 0;
-	virtual	void	UploadBuffersClear() = 0;
 
 	void						UpdateFrameCount();
 	D3D12_GPU_VIRTUAL_ADDRESS	GetCurrMainPassAddress() const;

@@ -64,22 +64,11 @@ void DX12DrawSetNormalMesh::Draw(ID3D12GraphicsCommandList* cmd, const PSOAttrib
 	cmd->SetGraphicsRootConstantBufferView(PASS_CB, GetCurrMainPassAddress());
 	cmd->SetGraphicsRootDescriptorTable(TEXTURE_TABLE, m_TextureBuffer->GetHeap()->GetGPUDescriptorHandleForHeapStart());
 
-	D3D12_VERTEX_BUFFER_VIEW vertexBufferView = {};
-	D3D12_INDEX_BUFFER_VIEW indexBufferView = {};
-	indexBufferView.Format = DXGI_FORMAT_R32_UINT;
-
 	auto ObjectCBVritualAD = m_MeshObjectCB[m_CurrFrame]->Resource()->GetGPUVirtualAddress();
 	const UINT ObjectStrideSize = m_MeshObjectCB[m_CurrFrame]->GetElementByteSize();
 
-	vertexBufferView.BufferLocation = m_VertexBuffer->GetBufferResource()->GetGPUVirtualAddress();
-	vertexBufferView.SizeInBytes = m_VertexBuffer->GetBufferSize();
-	vertexBufferView.StrideInBytes = sizeof(Vertex);
-
-	indexBufferView.BufferLocation = m_IndexBuffer->GetBufferResource()->GetGPUVirtualAddress();
-	indexBufferView.SizeInBytes = m_IndexBuffer->GetBufferSize();
-
-	cmd->IASetVertexBuffers(0, 1, &vertexBufferView);
-	cmd->IASetIndexBuffer(&indexBufferView);
+	cmd->IASetVertexBuffers(0, 1, &m_MeshSet.GetVertexBufferView());
+	cmd->IASetIndexBuffer(&m_MeshSet.GetIndexBufferView());
 	cmd->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY::D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 	for (size_t i = 0; i < m_RenderObjectSubmesh.size(); i++)
@@ -95,7 +84,7 @@ void DX12DrawSetNormalMesh::Draw(ID3D12GraphicsCommandList* cmd, const PSOAttrib
 
 void DX12DrawSetNormalMesh::ReserveRender(const RenderInfo& info)
 {
-	auto& mesh = m_Meshs.find(info.meshOrTextureName)->second;
+	auto& mesh = m_MeshSet.MS.find(info.meshOrTextureName)->second;
 
 	ObjectConstants data;
 	data.world = info.world;
@@ -110,106 +99,6 @@ void DX12DrawSetNormalMesh::ReserveRender(const RenderInfo& info)
 		m_MeshObjectCB[m_CurrFrame]->CopyData(m_RenderObjectSubmesh.size(), data);
 		m_RenderObjectSubmesh.push_back(&it.second);
 	}
-}
-
-bool DX12DrawSetNormalMesh::AddMesh(ID3D12Device* device, ID3D12GraphicsCommandList* commandList,
-	const std::string& name, MeshObject& mesh,
-	const std::vector<Vertex>& vertices, const std::vector<UINT>& indices)
-{
-	if (m_VertexBuffer == nullptr)
-	{
-		CreateVertexIndexBuffer(device, commandList, vertices, indices);
-	}
-	else
-	{
-		UINT baseVertexLocation = 0;
-		UINT baseIndexLocation = 0;
-		UINT numVertices = 0;
-		UINT numIndices = 0;
-
-		baseVertexLocation = m_VertexBuffer->GetNumDatas();
-		baseIndexLocation = m_IndexBuffer->GetNumDatas();
-		numVertices = vertices.size();
-		numIndices = indices.size();
-
-		for (auto& it : mesh.subs)
-		{
-			it.second.vertexOffset += baseVertexLocation;
-			it.second.indexOffset += baseIndexLocation;
-		}
-
-		m_VertexBuffer->AddData(device, commandList, numVertices, vertices.data());
-		m_IndexBuffer->AddData(device, commandList, numIndices, indices.data());
-	}
-
-	m_Meshs.insert({ name, mesh });
-
-	return true;
-}
-
-bool DX12DrawSetNormalMesh::AddMeshs(ID3D12Device* device, ID3D12GraphicsCommandList* commandList,
-	const std::vector<std::string>& meshNames, const std::vector<MeshObject>& meshs,
-	const std::vector<Vertex>& vertices, const std::vector<UINT>& indices)
-{
-	if (m_VertexBuffer == nullptr)
-	{
-		CreateVertexIndexBuffer(device, commandList, vertices, indices);
-	}
-	else
-	{
-		UINT baseVertexLocation = 0;
-		UINT baseIndexLocation = 0;
-		UINT numVertices = 0;
-		UINT numIndices = 0;
-
-		baseVertexLocation = m_VertexBuffer->GetNumDatas();
-		baseIndexLocation = m_IndexBuffer->GetNumDatas();
-		numVertices = vertices.size();
-		numIndices = indices.size();
-
-		for (auto it : meshs)
-		{
-			for (auto& it2 : it.subs)
-			{
-				it2.second.vertexOffset += baseVertexLocation;
-				it2.second.indexOffset += baseIndexLocation;
-			}
-		}
-		
-		m_VertexBuffer->AddData(device, commandList, numVertices, vertices.data());
-		m_IndexBuffer->AddData(device, commandList, numIndices, indices.data());
-	}
-
-	for (size_t i = 0; i < meshNames.size(); i++)
-	{
-		m_Meshs.insert({ meshNames[i], meshs[i] });
-	}
-
-	return true;
-}
-
-bool DX12DrawSetNormalMesh::EditMesh(ID3D12Device* device, ID3D12GraphicsCommandList* commandList, const std::string& meshName, const std::vector<Vertex>& vertices)
-{
-	auto iter = m_Meshs.find(meshName);
-
-	if (iter == m_Meshs.end())
-	{
-		return false;
-	}
-
-	return 	m_VertexBuffer->EditDatas(device, commandList, iter->second.GetStartVertexOffset(), vertices.size(), vertices.data());
-}
-
-void DX12DrawSetNormalMesh::UploadBuffersClear()
-{
-	m_VertexBuffer->ClearUploadBuffer();
-	m_IndexBuffer->ClearUploadBuffer();
-}
-
-void DX12DrawSetNormalMesh::CreateVertexIndexBuffer(ID3D12Device* device, ID3D12GraphicsCommandList* commandList, const std::vector<Vertex>& vertices, const std::vector<UINT>& indices)
-{
-	m_VertexBuffer = std::make_unique<DX12DefaultBuffer<Vertex>>(device, commandList, vertices);
-	m_IndexBuffer = std::make_unique<DX12DefaultBuffer<UINT>>(device, commandList, indices);
 }
 
 void DX12DrawSetNormalMesh::ResizeCurrFrameCB()

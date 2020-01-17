@@ -386,6 +386,12 @@
     <ClInclude Include="..\Common\Source\DX12\DX12DrawSetHeightField.h">
       <Filter>Common\DeviceInstance\DX12Supporters\DrawSets</Filter>
     </ClInclude>
+    <ClInclude Include="..\Common\Source\DX12\DX12MeshSet.h">
+      <Filter>Common\DeviceInstance\DX12Supporters</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\DX12\DX12HeightFieldMesh.h">
+      <Filter>Common\DeviceInstance\DX12Supporters</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Common\MainShaders\BaseShader.hlsl">

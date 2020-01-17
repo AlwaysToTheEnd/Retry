@@ -54,6 +54,8 @@ bool GraphicDX12::Init(HWND hWnd, UINT windowWidth, UINT windowHeight)
 
 	m_PSOCon = make_unique<PSOController>(m_D3dDevice.Get());
 	m_PSOCon->InitBase_Raster_Blend_Depth();
+	m_NormalMeshSet = make_unique<DX12MeshSet<Vertex>>();
+	m_SkinnedMeshSet = make_unique<DX12MeshSet<SkinnedVertex>>();
 	m_PassCB = make_unique<DX12UploadBuffer<PassConstants>>(m_D3dDevice.Get(), m_NumFrameResource, true);
 	m_CmdListAllocs.resize(m_NumFrameResource);
 
@@ -161,10 +163,10 @@ const std::unordered_map<std::string, MeshObject>* GraphicDX12::GetMeshDataMap(C
 	switch (type)
 	{
 	case CGH::NORMAL_MESH:
-		return m_NormalMeshDrawSet->GetMeshs();
+		return &m_NormalMeshSet->MS;
 		break;
 	case CGH::SKINNED_MESH:
-		return m_SkinnedMeshDrawSet->GetMeshs();
+		return &m_SkinnedMeshSet->MS;
 		break;
 	case CGH::MESH_TYPE_COUNT:
 	default:
@@ -186,7 +188,7 @@ bool GraphicDX12::CreateMesh(const std::string& meshName, MeshObject& meshinfo,
 	ThrowIfFailed(m_D3dDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT,
 		allocator.Get(), nullptr, IID_PPV_ARGS(commandList.GetAddressOf())));
 
-	result = m_NormalMeshDrawSet->AddMesh(m_D3dDevice.Get(), commandList.Get(), meshName, meshinfo, vertices, indices);
+	result = m_NormalMeshSet->AddMesh(m_D3dDevice.Get(), commandList.Get(), meshName, meshinfo, vertices, indices);
 
 	commandList->Close();
 
@@ -196,7 +198,7 @@ bool GraphicDX12::CreateMesh(const std::string& meshName, MeshObject& meshinfo,
 	FlushCommandQueue();
 	ThrowIfFailed(allocator->Reset());
 
-	m_NormalMeshDrawSet->UploadBuffersClear();
+	m_NormalMeshSet->ClearUploadBuffer();
 
 	return result;
 }
@@ -237,7 +239,7 @@ bool GraphicDX12::EditMesh(const std::string& meshName, const std::vector<Vertex
 	ThrowIfFailed(m_D3dDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT,
 		allocator.Get(), nullptr, IID_PPV_ARGS(commandList.GetAddressOf())));
 
-	result = m_NormalMeshDrawSet->EditMesh(m_D3dDevice.Get(), commandList.Get(), meshName, vertices);
+	result = m_NormalMeshSet->EditMesh(m_D3dDevice.Get(), commandList.Get(), meshName, vertices);
 
 	commandList->Close();
 	ID3D12CommandList* cmdLists[] = { commandList.Get() };
@@ -246,7 +248,7 @@ bool GraphicDX12::EditMesh(const std::string& meshName, const std::vector<Vertex
 	FlushCommandQueue();
 	ThrowIfFailed(allocator->Reset());
 
-	m_NormalMeshDrawSet->UploadBuffersClear();
+	m_NormalMeshSet->ClearUploadBuffer();
 
 	return result;
 }
@@ -521,12 +523,10 @@ void GraphicDX12::LoadMeshAndMaterialFromFolder(const std::vector<std::wstring>&
 	m_Materials = make_unique<DX12IndexManagementBuffer<Material>>(m_D3dDevice.Get(),
 		m_CommandList.Get(), matNames, matDatas);
 
-	BuildDrawSets();
-
-	m_NormalMeshDrawSet->AddMeshs(m_D3dDevice.Get(), m_CommandList.Get(),
+	m_NormalMeshSet->AddMeshs(m_D3dDevice.Get(), m_CommandList.Get(),
 		normalMeshNames, normalMeshs, combinedVertex, combinedIndices);
 
-	m_SkinnedMeshDrawSet->AddMeshs(m_D3dDevice.Get(), m_CommandList.Get(),
+	m_SkinnedMeshSet->AddMeshs(m_D3dDevice.Get(), m_CommandList.Get(),
 		skinnedMeshNames, skinnedMeshs, combinedSkinnedVertex, combinedSkinnedIndices);
 
 	ThrowIfFailed(m_CommandList->Close());
@@ -537,8 +537,8 @@ void GraphicDX12::LoadMeshAndMaterialFromFolder(const std::vector<std::wstring>&
 	ThrowIfFailed(m_DirectCmdListAlloc->Reset());
 
 	m_Materials->ClearUploadBuffer();
-	m_NormalMeshDrawSet->UploadBuffersClear();
-	m_SkinnedMeshDrawSet->UploadBuffersClear();
+	m_NormalMeshSet->ClearUploadBuffer();
+	m_SkinnedMeshSet->ClearUploadBuffer();
 }
 
 void GraphicDX12::LoadFontFromFolder(const std::vector<std::wstring>& targetFontFolders)
@@ -587,6 +587,7 @@ void GraphicDX12::ReadyWorksEnd()
 	ThrowIfFailed(m_CommandList->Reset(m_DirectCmdListAlloc.Get(), nullptr));
 
 	BuildDepthStencilAndBlendsAndRasterizer();
+	BuildDrawSets();
 
 	ThrowIfFailed(m_CommandList->Close());
 	ID3D12CommandList* cmdsLists[] = { m_CommandList.Get() };
@@ -672,8 +673,8 @@ void GraphicDX12::Draw()
 
 void GraphicDX12::BuildDrawSets()
 {
-	m_NormalMeshDrawSet = std::make_unique<DX12DrawSetNormalMesh>(1);
-	m_SkinnedMeshDrawSet = std::make_unique<DX12DrawSetSkinnedMesh>(1);
+	m_NormalMeshDrawSet = std::make_unique<DX12DrawSetNormalMesh>(1, *m_NormalMeshSet);
+	m_SkinnedMeshDrawSet = std::make_unique<DX12DrawSetSkinnedMesh>(1, *m_SkinnedMeshSet);
 	m_PointBaseDrawSet = std::make_unique<DX12DrawSetPointBase>(1);
 	m_UIDrawSet = std::make_unique<DX12DrawSetUI>(1);
 

@@ -13,6 +13,7 @@
 #include "XFileParser.h"
 #include "DX12/DX12FontMG.h"
 #include "DX12/DX12IndexManagementBuffer.h"
+#include "DX12/DX12MeshSet.h"
 #include "DX12/DX12UploadBuffer.h"
 #include "DX12/DX12RenderClasses.h"
 #include "DX12/PSOController.h"
@@ -29,23 +30,23 @@ class DX12DrawSetUI;
 
 using Microsoft::WRL::ComPtr;
 
-struct DynamicBuffer
-{
-	DynamicBuffer(ID3D12Device* device, unsigned int _renderID, unsigned int _numVertex, unsigned int _numIndex)
-	{
-		dynamicIndexBuffer = std::make_unique<DX12UploadBuffer<UINT>>(device, _numIndex, false);
-		dynamicVertexBuffer = std::make_unique<DX12UploadBuffer<Vertex>>(device, _numVertex, false);
-		dynamicBufferInfo = std::make_unique<DynamicBufferInfo>(_renderID, _numVertex, _numIndex,
-			dynamicVertexBuffer->GetMappedData(), dynamicIndexBuffer->GetMappedData());
-	}
-
-	std::unique_ptr<DynamicBufferInfo>			dynamicBufferInfo;
-	std::unique_ptr<DX12UploadBuffer<Vertex>>		dynamicVertexBuffer;
-	std::unique_ptr<DX12UploadBuffer<unsigned int>>	dynamicIndexBuffer;
-};
-
 class GraphicDX12 final : public IGraphicDevice
 {
+	struct DynamicBuffer
+	{
+		DynamicBuffer(ID3D12Device* device, unsigned int _renderID, unsigned int _numVertex, unsigned int _numIndex)
+		{
+			dynamicIndexBuffer = std::make_unique<DX12UploadBuffer<UINT>>(device, _numIndex, false);
+			dynamicVertexBuffer = std::make_unique<DX12UploadBuffer<Vertex>>(device, _numVertex, false);
+			dynamicBufferInfo = std::make_unique<DynamicBufferInfo>(_renderID, _numVertex, _numIndex,
+				dynamicVertexBuffer->GetMappedData(), dynamicIndexBuffer->GetMappedData());
+		}
+
+		std::unique_ptr<DynamicBufferInfo>			dynamicBufferInfo;
+		std::unique_ptr<DX12UploadBuffer<Vertex>>		dynamicVertexBuffer;
+		std::unique_ptr<DX12UploadBuffer<unsigned int>>	dynamicIndexBuffer;
+	};
+
 public:
 	GraphicDX12();
 	virtual ~GraphicDX12() override;
@@ -130,6 +131,9 @@ private:
 	std::unique_ptr<DX12TextureBuffer>						m_TextureBuffer;
 	std::unique_ptr<DX12TextureBuffer>						m_UITextureBuffer;
 	std::unique_ptr<DX12IndexManagementBuffer<Material>>	m_Materials;
+
+	std::unique_ptr<DX12MeshSet<Vertex>>					m_NormalMeshSet;
+	std::unique_ptr<DX12MeshSet<SkinnedVertex>>				m_SkinnedMeshSet;
 
 	std::unique_ptr<DX12DrawSetNormalMesh>					m_NormalMeshDrawSet;
 	std::unique_ptr<DX12DrawSetSkinnedMesh>					m_SkinnedMeshDrawSet;

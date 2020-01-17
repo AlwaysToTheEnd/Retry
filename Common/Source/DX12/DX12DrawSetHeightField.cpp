@@ -10,4 +10,5 @@ void DX12DrawSetHeightField::Draw(ID3D12GraphicsCommandList* cmd, const PSOAttri
 
 void DX12DrawSetHeightField::ReserveRender(const RenderInfo& info)
 {
+
 }

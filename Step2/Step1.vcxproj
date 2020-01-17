@@ -82,7 +82,9 @@
     <ClInclude Include="..\Common\Source\DX12\DX12DrawSetPointBase.h" />
     <ClInclude Include="..\Common\Source\DX12\DX12DrawSetSkinnedMesh.h" />
     <ClInclude Include="..\Common\Source\DX12\DX12DrawSetUI.h" />
+    <ClInclude Include="..\Common\Source\DX12\DX12HeightFieldMesh.h" />
     <ClInclude Include="..\Common\Source\DX12\DX12IndexManagementBuffer.h" />
+    <ClInclude Include="..\Common\Source\DX12\DX12MeshSet.h" />
     <ClInclude Include="..\Common\Source\DX12\DX12TextureBuffer.h" />
     <ClInclude Include="..\Common\Source\DX12\DX12DrawSetNormalMesh.h" />
     <ClInclude Include="..\Common\Source\DX12\DX12DrawSet.h" />

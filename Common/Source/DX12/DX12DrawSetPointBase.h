@@ -36,7 +36,6 @@ public:
 		DX12IndexManagementBuffer<Material>* material, ID3D12Resource* mainPass) override;
 	virtual void	Draw(ID3D12GraphicsCommandList* cmd, const PSOAttributeNames* custom = nullptr) override;
 	virtual void	ReserveRender(const RenderInfo& info) override;
-	virtual	void	UploadBuffersClear() override {}
 
 private:
 
