@@ -9,30 +9,14 @@ cbuffer uiPass : register(b1)
     int     gPanelComponentsInterval;
 };
 
-struct UIInfomation
-{
-    float4  color         : UICOLOR;
-    float3  pos           : UIPOS;
-    float2  size          : UISIZE;
-    int     uiType        : UITYPE;
-    int     textureIndex  : UITEXTURE;
-};
-
-struct VertexOut
-{
-    float4              posH     : SV_POSITION;
-    float4              color    : COLOR0;
-    nointerpolation int texIndex : TEXINDEX;
-};
-
-UIInfomation VS(UIInfomation vin)
+UIVertexIn VS(UIVertexIn vin)
 {
     return vin;
 }
 
-void CreatePanel(UIInfomation vin, inout TriangleStream<VertexOut> output)
+void CreatePanel(UIVertexIn vin, inout TriangleStream<POINTVertexOut> output)
 {
-    VertexOut vertices[12];
+    POINTVertexOut vertices[12];
 
     const float edgeSize = 5.0f;
     
@@ -107,9 +91,9 @@ void CreatePanel(UIInfomation vin, inout TriangleStream<VertexOut> output)
     output.Append(vertices[11]);
 }
 
-void CreateUI(UIInfomation vin, inout TriangleStream<VertexOut> output)
+void CreateUI(UIVertexIn vin, inout TriangleStream<POINTVertexOut> output)
 {
-    VertexOut vertices[4];
+    POINTVertexOut vertices[4];
 
 	// 1  3
 	// |\ |
@@ -151,7 +135,7 @@ void CreateUI(UIInfomation vin, inout TriangleStream<VertexOut> output)
 }
 
 [maxvertexcount(12)]
-void GS(point UIInfomation input[1], inout TriangleStream<VertexOut> output)
+void GS(point UIVertexIn input[1], inout TriangleStream<POINTVertexOut> output)
 {
     if(input[0].uiType==0)
     {
@@ -163,7 +147,7 @@ void GS(point UIInfomation input[1], inout TriangleStream<VertexOut> output)
     }
 }
 
-float4 PS(VertexOut pin) : SV_Target
+float4 PS(POINTVertexOut pin) : SV_Target
 {
     float4 resultColor = float4(0, 0, 0, 0);
 

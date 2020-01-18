@@ -1,30 +1,15 @@
 #include "DX12DrawSetNormalMesh.h"
 #include "DX12TextureBuffer.h"
 
-void DX12DrawSetNormalMesh::Init(ID3D12Device* device, PSOController* psoCon,
-	DXGI_FORMAT rtvFormat, DXGI_FORMAT dsvFormat,
-	DX12TextureBuffer* textureBuffer,
-	DX12IndexManagementBuffer<Material>* material, ID3D12Resource* mainPass)
+void DX12DrawSetNormalMesh::Init(ID3D12Device* device)
 {
 	for (int i = 0; i < m_NumFrame; i++)
 	{
 		m_MeshObjectCB.push_back(std::make_unique<DX12UploadBuffer<ObjectConstants>>(device, 100, true));
 	}
 
-	m_PSOA.rtvFormats.push_back(rtvFormat);
-	m_PSOA.dsvFormat = dsvFormat;
-	m_TextureBuffer = textureBuffer;
-	m_MaterialBuffer = material;
-	m_MainPassCB = mainPass;
-	m_PSOCon = psoCon;
-
-	CD3DX12_DESCRIPTOR_RANGE texTable;
-	texTable.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, m_TextureBuffer->GetTexturesNum(), 0);
-
 	CD3DX12_ROOT_PARAMETER baseRootParam[ROOT_COUNT];
-	baseRootParam[PASS_CB].InitAsConstantBufferView(0);
-	baseRootParam[TEXTURE_TABLE].InitAsDescriptorTable(1, &texTable, D3D12_SHADER_VISIBILITY_PIXEL);
-	baseRootParam[MATERIAL_SRV].InitAsShaderResourceView(0, 1);
+	BaseRootParamSetting(baseRootParam);
 	baseRootParam[OBJECT_CB].InitAsConstantBufferView(1);
 
 	CD3DX12_ROOT_SIGNATURE_DESC rootDesc;
@@ -56,13 +41,7 @@ void DX12DrawSetNormalMesh::Init(ID3D12Device* device, PSOController* psoCon,
 void DX12DrawSetNormalMesh::Draw(ID3D12GraphicsCommandList* cmd, const PSOAttributeNames* custom)
 {
 	SetPSO(cmd, custom);
-
-	ID3D12DescriptorHeap* descriptorHeaps[] = { m_TextureBuffer->GetHeap() };
-	cmd->SetDescriptorHeaps(1, descriptorHeaps);
-
-	cmd->SetGraphicsRootShaderResourceView(MATERIAL_SRV, m_MaterialBuffer->GetBufferResource()->GetGPUVirtualAddress());
-	cmd->SetGraphicsRootConstantBufferView(PASS_CB, GetCurrMainPassAddress());
-	cmd->SetGraphicsRootDescriptorTable(TEXTURE_TABLE, m_TextureBuffer->GetHeap()->GetGPUDescriptorHandleForHeapStart());
+	SetBaseRoots(cmd);
 
 	auto ObjectCBVritualAD = m_MeshObjectCB[m_CurrFrame]->Resource()->GetGPUVirtualAddress();
 	const UINT ObjectStrideSize = m_MeshObjectCB[m_CurrFrame]->GetElementByteSize();

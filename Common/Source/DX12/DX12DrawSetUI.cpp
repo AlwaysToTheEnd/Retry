@@ -1,7 +1,7 @@
 #include "DX12DrawSetUI.h"
 #include "DX12TextureBuffer.h"
 
-void DX12DrawSetUI::Init(ID3D12Device* device, PSOController* psoCon, DXGI_FORMAT rtvFormat, DXGI_FORMAT dsvFormat, DX12TextureBuffer* textureBuffer, DX12IndexManagementBuffer<Material>* material, ID3D12Resource* mainPass)
+void DX12DrawSetUI::Init(ID3D12Device* device)
 {
 	m_UIPass = std::make_unique<DX12UploadBuffer<CGH::GlobalOptions::UIOption>>(device, m_NumFrame, true);
 	m_VBs.resize(m_NumFrame);
@@ -10,20 +10,9 @@ void DX12DrawSetUI::Init(ID3D12Device* device, PSOController* psoCon, DXGI_FORMA
 		m_VBs[i] = std::make_unique<DX12UploadBuffer<UIInfomation>>(device, 100, false);
 	}
 
-	m_PSOA.rtvFormats.push_back(rtvFormat);
-	m_PSOA.dsvFormat = dsvFormat;
-	m_TextureBuffer = textureBuffer;
-	m_MaterialBuffer = material;
-	m_MainPassCB = mainPass;
-	m_PSOCon = psoCon;
-
-	CD3DX12_DESCRIPTOR_RANGE texTable;
-	texTable.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, m_TextureBuffer->GetTexturesNum(), 0);
-
 	CD3DX12_ROOT_PARAMETER uiRenderRootparam[UI_ROOT_COUNT];
-	uiRenderRootparam[UI_PASS_CB].InitAsConstantBufferView(0);
+	BaseRootParamSetting(uiRenderRootparam);
 	uiRenderRootparam[UI_UIPASS_CB].InitAsConstantBufferView(1);
-	uiRenderRootparam[UI_TEXTURE_TABLE].InitAsDescriptorTable(1, &texTable, D3D12_SHADER_VISIBILITY_PIXEL);
 
 	CD3DX12_ROOT_SIGNATURE_DESC uiRenderRootDesc;
 	uiRenderRootDesc.Init(UI_ROOT_COUNT, uiRenderRootparam, _countof(m_StaticSamplers),
@@ -61,14 +50,11 @@ void DX12DrawSetUI::Draw(ID3D12GraphicsCommandList* cmd, const PSOAttributeNames
 	{
 		SetPSO(cmd, custom);
 
-		ID3D12DescriptorHeap* descriptorHeaps[] = { m_TextureBuffer->GetHeap() };
-		cmd->SetDescriptorHeaps(1, descriptorHeaps);
+		SetBaseRoots(cmd);;
 
 		static unsigned int uiPassStride = (sizeof(CGH::GlobalOptions::UIOption) + 255) & ~255;
 
-		cmd->SetGraphicsRootConstantBufferView(UI_PASS_CB, GetCurrMainPassAddress());
 		cmd->SetGraphicsRootConstantBufferView(UI_UIPASS_CB, m_UIPass->Resource()->GetGPUVirtualAddress() + (m_CurrFrame * uiPassStride));
-		cmd->SetGraphicsRootDescriptorTable(UI_TEXTURE_TABLE, m_TextureBuffer->GetHeap()->GetGPUDescriptorHandleForHeapStart());
 
 		D3D12_VERTEX_BUFFER_VIEW vertexBufferView = {};
 

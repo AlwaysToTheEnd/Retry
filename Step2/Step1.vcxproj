@@ -82,7 +82,6 @@
     <ClInclude Include="..\Common\Source\DX12\DX12DrawSetPointBase.h" />
     <ClInclude Include="..\Common\Source\DX12\DX12DrawSetSkinnedMesh.h" />
     <ClInclude Include="..\Common\Source\DX12\DX12DrawSetUI.h" />
-    <ClInclude Include="..\Common\Source\DX12\DX12HeightFieldMesh.h" />
     <ClInclude Include="..\Common\Source\DX12\DX12IndexManagementBuffer.h" />
     <ClInclude Include="..\Common\Source\DX12\DX12MeshSet.h" />
     <ClInclude Include="..\Common\Source\DX12\DX12TextureBuffer.h" />
@@ -156,6 +155,19 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Geometry</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+      <FileType>Document</FileType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Common\MainShaders\HeightFieldShader.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Geometry</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Geometry</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Geometry</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Geometry</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
       <FileType>Document</FileType>
     </None>
   </ItemGroup>

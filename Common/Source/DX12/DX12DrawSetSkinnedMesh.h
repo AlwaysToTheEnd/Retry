@@ -8,27 +8,26 @@ class DX12DrawSetSkinnedMesh : public DX12DrawSet
 {
 	enum
 	{
-		PASS_CB,
-		TEXTURE_TABLE,
-		MATERIAL_SRV,
-		OBJECT_CB,
+		OBJECT_CB =BASE_ROOT_PARAM_COUNT,
 		ANIBONE_CB,
 		ROOT_COUNT
 	};
 
 public:
-	DX12DrawSetSkinnedMesh(unsigned int numFrameResource, DX12MeshSet<SkinnedVertex>& meshSet)
-		: DX12DrawSet(numFrameResource)
+	DX12DrawSetSkinnedMesh(unsigned int numFrameResource,
+		PSOController* psoCon,
+		DX12TextureBuffer* textureBuffer,
+		DX12IndexManagementBuffer<Material>* material,
+		ID3D12Resource* mainPass, const std::vector<DXGI_FORMAT>& rtvFormats,
+		DXGI_FORMAT dsvFormat, DX12MeshSet<SkinnedVertex>& meshSet)
+		: DX12DrawSet(numFrameResource, psoCon, textureBuffer, material, mainPass, rtvFormats, dsvFormat)
 		, m_MeshSet(meshSet)
 	{
 
 	}
 	virtual ~DX12DrawSetSkinnedMesh() = default;
 
-	virtual void	Init(ID3D12Device * device, PSOController * psoCon,
-								DXGI_FORMAT rtvFormat, DXGI_FORMAT dsvFormat,
-								DX12TextureBuffer * textureBuffer,
-								DX12IndexManagementBuffer<Material>* material, ID3D12Resource * mainPass) override;
+	virtual void	Init(ID3D12Device * device) override;
 	virtual void	Draw(ID3D12GraphicsCommandList * cmd, const PSOAttributeNames* custom = nullptr) override;
 	virtual void	ReserveRender(const RenderInfo& info) override;
 

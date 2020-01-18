@@ -198,12 +198,6 @@ bool DOAnimator::SelectAnimation(const std::string& name)
 	return false;
 }
 
-void DORenderer::SetDynamicMesh(const DynamicBufferInfo* dvi)
-{
-	m_RenderInfo.type = RENDER_DYNAMIC;
-	m_RenderInfo.meshOrTextureName = dvi->GetBufferID();
-}
-
 void DORenderer::Update(float delta)
 {
 	auto comTransform = m_Parent->GetComponent<DOTransform>();
@@ -214,13 +208,13 @@ void DORenderer::Update(float delta)
 	{
 	case RENDER_SKIN:
 	case RENDER_MESH:
+	case RENDER_HEIGHT_FIELD:
 	{
 		m_RenderInfo.world = comTransform->GetRTMatrix().getTranspose();
 		m_RenderInfo.scale = comTransform->GetScale();
 		RenderMesh();
 	}
 	break;
-	case RENDER_DYNAMIC:
 	case RENDER_BOX:
 	case RENDER_PLANE:
 	case RENDER_2DPLANE:

@@ -23,7 +23,6 @@ public:
 		, m_filePath(filePath)
 		, m_PxStatic(nullptr)
 		, m_Shape(nullptr)
-		, m_DBInfo(nullptr)
 	{
 		 
 	}
@@ -52,7 +51,6 @@ private:
 
 private:
 	static std::function<const physx::PxVec3 & (void)>		m_GetPickingPosFunc;
-	static std::function<void(const DynamicBufferInfo*)>	m_DynamicBufferReleaseFunc;
 
 	physx::PxVec3											m_Scale;
 	physx::PxVec2											m_MapOriginSize;
@@ -63,5 +61,4 @@ private:
 	std::unique_ptr<PhysXFunctionalObject>					m_Funcs;
 	physx::PxRigidStatic*									m_PxStatic;
 	physx::PxShape*											m_Shape;
-	DynamicBufferInfo*										m_DBInfo;
 };

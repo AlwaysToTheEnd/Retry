@@ -100,7 +100,6 @@ public:
 	virtual ~DORenderer() = default;
 
 	void				SetRenderInfo(const RenderInfo& info) { m_RenderInfo = info; }
-	void				SetDynamicMesh(const DynamicBufferInfo* dvi);
 	
 	RenderInfo&			GetRenderInfo() { return m_RenderInfo; }
 

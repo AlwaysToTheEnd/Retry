@@ -3,6 +3,7 @@
 #include "DX12/DX12TextureBuffer.h"
 #include "DX12/DX12DrawSetNormalMesh.h"
 #include "DX12/DX12DrawSetSkinnedMesh.h"
+#include "DX12/DX12DrawSetHeightField.h"
 #include "DX12/DX12DrawSetPointBase.h"
 #include "DX12/DX12DrawSetUI.h"
 #include "GraphicDO.h"
@@ -56,6 +57,7 @@ bool GraphicDX12::Init(HWND hWnd, UINT windowWidth, UINT windowHeight)
 	m_PSOCon->InitBase_Raster_Blend_Depth();
 	m_NormalMeshSet = make_unique<DX12MeshSet<Vertex>>();
 	m_SkinnedMeshSet = make_unique<DX12MeshSet<SkinnedVertex>>();
+	m_HeightFieldMeshSet = make_unique<DX12MeshSet<float>>();
 	m_PassCB = make_unique<DX12UploadBuffer<PassConstants>>(m_D3dDevice.Get(), m_NumFrameResource, true);
 	m_CmdListAllocs.resize(m_NumFrameResource);
 
@@ -168,6 +170,9 @@ const std::unordered_map<std::string, MeshObject>* GraphicDX12::GetMeshDataMap(C
 	case CGH::SKINNED_MESH:
 		return &m_SkinnedMeshSet->MS;
 		break;
+	case CGH::HEIGHTFIELD_MESH:
+		return &m_HeightFieldMeshSet->MS;
+		break;
 	case CGH::MESH_TYPE_COUNT:
 	default:
 		return nullptr;
@@ -176,8 +181,7 @@ const std::unordered_map<std::string, MeshObject>* GraphicDX12::GetMeshDataMap(C
 	}
 }
 
-bool GraphicDX12::CreateMesh(const std::string& meshName, MeshObject& meshinfo,
-	const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices)
+bool GraphicDX12::CreateMesh(const std::string& meshName, MeshObject& meshinfo, CGH::MESH_TYPE type, unsigned int numVertices, const void* vertices, const std::vector<unsigned int>& indices)
 {
 	bool result = false;
 	ComPtr<ID3D12CommandAllocator>		allocator;
@@ -188,7 +192,22 @@ bool GraphicDX12::CreateMesh(const std::string& meshName, MeshObject& meshinfo,
 	ThrowIfFailed(m_D3dDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT,
 		allocator.Get(), nullptr, IID_PPV_ARGS(commandList.GetAddressOf())));
 
-	result = m_NormalMeshSet->AddMesh(m_D3dDevice.Get(), commandList.Get(), meshName, meshinfo, vertices, indices);
+	switch (type)
+	{
+	case CGH::NORMAL_MESH:
+		result = m_NormalMeshSet->AddMesh(m_D3dDevice.Get(), commandList.Get(), meshName, meshinfo, numVertices, reinterpret_cast<const Vertex*>(vertices), indices);
+		break;
+	case CGH::SKINNED_MESH:
+		result = m_SkinnedMeshSet->AddMesh(m_D3dDevice.Get(), commandList.Get(), meshName, meshinfo, numVertices, reinterpret_cast<const SkinnedVertex*>(vertices), indices);
+		break;
+	case CGH::HEIGHTFIELD_MESH:
+		result = m_HeightFieldMeshSet->AddMesh(m_D3dDevice.Get(), commandList.Get(), meshName, meshinfo, numVertices, reinterpret_cast<const float*>(vertices), indices);
+		break;
+	case CGH::MESH_TYPE_COUNT:
+	default:
+		assert(false);
+		break;
+	}
 
 	commandList->Close();
 
@@ -198,7 +217,18 @@ bool GraphicDX12::CreateMesh(const std::string& meshName, MeshObject& meshinfo,
 	FlushCommandQueue();
 	ThrowIfFailed(allocator->Reset());
 
-	m_NormalMeshSet->ClearUploadBuffer();
+	switch (type)
+	{
+	case CGH::NORMAL_MESH:
+		m_NormalMeshSet->ClearUploadBuffer();
+		break;
+	case CGH::SKINNED_MESH:
+		m_SkinnedMeshSet->ClearUploadBuffer();
+		break;
+	case CGH::HEIGHTFIELD_MESH:
+		m_HeightFieldMeshSet->ClearUploadBuffer();
+		break;
+	}
 
 	return result;
 }
@@ -280,78 +310,6 @@ bool GraphicDX12::EditMaterial(const std::string& materialName, const Material& 
 	m_Materials->ClearUploadBuffer();
 
 	return result;
-}
-
-bool GraphicDX12::CreateDynamicVIBuffer(unsigned int vertexNum, unsigned int indexNum, DynamicBufferInfo** out)
-{
-	DynamicBuffer* addedDyanamic = nullptr;
-
-	if (*out)
-	{
-		for (auto& it : m_DynamicBuffers)
-		{
-			if (it->dynamicBufferInfo.get() == *out)
-			{
-				return false;
-			}
-		}
-	}
-
-	for (size_t i = 0; i < m_DynamicBuffers.size(); i++)
-	{
-		if (m_DynamicBuffers[i] == nullptr)
-		{
-			auto temp= make_unique<DynamicBuffer>(m_D3dDevice.Get(), i, vertexNum, indexNum);
-
-			m_DynamicBuffers[i] = std::move(temp);
-
-			addedDyanamic = m_DynamicBuffers[i].get();
-			break;
-		}
-	}
-
-	if (addedDyanamic == nullptr)
-	{
-		auto newDynamic = new DynamicBuffer(m_D3dDevice.Get(), m_DynamicBuffers.size(), vertexNum, indexNum);
-		m_DynamicBuffers.push_back(std::unique_ptr<DynamicBuffer>(newDynamic));
-		addedDyanamic = m_DynamicBuffers.back().get();
-	}
-
-	if (addedDyanamic)
-	{
-		*out = addedDyanamic->dynamicBufferInfo.get();
-
-		return true;
-	}
-	else
-	{
-		return false;
-	}
-}
-
-void GraphicDX12::EditDynamicVIBuffer(const DynamicBufferInfo* dvi, DYNAMIC_BUFFER_EDIT_MOD mode, const std::vector<float>& inputDatas)
-{
-
-}
-
-void GraphicDX12::SaveAndMergeDynamicVIBufferToDefaultVertexBuffer(const std::string& meshName, const DynamicBufferInfo* dvi)
-{
-
-}
-
-void GraphicDX12::ReleaseDynamicVIBuffer(const DynamicBufferInfo* dvi)
-{
-	if (dvi)
-	{
-		for (size_t i = 0; i < m_DynamicBuffers.size(); i++)
-		{
-			if (m_DynamicBuffers[i].get()->dynamicBufferInfo.get() == dvi)
-			{
-				m_DynamicBuffers[i] = nullptr;
-				break;
-			}
-		}
-	}
 }
 
 int GraphicDX12::GetTextureIndex(const std::string& textureName)
@@ -647,6 +605,7 @@ void GraphicDX12::Draw()
 	m_NormalMeshDrawSet->Draw(m_CommandList.Get());
 	m_SkinnedMeshDrawSet->Draw(m_CommandList.Get());
 	m_PointBaseDrawSet->Draw(m_CommandList.Get());
+	m_HeightFieldMeshDrawSet->Draw(m_CommandList.Get());
 	m_UIDrawSet->Draw(m_CommandList.Get());
 
 	m_FontManager->RenderCommandWrite(m_CommandList.Get(), m_ReservedFonts);
@@ -670,25 +629,38 @@ void GraphicDX12::Draw()
 	m_UIDrawSet->UpdateFrameCount();
 }
 
-
 void GraphicDX12::BuildDrawSets()
 {
-	m_NormalMeshDrawSet = std::make_unique<DX12DrawSetNormalMesh>(1, *m_NormalMeshSet);
-	m_SkinnedMeshDrawSet = std::make_unique<DX12DrawSetSkinnedMesh>(1, *m_SkinnedMeshSet);
-	m_PointBaseDrawSet = std::make_unique<DX12DrawSetPointBase>(1);
-	m_UIDrawSet = std::make_unique<DX12DrawSetUI>(1);
+	//DX12DrawSetHeightField(unsigned int numFrameResource,
+	//	PSOController * psoCon,
+	//	DX12TextureBuffer * textureBuffer,
+	//	DX12IndexManagementBuffer<Material> * material,
+	//	ID3D12Resource * mainPass, const std::vector<DXGI_FORMAT> & rtvFormats,
+	//	DXGI_FORMAT dsvFormat, DX12MeshSet<float> & meshSet)
+	//	: DX12DrawSet(numFrameResource, psoCon, textureBuffer,
 
-	m_NormalMeshDrawSet->Init(m_D3dDevice.Get(), m_PSOCon.get(), m_BackBufferFormat, m_DepthStencilFormat,
-		m_TextureBuffer.get(), m_Materials.get(), m_PassCB->Resource());
+	std::vector<DXGI_FORMAT> rtv = { m_BackBufferFormat };
 
-	m_SkinnedMeshDrawSet->Init(m_D3dDevice.Get(), m_PSOCon.get(), m_BackBufferFormat, m_DepthStencilFormat,
-		m_TextureBuffer.get(), m_Materials.get(), m_PassCB->Resource());
+	m_NormalMeshDrawSet = std::make_unique<DX12DrawSetNormalMesh>(1, m_PSOCon.get(), 
+		m_TextureBuffer.get(), m_Materials.get(), m_PassCB->Resource(), rtv, m_DepthStencilFormat, *m_NormalMeshSet);
 
-	m_PointBaseDrawSet->Init(m_D3dDevice.Get(), m_PSOCon.get(), m_BackBufferFormat, m_DepthStencilFormat,
-		m_TextureBuffer.get(), m_Materials.get(), m_PassCB->Resource());
+	m_SkinnedMeshDrawSet = std::make_unique<DX12DrawSetSkinnedMesh>(1, m_PSOCon.get(),
+		m_TextureBuffer.get(), m_Materials.get(), m_PassCB->Resource(), rtv, m_DepthStencilFormat, *m_SkinnedMeshSet);
 
-	m_UIDrawSet->Init(m_D3dDevice.Get(), m_PSOCon.get(), m_BackBufferFormat, m_DepthStencilFormat,
-		m_TextureBuffer.get(), m_Materials.get(), m_PassCB->Resource());
+	m_HeightFieldMeshDrawSet = std::make_unique<DX12DrawSetHeightField>(1, m_PSOCon.get(),
+		m_TextureBuffer.get(), m_Materials.get(), m_PassCB->Resource(), rtv, m_DepthStencilFormat, *m_HeightFieldMeshSet);
+
+	m_PointBaseDrawSet = std::make_unique<DX12DrawSetPointBase>(1, m_PSOCon.get(),
+		m_TextureBuffer.get(), m_Materials.get(), m_PassCB->Resource(), rtv, m_DepthStencilFormat);
+
+	m_UIDrawSet = std::make_unique<DX12DrawSetUI>(1, m_PSOCon.get(),
+		m_TextureBuffer.get(), m_Materials.get(), m_PassCB->Resource(), rtv, m_DepthStencilFormat);
+
+	m_NormalMeshDrawSet->Init(m_D3dDevice.Get());
+	m_SkinnedMeshDrawSet->Init(m_D3dDevice.Get());
+	m_HeightFieldMeshDrawSet->Init(m_D3dDevice.Get());
+	m_PointBaseDrawSet->Init(m_D3dDevice.Get());
+	m_UIDrawSet->Init(m_D3dDevice.Get());
 }
 
 void GraphicDX12::BuildDepthStencilAndBlendsAndRasterizer()
@@ -767,22 +739,9 @@ void GraphicDX12::UpdateObjectCB()
 			m_SkinnedMeshDrawSet->ReserveRender(it);
 		}
 		break;
-		case RENDER_DYNAMIC:
+		case RENDER_HEIGHT_FIELD:
 		{
-			ObjectConstants object;
-			object.world = it.world;
-			object.scale = it.scale;
-			object.PrevAniBone = atoi(it.meshOrTextureName.c_str());
-
-			const MeshObject& mesh = m_DynamicBuffers[object.PrevAniBone]->dynamicBufferInfo->meshObject;
-			for (auto& it2 : mesh.subs)
-			{
-				/*object.diffuseMapIndex = m_TextureBuffer->GetTextureIndex(it2.second.diffuseMap);
-				object.normalMapIndex = m_TextureBuffer->GetTextureIndex(it2.second.normalMap);
-				object.materialIndex = m_Materials->GetIndex(it2.second.material);
-				m_RenderObjects[DX12_RENDER_TYPE_DYNAMIC_MESH].push_back(object);
-				m_RenderObjectsSubmesh[DX12_RENDER_TYPE_DYNAMIC_MESH].push_back(&it2.second);*/
-			}
+			m_HeightFieldMeshDrawSet->ReserveRender(it);
 		}
 		break;
 		case RENDER_BOX:
@@ -803,58 +762,3 @@ void GraphicDX12::UpdateObjectCB()
 		}
 	}
 }
-
-
-//void GraphicDX12::DrawDynamicMehs()
-//{
-//	m_PSOCon->SetPSOToCommnadList(m_CommandList.Get(),
-//		{ m_BackBufferFormat }, m_DepthStencilFormat, D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE,
-//		"normal", "normal", "0", "0", "0",
-//		"normal", "normal");
-//	enum
-//	{
-//		PASS_CB,
-//		TEXTURE_TABLE,
-//		MATERIAL_SRV,
-//		OBJECT_CB,
-//		ROOT_COUNT
-//	};
-//
-//	ID3D12DescriptorHeap* descriptorHeaps[] = { m_TextureBuffer->GetHeap() };
-//	m_CommandList->SetDescriptorHeaps(1, descriptorHeaps);
-//
-//	auto matBuffer = m_Materials->GetBufferResource();
-//	m_CommandList->SetGraphicsRootConstantBufferView(PASS_CB, m_FrameResource->passCB->Resource()->GetGPUVirtualAddress());
-//	m_CommandList->SetGraphicsRootShaderResourceView(MATERIAL_SRV, matBuffer->GetGPUVirtualAddress());
-//	m_CommandList->SetGraphicsRootDescriptorTable(TEXTURE_TABLE, m_TextureBuffer->GetHeap()->GetGPUDescriptorHandleForHeapStart());
-//
-//	m_CommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY::D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-//
-//	auto ObjectCBVritualAD = m_FrameResource->meshObjectCB[DX12_RENDER_TYPE_DYNAMIC_MESH]->Resource()->GetGPUVirtualAddress();
-//	const UINT ObjectStrideSize = m_FrameResource->meshObjectCB[DX12_RENDER_TYPE_DYNAMIC_MESH]->GetElementByteSize();
-//
-//	auto& currRenderObjects = m_RenderObjects[DX12_RENDER_TYPE_DYNAMIC_MESH];
-//	auto& currRenderObjectSubmesh = m_RenderObjectsSubmesh[DX12_RENDER_TYPE_DYNAMIC_MESH];
-//
-//	for (size_t i = 0; i < currRenderObjects.size(); i++)
-//	{
-//		D3D12_VERTEX_BUFFER_VIEW vertexBufferView = {};
-//		D3D12_INDEX_BUFFER_VIEW indexBufferView = {};
-//		indexBufferView.Format = DXGI_FORMAT_R32_UINT;
-//
-//		vertexBufferView.BufferLocation = m_DynamicBuffers[currRenderObjects[i].PrevAniBone]->dynamicVertexBuffer->Resource()->GetGPUVirtualAddress();
-//		vertexBufferView.SizeInBytes = m_DynamicBuffers[currRenderObjects[i].PrevAniBone]->dynamicVertexBuffer->GetBufferSize();
-//		vertexBufferView.StrideInBytes = sizeof(Vertex);
-//
-//		indexBufferView.BufferLocation = m_DynamicBuffers[currRenderObjects[i].PrevAniBone]->dynamicIndexBuffer->Resource()->GetGPUVirtualAddress();
-//		indexBufferView.SizeInBytes = m_DynamicBuffers[currRenderObjects[i].PrevAniBone]->dynamicIndexBuffer->GetBufferSize();
-//
-//		m_CommandList->IASetVertexBuffers(0, 1, &vertexBufferView);
-//		m_CommandList->IASetIndexBuffer(&indexBufferView);
-//
-//		m_CommandList->SetGraphicsRootConstantBufferView(OBJECT_CB, ObjectCBVritualAD);
-//		m_CommandList->DrawIndexedInstanced(currRenderObjectSubmesh[i]->numIndex, 1,
-//			currRenderObjectSubmesh[i]->indexOffset, currRenderObjectSubmesh[i]->vertexOffset, 0);
-//		ObjectCBVritualAD += ObjectStrideSize;
-//	}
-//}

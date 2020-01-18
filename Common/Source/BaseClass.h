@@ -54,7 +54,7 @@ namespace CGH
 		{
 			physx::PxVec3	dirLight = { 0,-1,0 };
 			physx::PxVec3	dirLightPower = { 1,1,1 };
-			unsigned int	samplerIndex = 0;
+			unsigned int	samplerIndex = 2;
 			bool			shadowMap = true;
 			bool			dirLightOn = true;
 			bool			cullMode = true;

@@ -7,7 +7,6 @@
 #include "d3dUtil.h"
 
 std::function<const physx::PxVec3 & (void)> HeightMap::m_GetPickingPosFunc = nullptr;
-std::function<void(const DynamicBufferInfo*)> HeightMap::m_DynamicBufferReleaseFunc = nullptr;
 
 using namespace physx;
 
@@ -17,12 +16,6 @@ void HeightMap::Delete()
 	{
 		m_PxStatic->getScene()->removeActor(*m_PxStatic);
 		m_PxStatic = nullptr;
-	}
-
-	if (m_DBInfo)
-	{
-		m_DynamicBufferReleaseFunc(m_DBInfo);
-		m_DBInfo = nullptr;
 	}
 
 	DeviceObject::Delete();
@@ -47,7 +40,7 @@ void HeightMap::SetScale(const physx::PxVec3 scale)
 	}
 }
 
-void HeightMap::AddMapPickingWrok(std::function<void(const physx::PxVec3& pickingPos)> func)
+void HeightMap::AddMapPickingWrok(std::function<void(const physx::PxVec3 & pickingPos)> func)
 {
 	m_MapPickingWorks.push_back(func);
 }
@@ -67,7 +60,6 @@ void HeightMap::Init(PhysX4_1* pxd, IGraphicDevice* gd)
 	if (m_GetPickingPosFunc == nullptr)
 	{
 		m_GetPickingPosFunc = std::bind(&PhysX4_1::GetPickingPos, pxd);
-		m_DynamicBufferReleaseFunc = std::bind(&IGraphicDevice::ReleaseDynamicVIBuffer, gd, std::placeholders::_1);
 	}
 
 	int fileSizeHight = 0;
@@ -83,7 +75,7 @@ void HeightMap::LoadRAWFile(const std::wstring& filePath, int& fileHeight, int& 
 {
 	_WIN32_FILE_ATTRIBUTE_DATA fileInfo = {};
 	GetFileAttributesEx(m_filePath.c_str(), GET_FILEEX_INFO_LEVELS::GetFileExInfoStandard, reinterpret_cast<LPVOID>(&fileInfo));
-	
+
 	if (fileInfo.nFileSizeHigh == 0)
 	{
 		fileWidth = sqrt(long double(fileInfo.nFileSizeLow));
@@ -118,7 +110,7 @@ void HeightMap::LoadRAWFile(const std::wstring& filePath, int& fileHeight, int& 
 	{
 		fclose(fp);
 	}
-	
+
 	datas.pop_back();
 	readNum--;
 	assert(numData == readNum);
@@ -132,7 +124,7 @@ void HeightMap::CreateRigidStatic(PhysX4_1* pxd, int fileHeight, int fileWidth, 
 
 	std::vector<PxHeightFieldSample> samples(samplesSize);
 	heights.resize(samplesSize);
-	
+
 	for (int i = 0; i < samplesSize; i++)
 	{
 		samples[i].height = datas[i];
@@ -147,14 +139,14 @@ void HeightMap::CreateRigidStatic(PhysX4_1* pxd, int fileHeight, int fileWidth, 
 	fieldDesc.samples.data = samples.data();
 	fieldDesc.samples.stride = sizeof(PxHeightFieldSample);
 	auto field = cooking->createHeightField(fieldDesc, pxDevice->getPhysicsInsertionCallback());
-	
+
 	field->saveCells(samples.data(), samplesSize * sizeof(PxHeightFieldSample));
 
 	for (int i = 0; i < samplesSize; i++)
 	{
 		heights[i] = samples[i].height;
 	}
-	
+
 	PxHeightFieldGeometry fieldGeo(field, PxMeshGeometryFlags(), m_Scale.y, m_Scale.x, m_Scale.z);
 
 	m_Shape = pxDevice->createShape(fieldGeo, *pxd->GetBaseMaterial(), true);
@@ -172,91 +164,97 @@ void HeightMap::CreateRigidStatic(PhysX4_1* pxd, int fileHeight, int fileWidth, 
 void HeightMap::CreateRenderMesh(IGraphicDevice* gd, int fileHeight, int fileWidth, const std::vector<float>& heights)
 {
 	const size_t numVertices = heights.size();
-	std::vector<Vertex> vertices(numVertices);
 	std::vector<unsigned int> indices;
 
-	for (size_t i = 0; i < numVertices; i++)
-	{
-		int indexY = i % fileWidth;
-		int indexX = i / fileWidth;
+	//std::vector<Vertex> vertices(numVertices);
 
-		vertices[i].uv.x = (float)indexY / (fileWidth - 1);
-		vertices[i].uv.y = (float)indexX / (fileHeight - 1);
+	//for (size_t i = 0; i < numVertices; i++)
+	//{
+	//	int indexY = i % fileWidth;
+	//	int indexX = i / fileWidth;
 
-		vertices[i].position.y = heights[i];
-		vertices[i].position.z = indexY;
-		vertices[i].position.x = indexX;
-	}
+	//	vertices[i].uv.x = (float)indexY / (fileWidth - 1);
+	//	vertices[i].uv.y = (float)indexX / (fileHeight - 1);
 
-	for (size_t i = 0; i < numVertices; i++)
-	{
-		int indexX = i % fileWidth;
-		int indexY = i / fileWidth;
+	//	vertices[i].position.y = heights[i];
+	//	vertices[i].position.z = indexY;
+	//	vertices[i].position.x = indexX;
+	//}
 
-		if (indexX < (fileWidth - 1) && indexY < (fileHeight - 1))
-		{
-			PxVec3 rightVec = vertices[i + 1].position - vertices[i].position;
-			PxVec3 upVec = vertices[i + fileWidth].position - vertices[i].position;
+	//for (size_t i = 0; i < numVertices; i++)
+	//{
+	//	int indexX = i % fileWidth;
+	//	int indexY = i / fileWidth;
 
-			upVec.x *= m_Scale.x;
-			upVec.y *= m_Scale.y;
-			upVec.z *= m_Scale.z;
+	//	if (indexX < (fileWidth - 1) && indexY < (fileHeight - 1))
+	//	{
+	//		PxVec3 rightVec = vertices[i + 1].position - vertices[i].position;
+	//		PxVec3 upVec = vertices[i + fileWidth].position - vertices[i].position;
 
-			rightVec.x *= m_Scale.x;
-			rightVec.y *= m_Scale.y;
-			rightVec.z *= m_Scale.z;
+	//		upVec.x *= m_Scale.x;
+	//		upVec.y *= m_Scale.y;
+	//		upVec.z *= m_Scale.z;
 
-			PxVec3 normalVec = -upVec.cross(rightVec);
+	//		rightVec.x *= m_Scale.x;
+	//		rightVec.y *= m_Scale.y;
+	//		rightVec.z *= m_Scale.z;
 
-			vertices[i].normal = normalVec.getNormalized();
-		}
-		else
-		{
-			vertices[i].normal = { 0,1,0 };
-		}
-	}
+	//		PxVec3 normalVec = -upVec.cross(rightVec);
 
-	for (size_t i = 0; i < numVertices; i++)
-	{
-		int indexX = i % fileWidth;
-		int indexY = i / fileWidth;
+	//		vertices[i].normal = normalVec.getNormalized();
+	//	}
+	//	else
+	//	{
+	//		vertices[i].normal = { 0,1,0 };
+	//	}
+	//}
 
-		if (indexX < (fileWidth - 1) && indexY < (fileHeight - 1))
-		{
-			indices.push_back(i + 1);
-			indices.push_back(i + fileWidth);
-			indices.push_back(i + 0);
-			indices.push_back(i + 1);
-			indices.push_back(i + fileHeight + 1);
-			indices.push_back(i + fileWidth);
+	//for (size_t i = 0; i < numVertices; i++)
+	//{
+	//	int indexX = i % fileWidth;
+	//	int indexY = i / fileWidth;
 
-			assert(numVertices > i + fileHeight + 1);
-		}
-	}
+	//	if (indexX < (fileWidth - 1) && indexY < (fileHeight - 1))
+	//	{
+	//		indices.push_back(i + 1);
+	//		indices.push_back(i + fileWidth);
+	//		indices.push_back(i + 0);
+	//		indices.push_back(i + 1);
+	//		indices.push_back(i + fileHeight + 1);
+	//		indices.push_back(i + fileWidth);
 
+	//		assert(numVertices > i + fileHeight + 1);
+	//	}
+	//}
 
 	Material testMaterial;
 	testMaterial.diffuseAlbedo = { 1,1,1,1 };
-	assert(gd->CreateMaterials({ "HeightFieldMaterial" }, { testMaterial }));
-	assert(gd->CreateDynamicVIBuffer(vertices.size(), indices.size(), &m_DBInfo));
-	
+	gd->CreateMaterials({ "HeightFieldMaterial" }, { testMaterial });
+
+	MeshObject meshObject;
 	SubmeshData oneSub;
 	oneSub.indexOffset = 0;
 	oneSub.vertexOffset = 0;
 	oneSub.numIndex = indices.size();
-	oneSub.numVertex = vertices.size();
+	oneSub.numVertex = numVertices;
 	oneSub.material = "HeightFieldMaterial";
 	oneSub.diffuseMap = "HeightMap3.jpg";
 
-	m_DBInfo->meshObject.subs["oneSub"] = oneSub;
+	meshObject.subs["oneSub"] = oneSub;
 
-	auto renderer = CreateComponenet<DORenderer>();
+	std::string meshName(m_fileName.begin(), m_fileName.end());
+
 	auto transfrom = CreateComponenet<DOTransform>();
+	auto renderer = CreateComponenet<DORenderer>();
+	auto mesh = CreateComponenet<DORenderMesh>();
+
+	if (gd->CreateMesh(meshName, meshObject, CGH::HEIGHTFIELD_MESH, numVertices, heights.data(), indices))
+	{
+		mesh->SelectMesh(CGH::HEIGHTFIELD_MESH, meshName);
+	}
+
 	transfrom->SetScale(m_Scale);
-	
-	std::memcpy(m_DBInfo->vertices, vertices.data(), sizeof(Vertex) * vertices.size());
-	std::memcpy(m_DBInfo->indices, indices.data(), sizeof(unsigned int) * indices.size());
-	renderer->SetDynamicMesh(m_DBInfo);
+	renderer->GetRenderInfo().type = RENDER_HEIGHT_FIELD;
 }
 
 void HeightMap::StartMapPickingWork()

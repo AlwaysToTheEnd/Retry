@@ -12,6 +12,9 @@ struct DX12MeshSet
 	bool						AddMesh(ID3D12Device* device, ID3D12GraphicsCommandList* commandList,
 										const std::string& name, MeshObject& mesh,
 										const std::vector<Vertex_T>& vertices, const std::vector<UINT>& indices);
+	bool						AddMesh(ID3D12Device* device, ID3D12GraphicsCommandList* commandList,
+										const std::string& name, MeshObject& mesh,
+										unsigned int numVertex, const Vertex_T* vertices, const std::vector<UINT>& indices);
 	bool						AddMeshs(ID3D12Device* device, ID3D12GraphicsCommandList* commandList,
 										const std::vector<std::string>& meshNames, const std::vector<MeshObject>& meshs,
 										const std::vector<Vertex_T>& vertices, const std::vector<UINT>& indices);
@@ -54,6 +57,39 @@ inline bool DX12MeshSet<Vertex_T>::AddMesh(ID3D12Device* device, ID3D12GraphicsC
 		}
 
 		VB->AddData(device, commandList, numVertices, vertices.data());
+		IB->AddData(device, commandList, numIndices, indices.data());
+	}
+
+	MS.insert({ name, mesh });
+
+	return true;
+}
+
+template<typename Vertex_T>
+inline bool DX12MeshSet<Vertex_T>::AddMesh(ID3D12Device* device, ID3D12GraphicsCommandList* commandList, const std::string& name, MeshObject& mesh, unsigned int numVertex, const Vertex_T* vertices, const std::vector<UINT>& indices)
+{
+	if (VB == nullptr)
+	{
+		VB = std::make_unique<DX12DefaultBuffer<Vertex_T>>(device, commandList, numVertex, vertices);
+		IB = std::make_unique<DX12DefaultBuffer<UINT>>(device, commandList, indices);
+	}
+	else
+	{
+		UINT baseVertexLocation = 0;
+		UINT baseIndexLocation = 0;
+		UINT numIndices = 0;
+
+		baseVertexLocation = VB->GetNumDatas();
+		baseIndexLocation = IB->GetNumDatas();
+		numIndices = indices.size();
+
+		for (auto& it : mesh.subs)
+		{
+			it.second.vertexOffset += baseVertexLocation;
+			it.second.indexOffset += baseIndexLocation;
+		}
+
+		VB->AddData(device, commandList, numVertex, vertices);
 		IB->AddData(device, commandList, numIndices, indices.data());
 	}
 

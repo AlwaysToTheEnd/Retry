@@ -1,7 +1,7 @@
 #include "DX12DrawSetPointBase.h"
 #include "DX12TextureBuffer.h"
 
-void DX12DrawSetPointBase::Init(ID3D12Device* device, PSOController* psoCon, DXGI_FORMAT rtvFormat, DXGI_FORMAT dsvFormat, DX12TextureBuffer* textureBuffer, DX12IndexManagementBuffer<Material>* material, ID3D12Resource* mainPass)
+void DX12DrawSetPointBase::Init(ID3D12Device* device)
 {
 	for (int i = 0; i < m_NumFrame; i++)
 	{
@@ -10,20 +10,12 @@ void DX12DrawSetPointBase::Init(ID3D12Device* device, PSOController* psoCon, DXG
 		m_FrameResource.back().VB = std::make_unique<DX12UploadBuffer<PointBaseVertex>>(device, 100, false);
 	}
 
-	m_PSOA.rtvFormats.push_back(rtvFormat);
-	m_PSOA.dsvFormat = dsvFormat;
-	m_TextureBuffer = textureBuffer;
-	m_MaterialBuffer = material;
-	m_MainPassCB = mainPass;
-	m_PSOCon = psoCon;
-
 	CD3DX12_DESCRIPTOR_RANGE texTable;
 	texTable.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, m_TextureBuffer->GetTexturesNum(), 0);
 
 	CD3DX12_ROOT_PARAMETER pointRenderRootParam[P1_ROOT_COUNT];
-	pointRenderRootParam[P1_OBJECT_SRV].InitAsShaderResourceView(0, 1);
-	pointRenderRootParam[P1_PASS_CB].InitAsConstantBufferView(0);
-	pointRenderRootParam[P1_TEXTURE_TABLE].InitAsDescriptorTable(1, &texTable, D3D12_SHADER_VISIBILITY_PIXEL);
+	BaseRootParamSetting(pointRenderRootParam);
+	pointRenderRootParam[P1_OBJECT_SRV].InitAsShaderResourceView(1, 1);
 
 	CD3DX12_ROOT_SIGNATURE_DESC pointRenderrootDesc;
 	pointRenderrootDesc.Init(P1_ROOT_COUNT, pointRenderRootParam, _countof(m_StaticSamplers),
@@ -32,6 +24,9 @@ void DX12DrawSetPointBase::Init(ID3D12Device* device, PSOController* psoCon, DXG
 	std::string textureNum = std::to_string(m_TextureBuffer->GetTexturesNum());
 	D3D_SHADER_MACRO macros[] = {
 		"MAXTEXTURE", textureNum.c_str(),
+		"RENDER_BOX", std::to_string(static_cast<int>(RENDER_TYPE::RENDER_BOX)).c_str(),
+		"RENDER_PLANE", std::to_string(static_cast<int>(RENDER_TYPE::RENDER_PLANE)).c_str(),
+		"RENDER_2DPLANE", std::to_string(static_cast<int>(RENDER_TYPE::RENDER_2DPLANE)).c_str(),
 		NULL, NULL };
 
 	m_PSOA.primitive = D3D12_PRIMITIVE_TOPOLOGY_TYPE_POINT;
@@ -59,15 +54,10 @@ void DX12DrawSetPointBase::Draw(ID3D12GraphicsCommandList* cmd, const PSOAttribu
 	if (m_NumRenderPointObjects)
 	{
 		SetPSO(cmd, custom);
+		SetBaseRoots(cmd);
 
 		auto& currFrameSource = m_FrameResource[m_CurrFrame];
-
-		ID3D12DescriptorHeap* descriptorHeaps[] = { m_TextureBuffer->GetHeap() };
-		cmd->SetDescriptorHeaps(1, descriptorHeaps);
-
 		cmd->SetGraphicsRootShaderResourceView(P1_OBJECT_SRV, currFrameSource.SRV->Resource()->GetGPUVirtualAddress());
-		cmd->SetGraphicsRootConstantBufferView(P1_PASS_CB, GetCurrMainPassAddress());
-		cmd->SetGraphicsRootDescriptorTable(P1_TEXTURE_TABLE, m_TextureBuffer->GetHeap()->GetGPUDescriptorHandleForHeapStart());
 
 		D3D12_VERTEX_BUFFER_VIEW vertexBufferView = {};
 

@@ -9,31 +9,16 @@ struct ObjectData
 	int			pad2;
 };
 
-StructuredBuffer<ObjectData> gObjectData : register(t0, space1);
+StructuredBuffer<ObjectData> gObjectData : register(t1, space1);
 
-struct VertexIn
-{
-	uint	type : MESHTYPE;
-	uint	cbIndex : CBINDEX;
-	float3	size : MESHSIZE;
-	float4	color : MESHCOLOR;
-};
-
-struct VertexOut
-{
-	float4	posH : SV_POSITION;
-	float4	color : COLOR0;
-	nointerpolation int texIndex : MATNDEX;
-};
-
-VertexIn VS(VertexIn vin)
+POINTVertexIn VS(POINTVertexIn vin)
 {
 	return vin;
 }
 
-void CreateBox(uint cbIndex, float3 size, float4 color, inout TriangleStream<VertexOut> output)
+void CreateBox(uint cbIndex, float3 size, float4 color, inout TriangleStream<POINTVertexOut> output)
 {
-	VertexOut vertices[8];
+    POINTVertexOut vertices[8];
 	// 1  3  7  5
 	// |\ |  | /|
 	// 0 \2  6/ 4
@@ -80,9 +65,9 @@ void CreateBox(uint cbIndex, float3 size, float4 color, inout TriangleStream<Ver
 	output.RestartStrip();
 }
 
-void CreatePlane(uint cbIndex, float2 size, float4 color, inout TriangleStream<VertexOut> output)
+void CreatePlane(uint cbIndex, float2 size, float4 color, inout TriangleStream<POINTVertexOut> output)
 {
-	VertexOut vertices[4];
+    POINTVertexOut vertices[4];
 
 	// 1  3
 	// |\ |
@@ -124,9 +109,9 @@ void CreatePlane(uint cbIndex, float2 size, float4 color, inout TriangleStream<V
 }
 
 
-void Create2DPlane(uint cbIndex, float2 size, float4 color, inout TriangleStream<VertexOut> output)
+void Create2DPlane(uint cbIndex, float2 size, float4 color, inout TriangleStream<POINTVertexOut> output)
 {
-    VertexOut vertices[4];
+    POINTVertexOut vertices[4];
 
 	// 1  3
 	// |\ |
@@ -166,20 +151,9 @@ void Create2DPlane(uint cbIndex, float2 size, float4 color, inout TriangleStream
     output.Append(vertices[1]);
     output.Append(vertices[3]);
 }
-//enum RENDER_TYPE
-//{
-//  RENDER_NONE,
-//	RENDER_MESH,
-//	RENDER_DYNAMIC,
-//	RENDER_SKIN,
-//	RENDER_BOX,
-//	RENDER_PLANE,
-//	RENDER_2DPLANE,
-//	RENDER_UI,
-//};
 
 [maxvertexcount(18)]
-void GS(point VertexIn input[1], inout TriangleStream<VertexOut> output)
+void GS(point POINTVertexIn input[1], inout TriangleStream<POINTVertexOut> output)
 {
 	switch (input[0].type)
 	{
@@ -195,7 +169,7 @@ void GS(point VertexIn input[1], inout TriangleStream<VertexOut> output)
 	}
 }
 
-float4 PS(VertexOut pin) : SV_Target
+float4 PS(POINTVertexOut pin) : SV_Target
 {
 	float4 resultColor= float4(0,0,0,1);
 

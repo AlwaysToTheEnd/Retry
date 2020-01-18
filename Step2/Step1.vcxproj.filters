@@ -389,9 +389,6 @@
     <ClInclude Include="..\Common\Source\DX12\DX12MeshSet.h">
       <Filter>Common\DeviceInstance\DX12Supporters</Filter>
     </ClInclude>
-    <ClInclude Include="..\Common\Source\DX12\DX12HeightFieldMesh.h">
-      <Filter>Common\DeviceInstance\DX12Supporters</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Common\MainShaders\BaseShader.hlsl">
@@ -404,6 +401,9 @@
       <Filter>Shader</Filter>
     </None>
     <None Include="..\Common\MainShaders\Header.hlsli">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="..\Common\MainShaders\HeightFieldShader.hlsl">
       <Filter>Shader</Filter>
     </None>
   </ItemGroup>

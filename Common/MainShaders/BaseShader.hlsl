@@ -1,14 +1,5 @@
 #include "Header.hlsli"
 
-struct MaterialData
-{
-	float4		DriffuseAlbedo;
-	float3		FresnelR0;
-	float		Roughness;
-};
-
-StructuredBuffer<MaterialData> gInstanceData : register(t0, space1);
-
 cbuffer objectData : register(b1)
 {
 	float4x4	World;
@@ -20,36 +11,13 @@ cbuffer objectData : register(b1)
 	float		blendFactor;
 };
 
-struct SkinnedVertex
-{
-	float3	PosL : POSITION;
-	float3	NormalL : NORMAL;
-	float2	TexC : TEXCOORD;
-	float3	BoneWeights : WEIGHTS;
-	uint4	BoneIndices : BONEINDICES;
-};
-
-struct VertexIn
-{
-	float3	PosL : POSITION;
-	float3	NormalL : NORMAL;
-	float2	TexC : TEXCOORD;
-};
-
-struct VertexOut
-{
-	float4 PosH : SV_POSITION;
-	float2 TexC : TEXCOORD0;
-	float3 Normal : NORMAL0;
-};
-
 #ifdef SKINNED_VERTEX_SAHDER
 cbuffer cbSkinned : register(b2)
 {
 	float4x4	gAniBoneMat[BONEMAXMATRIX];
 };
 
-VertexOut VS(SkinnedVertex vin)
+VertexOut VS(SkinnedVertexIn vin)
 {
 	VertexOut vout = (VertexOut)0.0f;
 

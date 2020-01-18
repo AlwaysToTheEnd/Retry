@@ -14,6 +14,7 @@ namespace CGH
 	{
 		NORMAL_MESH,
 		SKINNED_MESH,
+		HEIGHTFIELD_MESH,
 		MESH_TYPE_COUNT,
 	};
 };
@@ -22,8 +23,8 @@ enum RENDER_TYPE
 {
 	RENDER_NONE,
 	RENDER_MESH,
-	RENDER_DYNAMIC,
 	RENDER_SKIN,
+	RENDER_HEIGHT_FIELD,
 	RENDER_BOX,
 	RENDER_PLANE,
 	RENDER_2DPLANE,
@@ -173,27 +174,4 @@ enum class DYNAMIC_BUFFER_EDIT_MOD
 	CON_SHAPE_UP,
 	CON_SHAPE_DOWN,
 	CIRCLE_AREA_FLATNESS,
-};
-
-struct DynamicBufferInfo
-{
-	DynamicBufferInfo(unsigned int _renderID, unsigned int _numVertex, unsigned int _numIndex,
-		Vertex* _vertices, unsigned int* _indices)
-		: renderID(_renderID)
- 		, numVertex(_numVertex)
-		, numIndex(_numIndex)
-		, vertices(_vertices)
-		, indices(_indices)
-	{
-		meshObject.primitiveType = 4;
-	}
-
-	std::string GetBufferID() const { return std::to_string(renderID); }
-
-	MeshObject			meshObject;
-	const unsigned int	renderID;
-	const unsigned int	numVertex;
-	const unsigned int	numIndex;
-	Vertex* const		vertices;
-	unsigned int* const	indices;
 };

@@ -25,6 +25,7 @@
 class DX12TextureBuffer;
 class DX12DrawSetNormalMesh;
 class DX12DrawSetSkinnedMesh;
+class DX12DrawSetHeightField;
 class DX12DrawSetPointBase;
 class DX12DrawSetUI;
 
@@ -32,21 +33,6 @@ using Microsoft::WRL::ComPtr;
 
 class GraphicDX12 final : public IGraphicDevice
 {
-	struct DynamicBuffer
-	{
-		DynamicBuffer(ID3D12Device* device, unsigned int _renderID, unsigned int _numVertex, unsigned int _numIndex)
-		{
-			dynamicIndexBuffer = std::make_unique<DX12UploadBuffer<UINT>>(device, _numIndex, false);
-			dynamicVertexBuffer = std::make_unique<DX12UploadBuffer<Vertex>>(device, _numVertex, false);
-			dynamicBufferInfo = std::make_unique<DynamicBufferInfo>(_renderID, _numVertex, _numIndex,
-				dynamicVertexBuffer->GetMappedData(), dynamicIndexBuffer->GetMappedData());
-		}
-
-		std::unique_ptr<DynamicBufferInfo>			dynamicBufferInfo;
-		std::unique_ptr<DX12UploadBuffer<Vertex>>		dynamicVertexBuffer;
-		std::unique_ptr<DX12UploadBuffer<unsigned int>>	dynamicIndexBuffer;
-	};
-
 public:
 	GraphicDX12();
 	virtual ~GraphicDX12() override;
@@ -66,15 +52,10 @@ private:
 public: // Used from DeviceObject Init
 	virtual const std::unordered_map<std::string, MeshObject>* GetMeshDataMap(CGH::MESH_TYPE type) override;
 
-	virtual bool	CreateMesh(const std::string& meshName, MeshObject& meshinfo, const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices) override;
+	virtual bool	CreateMesh(const std::string& meshName, MeshObject& meshinfo, CGH::MESH_TYPE type, unsigned int numVertices, const void* vertices, const std::vector<unsigned int>& indices) override;
 	virtual bool	CreateMaterials(const std::vector<std::string>& materialNames, const std::vector<Material>& materials) override;
 	virtual bool	EditMesh(const std::string& meshName, const std::vector<Vertex>& vertices) override;
 	virtual bool	EditMaterial(const std::string& materialName, const Material& material) override;
-
-	virtual bool	CreateDynamicVIBuffer(unsigned int vertexNum, unsigned int indexNum, DynamicBufferInfo** out);
-	virtual void	EditDynamicVIBuffer(const DynamicBufferInfo* dvi, DYNAMIC_BUFFER_EDIT_MOD mode, const std::vector<float>& inputDatas);
-	virtual void	SaveAndMergeDynamicVIBufferToDefaultVertexBuffer(const std::string& meshName, const DynamicBufferInfo* dvi) override;
-	virtual void	ReleaseDynamicVIBuffer(const DynamicBufferInfo* dvi) override;
 
 	virtual int		GetTextureIndex(const std::string& textureName) override;
 
@@ -96,7 +77,6 @@ private: // Base object Builds
 private: // Used in frame.
 	void UpdateMainPassCB();
 	void UpdateObjectCB();
-
 
 private:
 	D3D12_VIEWPORT						m_ScreenViewport;
@@ -134,12 +114,12 @@ private:
 
 	std::unique_ptr<DX12MeshSet<Vertex>>					m_NormalMeshSet;
 	std::unique_ptr<DX12MeshSet<SkinnedVertex>>				m_SkinnedMeshSet;
+	std::unique_ptr<DX12MeshSet<float>>						m_HeightFieldMeshSet;
 
 	std::unique_ptr<DX12DrawSetNormalMesh>					m_NormalMeshDrawSet;
 	std::unique_ptr<DX12DrawSetSkinnedMesh>					m_SkinnedMeshDrawSet;
+	std::unique_ptr<DX12DrawSetHeightField>					m_HeightFieldMeshDrawSet;
 	std::unique_ptr<DX12DrawSetPointBase>					m_PointBaseDrawSet;
 	std::unique_ptr<DX12DrawSetUI>							m_UIDrawSet;
 	std::unique_ptr<DX12FontManager>						m_FontManager;
-
-	std::vector<std::unique_ptr<DynamicBuffer>>				m_DynamicBuffers;
 };
