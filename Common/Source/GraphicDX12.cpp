@@ -678,12 +678,8 @@ void GraphicDX12::Draw()
 
 	FlushCommandQueue();
 
+	DX12DrawSet::AllDrawsFrameCountAndClearWork();
 	m_CurrFrame = (m_CurrFrame + 1) % m_NumFrameResource;
-
-	m_NormalMeshDrawSet->UpdateFrameCount();
-	m_SkinnedMeshDrawSet->UpdateFrameCount();
-	m_PointBaseDrawSet->UpdateFrameCount();
-	m_UIDrawSet->UpdateFrameCount();
 }
 
 void GraphicDX12::BuildDrawSets()
@@ -757,10 +753,6 @@ void GraphicDX12::UpdateMainPassCB()
 	mainPass.ambientLight = { 0.25f, 0.25f, 0.35f, 1.0f };
 	mainPass.dirLightPower = 1.0;
 	mainPass.dirLight= { 0.0f, -0.707f, -0.707f };
-	//mainPass.lights[0].direction = { 0.57735f, -0.57735f, 0.57735f };
-	//mainPass.lights[0].strength = { 0.9f, 0.9f, 0.9f };
-	//mainPass.lights[1].direction = { 0.0f, -0.707f, -0.707f };
-	//mainPass.lights[1].strength = { 0.2f, 0.2f, 0.2f };
 
 	m_PassCB->CopyData(0, mainPass);
 	m_UIDrawSet->UpdateUIPassCB(CGH::GO.ui);

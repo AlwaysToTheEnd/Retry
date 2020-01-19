@@ -64,16 +64,19 @@ public:
 	{
 		m_PSOA.rtvFormats = rtvFormats;
 		m_PSOA.dsvFormat = dsvFormat;
+		m_Draws.push_back(this);
 	}
 	virtual ~DX12DrawSet() = default;
 
 	virtual void	Init(ID3D12Device* device) = 0;
 	virtual void	Draw(ID3D12GraphicsCommandList* cmd, const PSOAttributeNames* custom=nullptr) = 0;
 	virtual void	ReserveRender(const RenderInfo& info) = 0;
+	virtual void	UpdateFrameCountAndClearWork();
 
-	void						UpdateFrameCount();
 	D3D12_GPU_VIRTUAL_ADDRESS	GetCurrMainPassAddress() const;
 	void						SetPSO(ID3D12GraphicsCommandList* cmd, const PSOAttributeNames* custom);
+
+	static void		AllDrawsFrameCountAndClearWork();
 
 protected:
 	void BaseRootParamSetting(CD3DX12_ROOT_PARAMETER params[BASE_ROOT_PARAM_COUNT]);
@@ -84,6 +87,7 @@ private:
 
 protected:
 	static D3D12_STATIC_SAMPLER_DESC		m_StaticSamplers[7];
+	static std::vector<DX12DrawSet*>		m_Draws;
 	const unsigned int						m_NumFrame;
 	unsigned int							m_CurrFrame = 0;
 	PSOAttributeNames						m_PSOA;

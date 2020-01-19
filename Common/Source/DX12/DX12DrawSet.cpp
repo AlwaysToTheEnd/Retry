@@ -2,6 +2,7 @@
 #include "DX12RenderClasses.h"
 #include "DX12TextureBuffer.h"
 
+std::vector<DX12DrawSet*> DX12DrawSet::m_Draws;
 D3D12_STATIC_SAMPLER_DESC DX12DrawSet::m_StaticSamplers[7] =
 {
 	CD3DX12_STATIC_SAMPLER_DESC(
@@ -62,7 +63,7 @@ D3D12_STATIC_SAMPLER_DESC DX12DrawSet::m_StaticSamplers[7] =
 	D3D12_STATIC_BORDER_COLOR_OPAQUE_BLACK)
 };
 
-void DX12DrawSet::UpdateFrameCount()
+void DX12DrawSet::UpdateFrameCountAndClearWork()
 {
 	m_CurrFrame = (m_CurrFrame + 1) % m_NumFrame;
 }
@@ -132,6 +133,14 @@ void DX12DrawSet::SetPSO(ID3D12GraphicsCommandList* cmd, const PSOAttributeNames
 	else
 	{
 		AttributeSetToPSO(cmd, m_PSOA);
+	}
+}
+
+void DX12DrawSet::AllDrawsFrameCountAndClearWork()
+{
+	for (auto& it : m_Draws)
+	{
+		it->UpdateFrameCountAndClearWork();
 	}
 }
 

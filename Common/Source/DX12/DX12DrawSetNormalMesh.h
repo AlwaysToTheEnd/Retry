@@ -29,6 +29,7 @@ public:
 	virtual void	Init(ID3D12Device* device) override;
 	virtual void	Draw(ID3D12GraphicsCommandList * cmd, const PSOAttributeNames* custom = nullptr) override;
 	virtual void	ReserveRender(const RenderInfo& info) override;
+	virtual void	UpdateFrameCountAndClearWork() override;
 
 private:
 	void ResizeCurrFrameCB();

@@ -64,7 +64,6 @@ void DX12DrawSetHeightField::Draw(ID3D12GraphicsCommandList* cmd, const PSOAttri
 			ObjectCBVritualAD += ObjectStrideSize;
 		}
 
-		m_TargetMeshs.clear();
 	}
 }
 
@@ -86,6 +85,12 @@ void DX12DrawSetHeightField::ReserveRender(const RenderInfo& info)
 	}
 
 	m_TargetMeshs.push_back(&m_ResultMesh.find(info.meshOrTextureName)->second);
+}
+
+void DX12DrawSetHeightField::UpdateFrameCountAndClearWork()
+{
+	DX12DrawSet::UpdateFrameCountAndClearWork();
+	m_TargetMeshs.clear();
 }
 
 void DX12DrawSetHeightField::ReComputeHeightField(const std::string& name, physx::PxVec3 scale, ID3D12Device* device, ID3D12GraphicsCommandList* cmd)

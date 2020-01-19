@@ -57,8 +57,6 @@ void DX12DrawSetNormalMesh::Draw(ID3D12GraphicsCommandList* cmd, const PSOAttrib
 			m_RenderObjectSubmesh[i]->indexOffset, m_RenderObjectSubmesh[i]->vertexOffset, 0);
 		ObjectCBVritualAD += ObjectStrideSize;
 	}
-
-	m_RenderObjectSubmesh.clear();
 }
 
 void DX12DrawSetNormalMesh::ReserveRender(const RenderInfo& info)
@@ -78,6 +76,12 @@ void DX12DrawSetNormalMesh::ReserveRender(const RenderInfo& info)
 		m_MeshObjectCB[m_CurrFrame]->CopyData(m_RenderObjectSubmesh.size(), data);
 		m_RenderObjectSubmesh.push_back(&it.second);
 	}
+}
+
+void DX12DrawSetNormalMesh::UpdateFrameCountAndClearWork()
+{
+	DX12DrawSet::UpdateFrameCountAndClearWork();
+	m_RenderObjectSubmesh.clear();
 }
 
 void DX12DrawSetNormalMesh::ResizeCurrFrameCB()

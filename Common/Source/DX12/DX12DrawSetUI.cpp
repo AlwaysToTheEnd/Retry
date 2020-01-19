@@ -66,7 +66,6 @@ void DX12DrawSetUI::Draw(ID3D12GraphicsCommandList* cmd, const PSOAttributeNames
 		cmd->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_POINTLIST);
 
 		cmd->DrawInstanced(m_NumRenderUIs, 1, 0, 0);
-		m_NumRenderUIs = 0;
 	}
 }
 
@@ -88,6 +87,12 @@ void DX12DrawSetUI::ReserveRender(const RenderInfo& info)
 
 	m_VBs[m_CurrFrame]->CopyData(m_NumRenderUIs, &temp);
 	m_NumRenderUIs++;
+}
+
+void DX12DrawSetUI::UpdateFrameCountAndClearWork()
+{
+	DX12DrawSet::UpdateFrameCountAndClearWork();
+	m_NumRenderUIs = 0;
 }
 
 void DX12DrawSetUI::UpdateUIPassCB(const CGH::GlobalOptions::UIOption& uiPass)

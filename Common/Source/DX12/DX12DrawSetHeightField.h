@@ -58,6 +58,7 @@ public:
 	virtual void	Init(ID3D12Device* device) override;
 	virtual void	Draw(ID3D12GraphicsCommandList* cmd, const PSOAttributeNames* custom = nullptr) override;
 	virtual void	ReserveRender(const RenderInfo& info) override;
+	virtual void	UpdateFrameCountAndClearWork() override;
 	void			ReComputeHeightField(const std::string& name, physx::PxVec3 scale, ID3D12Device* device, ID3D12GraphicsCommandList* cmd);
 
 private:

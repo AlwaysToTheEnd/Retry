@@ -29,11 +29,11 @@ cbuffer cbPass                                  : register(b0)
     float4x4    gRightViewProj;
     float4x4    gOrthoMatrix;
     float3      gEyePosW;
+    float       gDirLightPower;
     float2      gRenderTargetSize;
     float2      gInvRenderTargetSize;
     float4      gAmbientLight;
     float3      gDirLight;
-    float       gDirLightPower;
     
     uint        gSamplerIndex;
 };

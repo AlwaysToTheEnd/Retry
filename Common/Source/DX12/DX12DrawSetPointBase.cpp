@@ -69,8 +69,6 @@ void DX12DrawSetPointBase::Draw(ID3D12GraphicsCommandList* cmd, const PSOAttribu
 		cmd->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_POINTLIST);
 
 		cmd->DrawInstanced(m_NumRenderPointObjects, 1, 0, 0);
-
-		m_NumRenderPointObjects = 0;
 	}
 }
 
@@ -99,4 +97,10 @@ void DX12DrawSetPointBase::ReserveRender(const RenderInfo& info)
 	currFrameSource.VB->CopyData(m_NumRenderPointObjects, &temp);
 	currFrameSource.SRV->CopyData(m_NumRenderPointObjects, &OTObjectConstnat);
 	m_NumRenderPointObjects++;
+}
+
+void DX12DrawSetPointBase::UpdateFrameCountAndClearWork()
+{
+	DX12DrawSet::UpdateFrameCountAndClearWork();
+	m_NumRenderPointObjects = 0;
 }

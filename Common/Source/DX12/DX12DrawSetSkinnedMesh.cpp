@@ -75,9 +75,6 @@ void DX12DrawSetSkinnedMesh::Draw(ID3D12GraphicsCommandList* cmd, const PSOAttri
 			m_RenderObjectSubmesh[i]->indexOffset, m_RenderObjectSubmesh[i]->vertexOffset, 0);
 		ObjectCBVritualAD += ObjectStrideSize;
 	}
-
-	m_RenderObjectSubmesh.clear();
-	m_AniBoneIndices.clear();
 }
 
 void DX12DrawSetSkinnedMesh::ReserveRender(const RenderInfo& info)
@@ -98,6 +95,13 @@ void DX12DrawSetSkinnedMesh::ReserveRender(const RenderInfo& info)
 		m_RenderObjectSubmesh.push_back(&it.second);
 		m_AniBoneIndices.push_back(info.skin.aniBoneIndex);
 	}
+}
+
+void DX12DrawSetSkinnedMesh::UpdateFrameCountAndClearWork()
+{
+	DX12DrawSet::UpdateFrameCountAndClearWork();
+	m_RenderObjectSubmesh.clear();
+	m_AniBoneIndices.clear();
 }
 
 void DX12DrawSetSkinnedMesh::UpdateAniBoneCB(const std::vector<AniBoneMat>& reservedData)
