@@ -38,6 +38,13 @@ void HeightMap::SetScale(const physx::PxVec3 scale)
 
 		m_Shape->setGeometry(fieldGeo);
 	}
+
+	auto mesh = GetComponent<DORenderMesh>();
+
+	if (mesh)
+	{
+		mesh->ReComputeHeightField(m_Scale);
+	}
 }
 
 void HeightMap::AddMapPickingWrok(std::function<void(const physx::PxVec3 & pickingPos)> func)
@@ -158,74 +165,12 @@ void HeightMap::CreateRigidStatic(PhysX4_1* pxd, int fileHeight, int fileWidth, 
 	m_Funcs->m_VoidFuncs.push_back(std::bind(&HeightMap::StartMapPickingWork, this));
 
 	m_PxStatic->userData = m_Funcs.get();
-	pxd->GetScene(GetScene())->addActor(*m_PxStatic);
 }
 
 void HeightMap::CreateRenderMesh(IGraphicDevice* gd, int fileHeight, int fileWidth, const std::vector<float>& heights)
 {
 	const size_t numVertices = heights.size();
 	std::vector<unsigned int> indices;
-
-	//std::vector<Vertex> vertices(numVertices);
-
-	//for (size_t i = 0; i < numVertices; i++)
-	//{
-	//	int indexY = i % fileWidth;
-	//	int indexX = i / fileWidth;
-
-	//	vertices[i].uv.x = (float)indexY / (fileWidth - 1);
-	//	vertices[i].uv.y = (float)indexX / (fileHeight - 1);
-
-	//	vertices[i].position.y = heights[i];
-	//	vertices[i].position.z = indexY;
-	//	vertices[i].position.x = indexX;
-	//}
-
-	//for (size_t i = 0; i < numVertices; i++)
-	//{
-	//	int indexX = i % fileWidth;
-	//	int indexY = i / fileWidth;
-
-	//	if (indexX < (fileWidth - 1) && indexY < (fileHeight - 1))
-	//	{
-	//		PxVec3 rightVec = vertices[i + 1].position - vertices[i].position;
-	//		PxVec3 upVec = vertices[i + fileWidth].position - vertices[i].position;
-
-	//		upVec.x *= m_Scale.x;
-	//		upVec.y *= m_Scale.y;
-	//		upVec.z *= m_Scale.z;
-
-	//		rightVec.x *= m_Scale.x;
-	//		rightVec.y *= m_Scale.y;
-	//		rightVec.z *= m_Scale.z;
-
-	//		PxVec3 normalVec = -upVec.cross(rightVec);
-
-	//		vertices[i].normal = normalVec.getNormalized();
-	//	}
-	//	else
-	//	{
-	//		vertices[i].normal = { 0,1,0 };
-	//	}
-	//}
-
-	//for (size_t i = 0; i < numVertices; i++)
-	//{
-	//	int indexX = i % fileWidth;
-	//	int indexY = i / fileWidth;
-
-	//	if (indexX < (fileWidth - 1) && indexY < (fileHeight - 1))
-	//	{
-	//		indices.push_back(i + 1);
-	//		indices.push_back(i + fileWidth);
-	//		indices.push_back(i + 0);
-	//		indices.push_back(i + 1);
-	//		indices.push_back(i + fileHeight + 1);
-	//		indices.push_back(i + fileWidth);
-
-	//		assert(numVertices > i + fileHeight + 1);
-	//	}
-	//}
 
 	Material testMaterial;
 	testMaterial.diffuseAlbedo = { 1,1,1,1 };
@@ -248,12 +193,10 @@ void HeightMap::CreateRenderMesh(IGraphicDevice* gd, int fileHeight, int fileWid
 	auto renderer = CreateComponenet<DORenderer>();
 	auto mesh = CreateComponenet<DORenderMesh>();
 
-	if (gd->CreateMesh(meshName, meshObject, CGH::HEIGHTFIELD_MESH, numVertices, heights.data(), indices))
-	{
-		mesh->SelectMesh(CGH::HEIGHTFIELD_MESH, meshName);
-	}
+	gd->CreateMesh(meshName, meshObject, CGH::HEIGHTFIELD_MESH, numVertices, heights.data(), indices);
+	mesh->SelectMesh(CGH::HEIGHTFIELD_MESH, meshName);
+	mesh->ReComputeHeightField(m_Scale);
 
-	transfrom->SetScale(m_Scale);
 	renderer->GetRenderInfo().type = RENDER_HEIGHT_FIELD;
 }
 

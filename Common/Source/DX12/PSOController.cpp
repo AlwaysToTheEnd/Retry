@@ -47,6 +47,36 @@ void PSOController::InitBase_Raster_Blend_Depth()
 	AddDepthStencil(baseAttributeName, baseDepthStencil);
 }
 
+void PSOController::SetPSOToCommnadList(ID3D12GraphicsCommandList* cmd, const std::string& rootSig, const std::string& cs)
+{
+	std::string keyName = rootSig + ',' + cs;
+
+	auto psoI = m_PSOs.find(keyName);
+	auto rootSigI = m_RootSignature.find(rootSig);
+
+	if (psoI == m_PSOs.end())
+	{
+		D3D12_COMPUTE_PIPELINE_STATE_DESC newPSO = {};
+
+		auto vsI = m_Shaders[DX12_SHADER_COMPUTE].find(cs);
+		assert(vsI != m_Shaders[DX12_SHADER_COMPUTE].end());
+
+		newPSO.CS.BytecodeLength = vsI->second->GetBufferSize();
+		newPSO.CS.pShaderBytecode = vsI->second->GetBufferPointer();
+		newPSO.pRootSignature = rootSigI->second.Get();
+
+		m_Device->CreateComputePipelineState(&newPSO, IID_PPV_ARGS(m_PSOs[keyName].GetAddressOf()));
+
+		psoI = m_PSOs.find(keyName);
+	}
+
+	if (cmd)
+	{
+		cmd->SetPipelineState(psoI->second.Get());
+		cmd->SetComputeRootSignature(rootSigI->second.Get());
+	}
+}
+
 void PSOController::SetPSOToCommnadList(ID3D12GraphicsCommandList* cmd,
 	const std::vector<DXGI_FORMAT>& rtvFormats, DXGI_FORMAT dsvFormat, D3D12_PRIMITIVE_TOPOLOGY_TYPE primitive,
 	const std::string& input, const std::string& rootSig,
@@ -198,25 +228,30 @@ void PSOController::AddShader(const std::string& shaderName, DX12_SHADER_TYPE ty
 	switch (type)
 	{
 	case DX12_SHADER_VERTEX:
-		target = "vs_5_1";
+		target = "vs";
 		break;
 	case DX12_SHADER_PIXEL:
-		target = "ps_5_1";
+		target = "ps";
 		break;
 	case DX12_SHADER_GEOMETRY:
-		target = "gs_5_1";
+		target = "gs";
 		break;
 	case DX12_SHADER_HULL:
-		target = "hs_5_1";
+		target = "hs";
 		break;
 	case DX12_SHADER_DOMAIN:
-		target = "ds_5_1";
+		target = "ds";
+		break;
+	case DX12_SHADER_COMPUTE:
+		target = "cs";
 		break;
 	case DX12_SHADER_TYPE_COUNT:
 	default:
 		assert(false);
 		break;
 	}
+
+	target += shaderVersion;
 
 	auto iter = m_Shaders[type].find(shaderName);
 	assert(iter == m_Shaders[type].end());
@@ -234,7 +269,9 @@ void PSOController::AddShader(const std::string& shaderName, DX12_SHADER_TYPE ty
 		entrypoint.c_str(), target.c_str(), compileFlags, 0, &byteCode, &errors);
 
 	if (errors != nullptr)
+	{
 		OutputDebugStringA((char*)errors->GetBufferPointer());
+	}
 
 	ThrowIfFailed(hr);
 

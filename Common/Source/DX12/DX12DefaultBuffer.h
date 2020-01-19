@@ -145,54 +145,58 @@ inline Microsoft::WRL::ComPtr<ID3D12Resource> DX12DefaultBuffer<T>::AddData(ID3D
 	ID3D12GraphicsCommandList* commandList, UINT numData, const T* datas)
 {
 	Microsoft::WRL::ComPtr<ID3D12Resource> result = nullptr;
-	UINT elementByteSize = sizeof(T);
-	BYTE* mappedData = nullptr;
-	UINT addDataByteSize = elementByteSize * numData;
-	UINT usingByte = m_BufferSize - m_Redundancy;
 
-	if (m_Redundancy < addDataByteSize)
+	if (numData)
 	{
-		m_BufferSize = (m_BufferSize * 2) > (m_BufferSize + addDataByteSize) ? (m_BufferSize * 2) : (m_BufferSize + addDataByteSize);
-		m_Redundancy = m_BufferSize - usingByte;
+		UINT elementByteSize = sizeof(T);
+		BYTE* mappedData = nullptr;
+		UINT addDataByteSize = elementByteSize * numData;
+		UINT usingByte = m_BufferSize - m_Redundancy;
 
-		Microsoft::WRL::ComPtr<ID3D12Resource> temp = m_Resource;
+		if (m_Redundancy < addDataByteSize)
+		{
+			m_BufferSize = (m_BufferSize * 2) > (m_BufferSize + addDataByteSize) ? (m_BufferSize * 2) : (m_BufferSize + addDataByteSize);
+			m_Redundancy = m_BufferSize - usingByte;
+
+			Microsoft::WRL::ComPtr<ID3D12Resource> temp = m_Resource;
+			ThrowIfFailed(device->CreateCommittedResource(
+				&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+				D3D12_HEAP_FLAG_NONE,
+				&CD3DX12_RESOURCE_DESC::Buffer(m_BufferSize),
+				D3D12_RESOURCE_STATE_COPY_DEST, nullptr,
+				IID_PPV_ARGS(result.GetAddressOf())));
+
+			commandList->CopyBufferRegion(result.Get(), 0, m_Resource.Get(), 0, usingByte);
+
+			m_Resource = result;
+			result = temp;
+		}
+		else
+		{
+			commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_Resource.Get(),
+				D3D12_RESOURCE_STATE_GENERIC_READ, D3D12_RESOURCE_STATE_COPY_DEST));
+		}
+
+		assert(m_UploadBuffer == nullptr);
+
 		ThrowIfFailed(device->CreateCommittedResource(
-			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
 			D3D12_HEAP_FLAG_NONE,
-			&CD3DX12_RESOURCE_DESC::Buffer(m_BufferSize),
-			D3D12_RESOURCE_STATE_COPY_DEST, nullptr,
-			IID_PPV_ARGS(result.GetAddressOf())));
+			&CD3DX12_RESOURCE_DESC::Buffer(addDataByteSize),
+			D3D12_RESOURCE_STATE_GENERIC_READ, nullptr,
+			IID_PPV_ARGS(m_UploadBuffer.GetAddressOf())));
 
-		commandList->CopyBufferRegion(result.Get(), 0, m_Resource.Get(), 0, usingByte);
+		BYTE* data = nullptr;
+		m_UploadBuffer->Map(0, &CD3DX12_RANGE(0, 0), reinterpret_cast<void**>(&data));
+		std::memcpy(data, datas, addDataByteSize);
+		m_UploadBuffer->Unmap(0, nullptr);
 
-		m_Resource = result;
-		result = temp;
-	}
-	else
-	{
+		commandList->CopyBufferRegion(m_Resource.Get(), usingByte, m_UploadBuffer.Get(), 0, addDataByteSize);
 		commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_Resource.Get(),
-			D3D12_RESOURCE_STATE_GENERIC_READ, D3D12_RESOURCE_STATE_COPY_DEST));
+			D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_GENERIC_READ));
+
+		m_Redundancy -= addDataByteSize;
 	}
-
-	assert(m_UploadBuffer == nullptr);
-
-	ThrowIfFailed(device->CreateCommittedResource(
-		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
-		D3D12_HEAP_FLAG_NONE,
-		&CD3DX12_RESOURCE_DESC::Buffer(addDataByteSize),
-		D3D12_RESOURCE_STATE_GENERIC_READ, nullptr,
-		IID_PPV_ARGS(m_UploadBuffer.GetAddressOf())));
-
-	BYTE* data = nullptr;
-	m_UploadBuffer->Map(0, &CD3DX12_RANGE(0, 0), reinterpret_cast<void**>(&data));
-	std::memcpy(data, datas, addDataByteSize);
-	m_UploadBuffer->Unmap(0, nullptr);
-
-	commandList->CopyBufferRegion(m_Resource.Get(), usingByte, m_UploadBuffer.Get(), 0, addDataByteSize);
-	commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_Resource.Get(),
-		D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_GENERIC_READ));
-
-	m_Redundancy -= addDataByteSize;
 
 	return result;
 }

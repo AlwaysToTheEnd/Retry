@@ -8,66 +8,39 @@
 
 class DX12DrawSetHeightField :public DX12DrawSet
 {
-	/*struct DX12HeightFieldMesh
-	{
-		DX12HeightFieldMesh(ID3D12Device* device, unsigned int numHeights)
-			: scale(1, 1, 1)
-			, offsetPos(0, 0, 0)
-		{
-			heights = std::make_unique<DX12UploadBuffer<float>>(device, numHeights, false);
-
-			D3D12_HEAP_PROPERTIES vhp = {};
-			vhp.Type = D3D12_HEAP_TYPE_DEFAULT;
-			vhp.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_NOT_AVAILABLE;
-			vhp.MemoryPoolPreference = D3D12_MEMORY_POOL_L1;
-			vhp.CreationNodeMask = 1;
-			vhp.VisibleNodeMask = 1;
-
-			D3D12_RESOURCE_DESC vhrd = {};
-			vhrd.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
-			vhrd.Width = numHeights * sizeof(Vertex);
-			vhrd.Height = 1;
-			vhrd.DepthOrArraySize = 1;
-			vhrd.MipLevels = 1;
-			vhrd.Format = DXGI_FORMAT_UNKNOWN;
-			vhrd.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
-			vhrd.SampleDesc.Count = 1;
-			vhrd.SampleDesc.Quality = 0;
-
-			ThrowIfFailed(device->CreateCommittedResource(&vhp, D3D12_HEAP_FLAG_ALLOW_ONLY_BUFFERS, &vhrd, D3D12_RESOURCE_STATE_COMMON,
-				nullptr, IID_PPV_ARGS(vertices.GetAddressOf())));
-
-			vhrd.Width = numHeights * sizeof(UINT);
-
-			ThrowIfFailed(device->CreateCommittedResource(&vhp, D3D12_HEAP_FLAG_ALLOW_ONLY_BUFFERS, &vhrd, D3D12_RESOURCE_STATE_COMMON,
-				nullptr, IID_PPV_ARGS(indices.GetAddressOf())));
-		}
-
-		std::unique_ptr<DX12UploadBuffer<float>>	heights;
-		Microsoft::WRL::ComPtr<ID3D12Resource>		vertices;
-		Microsoft::WRL::ComPtr<ID3D12Resource>		indices;
-		physx::PxVec3								scale;
-		physx::PxVec3								offsetPos;
-	};*/
-
 	enum
 	{
 		OBJECT_CB = BASE_ROOT_PARAM_COUNT,
-		HEIGHT_SRV,
 		ROOT_COUNT
 	};
 
-	struct HFObjectData
+	enum
 	{
-		physx::PxMat44  world;
-		physx::PxVec3	scale;
-		int				diffuseMapIndex;
-		int				normalMapIndex;
-		int				materialIndex;
-		unsigned int	mapSize;
-		unsigned int	numVertices;
+		COMPUTE_HEIGHTS_SRV,
+		COMPUTE_VERTICES_UAV,
+		COMPUTE_INDICES_UAV,
+		COMPUTE_FIELDINFO_CB,
+		COMPUTE_ROOT_COUNT,
+	};
+
+	struct HeightFieldResultMesh
+	{
+		Microsoft::WRL::ComPtr<ID3D12Resource>	resultVertices;
+		Microsoft::WRL::ComPtr<ID3D12Resource>	resultIndices;
+		unsigned int							numVertices = 0;
+		unsigned int							numIndices = 0;
+		unsigned int							mapSize = 0;
+	};
+
+	struct FieldInfo
+	{
+		physx::PxVec3	Scale;
+		unsigned int	MapSize;
+		unsigned int	NumVertices;
 	};
 	
+	const std::string heightFieldCreateCSName = "HFCreate";
+
 public:
 	DX12DrawSetHeightField(unsigned int numFrameResource,
 		PSOController* psoCon,
@@ -85,10 +58,13 @@ public:
 	virtual void	Init(ID3D12Device* device) override;
 	virtual void	Draw(ID3D12GraphicsCommandList* cmd, const PSOAttributeNames* custom = nullptr) override;
 	virtual void	ReserveRender(const RenderInfo& info) override;
+	void			ReComputeHeightField(const std::string& name, physx::PxVec3 scale, ID3D12Device* device, ID3D12GraphicsCommandList* cmd);
 
 private:
-	std::vector<std::unique_ptr<DX12UploadBuffer<HFObjectData>>>	m_MeshObjectCB;
+	std::vector<std::unique_ptr<DX12UploadBuffer<ObjectConstants>>>	m_MeshObjectCB;
+	std::unordered_map<std::string, HeightFieldResultMesh>			m_ResultMesh;
+	std::unique_ptr<DX12UploadBuffer<FieldInfo>>					m_FieldInfo;
 
 	DX12MeshSet<float>&					m_MeshSet;
-	std::vector<const SubmeshData*>		m_RenderObjectSubmesh;
+	std::vector<HeightFieldResultMesh*>	m_TargetMeshs;
 };

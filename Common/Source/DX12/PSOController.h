@@ -10,11 +10,14 @@ using Microsoft::WRL::ComPtr;
 class PSOController
 {
 	const char* baseAttributeName = "_`b";
+	const char* shaderVersion = "_5_1";
 public:
 	PSOController(ID3D12Device* device);
 	~PSOController();
 	
 	void InitBase_Raster_Blend_Depth();
+
+	void SetPSOToCommnadList(ID3D12GraphicsCommandList* cmd, const std::string& rootSig, const std::string& cs);
 	void SetPSOToCommnadList(ID3D12GraphicsCommandList* cmd,
 		const std::vector<DXGI_FORMAT>& rtvFormats, DXGI_FORMAT dsvFormat, D3D12_PRIMITIVE_TOPOLOGY_TYPE primitive,
 		const std::string& input, const std::string& rootSig, 
@@ -31,7 +34,7 @@ public:
 
 private:
 	ID3D12Device* m_Device;
-
+	
 	std::unordered_map<std::string, ComPtr<ID3D12PipelineState>>			m_PSOs;
 	std::unordered_map<std::string, D3D12_BLEND_DESC>						m_Blends;
 	std::unordered_map<std::string, D3D12_DEPTH_STENCIL_DESC>				m_DepthStencils;

@@ -47,9 +47,10 @@ struct PassConstants
 	physx::PxVec2	renderTargetSize = { 0.0f, 0.0f };
 	physx::PxVec2	invRenderTargetSize = { 0.0f, 0.0f };
 	physx::PxVec4	ambientLight = { 0.0f, 0.0f, 0.0f, 1.0f };
-	unsigned int	samplerIndex = 0;
+	physx::PxVec3	dirLight = { 0.0f, -1.0f, 0.0f };
+	float			dirLightPower = 1.0f;
 
-	//Light Lights[16];
+	unsigned int	samplerIndex = 0;
 };
 
 enum DX12_SHADER_TYPE
@@ -59,5 +60,6 @@ enum DX12_SHADER_TYPE
 	DX12_SHADER_GEOMETRY,
 	DX12_SHADER_HULL,
 	DX12_SHADER_DOMAIN,
+	DX12_SHADER_COMPUTE,
 	DX12_SHADER_TYPE_COUNT
 };

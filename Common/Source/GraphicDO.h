@@ -28,13 +28,15 @@ public:
 	CGH::MESH_TYPE		GetCurrMeshType() const {}
 
 	bool				SelectMesh(CGH::MESH_TYPE type ,const std::string& name);
+	void				ReComputeHeightField(physx::PxVec3 scale);
 
 private:
 	virtual void Update(float delta) override {}
 	virtual void Init(PhysX4_1*, IGraphicDevice* graphicDevice);
 
 private:
-	static const std::unordered_map<std::string, MeshObject>*	m_Meshs[CGH::MESH_TYPE_COUNT];
+	static const std::unordered_map<std::string, MeshObject>*		m_Meshs[CGH::MESH_TYPE_COUNT];
+	static std::function<void(const std::string&, physx::PxVec3)>	m_ReComputeHeightFieldFunc;
 
 	std::string			m_CurrMeshName;
 	CGH::MESH_TYPE		m_CurrMeshType;

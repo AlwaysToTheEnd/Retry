@@ -58,6 +58,7 @@ public: // Used from DeviceObject Init
 	virtual bool	EditMaterial(const std::string& materialName, const Material& material) override;
 
 	virtual int		GetTextureIndex(const std::string& textureName) override;
+	virtual void	ReComputeHeightField(const std::string& name, physx::PxVec3 scale) override;
 
 private: // Used Function by ReadyWorks 
 	virtual void	LoadTextureFromFolder(const std::vector<std::wstring>& targetTextureFolders) override;

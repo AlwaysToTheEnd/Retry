@@ -44,6 +44,7 @@ public: // pure virtual funcs.
 	virtual bool	EditMaterial(const std::string& materialName, const Material& material) = 0;
 
 	virtual int		GetTextureIndex(const std::string& textureName) = 0;
+	virtual void	ReComputeHeightField(const std::string& name, physx::PxVec3 scale) = 0;
 
 private: // used by D3DApp.
 	physx::PxVec2	GetClientSize() const { return physx::PxVec2(m_ClientWidth, m_ClientHeight); }

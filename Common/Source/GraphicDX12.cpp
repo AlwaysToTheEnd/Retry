@@ -183,6 +183,32 @@ const std::unordered_map<std::string, MeshObject>* GraphicDX12::GetMeshDataMap(C
 
 bool GraphicDX12::CreateMesh(const std::string& meshName, MeshObject& meshinfo, CGH::MESH_TYPE type, unsigned int numVertices, const void* vertices, const std::vector<unsigned int>& indices)
 {
+	switch (type)
+	{
+	case CGH::NORMAL_MESH:
+		if (m_NormalMeshSet->MS.find(meshName) != m_NormalMeshSet->MS.end())
+		{
+			return false;
+		}
+		break;
+	case CGH::SKINNED_MESH:
+		if (m_SkinnedMeshSet->MS.find(meshName) != m_SkinnedMeshSet->MS.end())
+		{
+			return false;
+		}
+		break;
+	case CGH::HEIGHTFIELD_MESH:
+		if (m_HeightFieldMeshSet->MS.find(meshName) != m_HeightFieldMeshSet->MS.end())
+		{
+			return false;
+		}
+		break;
+	case CGH::MESH_TYPE_COUNT:
+	default:
+		assert(false);
+		break;
+	}
+
 	bool result = false;
 	ComPtr<ID3D12CommandAllocator>		allocator;
 	ComPtr<ID3D12GraphicsCommandList>	commandList;
@@ -192,16 +218,18 @@ bool GraphicDX12::CreateMesh(const std::string& meshName, MeshObject& meshinfo, 
 	ThrowIfFailed(m_D3dDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT,
 		allocator.Get(), nullptr, IID_PPV_ARGS(commandList.GetAddressOf())));
 
+	DX12MeshSetResult prevResource;
+
 	switch (type)
 	{
 	case CGH::NORMAL_MESH:
-		result = m_NormalMeshSet->AddMesh(m_D3dDevice.Get(), commandList.Get(), meshName, meshinfo, numVertices, reinterpret_cast<const Vertex*>(vertices), indices);
+		prevResource = m_NormalMeshSet->AddMesh(m_D3dDevice.Get(), commandList.Get(), meshName, meshinfo, numVertices, reinterpret_cast<const Vertex*>(vertices), indices);
 		break;
 	case CGH::SKINNED_MESH:
-		result = m_SkinnedMeshSet->AddMesh(m_D3dDevice.Get(), commandList.Get(), meshName, meshinfo, numVertices, reinterpret_cast<const SkinnedVertex*>(vertices), indices);
+		prevResource = m_SkinnedMeshSet->AddMesh(m_D3dDevice.Get(), commandList.Get(), meshName, meshinfo, numVertices, reinterpret_cast<const SkinnedVertex*>(vertices), indices);
 		break;
 	case CGH::HEIGHTFIELD_MESH:
-		result = m_HeightFieldMeshSet->AddMesh(m_D3dDevice.Get(), commandList.Get(), meshName, meshinfo, numVertices, reinterpret_cast<const float*>(vertices), indices);
+		prevResource = m_HeightFieldMeshSet->AddMesh(m_D3dDevice.Get(), commandList.Get(), meshName, meshinfo, numVertices, reinterpret_cast<const float*>(vertices), indices);
 		break;
 	case CGH::MESH_TYPE_COUNT:
 	default:
@@ -235,6 +263,14 @@ bool GraphicDX12::CreateMesh(const std::string& meshName, MeshObject& meshinfo, 
 
 bool GraphicDX12::CreateMaterials(const std::vector<std::string>& materialNames, const std::vector<Material>& materials)
 {
+	for (auto& it : materialNames)
+	{
+		if (m_Materials->GetIndex(it) == -1)
+		{
+			return false;
+		}
+	}
+
 	ComPtr<ID3D12CommandAllocator>		allocator;
 	ComPtr<ID3D12GraphicsCommandList>	commandList;
 
@@ -315,6 +351,27 @@ bool GraphicDX12::EditMaterial(const std::string& materialName, const Material& 
 int GraphicDX12::GetTextureIndex(const std::string& textureName)
 {
 	return m_TextureBuffer->GetTextureIndex(textureName);
+}
+
+void GraphicDX12::ReComputeHeightField(const std::string& name, physx::PxVec3 scale)
+{
+	ComPtr<ID3D12CommandAllocator>		allocator;
+	ComPtr<ID3D12GraphicsCommandList>	commandList;
+
+	ThrowIfFailed(m_D3dDevice->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT,
+		IID_PPV_ARGS(allocator.GetAddressOf())));
+	ThrowIfFailed(m_D3dDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT,
+		allocator.Get(), nullptr, IID_PPV_ARGS(commandList.GetAddressOf())));
+
+	m_HeightFieldMeshDrawSet->ReComputeHeightField(name, scale, m_D3dDevice.Get(), commandList.Get());
+
+	commandList->Close();
+
+	ID3D12CommandList* cmdLists[] = { commandList.Get() };
+	m_CommandQueue->ExecuteCommandLists(_countof(cmdLists), cmdLists);
+
+	FlushCommandQueue();
+	ThrowIfFailed(allocator->Reset());
 }
 
 void GraphicDX12::LoadTextureFromFolder(const std::vector<std::wstring>& targetTextureFolders)
@@ -698,12 +755,12 @@ void GraphicDX12::UpdateMainPassCB()
 	mainPass.samplerIndex = CGH::GO.graphic.samplerIndex;
 
 	mainPass.ambientLight = { 0.25f, 0.25f, 0.35f, 1.0f };
-	//m_MainPassCB.Lights[0].direction = { 0.57735f, -0.57735f, 0.57735f };
-	//m_MainPassCB.Lights[0].strength = { 0.9f, 0.9f, 0.9f };
-	//m_MainPassCB.Lights[1].direction = { -0.57735f, -0.57735f, 0.57735f };
-	//m_MainPassCB.Lights[1].strength = { 0.5f, 0.5f, 0.5f };
-	//m_MainPassCB.Lights[2].direction = { 0.0f, -0.707f, -0.707f };
-	//m_MainPassCB.Lights[2].strength = { 0.2f, 0.2f, 0.2f };
+	mainPass.dirLightPower = 1.0;
+	mainPass.dirLight= { 0.0f, -0.707f, -0.707f };
+	//mainPass.lights[0].direction = { 0.57735f, -0.57735f, 0.57735f };
+	//mainPass.lights[0].strength = { 0.9f, 0.9f, 0.9f };
+	//mainPass.lights[1].direction = { 0.0f, -0.707f, -0.707f };
+	//mainPass.lights[1].strength = { 0.2f, 0.2f, 0.2f };
 
 	m_PassCB->CopyData(0, mainPass);
 	m_UIDrawSet->UpdateUIPassCB(CGH::GO.ui);

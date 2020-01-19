@@ -3,19 +3,25 @@
 #include "DX12DefaultBuffer.h"
 #include "DX12UploadBuffer.h"
 
+struct DX12MeshSetResult
+{
+	Microsoft::WRL::ComPtr<ID3D12Resource> VBResult;
+	Microsoft::WRL::ComPtr<ID3D12Resource> IBResult;
+};
+
 template <typename Vertex_T>
 struct DX12MeshSet
 {
 	DX12MeshSet()=default;
 	~DX12MeshSet()=default;
 
-	bool						AddMesh(ID3D12Device* device, ID3D12GraphicsCommandList* commandList,
+	DX12MeshSetResult			AddMesh(ID3D12Device* device, ID3D12GraphicsCommandList* commandList,
 										const std::string& name, MeshObject& mesh,
 										const std::vector<Vertex_T>& vertices, const std::vector<UINT>& indices);
-	bool						AddMesh(ID3D12Device* device, ID3D12GraphicsCommandList* commandList,
+	DX12MeshSetResult			AddMesh(ID3D12Device* device, ID3D12GraphicsCommandList* commandList,
 										const std::string& name, MeshObject& mesh,
 										unsigned int numVertex, const Vertex_T* vertices, const std::vector<UINT>& indices);
-	bool						AddMeshs(ID3D12Device* device, ID3D12GraphicsCommandList* commandList,
+	DX12MeshSetResult			AddMeshs(ID3D12Device* device, ID3D12GraphicsCommandList* commandList,
 										const std::vector<std::string>& meshNames, const std::vector<MeshObject>& meshs,
 										const std::vector<Vertex_T>& vertices, const std::vector<UINT>& indices);
 
@@ -31,8 +37,10 @@ struct DX12MeshSet
 };
 
 template<typename Vertex_T>
-inline bool DX12MeshSet<Vertex_T>::AddMesh(ID3D12Device* device, ID3D12GraphicsCommandList* commandList, const std::string& name, MeshObject& mesh, const std::vector<Vertex_T>& vertices, const std::vector<UINT>& indices)
+inline DX12MeshSetResult DX12MeshSet<Vertex_T>::AddMesh(ID3D12Device* device, ID3D12GraphicsCommandList* commandList, const std::string& name, MeshObject& mesh, const std::vector<Vertex_T>& vertices, const std::vector<UINT>& indices)
 {
+	DX12MeshSetResult result;
+
 	if (VB == nullptr)
 	{
 		VB = std::make_unique<DX12DefaultBuffer<Vertex_T>>(device, commandList, vertices);
@@ -56,18 +64,20 @@ inline bool DX12MeshSet<Vertex_T>::AddMesh(ID3D12Device* device, ID3D12GraphicsC
 			it.second.indexOffset += baseIndexLocation;
 		}
 
-		VB->AddData(device, commandList, numVertices, vertices.data());
-		IB->AddData(device, commandList, numIndices, indices.data());
+		result.VBResult = VB->AddData(device, commandList, numVertices, vertices.data());
+		result.IBResult = IB->AddData(device, commandList, numIndices, indices.data());
 	}
 
 	MS.insert({ name, mesh });
 
-	return true;
+	return result;
 }
 
 template<typename Vertex_T>
-inline bool DX12MeshSet<Vertex_T>::AddMesh(ID3D12Device* device, ID3D12GraphicsCommandList* commandList, const std::string& name, MeshObject& mesh, unsigned int numVertex, const Vertex_T* vertices, const std::vector<UINT>& indices)
+inline DX12MeshSetResult DX12MeshSet<Vertex_T>::AddMesh(ID3D12Device* device, ID3D12GraphicsCommandList* commandList, const std::string& name, MeshObject& mesh, unsigned int numVertex, const Vertex_T* vertices, const std::vector<UINT>& indices)
 {
+	DX12MeshSetResult result;
+
 	if (VB == nullptr)
 	{
 		VB = std::make_unique<DX12DefaultBuffer<Vertex_T>>(device, commandList, numVertex, vertices);
@@ -89,18 +99,20 @@ inline bool DX12MeshSet<Vertex_T>::AddMesh(ID3D12Device* device, ID3D12GraphicsC
 			it.second.indexOffset += baseIndexLocation;
 		}
 
-		VB->AddData(device, commandList, numVertex, vertices);
-		IB->AddData(device, commandList, numIndices, indices.data());
+		result.VBResult = VB->AddData(device, commandList, numVertex, vertices);
+		result.IBResult = IB->AddData(device, commandList, numIndices, indices.data());
 	}
 
 	MS.insert({ name, mesh });
 
-	return true;
+	return result;
 }
 
 template<typename Vertex_T>
-inline bool DX12MeshSet<Vertex_T>::AddMeshs(ID3D12Device* device, ID3D12GraphicsCommandList* commandList, const std::vector<std::string>& meshNames, const std::vector<MeshObject>& meshs, const std::vector<Vertex_T>& vertices, const std::vector<UINT>& indices)
+inline DX12MeshSetResult DX12MeshSet<Vertex_T>::AddMeshs(ID3D12Device* device, ID3D12GraphicsCommandList* commandList, const std::vector<std::string>& meshNames, const std::vector<MeshObject>& meshs, const std::vector<Vertex_T>& vertices, const std::vector<UINT>& indices)
 {
+	DX12MeshSetResult result;
+
 	if (VB == nullptr)
 	{
 		VB = std::make_unique<DX12DefaultBuffer<Vertex_T>>(device, commandList, vertices);
@@ -127,8 +139,8 @@ inline bool DX12MeshSet<Vertex_T>::AddMeshs(ID3D12Device* device, ID3D12Graphics
 			}
 		}
 
-		VB->AddData(device, commandList, numVertices, vertices.data());
-		IB->AddData(device, commandList, numIndices, indices.data());
+		result.VBResult = VB->AddData(device, commandList, numVertices, vertices.data());
+		result.IBResult = IB->AddData(device, commandList, numIndices, indices.data());
 	}
 
 	for (size_t i = 0; i < meshNames.size(); i++)
@@ -136,7 +148,7 @@ inline bool DX12MeshSet<Vertex_T>::AddMeshs(ID3D12Device* device, ID3D12Graphics
 		MS.insert({ meshNames[i], meshs[i] });
 	}
 
-	return true;
+	return result;
 }
 
 template<typename Vertex_T>

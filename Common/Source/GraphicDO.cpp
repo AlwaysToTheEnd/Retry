@@ -4,6 +4,7 @@
 #include "d3dApp.h"
 
 const std::unordered_map<std::string, MeshObject>* DORenderMesh::m_Meshs[CGH::MESH_TYPE_COUNT] = {};
+std::function<void(const std::string &, physx::PxVec3)>	DORenderMesh::m_ReComputeHeightFieldFunc = nullptr;
 
 std::vector<RenderInfo>* DORenderer::m_ReservedRenderObjects = nullptr;
 
@@ -33,7 +34,15 @@ bool DORenderMesh::SelectMesh(CGH::MESH_TYPE type, const std::string& name)
 
 	m_CurrMesh = &iter->second;
 	m_CurrMeshName = name;
+	m_CurrMeshType = type;
 	return true;
+}
+
+void DORenderMesh::ReComputeHeightField(physx::PxVec3 scale)
+{
+	assert(m_CurrMeshType == CGH::HEIGHTFIELD_MESH);
+
+	m_ReComputeHeightFieldFunc(m_CurrMeshName, scale);
 }
 
 void DORenderMesh::Init(PhysX4_1*, IGraphicDevice* graphicDevice)
@@ -44,6 +53,8 @@ void DORenderMesh::Init(PhysX4_1*, IGraphicDevice* graphicDevice)
 		{
 			m_Meshs[i] = graphicDevice->GetMeshDataMap(static_cast<CGH::MESH_TYPE>(i));
 		}
+
+		m_ReComputeHeightFieldFunc = std::bind(&IGraphicDevice::ReComputeHeightField, graphicDevice, std::placeholders::_1, std::placeholders::_2);
 	}
 }
 

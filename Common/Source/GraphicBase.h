@@ -157,16 +157,6 @@ struct MeshObject
 	std::unordered_map<std::string, SubmeshData> subs;
 };
 
-struct Light
-{
-	physx::PxVec3 strength = { 0.5f,0.5f,0.5f };
-	float falloffStart = 1.0f;
-	physx::PxVec3 direction = { 0,-1.0f,0 };
-	float falloffEnd = 10.0f;
-	physx::PxVec3 position = { 0,0,0 };
-	float spotPower = 64.0f;
-};
-
 enum class DYNAMIC_BUFFER_EDIT_MOD
 {
 	CIRCLE_AREA_UP,
