@@ -628,14 +628,14 @@ void GraphicDX12::FlushCommandQueue()
 	}
 }
 
-void GraphicDX12::Update(const CGHScene& scene)
+void GraphicDX12::Update(const CGHScene& scene, float delta)
 {
 	if (m_CurrCamera)
 	{
 		m_ViewMatrix = *m_CurrCamera->GetViewMatrix();
 	}
 
-	UpdateMainPassCB();
+	UpdateMainPassCB(delta);
 	UpdateObjectCB();
 	m_SkinnedMeshDrawSet->UpdateAniBoneCB(m_ReservedAniBones);
 }
@@ -721,7 +721,7 @@ void GraphicDX12::BuildDepthStencilAndBlendsAndRasterizer()
 	
 }
 
-void GraphicDX12::UpdateMainPassCB()
+void GraphicDX12::UpdateMainPassCB(float delta)
 {
 	physx::PxMat44 view = m_ViewMatrix;
 	physx::PxMat44 proj = m_ProjectionMat;
@@ -752,7 +752,19 @@ void GraphicDX12::UpdateMainPassCB()
 
 	mainPass.ambientLight = { 0.25f, 0.25f, 0.35f, 1.0f };
 	mainPass.dirLightPower = 1.0;
-	mainPass.dirLight= { 0.0f, -0.707f, -0.707f };
+
+	static physx::PxVec3 baseDir = physx::PxVec3(0, -0.707f, -0.707f);
+	static physx::PxVec3 sunAxis = baseDir.cross(physx::PxVec3(0, 1, 0));
+	static float currTime = 0;
+	currTime += delta;
+
+	if (currTime > CGH::GO.graphic.onedayTime)
+	{
+		currTime -= CGH::GO.graphic.onedayTime;
+	}
+
+	physx::PxQuat angle((currTime/CGH::GO.graphic.onedayTime)*XM_2PI, sunAxis);
+	mainPass.dirLight = angle.rotate(baseDir);
 
 	m_PassCB->CopyData(0, mainPass);
 	m_UIDrawSet->UpdateUIPassCB(CGH::GO.ui);

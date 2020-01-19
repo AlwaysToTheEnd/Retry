@@ -52,13 +52,14 @@ namespace CGH
 
 		struct GraphicOption
 		{
-			physx::PxVec3		dirLight = { 0,-1,0 };
-			physx::PxVec3		dirLightPower = { 1,1,1 };
+			float				onedayTime = 24.0f;
+			bool				dirLightOn = true;
 			unsigned int		samplerIndex = 2;
 			bool				shadowMap = true;
-			bool				dirLightOn = true;
 			bool				cullMode = true;
 			bool				wireFrameMode = false;
+			physx::PxVec3		dirLight = { 0,-1,0 };
+			float				dirLightPower =1;
 
 		}graphic;
 

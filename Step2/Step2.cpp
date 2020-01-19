@@ -37,7 +37,7 @@ void Step2::LoadObjectsFromFile()
 
 void Step2::InitObjects()
 {
-	 testScene = new HeightMapCreateScene(m_GDevice.get(), m_PXDevice);
+	 testScene = new AniTreeScene(m_GDevice.get(), m_PXDevice);
 	 testScene->Init();
 	 SetCurrScene(testScene);
 }

@@ -72,7 +72,7 @@ bool CGHScene::Update(const DirectX::Mouse::ButtonStateTracker& mouse, float del
 	GetComponentUpdater(typeid(DORenderer).name()).Update(delta);
 	GetComponentUpdater(typeid(DOFont).name()).Update(delta);
 
-	m_GraphicDevice->Update(*this);
+	m_GraphicDevice->Update(*this, delta);
 
 	return result;
 }

@@ -43,8 +43,8 @@ VertexOut VS(SkinnedVertexIn vin)
 	vout.PosH = mul(float4(vin.PosL, 1.0f), World);
 	vout.PosH = mul(vout.PosH, gViewProj);
 
-	 float3 worldNormal = normalize(mul(vin.NormalL, (float3x3) World));
-    vout.Diffuse = dot(-gDirLight, worldNormal);
+	float3 worldNormal = normalize(mul(vin.NormalL, (float3x3) World));
+    vout.Diffuse =  saturate(dot(-gDirLight, worldNormal));
 	return vout;
 }
 #else
@@ -60,7 +60,7 @@ VertexOut VS(VertexIn vin)
 	vout.PosH = mul(vout.PosH, gViewProj);
 
     float3 worldNormal = normalize(mul(vin.NormalL, (float3x3) World));
-    vout.Diffuse = dot(-gDirLight, worldNormal);
+    vout.Diffuse = saturate(dot(-gDirLight, worldNormal));
 	
 	return vout;
 }
@@ -78,6 +78,6 @@ float4 PS(VertexOut pin) : SV_Target
 
 	clip(litColor.a);
 	
-    litColor.rgb *= pin.Diffuse;
+    litColor.rgb *= (gAmbientLight.rgb + pin.Diffuse).rgb;
 	return litColor;
 }

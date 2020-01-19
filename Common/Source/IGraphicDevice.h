@@ -20,7 +20,7 @@ public:
 
 protected:
 	virtual bool Init(HWND hWnd, UINT windowWidth, UINT windowHeight) = 0;
-	virtual void Update(const CGHScene& scene) = 0;
+	virtual void Update(const CGHScene& scene, float delta) = 0;
 	virtual void Draw() = 0;
 	virtual void* GetDevicePtr() = 0;
 	virtual void OnResize() = 0;

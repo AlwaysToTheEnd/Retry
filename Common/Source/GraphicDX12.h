@@ -38,7 +38,7 @@ public:
 	virtual ~GraphicDX12() override;
 
 private:
-	virtual void	Update(const CGHScene& scene) override;
+	virtual void	Update(const CGHScene& scene, float delta) override;
 	virtual void	Draw() override;
 	virtual bool	Init(HWND hWnd, UINT windowWidth, UINT windowHeight) override;
 	virtual void	OnResize() override;
@@ -76,7 +76,7 @@ private: // Base object Builds
 	void BuildDepthStencilAndBlendsAndRasterizer();
 
 private: // Used in frame.
-	void UpdateMainPassCB();
+	void UpdateMainPassCB(float delta);
 	void UpdateObjectCB();
 
 private:
