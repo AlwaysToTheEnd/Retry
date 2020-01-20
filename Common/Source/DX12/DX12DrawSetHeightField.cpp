@@ -74,7 +74,7 @@ void DX12DrawSetHeightField::ReserveRender(const RenderInfo& info)
 	ObjectConstants data;
 	data.world = info.world;
 
-	assert(mesh.subs.size() == 1);
+	assert(mesh.IsOneSub());
 	for (auto& it : mesh.subs)
 	{
 		data.materialIndex = m_MaterialBuffer->GetIndex(it.second.material);

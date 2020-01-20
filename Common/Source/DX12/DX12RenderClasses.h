@@ -1,8 +1,6 @@
 #pragma once
-#include <foundation/PxVec2.h>
-#include <foundation/PxVec3.h>
-#include <foundation/PxVec4.h>
-#include <foundation/PxMat44.h>
+#include "GraphicBase.h"
+#define MAXTEXTURENUM 40
 
 struct ObjectConstants
 {

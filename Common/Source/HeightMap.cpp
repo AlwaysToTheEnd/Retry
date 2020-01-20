@@ -132,11 +132,18 @@ void HeightMap::CreateRigidStatic(PhysX4_1* pxd, int fileHeight, int fileWidth, 
 	std::vector<PxHeightFieldSample> samples(samplesSize);
 	heights.resize(samplesSize);
 
-	for (int i = 0; i < samplesSize; i++)
+	int index = 0;
+	for (int y = fileHeight-1; y >= 0; y--)
 	{
-		samples[i].height = datas[i];
-		samples[i].materialIndex0 = 0;
-		samples[i].materialIndex1 = 0;
+		int baseIndex = y * fileWidth;
+		for (int x = 0; x < fileWidth; x++)
+		{
+			samples[index].height = datas[baseIndex+x];
+			samples[index].materialIndex0 = 0;
+			samples[index].materialIndex1 = 0;
+			samples[index].setTessFlag();
+			index++;
+		}
 	}
 
 	PxHeightFieldDesc fieldDesc = {};
@@ -149,9 +156,15 @@ void HeightMap::CreateRigidStatic(PhysX4_1* pxd, int fileHeight, int fileWidth, 
 
 	field->saveCells(samples.data(), samplesSize * sizeof(PxHeightFieldSample));
 
-	for (int i = 0; i < samplesSize; i++)
+	index = 0;
+	for (int y = fileHeight - 1; y >= 0; y--)
 	{
-		heights[i] = samples[i].height;
+		int baseIndex = y * fileWidth;
+		for (int x = 0; x < fileWidth; x++)
+		{
+			heights[index] = samples[baseIndex + x].height;
+			index++;
+		}
 	}
 
 	PxHeightFieldGeometry fieldGeo(field, PxMeshGeometryFlags(), m_Scale.y, m_Scale.x, m_Scale.z);

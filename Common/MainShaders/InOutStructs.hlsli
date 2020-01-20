@@ -18,7 +18,9 @@ struct VertexOut
 {
     float4 PosH : SV_POSITION;
     float2 TexC : TEXCOORD0;
-    float Diffuse : TEXCOORD1;
+    float3 Diffuse : TEXCOORD1;
+    float3 ViewDir : TEXCOORD2;
+    float3 Reflection : TEXCOORD3;
 };
 
 struct POINTVertexIn

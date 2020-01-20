@@ -146,14 +146,13 @@ struct SubmeshData
 
 struct MeshObject
 {
-	unsigned int	primitiveType = 0;
-
 	size_t	GetTotalVertexNum() const;
 	size_t	GetStartVertexOffset() const;
 	size_t	GetTotalIndexNum() const;
 	size_t	GetStartIndexOffset() const;
 	bool	IsOneSub() const { return subs.size() == 1; }
 
+	unsigned int	primitiveType = 0;
 	std::unordered_map<std::string, SubmeshData> subs;
 };
 

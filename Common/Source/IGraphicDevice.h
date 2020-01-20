@@ -43,7 +43,7 @@ public: // pure virtual funcs.
 	virtual bool	EditMesh(const std::string& meshName, const std::vector<Vertex>& vertices) = 0;
 	virtual bool	EditMaterial(const std::string& materialName, const Material& material) = 0;
 
-	virtual int		GetTextureIndex(const std::string& textureName) = 0;
+	virtual int		GetTextureIndex(const std::wstring& group, const std::string& textureName) = 0;
 	virtual void	ReComputeHeightField(const std::string& name, physx::PxVec3 scale) = 0;
 
 private: // used by D3DApp.

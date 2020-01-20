@@ -13,6 +13,7 @@
 #include "XFileParser.h"
 #include "DX12/DX12FontMG.h"
 #include "DX12/DX12IndexManagementBuffer.h"
+#include "DX12/DX12TextureBuffer.h"
 #include "DX12/DX12MeshSet.h"
 #include "DX12/DX12UploadBuffer.h"
 #include "DX12/DX12RenderClasses.h"
@@ -22,7 +23,6 @@
 #pragma comment(lib, "D3D12.lib")
 #pragma comment(lib, "dxgi.lib")
 
-class DX12TextureBuffer;
 class DX12DrawSetNormalMesh;
 class DX12DrawSetSkinnedMesh;
 class DX12DrawSetHeightField;
@@ -57,7 +57,7 @@ public: // Used from DeviceObject Init
 	virtual bool	EditMesh(const std::string& meshName, const std::vector<Vertex>& vertices) override;
 	virtual bool	EditMaterial(const std::string& materialName, const Material& material) override;
 
-	virtual int		GetTextureIndex(const std::string& textureName) override;
+	virtual int		GetTextureIndex(const std::wstring& group, const std::string& textureName) override;
 	virtual void	ReComputeHeightField(const std::string& name, physx::PxVec3 scale) override;
 
 private: // Used Function by ReadyWorks 
@@ -104,23 +104,22 @@ private:
 	physx::PxVec3						m_Ray;
 
 private:
-	std::unique_ptr<PSOController>							m_PSOCon;
+	std::unique_ptr<PSOController>											m_PSOCon;
 
-	std::vector<ComPtr<ID3D12CommandAllocator>>				m_CmdListAllocs;
-	std::unique_ptr<DX12UploadBuffer<PassConstants>>		m_PassCB;
+	std::vector<ComPtr<ID3D12CommandAllocator>>								m_CmdListAllocs;
+	std::unique_ptr<DX12UploadBuffer<PassConstants>>						m_PassCB;
 
-	std::unique_ptr<DX12TextureBuffer>						m_TextureBuffer;
-	std::unique_ptr<DX12TextureBuffer>						m_UITextureBuffer;
-	std::unique_ptr<DX12IndexManagementBuffer<Material>>	m_Materials;
+	std::unordered_map<std::wstring, std::unique_ptr<DX12TextureBuffer>>	m_TextureBuffers;
+	std::unique_ptr<DX12IndexManagementBuffer<Material>>					m_Materials;
 
-	std::unique_ptr<DX12MeshSet<Vertex>>					m_NormalMeshSet;
-	std::unique_ptr<DX12MeshSet<SkinnedVertex>>				m_SkinnedMeshSet;
-	std::unique_ptr<DX12MeshSet<float>>						m_HeightFieldMeshSet;
+	std::unique_ptr<DX12MeshSet<Vertex>>									m_NormalMeshSet;
+	std::unique_ptr<DX12MeshSet<SkinnedVertex>>								m_SkinnedMeshSet;
+	std::unique_ptr<DX12MeshSet<float>>										m_HeightFieldMeshSet;
 
-	std::unique_ptr<DX12DrawSetNormalMesh>					m_NormalMeshDrawSet;
-	std::unique_ptr<DX12DrawSetSkinnedMesh>					m_SkinnedMeshDrawSet;
-	std::unique_ptr<DX12DrawSetHeightField>					m_HeightFieldMeshDrawSet;
-	std::unique_ptr<DX12DrawSetPointBase>					m_PointBaseDrawSet;
-	std::unique_ptr<DX12DrawSetUI>							m_UIDrawSet;
-	std::unique_ptr<DX12FontManager>						m_FontManager;
+	std::unique_ptr<DX12DrawSetNormalMesh>									m_NormalMeshDrawSet;
+	std::unique_ptr<DX12DrawSetSkinnedMesh>									m_SkinnedMeshDrawSet;
+	std::unique_ptr<DX12DrawSetHeightField>									m_HeightFieldMeshDrawSet;
+	std::unique_ptr<DX12DrawSetPointBase>									m_PointBaseDrawSet;
+	std::unique_ptr<DX12DrawSetUI>											m_UIDrawSet;
+	std::unique_ptr<DX12FontManager>										m_FontManager;
 };

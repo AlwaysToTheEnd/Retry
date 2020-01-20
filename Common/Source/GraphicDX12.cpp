@@ -1,6 +1,5 @@
 #include "GraphicDX12.h"
 #include "cCamera.h"
-#include "DX12/DX12TextureBuffer.h"
 #include "DX12/DX12DrawSetNormalMesh.h"
 #include "DX12/DX12DrawSetSkinnedMesh.h"
 #include "DX12/DX12DrawSetHeightField.h"
@@ -348,9 +347,9 @@ bool GraphicDX12::EditMaterial(const std::string& materialName, const Material& 
 	return result;
 }
 
-int GraphicDX12::GetTextureIndex(const std::string& textureName)
+int GraphicDX12::GetTextureIndex(const std::wstring& group, const std::string& textureName)
 {
-	return m_TextureBuffer->GetTextureIndex(textureName);
+	return m_TextureBuffers[group]->GetTextureIndex(textureName);
 }
 
 void GraphicDX12::ReComputeHeightField(const std::string& name, physx::PxVec3 scale)
@@ -376,39 +375,53 @@ void GraphicDX12::ReComputeHeightField(const std::string& name, physx::PxVec3 sc
 
 void GraphicDX12::LoadTextureFromFolder(const std::vector<std::wstring>& targetTextureFolders)
 {
+	vector<vector<wstring>> folders(targetTextureFolders.size());
 	vector<string> files;
-	for (auto& it : targetTextureFolders)
+	for (size_t i = 0; i < targetTextureFolders.size(); i++)
 	{
-		SearchAllFileFromFolder(it, true, files);
+		SearchAllFolderFromFolder(targetTextureFolders[i], folders[i]);
 	}
 
-	unordered_map<string, wstring> texTurePaths;
-	for (auto& it : files)
+	for (size_t i = 0; i < targetTextureFolders.size(); i++)
 	{
-		string extension;
-		string fileName = GetFileNameFromPath(it, extension);
-		wstring temp(it.begin(), it.end());
-
-		if (CheckFileExtension(extension) == EXTENSIONTYPE::EXE_TEXTURE)
+		for (auto& it : folders[i])
 		{
-			texTurePaths[fileName] = temp;
+			SearchAllFileFromFolder(targetTextureFolders[i] + L"//" + it, true, files);
+			unordered_map<string, wstring> texturePaths;
+
+			for (auto& it2 : files)
+			{
+				string extension;
+				string fileName = GetFileNameFromPath(it2, extension);
+				wstring temp(it2.begin(), it2.end());
+
+				if (CheckFileExtension(extension) == EXTENSIONTYPE::EXE_TEXTURE)
+				{
+					texturePaths[fileName] = temp;
+				}
+			}
+
+			m_TextureBuffers[it] = make_unique<DX12TextureBuffer>(m_D3dDevice.Get(), texturePaths.size());
+
+			auto currBuffer = m_TextureBuffers[it].get();
+			currBuffer->Begin(m_D3dDevice.Get());
+
+			for (auto& it2 : texturePaths)
+			{
+				currBuffer->AddTexture(m_D3dDevice.Get(),
+					m_CommandQueue.Get(), it2.second);
+			}
+
+			files.clear();
 		}
 	}
 
-	const UINT numTexturePath = texTurePaths.size();
-	m_TextureBuffer = make_unique<DX12TextureBuffer>(m_D3dDevice.Get(), numTexturePath);
+	auto flushFunc = bind(&GraphicDX12::FlushCommandQueue, this);
 
-	m_TextureBuffer->Begin(m_D3dDevice.Get());
-
-	for (auto& it : texTurePaths)
+	for (auto& it : m_TextureBuffers)
 	{
-		m_TextureBuffer->AddTexture(m_D3dDevice.Get(),
-			m_CommandQueue.Get(), it.second);
+		it.second->End(m_CommandQueue.Get(), flushFunc);
 	}
-
-	auto test1 = bind(&GraphicDX12::FlushCommandQueue, this);
-	function<void()> test = test1;
-	m_TextureBuffer->End(m_CommandQueue.Get(), bind(&GraphicDX12::FlushCommandQueue, this));
 }
 
 void GraphicDX12::LoadMeshAndMaterialFromFolder(const std::vector<std::wstring>& targetMeshFolders)
@@ -695,19 +708,19 @@ void GraphicDX12::BuildDrawSets()
 	std::vector<DXGI_FORMAT> rtv = { m_BackBufferFormat };
 
 	m_NormalMeshDrawSet = std::make_unique<DX12DrawSetNormalMesh>(1, m_PSOCon.get(), 
-		m_TextureBuffer.get(), m_Materials.get(), m_PassCB->Resource(), rtv, m_DepthStencilFormat, *m_NormalMeshSet);
+		m_TextureBuffers[L"MESH"].get(), m_Materials.get(), m_PassCB->Resource(), rtv, m_DepthStencilFormat, *m_NormalMeshSet);
 
 	m_SkinnedMeshDrawSet = std::make_unique<DX12DrawSetSkinnedMesh>(1, m_PSOCon.get(),
-		m_TextureBuffer.get(), m_Materials.get(), m_PassCB->Resource(), rtv, m_DepthStencilFormat, *m_SkinnedMeshSet);
+		m_TextureBuffers[L"MESH"].get(), m_Materials.get(), m_PassCB->Resource(), rtv, m_DepthStencilFormat, *m_SkinnedMeshSet);
 
 	m_HeightFieldMeshDrawSet = std::make_unique<DX12DrawSetHeightField>(1, m_PSOCon.get(),
-		m_TextureBuffer.get(), m_Materials.get(), m_PassCB->Resource(), rtv, m_DepthStencilFormat, *m_HeightFieldMeshSet);
+		m_TextureBuffers[L"HEIGHT"].get(), m_Materials.get(), m_PassCB->Resource(), rtv, m_DepthStencilFormat, *m_HeightFieldMeshSet);
 
 	m_PointBaseDrawSet = std::make_unique<DX12DrawSetPointBase>(1, m_PSOCon.get(),
-		m_TextureBuffer.get(), m_Materials.get(), m_PassCB->Resource(), rtv, m_DepthStencilFormat);
+		m_TextureBuffers[L"BASE"].get(), m_Materials.get(), m_PassCB->Resource(), rtv, m_DepthStencilFormat);
 
 	m_UIDrawSet = std::make_unique<DX12DrawSetUI>(1, m_PSOCon.get(),
-		m_TextureBuffer.get(), m_Materials.get(), m_PassCB->Resource(), rtv, m_DepthStencilFormat);
+		m_TextureBuffers[L"UI"].get(), m_Materials.get(), m_PassCB->Resource(), rtv, m_DepthStencilFormat);
 
 	m_NormalMeshDrawSet->Init(m_D3dDevice.Get());
 	m_SkinnedMeshDrawSet->Init(m_D3dDevice.Get());

@@ -2,6 +2,7 @@
 #include "GraphicBase.h"
 #include "DX12DefaultBuffer.h"
 #include "DX12UploadBuffer.h"
+#include "DX12TextureBuffer.h"
 
 struct DX12MeshSetResult
 {
@@ -31,6 +32,7 @@ struct DX12MeshSet
 	D3D12_VERTEX_BUFFER_VIEW	GetVertexBufferView() const;
 	D3D12_INDEX_BUFFER_VIEW		GetIndexBufferView() const;
 
+	std::unique_ptr<DX12TextureBuffer>				TB;
 	std::unordered_map<std::string, MeshObject>		MS;
 	std::unique_ptr<DX12DefaultBuffer<Vertex_T>>	VB;
 	std::unique_ptr<DX12DefaultBuffer<UINT>>		IB;

@@ -7,8 +7,16 @@ struct MaterialData
     float Roughness;
 };
 
+struct Light
+{
+    uint    type;
+    float3  dir;
+    float3  power;
+    uint    pad0;
+};
+
 Texture2D gMainTexture[MAXTEXTURE]              : register(t0);
-StructuredBuffer<MaterialData> gInstanceData    : register(t0, space1);
+StructuredBuffer<MaterialData> gMaterialData    : register(t0, space1);
 
 SamplerState            gsamPointWrap           : register(s0);
 SamplerState            gsamPointClamp          : register(s1);
@@ -65,4 +73,23 @@ float4 GetTexel(uint textureIndex, float2 uv)
     }
     
     return result;
+}
+
+VertexOut VertexBaseWork(VertexIn vin, float4x4 worldMat)
+{
+    VertexOut vout;
+    
+    vout.TexC = vin.TexC;
+    
+    vout.PosH = float4(vin.PosL, 1.0f);
+    vout.PosH = mul(vout.PosH, worldMat);
+    vout.ViewDir = normalize(vout.PosH.xyz - gEyePosW);
+    
+    vout.PosH = mul(vout.PosH, gViewProj);
+
+    float3 worldNormal = normalize(mul(vin.NormalL, (float3x3) worldMat));
+    vout.Diffuse = dot(-gDirLight, worldNormal);
+    vout.Reflection = reflect(gDirLight, worldNormal);
+    
+    return vout;
 }

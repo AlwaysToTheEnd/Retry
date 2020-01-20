@@ -7,9 +7,6 @@
     <Filter Include="ShaderCollector">
       <UniqueIdentifier>{67348260-40a2-4129-b80e-fab13ec1a6ee}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Shader">
-      <UniqueIdentifier>{3c457f7f-7a52-4b0a-8079-ca10a5f8b00c}</UniqueIdentifier>
-    </Filter>
     <Filter Include="SceneCallback">
       <UniqueIdentifier>{e650040a-cf58-4e68-b408-599da23aedc5}</UniqueIdentifier>
     </Filter>
@@ -72,6 +69,12 @@
     </Filter>
     <Filter Include="Common\DeviceInstance\DX12Supporters\DrawSets">
       <UniqueIdentifier>{8dd33bbf-4c74-4e87-8038-0ce714fbe2d8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Common\DeviceInstance\DX12Supporters\Managing">
+      <UniqueIdentifier>{bcfc42a6-d54e-4232-8abd-4e9891ae0906}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Common\DeviceInstance\DX12Supporters\DrawSets\Shader">
+      <UniqueIdentifier>{3c457f7f-7a52-4b0a-8079-ca10a5f8b00c}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -198,15 +201,6 @@
     <ClCompile Include="..\Common\UIObjects\HeightMapControlPanel.cpp">
       <Filter>Step2\HeightMap</Filter>
     </ClCompile>
-    <ClCompile Include="..\Common\Source\DX12\DX12FontMG.cpp">
-      <Filter>Common\DeviceInstance\DX12Supporters</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Common\Source\DX12\PSOController.cpp">
-      <Filter>Common\DeviceInstance\DX12Supporters</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Common\Source\DX12\DX12SwapChain.cpp">
-      <Filter>Common\DeviceInstance\DX12Supporters</Filter>
-    </ClCompile>
     <ClCompile Include="..\Common\Source\DX12\DX12TextureBuffer.cpp">
       <Filter>Common\DeviceInstance\DX12Supporters\Buffer</Filter>
     </ClCompile>
@@ -227,6 +221,15 @@
     </ClCompile>
     <ClCompile Include="..\Common\Source\DX12\DX12DrawSetHeightField.cpp">
       <Filter>Common\DeviceInstance\DX12Supporters\DrawSets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Source\DX12\DX12FontMG.cpp">
+      <Filter>Common\DeviceInstance\DX12Supporters\Managing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Source\DX12\DX12SwapChain.cpp">
+      <Filter>Common\DeviceInstance\DX12Supporters\Managing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Source\DX12\PSOController.cpp">
+      <Filter>Common\DeviceInstance\DX12Supporters\Managing</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -344,18 +347,6 @@
     <ClInclude Include="..\Common\UIObjects\HeightMapControlPanel.h">
       <Filter>Step2\HeightMap</Filter>
     </ClInclude>
-    <ClInclude Include="..\Common\Source\DX12\DX12RenderClasses.h">
-      <Filter>Common\DeviceInstance\DX12Supporters</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Common\Source\DX12\DX12FontMG.h">
-      <Filter>Common\DeviceInstance\DX12Supporters</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Common\Source\DX12\PSOController.h">
-      <Filter>Common\DeviceInstance\DX12Supporters</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Common\Source\DX12\DX12SwapChain.h">
-      <Filter>Common\DeviceInstance\DX12Supporters</Filter>
-    </ClInclude>
     <ClInclude Include="..\Common\Source\DX12\DX12DrawSet.h">
       <Filter>Common\DeviceInstance\DX12Supporters\DrawSets</Filter>
     </ClInclude>
@@ -386,28 +377,40 @@
     <ClInclude Include="..\Common\Source\DX12\DX12DrawSetHeightField.h">
       <Filter>Common\DeviceInstance\DX12Supporters\DrawSets</Filter>
     </ClInclude>
+    <ClInclude Include="..\Common\Source\DX12\DX12FontMG.h">
+      <Filter>Common\DeviceInstance\DX12Supporters\Managing</Filter>
+    </ClInclude>
     <ClInclude Include="..\Common\Source\DX12\DX12MeshSet.h">
+      <Filter>Common\DeviceInstance\DX12Supporters\Managing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\DX12\DX12SwapChain.h">
+      <Filter>Common\DeviceInstance\DX12Supporters\Managing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\DX12\PSOController.h">
+      <Filter>Common\DeviceInstance\DX12Supporters\Managing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\DX12\DX12RenderClasses.h">
       <Filter>Common\DeviceInstance\DX12Supporters</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Common\MainShaders\BaseShader.hlsl">
-      <Filter>Shader</Filter>
+      <Filter>Common\DeviceInstance\DX12Supporters\DrawSets\Shader</Filter>
     </None>
     <None Include="..\Common\MainShaders\pointShader.hlsl">
-      <Filter>Shader</Filter>
+      <Filter>Common\DeviceInstance\DX12Supporters\DrawSets\Shader</Filter>
     </None>
     <None Include="..\Common\MainShaders\UIShader.hlsl">
-      <Filter>Shader</Filter>
+      <Filter>Common\DeviceInstance\DX12Supporters\DrawSets\Shader</Filter>
     </None>
     <None Include="..\Common\MainShaders\Header.hlsli">
-      <Filter>Shader</Filter>
+      <Filter>Common\DeviceInstance\DX12Supporters\DrawSets\Shader</Filter>
     </None>
     <None Include="..\Common\MainShaders\InOutStructs.hlsli">
-      <Filter>Shader</Filter>
+      <Filter>Common\DeviceInstance\DX12Supporters\DrawSets\Shader</Filter>
     </None>
     <None Include="..\Common\MainShaders\HeightFieldMeshCreate.hlsl">
-      <Filter>Shader</Filter>
+      <Filter>Common\DeviceInstance\DX12Supporters\DrawSets\Shader</Filter>
     </None>
   </ItemGroup>
 </Project>
