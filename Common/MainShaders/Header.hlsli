@@ -75,7 +75,7 @@ float4 GetTexel(uint textureIndex, float2 uv)
     return result;
 }
 
-VertexOut VertexBaseWork(VertexIn vin, float4x4 worldMat)
+VertexOut VertexBaseWork(VertexIn vin, float4x4 worldMat, int normalMapIndex)
 {
     VertexOut vout;
     
@@ -87,9 +87,12 @@ VertexOut VertexBaseWork(VertexIn vin, float4x4 worldMat)
     
     vout.PosH = mul(vout.PosH, gViewProj);
 
-    float3 worldNormal = normalize(mul(vin.NormalL, (float3x3) worldMat));
-    vout.Diffuse = dot(-gDirLight, worldNormal);
-    vout.Reflection = reflect(gDirLight, worldNormal);
+    if(normalMapIndex < 0)
+    {
+        float3 worldNormal = normalize(mul(vin.NormalL, (float3x3) worldMat));
+        vout.Diffuse = dot(-gDirLight, worldNormal);
+        vout.Reflection = reflect(gDirLight, worldNormal);
+    }
     
     return vout;
 }

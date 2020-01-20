@@ -38,13 +38,13 @@ VertexOut VS(SkinnedVertexIn vin)
 	normalVertex.TexC = vin.TexC;
 	normalVertex.PosL = posL;
 	normalVertex.NormalL = normalL;
-	return VertexBaseWork(normalVertex, World);
+	return VertexBaseWork(normalVertex, World, NormalMapIndex);
 }
 #else
 
 VertexOut VS(VertexIn vin)
 {
-    return VertexBaseWork(vin, World);
+    return VertexBaseWork(vin, World, NormalMapIndex);
 }
 
 #endif
@@ -62,15 +62,23 @@ float4 PS(VertexOut pin) : SV_Target
         albedo = gMaterialData[MaterialIndex].DriffuseAlbedo;
     }
 	
+    if (NormalMapIndex > -1)
+    {
+        float3 worldNormal = gMainTexture[NormalMapIndex].Sample(gsamLinearWrap, pin.TexC).rgb;
+        worldNormal = normalize(mul(worldNormal, (float3x3) World));
+        pin.Diffuse = dot(-gDirLight, worldNormal);
+        pin.Reflection = reflect(gDirLight, worldNormal);
+    }
+	
     float3 diffuse =  albedo.rgb *saturate(pin.Diffuse);
     float3 viewDir = normalize(pin.ViewDir);
     float3 reflection = normalize(pin.Reflection);
     float3 specular = 0;
 	
-	if(diffuse.x > 0)
+    if (diffuse.x > 0)
     {
         specular = saturate(dot(reflection, viewDir));
-        specular = pow(specular, 15.0f);
+        specular = pow(specular, 10.0f);
     }
 	
     float3 ambient = gAmbientLight.rgb * albedo.rgb;
