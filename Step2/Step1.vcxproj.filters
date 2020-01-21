@@ -392,6 +392,9 @@
     <ClInclude Include="..\Common\Source\DX12\DX12RenderClasses.h">
       <Filter>Common\DeviceInstance\DX12Supporters</Filter>
     </ClInclude>
+    <ClInclude Include="..\Common\Source\DX12\DX12ShadowMap.h">
+      <Filter>Common\DeviceInstance\DX12Supporters\Managing</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Common\MainShaders\BaseShader.hlsl">
