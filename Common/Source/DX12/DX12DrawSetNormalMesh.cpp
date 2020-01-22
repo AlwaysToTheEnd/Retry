@@ -85,7 +85,13 @@ void DX12DrawSetNormalMesh::Draw(ID3D12GraphicsCommandList* cmd, const DX12PSOAt
 		idc.draw.InstanceCount = 1;
 		
 		objectCBVritualAD += objectStrideSize;
+		m_ReservedCommands.push_back(idc);
 	}
+
+	DX12NormalMeshIndirectCommand* bufferPtr = nullptr;
+	currIndiectCommand->Map(0, nullptr, reinterpret_cast<void**>(&bufferPtr));
+	memcpy(bufferPtr, m_ReservedCommands.data(), m_ReservedCommands.size() * sizeof(DX12NormalMeshIndirectCommand));
+	currIndiectCommand->Unmap(0, nullptr);
 
 	cmd->ExecuteIndirect(m_PSOCon->GetCommandSignature("normal"), m_RenderObjectSubmesh.size(), currIndiectCommand, 0, currIndiectCommand,
 		m_Commands[m_CurrFrame]->GetCommandBufferCounterOffset());
@@ -114,6 +120,7 @@ void DX12DrawSetNormalMesh::UpdateFrameCountAndClearWork()
 {
 	DX12DrawSet::UpdateFrameCountAndClearWork();
 	m_RenderObjectSubmesh.clear();
+	m_ReservedCommands.clear();
 }
 
 void DX12DrawSetNormalMesh::ResizeCurrFrameCB()

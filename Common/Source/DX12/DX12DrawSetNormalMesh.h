@@ -47,5 +47,6 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>									m_CommandUAVHeap;
 
 	DX12MeshSet<Vertex>&						m_MeshSet;
+	std::vector< DX12NormalMeshIndirectCommand>	m_ReservedCommands;
 	std::vector<const SubmeshData*>				m_RenderObjectSubmesh;
 };
