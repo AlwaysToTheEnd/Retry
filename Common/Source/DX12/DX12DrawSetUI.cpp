@@ -7,7 +7,7 @@ void DX12DrawSetUI::Init(ID3D12Device* device)
 	m_VBs.resize(m_NumFrame);
 	for (int i = 0; i < m_NumFrame; i++)
 	{
-		m_VBs[i] = std::make_unique<DX12UploadBuffer<UIInfomation>>(device, 100, false);
+		m_VBs[i] = std::make_unique<DX12UploadBuffer<DX12UIInfomation>>(device, 100, false);
 	}
 
 	CD3DX12_ROOT_PARAMETER uiRenderRootparam[UI_ROOT_COUNT];
@@ -44,7 +44,7 @@ void DX12DrawSetUI::Init(ID3D12Device* device)
 		});
 }
 
-void DX12DrawSetUI::Draw(ID3D12GraphicsCommandList* cmd, const PSOAttributeNames* custom)
+void DX12DrawSetUI::Draw(ID3D12GraphicsCommandList* cmd, const DX12PSOAttributeNames* custom)
 {
 	if (m_NumRenderUIs)
 	{
@@ -71,7 +71,7 @@ void DX12DrawSetUI::Draw(ID3D12GraphicsCommandList* cmd, const PSOAttributeNames
 
 void DX12DrawSetUI::ReserveRender(const RenderInfo& info)
 {
-	UIInfomation temp;
+	DX12UIInfomation temp;
 	temp.uiType = info.uiInfo.uiType;
 	temp.size = info.uiInfo.size;
 	temp.pos = info.world.getPosition();

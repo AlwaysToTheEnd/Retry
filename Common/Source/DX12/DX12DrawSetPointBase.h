@@ -15,7 +15,7 @@ class DX12DrawSetPointBase :public DX12DrawSet
 
 	struct PointBaseFrameResource
 	{
-		std::unique_ptr<DX12UploadBuffer<OnlyTexObjectConstants>> SRV;
+		std::unique_ptr<DX12UploadBuffer<DX12OnlyTexObjectConstants>> SRV;
 		std::unique_ptr<DX12UploadBuffer<PointBaseVertex>> VB;
 	};
 
@@ -24,9 +24,9 @@ public:
 		PSOController* psoCon,
 		DX12TextureBuffer* textureBuffer,
 		DX12IndexManagementBuffer<Material>* material,
-		ID3D12Resource* mainPass, const std::vector<DXGI_FORMAT>& rtvFormats,
+		const std::vector<DXGI_FORMAT>& rtvFormats,
 		DXGI_FORMAT dsvFormat)
-		: DX12DrawSet(numFrameResource, psoCon, textureBuffer, material, mainPass, rtvFormats, dsvFormat)
+		: DX12DrawSet(numFrameResource, psoCon, textureBuffer, material, rtvFormats, dsvFormat)
 		, m_NumRenderPointObjects(0)
 	{
 
@@ -34,7 +34,7 @@ public:
 	virtual ~DX12DrawSetPointBase() = default;
 
 	virtual void	Init(ID3D12Device* device) override;
-	virtual void	Draw(ID3D12GraphicsCommandList* cmd, const PSOAttributeNames* custom = nullptr) override;
+	virtual void	Draw(ID3D12GraphicsCommandList* cmd, const DX12PSOAttributeNames* custom = nullptr) override;
 	virtual void	ReserveRender(const RenderInfo& info) override;
 	virtual void	UpdateFrameCountAndClearWork() override;
 

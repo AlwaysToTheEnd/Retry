@@ -57,7 +57,7 @@ bool GraphicDX12::Init(HWND hWnd, UINT windowWidth, UINT windowHeight)
 	m_NormalMeshSet = make_unique<DX12MeshSet<Vertex>>();
 	m_SkinnedMeshSet = make_unique<DX12MeshSet<SkinnedVertex>>();
 	m_HeightFieldMeshSet = make_unique<DX12MeshSet<float>>();
-	m_PassCB = make_unique<DX12UploadBuffer<PassConstants>>(m_D3dDevice.Get(), m_NumFrameResource, true);
+	m_PassCB = make_unique<DX12UploadBuffer<DX12PassConstants>>(m_D3dDevice.Get(), m_NumFrameResource, true);
 	m_CmdListAllocs.resize(m_NumFrameResource);
 
 	for (UINT i = 0; i < m_NumFrameResource; i++)
@@ -672,6 +672,9 @@ void GraphicDX12::Draw()
 	m_CommandList->ClearRenderTargetView(m_Swap->CurrentBackBufferView(), Colors::Gray, 0, nullptr);
 	m_CommandList->ClearDepthStencilView(m_Swap->DepthStencilView(), D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
 
+	DX12DrawSet::SetPassAndMaterials(m_CommandList.Get(), m_PassCB->Resource()->GetGPUVirtualAddress(), 
+		m_Materials->GetBufferResource()->GetGPUVirtualAddress());
+
 	m_NormalMeshDrawSet->Draw(m_CommandList.Get());
 	m_SkinnedMeshDrawSet->Draw(m_CommandList.Get());
 	m_PointBaseDrawSet->Draw(m_CommandList.Get());
@@ -697,30 +700,22 @@ void GraphicDX12::Draw()
 
 void GraphicDX12::BuildDrawSets()
 {
-	//DX12DrawSetHeightField(unsigned int numFrameResource,
-	//	PSOController * psoCon,
-	//	DX12TextureBuffer * textureBuffer,
-	//	DX12IndexManagementBuffer<Material> * material,
-	//	ID3D12Resource * mainPass, const std::vector<DXGI_FORMAT> & rtvFormats,
-	//	DXGI_FORMAT dsvFormat, DX12MeshSet<float> & meshSet)
-	//	: DX12DrawSet(numFrameResource, psoCon, textureBuffer,
-
 	std::vector<DXGI_FORMAT> rtv = { m_BackBufferFormat };
 
 	m_NormalMeshDrawSet = std::make_unique<DX12DrawSetNormalMesh>(1, m_PSOCon.get(), 
-		m_TextureBuffers[L"MESH"].get(), m_Materials.get(), m_PassCB->Resource(), rtv, m_DepthStencilFormat, *m_NormalMeshSet);
+		m_TextureBuffers[L"MESH"].get(), m_Materials.get(), rtv, m_DepthStencilFormat, *m_NormalMeshSet);
 
 	m_SkinnedMeshDrawSet = std::make_unique<DX12DrawSetSkinnedMesh>(1, m_PSOCon.get(),
-		m_TextureBuffers[L"MESH"].get(), m_Materials.get(), m_PassCB->Resource(), rtv, m_DepthStencilFormat, *m_SkinnedMeshSet);
+		m_TextureBuffers[L"MESH"].get(), m_Materials.get(), rtv, m_DepthStencilFormat, *m_SkinnedMeshSet);
 
 	m_HeightFieldMeshDrawSet = std::make_unique<DX12DrawSetHeightField>(1, m_PSOCon.get(),
-		m_TextureBuffers[L"HEIGHT"].get(), m_Materials.get(), m_PassCB->Resource(), rtv, m_DepthStencilFormat, *m_HeightFieldMeshSet);
+		m_TextureBuffers[L"HEIGHT"].get(), m_Materials.get(), rtv, m_DepthStencilFormat, *m_HeightFieldMeshSet);
 
 	m_PointBaseDrawSet = std::make_unique<DX12DrawSetPointBase>(1, m_PSOCon.get(),
-		m_TextureBuffers[L"BASE"].get(), m_Materials.get(), m_PassCB->Resource(), rtv, m_DepthStencilFormat);
+		m_TextureBuffers[L"BASE"].get(), m_Materials.get(), rtv, m_DepthStencilFormat);
 
 	m_UIDrawSet = std::make_unique<DX12DrawSetUI>(1, m_PSOCon.get(),
-		m_TextureBuffers[L"UI"].get(), m_Materials.get(), m_PassCB->Resource(), rtv, m_DepthStencilFormat);
+		m_TextureBuffers[L"UI"].get(), m_Materials.get(), rtv, m_DepthStencilFormat);
 
 	m_NormalMeshDrawSet->Init(m_D3dDevice.Get());
 	m_SkinnedMeshDrawSet->Init(m_D3dDevice.Get());
@@ -750,7 +745,7 @@ void GraphicDX12::UpdateMainPassCB(float delta)
 	XMStoreFloat4x4(invView, XMMatrixInverse(&deter, xmView));
 	physx::PxMat44 invProj = proj.inverseRT();
 	physx::PxMat44 invViewProj = viewProj.inverseRT();
-	PassConstants mainPass;
+	DX12PassConstants mainPass;
 
 	mainPass.view = view.getTranspose();
 	mainPass.invView = invView.getTranspose();
@@ -764,7 +759,6 @@ void GraphicDX12::UpdateMainPassCB(float delta)
 	mainPass.samplerIndex = CGH::GO.graphic.samplerIndex;
 
 	mainPass.ambientLight = { 0.25f, 0.25f, 0.35f, 1.0f };
-	mainPass.dirLightPower = 1.0;
 
 	static physx::PxVec3 baseDir = physx::PxVec3(0, -0.707f, -0.707f);
 	static physx::PxVec3 sunAxis = baseDir.cross(physx::PxVec3(0, 1, 0));
@@ -775,9 +769,6 @@ void GraphicDX12::UpdateMainPassCB(float delta)
 	{
 		currTime -= CGH::GO.graphic.onedayTime;
 	}
-
-	physx::PxQuat angle((currTime/CGH::GO.graphic.onedayTime)*XM_2PI, sunAxis);
-	mainPass.dirLight = angle.rotate(baseDir);
 
 	m_PassCB->CopyData(0, mainPass);
 	m_UIDrawSet->UpdateUIPassCB(CGH::GO.ui);

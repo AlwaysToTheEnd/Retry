@@ -18,9 +18,9 @@ public:
 		PSOController* psoCon,
 		DX12TextureBuffer* textureBuffer,
 		DX12IndexManagementBuffer<Material>* material,
-		ID3D12Resource* mainPass, const std::vector<DXGI_FORMAT>& rtvFormats,
+		const std::vector<DXGI_FORMAT>& rtvFormats,
 		DXGI_FORMAT dsvFormat, DX12MeshSet<SkinnedVertex>& meshSet)
-		: DX12DrawSet(numFrameResource, psoCon, textureBuffer, material, mainPass, rtvFormats, dsvFormat)
+		: DX12DrawSet(numFrameResource, psoCon, textureBuffer, material, rtvFormats, dsvFormat)
 		, m_MeshSet(meshSet)
 	{
 
@@ -28,7 +28,7 @@ public:
 	virtual ~DX12DrawSetSkinnedMesh() = default;
 
 	virtual void	Init(ID3D12Device * device) override;
-	virtual void	Draw(ID3D12GraphicsCommandList * cmd, const PSOAttributeNames* custom = nullptr) override;
+	virtual void	Draw(ID3D12GraphicsCommandList * cmd, const DX12PSOAttributeNames* custom = nullptr) override;
 	virtual void	ReserveRender(const RenderInfo& info) override;
 	virtual void	UpdateFrameCountAndClearWork() override;
 
@@ -36,7 +36,7 @@ public:
 
 
 private:
-	std::vector<std::unique_ptr<DX12UploadBuffer<ObjectConstants>>>	m_MeshObjectCB;
+	std::vector<std::unique_ptr<DX12UploadBuffer<DX12ObjectConstants>>>	m_MeshObjectCB;
 	std::vector<std::unique_ptr<DX12UploadBuffer<AniBoneMat>>>		m_AniBoneCB;
 
 	DX12MeshSet<SkinnedVertex>&							m_MeshSet;

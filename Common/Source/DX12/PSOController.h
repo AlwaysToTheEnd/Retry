@@ -31,6 +31,9 @@ public:
 	void AddDepthStencil(const std::string& name, const D3D12_DEPTH_STENCIL_DESC& depthStencil);
 	void AddRasterizer(const std::string& name, const D3D12_RASTERIZER_DESC& rasterizer);
 	void AddRootSignature(const std::string& name, const D3D12_ROOT_SIGNATURE_DESC& rootSignature);
+	void AddCommandSignature(const std::string& name, const std::string& rootSigName, const D3D12_COMMAND_SIGNATURE_DESC& commandSigDesc);
+
+	ID3D12CommandSignature* GetCommandSignature(const std::string& name);
 
 private:
 	ID3D12Device* m_Device;
@@ -41,5 +44,6 @@ private:
 	std::unordered_map<std::string, D3D12_RASTERIZER_DESC>					m_Rasterizers;
 	std::unordered_map<std::string, ComPtr<ID3DBlob>>						m_Shaders[DX12_SHADER_TYPE_COUNT];//
 	std::unordered_map<std::string, ComPtr<ID3D12RootSignature>>			m_RootSignature;
+	std::unordered_map<std::string, ComPtr<ID3D12CommandSignature>>			m_CommandSignature;
 	std::unordered_map<std::string, std::vector<D3D12_INPUT_ELEMENT_DESC>>	m_InputLayouts;
 };

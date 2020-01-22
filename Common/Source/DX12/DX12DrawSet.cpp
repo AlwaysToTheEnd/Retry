@@ -68,18 +68,11 @@ void DX12DrawSet::UpdateFrameCountAndClearWork()
 	m_CurrFrame = (m_CurrFrame + 1) % m_NumFrame;
 }
 
-D3D12_GPU_VIRTUAL_ADDRESS DX12DrawSet::GetCurrMainPassAddress() const
-{
-	static unsigned int mainPassStride= (sizeof(PassConstants) + 255) & ~255;
-
-	return m_MainPassCB->GetGPUVirtualAddress() + (mainPassStride * m_CurrFrame);
-}
-
-void DX12DrawSet::SetPSO(ID3D12GraphicsCommandList* cmd, const PSOAttributeNames* custom)
+void DX12DrawSet::SetPSO(ID3D12GraphicsCommandList* cmd, const DX12PSOAttributeNames* custom)
 {
 	if (custom)
 	{
-		PSOAttributeNames temp;
+		DX12PSOAttributeNames temp;
 
 		temp.rtvFormats = custom->rtvFormats;
 		temp.dsvFormat = custom->dsvFormat;
@@ -144,6 +137,12 @@ void DX12DrawSet::AllDrawsFrameCountAndClearWork()
 	}
 }
 
+void DX12DrawSet::SetPassAndMaterials(ID3D12GraphicsCommandList* cmd, D3D12_GPU_VIRTUAL_ADDRESS passCB, D3D12_GPU_VIRTUAL_ADDRESS materialSrv)
+{
+	cmd->SetGraphicsRootShaderResourceView(MATERIAL_SRV, materialSrv);
+	cmd->SetGraphicsRootConstantBufferView(PASS_CB, passCB);
+}
+
 void DX12DrawSet::BaseRootParamSetting(CD3DX12_ROOT_PARAMETER params[BASE_ROOT_PARAM_COUNT])
 {
 	static CD3DX12_DESCRIPTOR_RANGE texTable = {};
@@ -158,13 +157,10 @@ void DX12DrawSet::SetBaseRoots(ID3D12GraphicsCommandList* cmd)
 {
 	ID3D12DescriptorHeap* descriptorHeaps[] = { m_TextureBuffer->GetHeap() };
 	cmd->SetDescriptorHeaps(1, descriptorHeaps);
-
-	cmd->SetGraphicsRootShaderResourceView(MATERIAL_SRV, m_MaterialBuffer->GetBufferResource()->GetGPUVirtualAddress());
 	cmd->SetGraphicsRootDescriptorTable(TEXTURE_TABLE, m_TextureBuffer->GetHeap()->GetGPUDescriptorHandleForHeapStart());
-	cmd->SetGraphicsRootConstantBufferView(PASS_CB, GetCurrMainPassAddress());
 }
 
-void DX12DrawSet::AttributeSetToPSO(ID3D12GraphicsCommandList* cmd, const PSOAttributeNames& custom)
+void DX12DrawSet::AttributeSetToPSO(ID3D12GraphicsCommandList* cmd, const DX12PSOAttributeNames& custom)
 {
 	m_PSOCon->SetPSOToCommnadList(cmd, custom.rtvFormats, custom.dsvFormat,
 		custom.primitive, custom.input, custom.rootSig, custom.rasterizer, custom.blend,

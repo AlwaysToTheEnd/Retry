@@ -231,6 +231,12 @@
     <ClCompile Include="..\Common\Source\DX12\PSOController.cpp">
       <Filter>Common\DeviceInstance\DX12Supporters\Managing</Filter>
     </ClCompile>
+    <ClCompile Include="..\Common\Source\DX12\DX12ShadowMap.cpp">
+      <Filter>Common\DeviceInstance\DX12Supporters\Managing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Source\DX12\DX12Light.cpp">
+      <Filter>Common\DeviceInstance\DX12Supporters\Managing</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Common\Source\IGraphicDevice.h">
@@ -389,11 +395,17 @@
     <ClInclude Include="..\Common\Source\DX12\PSOController.h">
       <Filter>Common\DeviceInstance\DX12Supporters\Managing</Filter>
     </ClInclude>
-    <ClInclude Include="..\Common\Source\DX12\DX12RenderClasses.h">
-      <Filter>Common\DeviceInstance\DX12Supporters</Filter>
-    </ClInclude>
     <ClInclude Include="..\Common\Source\DX12\DX12ShadowMap.h">
       <Filter>Common\DeviceInstance\DX12Supporters\Managing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\DX12\DX12Light.h">
+      <Filter>Common\DeviceInstance\DX12Supporters\Managing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\DX12\DX12RenderClasses.h">
+      <Filter>Common\DeviceInstance\DX12Supporters\Managing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\DX12\DX12CommandBuffer.h">
+      <Filter>Common\DeviceInstance\DX12Supporters\Buffer</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -415,5 +427,10 @@
     <None Include="..\Common\MainShaders\HeightFieldMeshCreate.hlsl">
       <Filter>Common\DeviceInstance\DX12Supporters\DrawSets\Shader</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="..\Common\MainShaders\CullingCompute.hlsl">
+      <Filter>Common\DeviceInstance\DX12Supporters\DrawSets\Shader</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

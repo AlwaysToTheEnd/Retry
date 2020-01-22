@@ -107,7 +107,7 @@ private:
 	std::unique_ptr<PSOController>											m_PSOCon;
 
 	std::vector<ComPtr<ID3D12CommandAllocator>>								m_CmdListAllocs;
-	std::unique_ptr<DX12UploadBuffer<PassConstants>>						m_PassCB;
+	std::unique_ptr<DX12UploadBuffer<DX12PassConstants>>						m_PassCB;
 
 	std::unordered_map<std::wstring, std::unique_ptr<DX12TextureBuffer>>	m_TextureBuffers;
 	std::unique_ptr<DX12IndexManagementBuffer<Material>>					m_Materials;

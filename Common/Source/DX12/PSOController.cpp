@@ -153,7 +153,7 @@ void PSOController::SetPSOToCommnadList(ID3D12GraphicsCommandList* cmd,
 		newPSO.RasterizerState = rasterI->second;
 		newPSO.BlendState = blendI->second;
 		newPSO.DepthStencilState = depthStencilI->second;
-
+		
 		newPSO.PrimitiveTopologyType = primitive;
 		newPSO.DSVFormat = dsvFormat;
 		newPSO.NumRenderTargets = rtvFormats.size();
@@ -328,4 +328,23 @@ void PSOController::AddRootSignature(const std::string& name, const D3D12_ROOT_S
 
 	ThrowIfFailed(m_Device->CreateRootSignature(0, serializedRootSig->GetBufferPointer(),
 		serializedRootSig->GetBufferSize(), IID_PPV_ARGS(m_RootSignature[name].GetAddressOf())));
+}
+
+void PSOController::AddCommandSignature(const std::string& name, const std::string& rootSigName, const D3D12_COMMAND_SIGNATURE_DESC& commandSigDesc)
+{
+	auto rootIter = m_RootSignature.find(rootSigName);
+	assert(rootIter != m_RootSignature.end());
+
+	auto commandIter = m_CommandSignature.find(name);
+	assert(commandIter == m_CommandSignature.end());
+
+	ThrowIfFailed(m_Device->CreateCommandSignature(&commandSigDesc, rootIter->second.Get(), IID_PPV_ARGS(m_CommandSignature[name].GetAddressOf())));
+}
+
+ID3D12CommandSignature* PSOController::GetCommandSignature(const std::string& name)
+{
+	auto commandIter = m_CommandSignature.find(name);
+	assert(commandIter != m_CommandSignature.end());
+
+	return commandIter->second.Get();
 }

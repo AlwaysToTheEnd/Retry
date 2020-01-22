@@ -5,7 +5,7 @@ void DX12DrawSetSkinnedMesh::Init(ID3D12Device* device)
 {
 	for (int i = 0; i < m_NumFrame; i++)
 	{
-		m_MeshObjectCB.push_back(std::make_unique<DX12UploadBuffer<ObjectConstants>>(device, 100, true));
+		m_MeshObjectCB.push_back(std::make_unique<DX12UploadBuffer<DX12ObjectConstants>>(device, 100, true));
 		m_AniBoneCB.push_back(std::make_unique<DX12UploadBuffer<AniBoneMat>>(device, 100, true));
 	}
 
@@ -45,7 +45,7 @@ void DX12DrawSetSkinnedMesh::Init(ID3D12Device* device)
 		});
 }
 
-void DX12DrawSetSkinnedMesh::Draw(ID3D12GraphicsCommandList* cmd, const PSOAttributeNames* custom)
+void DX12DrawSetSkinnedMesh::Draw(ID3D12GraphicsCommandList* cmd, const DX12PSOAttributeNames* custom)
 {
 	SetPSO(cmd, custom);
 
@@ -81,7 +81,7 @@ void DX12DrawSetSkinnedMesh::ReserveRender(const RenderInfo& info)
 {
 	auto& mesh = m_MeshSet.MS.find(info.meshOrTextureName)->second;
 	
-	ObjectConstants data;
+	DX12ObjectConstants data;
 	data.world = info.world;
 	data.scale = info.scale;
 

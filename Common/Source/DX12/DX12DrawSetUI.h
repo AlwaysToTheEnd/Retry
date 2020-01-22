@@ -18,9 +18,9 @@ public:
 		PSOController* psoCon,
 		DX12TextureBuffer* textureBuffer,
 		DX12IndexManagementBuffer<Material>* material,
-		ID3D12Resource* mainPass, const std::vector<DXGI_FORMAT>& rtvFormats,
+		const std::vector<DXGI_FORMAT>& rtvFormats,
 		DXGI_FORMAT dsvFormat)
-		: DX12DrawSet(numFrameResource, psoCon, textureBuffer, material, mainPass, rtvFormats, dsvFormat)
+		: DX12DrawSet(numFrameResource, psoCon, textureBuffer, material, rtvFormats, dsvFormat)
 		, m_NumRenderUIs(0)
 	{
 
@@ -28,15 +28,15 @@ public:
 	virtual ~DX12DrawSetUI() = default;
 
 	virtual void	Init(ID3D12Device* device) override;
-	virtual void	Draw(ID3D12GraphicsCommandList* cmd, const PSOAttributeNames* custom = nullptr) override;
+	virtual void	Draw(ID3D12GraphicsCommandList* cmd, const DX12PSOAttributeNames* custom = nullptr) override;
 	virtual void	ReserveRender(const RenderInfo& info) override;
 	virtual void	UpdateFrameCountAndClearWork() override;
 
 	void UpdateUIPassCB(const CGH::GlobalOptions::UIOption& uiPass);
 
 private:
-	std::unique_ptr<DX12UploadBuffer<CGH::GlobalOptions::UIOption>> m_UIPass;
-	std::vector<std::unique_ptr<DX12UploadBuffer<UIInfomation>>>	m_VBs;
+	std::unique_ptr<DX12UploadBuffer<CGH::GlobalOptions::UIOption>>		m_UIPass;
+	std::vector<std::unique_ptr<DX12UploadBuffer<DX12UIInfomation>>>	m_VBs;
 
-	unsigned int													m_NumRenderUIs;
+	unsigned int														m_NumRenderUIs;
 };

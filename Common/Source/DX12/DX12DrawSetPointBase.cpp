@@ -6,7 +6,7 @@ void DX12DrawSetPointBase::Init(ID3D12Device* device)
 	for (int i = 0; i < m_NumFrame; i++)
 	{
 		m_FrameResource.emplace_back();
-		m_FrameResource.back().SRV = std::make_unique<DX12UploadBuffer<OnlyTexObjectConstants>>(device, 100, false);
+		m_FrameResource.back().SRV = std::make_unique<DX12UploadBuffer<DX12OnlyTexObjectConstants>>(device, 100, false);
 		m_FrameResource.back().VB = std::make_unique<DX12UploadBuffer<PointBaseVertex>>(device, 100, false);
 	}
 
@@ -49,7 +49,7 @@ void DX12DrawSetPointBase::Init(ID3D12Device* device)
 		});
 }
 
-void DX12DrawSetPointBase::Draw(ID3D12GraphicsCommandList* cmd, const PSOAttributeNames* custom)
+void DX12DrawSetPointBase::Draw(ID3D12GraphicsCommandList* cmd, const DX12PSOAttributeNames* custom)
 {
 	if (m_NumRenderPointObjects)
 	{
@@ -75,7 +75,7 @@ void DX12DrawSetPointBase::Draw(ID3D12GraphicsCommandList* cmd, const PSOAttribu
 void DX12DrawSetPointBase::ReserveRender(const RenderInfo& info)
 {
 	PointBaseVertex temp;
-	OnlyTexObjectConstants OTObjectConstnat;
+	DX12OnlyTexObjectConstants OTObjectConstnat;
 	auto& currFrameSource = m_FrameResource[m_CurrFrame];
 
 	temp.type = info.type;

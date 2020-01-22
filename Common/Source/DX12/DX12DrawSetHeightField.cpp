@@ -5,7 +5,7 @@ void DX12DrawSetHeightField::Init(ID3D12Device* device)
 {
 	for (int i = 0; i < m_NumFrame; i++)
 	{
-		m_MeshObjectCB.push_back(std::make_unique<DX12UploadBuffer<ObjectConstants>>(device, 100, true));
+		m_MeshObjectCB.push_back(std::make_unique<DX12UploadBuffer<DX12ObjectConstants>>(device, 100, true));
 	}
 
 	m_FieldInfo = std::make_unique<DX12UploadBuffer<FieldInfo>>(device, 1, true);
@@ -31,7 +31,7 @@ void DX12DrawSetHeightField::Init(ID3D12Device* device)
 	m_PSOCon->AddShader(heightFieldCreateCSName+"1", DX12_SHADER_COMPUTE, L"../Common/MainShaders/HeightFieldMeshCreate.hlsl", nullptr, "SettingVerticesNormalAndIndices");
 }
 
-void DX12DrawSetHeightField::Draw(ID3D12GraphicsCommandList* cmd, const PSOAttributeNames* custom)
+void DX12DrawSetHeightField::Draw(ID3D12GraphicsCommandList* cmd, const DX12PSOAttributeNames* custom)
 {
 	if (m_MeshSet.VB.get())
 	{
@@ -71,7 +71,7 @@ void DX12DrawSetHeightField::ReserveRender(const RenderInfo& info)
 {
 	auto& mesh = m_MeshSet.MS.find(info.meshOrTextureName)->second;
 
-	ObjectConstants data;
+	DX12ObjectConstants data;
 	data.world = info.world;
 
 	assert(mesh.IsOneSub());

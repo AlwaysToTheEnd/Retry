@@ -46,9 +46,9 @@ public:
 		PSOController* psoCon,
 		DX12TextureBuffer* textureBuffer,
 		DX12IndexManagementBuffer<Material>* material,
-		ID3D12Resource* mainPass, const std::vector<DXGI_FORMAT>& rtvFormats,
+		const std::vector<DXGI_FORMAT>& rtvFormats,
 		DXGI_FORMAT dsvFormat, DX12MeshSet<float>& meshSet)
-		: DX12DrawSet(numFrameResource, psoCon, textureBuffer, material, mainPass, rtvFormats, dsvFormat)
+		: DX12DrawSet(numFrameResource, psoCon, textureBuffer, material, rtvFormats, dsvFormat)
 		, m_MeshSet(meshSet)
 	{
 
@@ -56,13 +56,13 @@ public:
 	virtual ~DX12DrawSetHeightField() = default;
 
 	virtual void	Init(ID3D12Device* device) override;
-	virtual void	Draw(ID3D12GraphicsCommandList* cmd, const PSOAttributeNames* custom = nullptr) override;
+	virtual void	Draw(ID3D12GraphicsCommandList* cmd, const DX12PSOAttributeNames* custom = nullptr) override;
 	virtual void	ReserveRender(const RenderInfo& info) override;
 	virtual void	UpdateFrameCountAndClearWork() override;
 	void			ReComputeHeightField(const std::string& name, physx::PxVec3 scale, ID3D12Device* device, ID3D12GraphicsCommandList* cmd);
 
 private:
-	std::vector<std::unique_ptr<DX12UploadBuffer<ObjectConstants>>>	m_MeshObjectCB;
+	std::vector<std::unique_ptr<DX12UploadBuffer<DX12ObjectConstants>>>	m_MeshObjectCB;
 	std::unordered_map<std::string, HeightFieldResultMesh>			m_ResultMesh;
 	std::unique_ptr<DX12UploadBuffer<FieldInfo>>					m_FieldInfo;
 

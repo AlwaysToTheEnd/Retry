@@ -17,7 +17,7 @@
 //	std::vector<D3D_SHADER_MACRO>	macros;
 //};
 
-struct PSOAttributeNames
+struct DX12PSOAttributeNames
 {
 	std::vector<DXGI_FORMAT>		rtvFormats;
 	DXGI_FORMAT						dsvFormat;
@@ -47,20 +47,18 @@ protected:
 		MATERIAL_SRV,
 		BASE_ROOT_PARAM_COUNT
 	};
-
+	
 public:
 	DX12DrawSet(unsigned int numFrameResource, 
 		PSOController* psoCon,
 		DX12TextureBuffer* textureBuffer, 
 		DX12IndexManagementBuffer<Material>* material,
-		ID3D12Resource* mainPass,
 		const std::vector<DXGI_FORMAT>& rtvFormats,
 		DXGI_FORMAT dsvFormat)
 		:m_NumFrame(numFrameResource)
 		,m_PSOCon(psoCon)
 		,m_TextureBuffer(textureBuffer)
 		,m_MaterialBuffer(material)
-		,m_MainPassCB(mainPass)
 	{
 		m_PSOA.rtvFormats = rtvFormats;
 		m_PSOA.dsvFormat = dsvFormat;
@@ -69,31 +67,30 @@ public:
 	virtual ~DX12DrawSet() = default;
 
 	virtual void	Init(ID3D12Device* device) = 0;
-	virtual void	Draw(ID3D12GraphicsCommandList* cmd, const PSOAttributeNames* custom=nullptr) = 0;
+	virtual void	Draw(ID3D12GraphicsCommandList* cmd, const DX12PSOAttributeNames* custom=nullptr) = 0;
 	virtual void	ReserveRender(const RenderInfo& info) = 0;
 	virtual void	UpdateFrameCountAndClearWork();
 
-	D3D12_GPU_VIRTUAL_ADDRESS	GetCurrMainPassAddress() const;
-	void						SetPSO(ID3D12GraphicsCommandList* cmd, const PSOAttributeNames* custom);
+	void						SetPSO(ID3D12GraphicsCommandList* cmd, const DX12PSOAttributeNames* custom);
 
-	static void		AllDrawsFrameCountAndClearWork();
+	static void					AllDrawsFrameCountAndClearWork();
+	static void					SetPassAndMaterials(ID3D12GraphicsCommandList* cmd, D3D12_GPU_VIRTUAL_ADDRESS passCB, D3D12_GPU_VIRTUAL_ADDRESS materialSrv);
 
 protected:
 	void BaseRootParamSetting(CD3DX12_ROOT_PARAMETER params[BASE_ROOT_PARAM_COUNT]);
 	void SetBaseRoots(ID3D12GraphicsCommandList* cmd);
 
 private:
-	void AttributeSetToPSO(ID3D12GraphicsCommandList* cmd, const PSOAttributeNames& custom);
+	void AttributeSetToPSO(ID3D12GraphicsCommandList* cmd, const DX12PSOAttributeNames& custom);
 
 protected:
 	static D3D12_STATIC_SAMPLER_DESC		m_StaticSamplers[7];
 	static std::vector<DX12DrawSet*>		m_Draws;
 	const unsigned int						m_NumFrame;
 	unsigned int							m_CurrFrame = 0;
-	PSOAttributeNames						m_PSOA;
+	DX12PSOAttributeNames						m_PSOA;
 	PSOController*							m_PSOCon = nullptr;
 
-	ID3D12Resource*							m_MainPassCB = nullptr;
 	DX12IndexManagementBuffer<Material>*	m_MaterialBuffer = nullptr;
 	DX12TextureBuffer*						m_TextureBuffer = nullptr;
 };
