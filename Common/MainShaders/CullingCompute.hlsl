@@ -11,18 +11,37 @@ struct objectData
     float4 padding[10];
 };
 
+#ifdef SKINNED
+
+struct IndirectCommand
+{
+    uint2 cbvAddress;
+    uint2 boneCBAddress;
+    uint4 drawArguments;
+};
+
+#else
 struct IndirectCommand
 {
     uint2 cbvAddress;
     uint4 drawArguments;
 };
 
-StructuredBuffer<objectData> cbv : register(t0);
-StructuredBuffer<IndirectCommand> inputCommands : register(t1);
-AppendStructuredBuffer<IndirectCommand> outputCommands : register(u0);
+#endif
 
-[numthreads(16, 1, 1)]
-void CS(uint3 groupId : SV_GroupID, uint groupIndex : SV_GroupIndex)
+int numObjects :                                            register(c0);
+
+StructuredBuffer<objectData> cbv :                          register(t0);
+StructuredBuffer<IndirectCommand> inputCommands :           register(t1);
+AppendStructuredBuffer<IndirectCommand> outputCommands :    register(u0);
+
+[numthreads(1, 1, 1)]
+void CS(uint3 id : SV_DispatchThreadID)
 {
-
+    //#TODO Culling.
+    
+    if(id.x < numObjects)
+    {
+        outputCommands.Append(inputCommands[id.x]);
+    }
 }

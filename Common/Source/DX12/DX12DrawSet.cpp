@@ -3,6 +3,9 @@
 #include "DX12TextureBuffer.h"
 
 std::vector<DX12DrawSet*> DX12DrawSet::m_Draws;
+DX12IndexManagementBuffer<Material>* DX12DrawSet::m_MaterialBuffer = nullptr;
+ID3D12Resource* DX12DrawSet::m_MainPassCB = nullptr;
+
 D3D12_STATIC_SAMPLER_DESC DX12DrawSet::m_StaticSamplers[7] =
 {
 	CD3DX12_STATIC_SAMPLER_DESC(
@@ -137,10 +140,10 @@ void DX12DrawSet::AllDrawsFrameCountAndClearWork()
 	}
 }
 
-void DX12DrawSet::SetPassAndMaterials(ID3D12GraphicsCommandList* cmd, D3D12_GPU_VIRTUAL_ADDRESS passCB, D3D12_GPU_VIRTUAL_ADDRESS materialSrv)
+void DX12DrawSet::SetBaseResource(ID3D12Resource* mainPass, DX12IndexManagementBuffer<Material>* material)
 {
-	cmd->SetGraphicsRootShaderResourceView(MATERIAL_SRV, materialSrv);
-	cmd->SetGraphicsRootConstantBufferView(PASS_CB, passCB);
+	m_MainPassCB = mainPass;
+	m_MaterialBuffer = material;
 }
 
 void DX12DrawSet::BaseRootParamSetting(CD3DX12_ROOT_PARAMETER params[BASE_ROOT_PARAM_COUNT])
@@ -149,8 +152,8 @@ void DX12DrawSet::BaseRootParamSetting(CD3DX12_ROOT_PARAMETER params[BASE_ROOT_P
 	texTable.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, m_TextureBuffer->GetTexturesNum(), 0);
 
 	params[PASS_CB].InitAsConstantBufferView(0);
-	params[TEXTURE_TABLE].InitAsDescriptorTable(1, &texTable, D3D12_SHADER_VISIBILITY_PIXEL);
 	params[MATERIAL_SRV].InitAsShaderResourceView(0, 1);
+	params[TEXTURE_TABLE].InitAsDescriptorTable(1, &texTable, D3D12_SHADER_VISIBILITY_PIXEL);
 }
 
 void DX12DrawSet::SetBaseRoots(ID3D12GraphicsCommandList* cmd)
@@ -158,6 +161,8 @@ void DX12DrawSet::SetBaseRoots(ID3D12GraphicsCommandList* cmd)
 	ID3D12DescriptorHeap* descriptorHeaps[] = { m_TextureBuffer->GetHeap() };
 	cmd->SetDescriptorHeaps(1, descriptorHeaps);
 	cmd->SetGraphicsRootDescriptorTable(TEXTURE_TABLE, m_TextureBuffer->GetHeap()->GetGPUDescriptorHandleForHeapStart());
+	cmd->SetGraphicsRootConstantBufferView(PASS_CB, m_MainPassCB->GetGPUVirtualAddress());
+	cmd->SetGraphicsRootShaderResourceView(MATERIAL_SRV, m_MaterialBuffer->GetBufferResource()->GetGPUVirtualAddress());
 }
 
 void DX12DrawSet::AttributeSetToPSO(ID3D12GraphicsCommandList* cmd, const DX12PSOAttributeNames& custom)

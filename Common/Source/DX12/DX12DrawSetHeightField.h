@@ -45,10 +45,9 @@ public:
 	DX12DrawSetHeightField(unsigned int numFrameResource,
 		PSOController* psoCon,
 		DX12TextureBuffer* textureBuffer,
-		DX12IndexManagementBuffer<Material>* material,
 		const std::vector<DXGI_FORMAT>& rtvFormats,
 		DXGI_FORMAT dsvFormat, DX12MeshSet<float>& meshSet)
-		: DX12DrawSet(numFrameResource, psoCon, textureBuffer, material, rtvFormats, dsvFormat)
+		: DX12DrawSet(numFrameResource, psoCon, textureBuffer, rtvFormats, dsvFormat)
 		, m_MeshSet(meshSet)
 	{
 

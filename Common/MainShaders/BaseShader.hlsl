@@ -66,8 +66,8 @@ float4 PS(VertexOut pin) : SV_Target
     {
         float3 worldNormal = gMainTexture[NormalMapIndex].Sample(gsamLinearWrap, pin.TexC).rgb;
         worldNormal = normalize(mul(worldNormal, (float3x3) World));
-        pin.Diffuse = dot(-gDirLight, worldNormal);
-        pin.Reflection = reflect(gDirLight, worldNormal);
+        pin.Diffuse = dot(-gLight[0].direction, worldNormal);
+        pin.Reflection = reflect(gLight[0].direction, worldNormal);
     }
 	
     float3 diffuse =  albedo.rgb *saturate(pin.Diffuse);

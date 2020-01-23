@@ -427,10 +427,8 @@
     <None Include="..\Common\MainShaders\HeightFieldMeshCreate.hlsl">
       <Filter>Common\DeviceInstance\DX12Supporters\DrawSets\Shader</Filter>
     </None>
-  </ItemGroup>
-  <ItemGroup>
-    <FxCompile Include="..\Common\MainShaders\CullingCompute.hlsl">
+    <None Include="..\Common\MainShaders\CullingCompute.hlsl">
       <Filter>Common\DeviceInstance\DX12Supporters\DrawSets\Shader</Filter>
-    </FxCompile>
+    </None>
   </ItemGroup>
 </Project>

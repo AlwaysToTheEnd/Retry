@@ -700,7 +700,12 @@ void XFileParser::ParseDataObjectMeshMaterialList(Ani::Subset& subset, std::vect
 		{
 			// template materials 
 			string matName = GetNextToken();
-			subset.materialIndexCount.push_back({ matName, indexCount[currMatIndex++] });
+
+			if (currMatIndex < indexCount.size())
+			{
+				subset.materialIndexCount.push_back({ matName, indexCount[currMatIndex++] });
+			}
+
 			AniMaterial material;
 			material.name = matName;
 			material.isReference = true;

@@ -28,6 +28,15 @@ void DX12DrawSetNormalMesh::Init(ID3D12Device* device)
 	rootDesc.Init(ROOT_COUNT, baseRootParam, _countof(m_StaticSamplers),
 		m_StaticSamplers, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
+	CD3DX12_ROOT_PARAMETER computeRootParam[COMPUTE_ROOT_COUNT];
+	computeRootParam[COMPUTE_OBJECTNUM_CONST].InitAsConstants(1, 0);
+	computeRootParam[COMPUTE_OBJECTCB_SRV].InitAsShaderResourceView(0);
+	computeRootParam[COMPUTE_INPUTCOMMAND_SRV].InitAsShaderResourceView(1);
+	computeRootParam[COMPUTE_OUTCOMMAND_UAV].InitAsUnorderedAccessView(0);
+
+	CD3DX12_ROOT_SIGNATURE_DESC computeRootDesc;
+	computeRootDesc.Init(COMPUTE_ROOT_COUNT, computeRootParam);
+
 	std::string textureNum = std::to_string(m_TextureBuffer->GetTexturesNum());
 	D3D_SHADER_MACRO macros[] = {
 		"MAXTEXTURE", textureNum.c_str(),
@@ -48,9 +57,12 @@ void DX12DrawSetNormalMesh::Init(ID3D12Device* device)
 	m_PSOA.vs = "normal";
 	m_PSOA.ps = "normal";
 	m_PSOCon->AddRootSignature("normal", rootDesc);
+	m_PSOCon->AddCommandSignature("normal", "normal", commandSignatureDesc);
 	m_PSOCon->AddShader("normal", DX12_SHADER_VERTEX, L"../Common/MainShaders/BaseShader.hlsl", macros, "VS");
 	m_PSOCon->AddShader("normal", DX12_SHADER_PIXEL, L"../Common/MainShaders/BaseShader.hlsl", macros, "PS");
-	m_PSOCon->AddCommandSignature("normal", "normal", commandSignatureDesc);
+
+	m_PSOCon->AddRootSignature("cullingCompute", computeRootDesc);
+	m_PSOCon->AddShader("normalCulling", DX12_SHADER_COMPUTE, L"../Common/MainShaders/CullingCompute.hlsl", nullptr, "CS");
 
 	m_PSOA.input = "normal";
 	m_PSOCon->AddInputLayout("normal",
@@ -63,38 +75,49 @@ void DX12DrawSetNormalMesh::Init(ID3D12Device* device)
 
 void DX12DrawSetNormalMesh::Draw(ID3D12GraphicsCommandList* cmd, const DX12PSOAttributeNames* custom)
 {
-	SetPSO(cmd, custom);
-	SetBaseRoots(cmd);
-	
 	auto currIndiectCommand = m_Commands[m_CurrFrame]->Resource();
 	auto objectCBVritualAD = m_MeshObjectCB[m_CurrFrame]->Resource()->GetGPUVirtualAddress();
 	const UINT objectStrideSize = m_MeshObjectCB[m_CurrFrame]->GetElementByteSize();
 
-	cmd->IASetVertexBuffers(0, 1, &m_MeshSet.GetVertexBufferView());
-	cmd->IASetIndexBuffer(&m_MeshSet.GetIndexBufferView());
-	cmd->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY::D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	UINT numRenderObjects = m_RenderObjectSubmesh.size();
 
-	DX12NormalMeshIndirectCommand idc;
-	for (size_t i = 0; i < m_RenderObjectSubmesh.size(); i++)
+	if (numRenderObjects)
 	{
-		idc.cbv = objectCBVritualAD;
-		idc.draw.IndexCountPerInstance = m_RenderObjectSubmesh[i]->numIndex;
-		idc.draw.StartIndexLocation = m_RenderObjectSubmesh[i]->indexOffset;
-		idc.draw.BaseVertexLocation = m_RenderObjectSubmesh[i]->vertexOffset;
-		idc.draw.StartInstanceLocation = 0;
-		idc.draw.InstanceCount = 1;
-		
-		objectCBVritualAD += objectStrideSize;
-		m_ReservedCommands.push_back(idc);
+		DX12NormalMeshIndirectCommand idc;
+		for (UINT i = 0; i < numRenderObjects; i++)
+		{
+			idc.objectCbv = objectCBVritualAD;
+			idc.draw.IndexCountPerInstance = m_RenderObjectSubmesh[i]->numIndex;
+			idc.draw.StartIndexLocation = m_RenderObjectSubmesh[i]->indexOffset;
+			idc.draw.BaseVertexLocation = m_RenderObjectSubmesh[i]->vertexOffset;
+			idc.draw.StartInstanceLocation = 0;
+			idc.draw.InstanceCount = 1;
+
+			objectCBVritualAD += objectStrideSize;
+			m_ReservedCommands.push_back(idc);
+		}
+
+		m_Commands[m_CurrFrame]->DataMappingAndCountClear(m_ReservedCommands);
+
+		m_PSOCon->SetPSOToCommnadList(cmd, "cullingCompute", "normalCulling");
+		cmd->SetComputeRoot32BitConstant(COMPUTE_OBJECTNUM_CONST, numRenderObjects, 0);
+		cmd->SetComputeRootShaderResourceView(COMPUTE_OBJECTCB_SRV, m_MeshObjectCB[m_CurrFrame]->Resource()->GetGPUVirtualAddress());
+		cmd->SetComputeRootShaderResourceView(COMPUTE_INPUTCOMMAND_SRV, currIndiectCommand->GetGPUVirtualAddress());
+		cmd->SetComputeRootShaderResourceView(COMPUTE_OUTCOMMAND_UAV, currIndiectCommand->GetGPUVirtualAddress());
+		cmd->Dispatch(numRenderObjects, 1, 1);
+
+		////////////////////////////////////////////////////////////////////////////////////
+
+		SetPSO(cmd, custom);
+		SetBaseRoots(cmd);
+
+		cmd->IASetVertexBuffers(0, 1, &m_MeshSet.GetVertexBufferView());
+		cmd->IASetIndexBuffer(&m_MeshSet.GetIndexBufferView());
+		cmd->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY::D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+		cmd->ExecuteIndirect(m_PSOCon->GetCommandSignature("normal"), m_RenderObjectSubmesh.size(), currIndiectCommand, 0, currIndiectCommand,
+			m_Commands[m_CurrFrame]->GetCommandBufferCounterOffset());
 	}
-
-	DX12NormalMeshIndirectCommand* bufferPtr = nullptr;
-	currIndiectCommand->Map(0, nullptr, reinterpret_cast<void**>(&bufferPtr));
-	memcpy(bufferPtr, m_ReservedCommands.data(), m_ReservedCommands.size() * sizeof(DX12NormalMeshIndirectCommand));
-	currIndiectCommand->Unmap(0, nullptr);
-
-	cmd->ExecuteIndirect(m_PSOCon->GetCommandSignature("normal"), m_RenderObjectSubmesh.size(), currIndiectCommand, 0, currIndiectCommand,
-		m_Commands[m_CurrFrame]->GetCommandBufferCounterOffset());
 }
 
 void DX12DrawSetNormalMesh::ReserveRender(const RenderInfo& info)

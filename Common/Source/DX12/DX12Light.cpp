@@ -46,10 +46,11 @@ void DX12Light::ShadowMapUpdate(ID3D12GraphicsCommandList* cmd, std::initializer
 	cmd->OMSetRenderTargets(0, nullptr, true, &m_ShadowMap->GetDsv());
 	XMMATRIX shadowProj = XMMatrixIdentity();
 
+	static const float radius = 500.0f;
+
 	switch (DX12_LIGHT_TYPE(m_Value.type))
 	{
 	case DX12_LIGHT_TYPE::DX12_LIGHT_TYPE_DIRECTIONAL:
-		static const float radius = 500.0f;
 		shadowProj = XMMatrixOrthographicOffCenterLH(-radius, radius, -radius, radius, -radius, radius);
 		break;
 	case DX12_LIGHT_TYPE::DX12_LIGHT_TYPE_POINT:

@@ -9,10 +9,16 @@ struct MaterialData
 
 struct Light
 {
-    uint    type;
-    float3  dir;
-    float3  power;
-    uint    pad0;
+    float3       lightColor;
+    float        falloffStart;
+    float3       direction;
+    float        falloffEnd;
+    float3       position;
+    float        spotPower;
+    unsigned int type;
+    unsigned int pad0;
+    unsigned int pad1;
+    unsigned int pad2;
 };
 
 Texture2D gMainTexture[MAXTEXTURE]              : register(t0);
@@ -36,14 +42,12 @@ cbuffer cbPass                                  : register(b0)
     float4x4    gInvViewProj;
     float4x4    gRightViewProj;
     float4x4    gOrthoMatrix;
-    float3      gDirLight;
-    float       gDirLightPower;
     float2      gRenderTargetSize;
     float2      gInvRenderTargetSize;
     float4      gAmbientLight;
     float3      gEyePosW;
-    
     uint        gSamplerIndex;
+    Light       gLight[15];
 };
 
 float4 GetTexel(uint textureIndex, float2 uv)
@@ -90,8 +94,8 @@ VertexOut VertexBaseWork(VertexIn vin, float4x4 worldMat, int normalMapIndex)
     if(normalMapIndex < 0)
     {
         float3 worldNormal = normalize(mul(vin.NormalL, (float3x3) worldMat));
-        vout.Diffuse = dot(-gDirLight, worldNormal);
-        vout.Reflection = reflect(gDirLight, worldNormal);
+        vout.Diffuse = dot(-gLight[0].direction, worldNormal);
+        vout.Reflection = reflect(gLight[0].direction, worldNormal);
     }
     
     return vout;

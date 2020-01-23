@@ -672,9 +672,6 @@ void GraphicDX12::Draw()
 	m_CommandList->ClearRenderTargetView(m_Swap->CurrentBackBufferView(), Colors::Gray, 0, nullptr);
 	m_CommandList->ClearDepthStencilView(m_Swap->DepthStencilView(), D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
 
-	DX12DrawSet::SetPassAndMaterials(m_CommandList.Get(), m_PassCB->Resource()->GetGPUVirtualAddress(), 
-		m_Materials->GetBufferResource()->GetGPUVirtualAddress());
-
 	m_NormalMeshDrawSet->Draw(m_CommandList.Get());
 	m_SkinnedMeshDrawSet->Draw(m_CommandList.Get());
 	m_PointBaseDrawSet->Draw(m_CommandList.Get());
@@ -700,22 +697,23 @@ void GraphicDX12::Draw()
 
 void GraphicDX12::BuildDrawSets()
 {
+	DX12DrawSet::SetBaseResource(m_PassCB->Resource(), m_Materials.get());
 	std::vector<DXGI_FORMAT> rtv = { m_BackBufferFormat };
 
 	m_NormalMeshDrawSet = std::make_unique<DX12DrawSetNormalMesh>(1, m_PSOCon.get(), 
-		m_TextureBuffers[L"MESH"].get(), m_Materials.get(), rtv, m_DepthStencilFormat, *m_NormalMeshSet);
+		m_TextureBuffers[L"MESH"].get(), rtv, m_DepthStencilFormat, *m_NormalMeshSet);
 
 	m_SkinnedMeshDrawSet = std::make_unique<DX12DrawSetSkinnedMesh>(1, m_PSOCon.get(),
-		m_TextureBuffers[L"MESH"].get(), m_Materials.get(), rtv, m_DepthStencilFormat, *m_SkinnedMeshSet);
+		m_TextureBuffers[L"MESH"].get(), rtv, m_DepthStencilFormat, *m_SkinnedMeshSet);
 
 	m_HeightFieldMeshDrawSet = std::make_unique<DX12DrawSetHeightField>(1, m_PSOCon.get(),
-		m_TextureBuffers[L"HEIGHT"].get(), m_Materials.get(), rtv, m_DepthStencilFormat, *m_HeightFieldMeshSet);
+		m_TextureBuffers[L"HEIGHT"].get(), rtv, m_DepthStencilFormat, *m_HeightFieldMeshSet);
 
 	m_PointBaseDrawSet = std::make_unique<DX12DrawSetPointBase>(1, m_PSOCon.get(),
-		m_TextureBuffers[L"BASE"].get(), m_Materials.get(), rtv, m_DepthStencilFormat);
+		m_TextureBuffers[L"BASE"].get(), rtv, m_DepthStencilFormat);
 
 	m_UIDrawSet = std::make_unique<DX12DrawSetUI>(1, m_PSOCon.get(),
-		m_TextureBuffers[L"UI"].get(), m_Materials.get(), rtv, m_DepthStencilFormat);
+		m_TextureBuffers[L"UI"].get(), rtv, m_DepthStencilFormat);
 
 	m_NormalMeshDrawSet->Init(m_D3dDevice.Get());
 	m_SkinnedMeshDrawSet->Init(m_D3dDevice.Get());

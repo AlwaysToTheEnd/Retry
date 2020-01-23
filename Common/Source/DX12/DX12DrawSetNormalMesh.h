@@ -7,7 +7,7 @@
 
 struct DX12NormalMeshIndirectCommand
 {
-	D3D12_GPU_VIRTUAL_ADDRESS		cbv;
+	D3D12_GPU_VIRTUAL_ADDRESS		objectCbv;
 	D3D12_DRAW_INDEXED_ARGUMENTS	draw;
 };
 
@@ -19,14 +19,22 @@ class DX12DrawSetNormalMesh :public DX12DrawSet
 		ROOT_COUNT
 	};
 
+	enum
+	{
+		COMPUTE_OBJECTNUM_CONST,
+		COMPUTE_OBJECTCB_SRV,
+		COMPUTE_INPUTCOMMAND_SRV,
+		COMPUTE_OUTCOMMAND_UAV,
+		COMPUTE_ROOT_COUNT,
+	};
+
 public:
 	DX12DrawSetNormalMesh(unsigned int numFrameResource,
 		PSOController* psoCon,
 		DX12TextureBuffer* textureBuffer,
-		DX12IndexManagementBuffer<Material>* material,
 		const std::vector<DXGI_FORMAT>& rtvFormats,
 		DXGI_FORMAT dsvFormat, DX12MeshSet<Vertex>& meshSet)
-		: DX12DrawSet(numFrameResource, psoCon, textureBuffer, material, rtvFormats, dsvFormat)
+		: DX12DrawSet(numFrameResource, psoCon, textureBuffer, rtvFormats, dsvFormat)
 		, m_MeshSet(meshSet)
 	{
 

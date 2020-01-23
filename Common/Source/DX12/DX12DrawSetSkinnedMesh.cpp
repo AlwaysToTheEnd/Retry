@@ -3,10 +3,22 @@
 
 void DX12DrawSetSkinnedMesh::Init(ID3D12Device* device)
 {
+	D3D12_DESCRIPTOR_HEAP_DESC heapDesc;
+	heapDesc.NumDescriptors = m_NumFrame;
+	heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+	heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+	heapDesc.NodeMask = 1;
+
+	ThrowIfFailed(device->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(m_CommandUAVHeap.GetAddressOf())));
+	auto heapHandle = m_CommandUAVHeap->GetCPUDescriptorHandleForHeapStart();
+	auto uavSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+
 	for (int i = 0; i < m_NumFrame; i++)
 	{
 		m_MeshObjectCB.push_back(std::make_unique<DX12UploadBuffer<DX12ObjectConstants>>(device, 100, true));
 		m_AniBoneCB.push_back(std::make_unique<DX12UploadBuffer<AniBoneMat>>(device, 100, true));
+		m_Commands.push_back(std::make_unique<DX12CommandBuffer<DX12SkinnedMeshIndirectCommand>>(device, 100, heapHandle));
+		heapHandle.ptr += uavSize;
 	}
 
 	CD3DX12_ROOT_PARAMETER baseRootParam[ROOT_COUNT];
@@ -17,6 +29,18 @@ void DX12DrawSetSkinnedMesh::Init(ID3D12Device* device)
 	CD3DX12_ROOT_SIGNATURE_DESC rootDesc;
 	rootDesc.Init(ROOT_COUNT, baseRootParam, _countof(m_StaticSamplers),
 		m_StaticSamplers, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+	
+	D3D12_INDIRECT_ARGUMENT_DESC argumentDescs[3] = {};
+	argumentDescs[0].Type = D3D12_INDIRECT_ARGUMENT_TYPE_CONSTANT_BUFFER_VIEW;
+	argumentDescs[0].ConstantBufferView.RootParameterIndex = OBJECT_CB;
+	argumentDescs[1].Type = D3D12_INDIRECT_ARGUMENT_TYPE_CONSTANT_BUFFER_VIEW;
+	argumentDescs[1].ConstantBufferView.RootParameterIndex = ANIBONE_CB;
+	argumentDescs[2].Type = D3D12_INDIRECT_ARGUMENT_TYPE_DRAW_INDEXED;
+
+	D3D12_COMMAND_SIGNATURE_DESC commandSignatureDesc = {};
+	commandSignatureDesc.pArgumentDescs = argumentDescs;
+	commandSignatureDesc.NumArgumentDescs = _countof(argumentDescs);
+	commandSignatureDesc.ByteStride = sizeof(DX12SkinnedMeshIndirectCommand);
 
 	std::string boneMaxMatrixNum = std::to_string(BONEMAXMATRIX);
 	std::string textureNum = std::to_string(m_TextureBuffer->GetTexturesNum());
@@ -31,8 +55,17 @@ void DX12DrawSetSkinnedMesh::Init(ID3D12Device* device)
 	m_PSOA.vs = "skin";
 	m_PSOA.ps = "skin";
 	m_PSOCon->AddRootSignature("skin", rootDesc);
+	m_PSOCon->AddCommandSignature("skin", "skin", commandSignatureDesc);
 	m_PSOCon->AddShader("skin", DX12_SHADER_VERTEX, L"../Common/MainShaders/BaseShader.hlsl", macros, "VS");
 	m_PSOCon->AddShader("skin", DX12_SHADER_PIXEL, L"../Common/MainShaders/BaseShader.hlsl", macros, "PS");
+
+	D3D_SHADER_MACRO cullingMacros[] =
+	{
+		"SKINNED", NULL,
+		NULL, NULL
+	};
+
+	m_PSOCon->AddShader("skinnedCulling", DX12_SHADER_COMPUTE, L"../Common/MainShaders/CullingCompute.hlsl", cullingMacros, "CS");
 
 	m_PSOA.input = "skin";
 	m_PSOCon->AddInputLayout("skin",

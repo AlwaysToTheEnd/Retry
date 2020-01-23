@@ -43,8 +43,8 @@ protected:
 	enum BASE_ROOT_PARAM
 	{
 		PASS_CB,
-		TEXTURE_TABLE,
 		MATERIAL_SRV,
+		TEXTURE_TABLE,
 		BASE_ROOT_PARAM_COUNT
 	};
 	
@@ -52,13 +52,11 @@ public:
 	DX12DrawSet(unsigned int numFrameResource, 
 		PSOController* psoCon,
 		DX12TextureBuffer* textureBuffer, 
-		DX12IndexManagementBuffer<Material>* material,
 		const std::vector<DXGI_FORMAT>& rtvFormats,
 		DXGI_FORMAT dsvFormat)
 		:m_NumFrame(numFrameResource)
 		,m_PSOCon(psoCon)
 		,m_TextureBuffer(textureBuffer)
-		,m_MaterialBuffer(material)
 	{
 		m_PSOA.rtvFormats = rtvFormats;
 		m_PSOA.dsvFormat = dsvFormat;
@@ -71,10 +69,9 @@ public:
 	virtual void	ReserveRender(const RenderInfo& info) = 0;
 	virtual void	UpdateFrameCountAndClearWork();
 
-	void						SetPSO(ID3D12GraphicsCommandList* cmd, const DX12PSOAttributeNames* custom);
-
-	static void					AllDrawsFrameCountAndClearWork();
-	static void					SetPassAndMaterials(ID3D12GraphicsCommandList* cmd, D3D12_GPU_VIRTUAL_ADDRESS passCB, D3D12_GPU_VIRTUAL_ADDRESS materialSrv);
+	void			SetPSO(ID3D12GraphicsCommandList* cmd, const DX12PSOAttributeNames* custom);
+	static void		AllDrawsFrameCountAndClearWork();
+	static void		SetBaseResource(ID3D12Resource* mainPass, DX12IndexManagementBuffer<Material>* material);
 
 protected:
 	void BaseRootParamSetting(CD3DX12_ROOT_PARAMETER params[BASE_ROOT_PARAM_COUNT]);
@@ -84,13 +81,15 @@ private:
 	void AttributeSetToPSO(ID3D12GraphicsCommandList* cmd, const DX12PSOAttributeNames& custom);
 
 protected:
-	static D3D12_STATIC_SAMPLER_DESC		m_StaticSamplers[7];
-	static std::vector<DX12DrawSet*>		m_Draws;
-	const unsigned int						m_NumFrame;
-	unsigned int							m_CurrFrame = 0;
-	DX12PSOAttributeNames						m_PSOA;
-	PSOController*							m_PSOCon = nullptr;
+	static D3D12_STATIC_SAMPLER_DESC			m_StaticSamplers[7];
+	static std::vector<DX12DrawSet*>			m_Draws;
+	static DX12IndexManagementBuffer<Material>* m_MaterialBuffer;
+	static ID3D12Resource*						m_MainPassCB;
 
-	DX12IndexManagementBuffer<Material>*	m_MaterialBuffer = nullptr;
-	DX12TextureBuffer*						m_TextureBuffer = nullptr;
+	const unsigned int							m_NumFrame;
+	unsigned int								m_CurrFrame = 0;
+	DX12PSOAttributeNames						m_PSOA;
+	PSOController*								m_PSOCon = nullptr;
+
+	DX12TextureBuffer*							m_TextureBuffer = nullptr;
 };
