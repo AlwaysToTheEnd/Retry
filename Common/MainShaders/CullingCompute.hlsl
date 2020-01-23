@@ -29,7 +29,7 @@ struct IndirectCommand
 
 #endif
 
-int numObjects :                                            register(c0);
+unsigned int numObjects :                                   register(c0);
 
 StructuredBuffer<objectData> cbv :                          register(t0);
 StructuredBuffer<IndirectCommand> inputCommands :           register(t1);
@@ -40,7 +40,7 @@ void CS(uint3 id : SV_DispatchThreadID)
 {
     //#TODO Culling.
     
-    if(id.x < numObjects)
+    //if(id.x < numObjects)
     {
         outputCommands.Append(inputCommands[id.x]);
     }

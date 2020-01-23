@@ -3,7 +3,7 @@
 #include "DX12RenderClasses.h"
 #include "DX12DrawSet.h"
 #include "DX12MeshSet.h"
-#include "DX12CommandBuffer.h"
+#include "DX12MeshComputeCulling.h"
 
 struct DX12SkinnedMeshIndirectCommand
 {
@@ -21,15 +21,6 @@ class DX12DrawSetSkinnedMesh : public DX12DrawSet
 		ROOT_COUNT
 	};
 
-	enum
-	{
-		COMPUTE_OBJECTNUM_CONST,
-		COMPUTE_OBJECTCB_SRV,
-		COMPUTE_INPUTCOMMAND_SRV,
-		COMPUTE_OUTCOMMAND_UAV,
-		COMPUTE_ROOT_COUNT,
-	};
-
 public:
 	DX12DrawSetSkinnedMesh(unsigned int numFrameResource,
 		PSOController* psoCon,
@@ -38,6 +29,7 @@ public:
 		DXGI_FORMAT dsvFormat, DX12MeshSet<SkinnedVertex>& meshSet)
 		: DX12DrawSet(numFrameResource, psoCon, textureBuffer, rtvFormats, dsvFormat)
 		, m_MeshSet(meshSet)
+		, m_RenderCount(0)
 	{
 
 	}
@@ -50,14 +42,12 @@ public:
 
 	void			UpdateAniBoneCB(const std::vector<AniBoneMat>& reservedData);
 
-
 private:
-	std::vector<std::unique_ptr<DX12UploadBuffer<DX12ObjectConstants>>>				m_MeshObjectCB;
+	FrameObjectCBs																	m_MeshObjectCB;
 	std::vector<std::unique_ptr<DX12UploadBuffer<AniBoneMat>>>						m_AniBoneCB;
-	std::vector<std::unique_ptr<DX12CommandBuffer<DX12SkinnedMeshIndirectCommand>>>	m_Commands;
-	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>									m_CommandUAVHeap;
+	std::vector<std::unique_ptr<DX12UploadBuffer<DX12SkinnedMeshIndirectCommand>>>	m_ReservedCommands;
 
-	DX12MeshSet<SkinnedVertex>&							m_MeshSet;
-	std::vector<const SubmeshData*>						m_RenderObjectSubmesh;
-	std::vector<int>									m_AniBoneIndices;
+	DX12MeshComputeCulling			m_Culling;
+	DX12MeshSet<SkinnedVertex>&		m_MeshSet;
+	unsigned int					m_RenderCount;
 };

@@ -30,6 +30,7 @@
     <ClCompile Include="..\Common\Source\DX12\DX12DrawSetSkinnedMesh.cpp" />
     <ClCompile Include="..\Common\Source\DX12\DX12DrawSetUI.cpp" />
     <ClCompile Include="..\Common\Source\DX12\DX12Light.cpp" />
+    <ClCompile Include="..\Common\Source\DX12\DX12MeshComputeCulling.cpp" />
     <ClCompile Include="..\Common\Source\DX12\DX12ShadowMap.cpp" />
     <ClCompile Include="..\Common\Source\DX12\DX12TextureBuffer.cpp" />
     <ClCompile Include="..\Common\Source\DX12\DX12FontMG.cpp" />
@@ -79,7 +80,6 @@
     <ClInclude Include="..\Common\Source\AnimationTreeCreator.h" />
     <ClInclude Include="..\Common\Source\AnimationTreeScene\AnimationTreeScene.h" />
     <ClInclude Include="..\Common\Source\BaseClass.h" />
-    <ClInclude Include="..\Common\Source\DX12\DX12CommandBuffer.h" />
     <ClInclude Include="..\Common\Source\DX12\DX12DefaultBuffer.h" />
     <ClInclude Include="..\Common\Source\DX12\DX12DrawSetHeightField.h" />
     <ClInclude Include="..\Common\Source\DX12\DX12DrawSetPointBase.h" />
@@ -87,6 +87,7 @@
     <ClInclude Include="..\Common\Source\DX12\DX12DrawSetUI.h" />
     <ClInclude Include="..\Common\Source\DX12\DX12IndexManagementBuffer.h" />
     <ClInclude Include="..\Common\Source\DX12\DX12Light.h" />
+    <ClInclude Include="..\Common\Source\DX12\DX12MeshComputeCulling.h" />
     <ClInclude Include="..\Common\Source\DX12\DX12MeshSet.h" />
     <ClInclude Include="..\Common\Source\DX12\DX12ShadowMap.h" />
     <ClInclude Include="..\Common\Source\DX12\DX12TextureBuffer.h" />

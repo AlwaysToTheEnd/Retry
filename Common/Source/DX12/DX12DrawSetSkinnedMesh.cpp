@@ -3,23 +3,14 @@
 
 void DX12DrawSetSkinnedMesh::Init(ID3D12Device* device)
 {
-	D3D12_DESCRIPTOR_HEAP_DESC heapDesc;
-	heapDesc.NumDescriptors = m_NumFrame;
-	heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-	heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
-	heapDesc.NodeMask = 1;
-
-	ThrowIfFailed(device->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(m_CommandUAVHeap.GetAddressOf())));
-	auto heapHandle = m_CommandUAVHeap->GetCPUDescriptorHandleForHeapStart();
-	auto uavSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-
 	for (int i = 0; i < m_NumFrame; i++)
 	{
 		m_MeshObjectCB.push_back(std::make_unique<DX12UploadBuffer<DX12ObjectConstants>>(device, 100, true));
 		m_AniBoneCB.push_back(std::make_unique<DX12UploadBuffer<AniBoneMat>>(device, 100, true));
-		m_Commands.push_back(std::make_unique<DX12CommandBuffer<DX12SkinnedMeshIndirectCommand>>(device, 100, heapHandle));
-		heapHandle.ptr += uavSize;
+		m_ReservedCommands.push_back(std::make_unique<DX12UploadBuffer<DX12SkinnedMeshIndirectCommand>>(device, 100, false));
 	}
+
+	m_Culling.Init(device, m_PSOCon, m_MeshObjectCB, 100, sizeof(DX12SkinnedMeshIndirectCommand));
 
 	CD3DX12_ROOT_PARAMETER baseRootParam[ROOT_COUNT];
 	BaseRootParamSetting(baseRootParam);
@@ -59,14 +50,6 @@ void DX12DrawSetSkinnedMesh::Init(ID3D12Device* device)
 	m_PSOCon->AddShader("skin", DX12_SHADER_VERTEX, L"../Common/MainShaders/BaseShader.hlsl", macros, "VS");
 	m_PSOCon->AddShader("skin", DX12_SHADER_PIXEL, L"../Common/MainShaders/BaseShader.hlsl", macros, "PS");
 
-	D3D_SHADER_MACRO cullingMacros[] =
-	{
-		"SKINNED", NULL,
-		NULL, NULL
-	};
-
-	m_PSOCon->AddShader("skinnedCulling", DX12_SHADER_COMPUTE, L"../Common/MainShaders/CullingCompute.hlsl", cullingMacros, "CS");
-
 	m_PSOA.input = "skin";
 	m_PSOCon->AddInputLayout("skin",
 		{
@@ -80,40 +63,34 @@ void DX12DrawSetSkinnedMesh::Init(ID3D12Device* device)
 
 void DX12DrawSetSkinnedMesh::Draw(ID3D12GraphicsCommandList* cmd, const DX12PSOAttributeNames* custom)
 {
-	SetPSO(cmd, custom);
-
-	SetBaseRoots(cmd);
-
-	auto ObjectCBVritualAD = m_MeshObjectCB[m_CurrFrame]->Resource()->GetGPUVirtualAddress();
-	const UINT ObjectStrideSize = m_MeshObjectCB[m_CurrFrame]->GetElementByteSize();
-
-	auto AniBoneCBVritualAD = m_AniBoneCB[m_CurrFrame]->Resource()->GetGPUVirtualAddress();
-	const UINT AniBoneStrideSize = m_AniBoneCB[m_CurrFrame]->GetElementByteSize();
-
-	cmd->IASetVertexBuffers(0, 1, &m_MeshSet.GetVertexBufferView());
-	cmd->IASetIndexBuffer(&m_MeshSet.GetIndexBufferView());
-	cmd->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY::D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-	for (size_t i = 0; i < m_RenderObjectSubmesh.size(); i++)
+	if (m_RenderCount)
 	{
-		cmd->SetGraphicsRootConstantBufferView(OBJECT_CB, ObjectCBVritualAD);
+		auto result = m_Culling.Compute(cmd, m_RenderCount, m_ReservedCommands[m_CurrFrame]->Resource(), m_CurrFrame, "skinnedCulling");
+		////////////////////////////////////////////////////////////////////////////////////
 
-		if (m_AniBoneIndices[i] > -1)
-		{
-			cmd->SetGraphicsRootConstantBufferView(ANIBONE_CB, 
-				AniBoneCBVritualAD+(m_AniBoneIndices[i]* AniBoneStrideSize));
-		}
+		SetPSO(cmd, custom);
+		SetBaseRoots(cmd);
 
-		cmd->DrawIndexedInstanced(m_RenderObjectSubmesh[i]->numIndex, 1,
-			m_RenderObjectSubmesh[i]->indexOffset, m_RenderObjectSubmesh[i]->vertexOffset, 0);
-		ObjectCBVritualAD += ObjectStrideSize;
+		cmd->IASetVertexBuffers(0, 1, &m_MeshSet.GetVertexBufferView());
+		cmd->IASetIndexBuffer(&m_MeshSet.GetIndexBufferView());
+		cmd->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY::D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+		cmd->ExecuteIndirect(m_PSOCon->GetCommandSignature("skin"), m_RenderCount,
+			result, 0, result, m_Culling.GetCounterOffset());
 	}
 }
 
 void DX12DrawSetSkinnedMesh::ReserveRender(const RenderInfo& info)
 {
 	auto& mesh = m_MeshSet.MS.find(info.meshOrTextureName)->second;
-	
+
+	auto objectCBVritualAD = m_MeshObjectCB[m_CurrFrame]->Resource()->GetGPUVirtualAddress();
+	const UINT objectStrideSize = m_MeshObjectCB[m_CurrFrame]->GetElementByteSize();
+
+	auto AniBoneCBVritualAD = m_AniBoneCB[m_CurrFrame]->Resource()->GetGPUVirtualAddress();
+	const UINT AniBoneStrideSize = m_AniBoneCB[m_CurrFrame]->GetElementByteSize();
+
+	DX12SkinnedMeshIndirectCommand idc;
 	DX12ObjectConstants data;
 	data.world = info.world;
 	data.scale = info.scale;
@@ -124,17 +101,34 @@ void DX12DrawSetSkinnedMesh::ReserveRender(const RenderInfo& info)
 		data.diffuseMapIndex = m_TextureBuffer->GetTextureIndex(it.second.diffuseMap);
 		data.normalMapIndex = m_TextureBuffer->GetTextureIndex(it.second.normalMap);
 
-		m_MeshObjectCB[m_CurrFrame]->CopyData(m_RenderObjectSubmesh.size(), data);
-		m_RenderObjectSubmesh.push_back(&it.second);
-		m_AniBoneIndices.push_back(info.skin.aniBoneIndex);
+		m_MeshObjectCB[m_CurrFrame]->CopyData(m_RenderCount, data);
+
+		if (info.skin.aniBoneIndex > -1)
+		{
+			idc.aniBoneCbv = AniBoneCBVritualAD + info.skin.aniBoneIndex * AniBoneStrideSize;
+		}
+		else
+		{
+			idc.aniBoneCbv = AniBoneCBVritualAD;
+		}
+
+		idc.objectCbv = objectCBVritualAD + (m_RenderCount * objectStrideSize);
+		idc.draw.IndexCountPerInstance = it.second.numIndex;
+		idc.draw.StartIndexLocation = it.second.indexOffset;
+		idc.draw.BaseVertexLocation = it.second.vertexOffset;
+		idc.draw.InstanceCount = 1;
+		idc.draw.StartInstanceLocation = 0;
+
+		m_ReservedCommands[m_CurrFrame]->CopyData(m_RenderCount, idc);
+
+		m_RenderCount++;
 	}
 }
 
 void DX12DrawSetSkinnedMesh::UpdateFrameCountAndClearWork()
 {
 	DX12DrawSet::UpdateFrameCountAndClearWork();
-	m_RenderObjectSubmesh.clear();
-	m_AniBoneIndices.clear();
+	m_RenderCount = 0;
 }
 
 void DX12DrawSetSkinnedMesh::UpdateAniBoneCB(const std::vector<AniBoneMat>& reservedData)

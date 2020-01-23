@@ -698,6 +698,7 @@ void GraphicDX12::Draw()
 void GraphicDX12::BuildDrawSets()
 {
 	DX12DrawSet::SetBaseResource(m_PassCB->Resource(), m_Materials.get());
+	DX12MeshComputeCulling::BaseSetting(m_D3dDevice.Get(), m_PSOCon.get());
 	std::vector<DXGI_FORMAT> rtv = { m_BackBufferFormat };
 
 	m_NormalMeshDrawSet = std::make_unique<DX12DrawSetNormalMesh>(1, m_PSOCon.get(), 
