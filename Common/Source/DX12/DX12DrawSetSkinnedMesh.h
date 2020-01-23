@@ -10,6 +10,7 @@ struct DX12SkinnedMeshIndirectCommand
 	D3D12_GPU_VIRTUAL_ADDRESS		objectCbv;
 	D3D12_GPU_VIRTUAL_ADDRESS		aniBoneCbv;
 	D3D12_DRAW_INDEXED_ARGUMENTS	draw;
+	int								pad[2];
 };
 
 class DX12DrawSetSkinnedMesh : public DX12DrawSet

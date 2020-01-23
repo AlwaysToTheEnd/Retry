@@ -77,6 +77,9 @@ void DX12DrawSetSkinnedMesh::Draw(ID3D12GraphicsCommandList* cmd, const DX12PSOA
 
 		cmd->ExecuteIndirect(m_PSOCon->GetCommandSignature("skin"), m_RenderCount,
 			result, 0, result, m_Culling.GetCounterOffset());
+
+		/*cmd->ExecuteIndirect(m_PSOCon->GetCommandSignature("skin"), m_RenderCount,
+			m_ReservedCommands[m_CurrFrame]->Resource(), 0, nullptr, 0);*/
 	}
 }
 
@@ -105,7 +108,7 @@ void DX12DrawSetSkinnedMesh::ReserveRender(const RenderInfo& info)
 
 		if (info.skin.aniBoneIndex > -1)
 		{
-			idc.aniBoneCbv = AniBoneCBVritualAD + info.skin.aniBoneIndex * AniBoneStrideSize;
+			idc.aniBoneCbv = AniBoneCBVritualAD + (info.skin.aniBoneIndex * AniBoneStrideSize);
 		}
 		else
 		{

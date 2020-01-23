@@ -237,7 +237,9 @@
     <ClCompile Include="..\Common\Source\DX12\DX12Light.cpp">
       <Filter>Common\DeviceInstance\DX12Supporters\Managing</Filter>
     </ClCompile>
-    <ClCompile Include="..\Common\Source\DX12\DX12MeshComputeCulling.cpp" />
+    <ClCompile Include="..\Common\Source\DX12\DX12MeshComputeCulling.cpp">
+      <Filter>Common\DeviceInstance\DX12Supporters\Managing</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Common\Source\IGraphicDevice.h">

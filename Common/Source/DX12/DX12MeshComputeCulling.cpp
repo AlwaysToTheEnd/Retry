@@ -33,9 +33,11 @@ void DX12MeshComputeCulling::BaseSetting(ID3D12Device* device, PSOController* ps
 	tableRange[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
 	tableRange[0].NumDescriptors = 2;
 	tableRange[0].BaseShaderRegister = 0;
+	tableRange[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 	tableRange[1].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
 	tableRange[1].NumDescriptors = 1;
 	tableRange[1].BaseShaderRegister = 0;
+	tableRange[1].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
 	CD3DX12_ROOT_PARAMETER computeRootParam[COMPUTE_ROOT_COUNT];
 	computeRootParam[COMPUTE_RESOURCE_TABLE].InitAsDescriptorTable(_countof(tableRange), tableRange);
@@ -62,8 +64,9 @@ void DX12MeshComputeCulling::BaseSetting(ID3D12Device* device, PSOController* ps
 		IID_PPV_ARGS(m_Zero.GetAddressOf())));
 
 	unsigned int* ZeroData = nullptr;
+	unsigned int test = 0;
 	m_Zero->Map(0, &CD3DX12_RANGE(0, 0), reinterpret_cast<void**>(&ZeroData));
-	ZeroMemory(ZeroData, sizeof(unsigned int));
+	memcpy(ZeroData, &test, sizeof(unsigned int));
 	m_Zero->Unmap(0, nullptr);
 }
 
@@ -78,13 +81,13 @@ void DX12MeshComputeCulling::Init(ID3D12Device* device, PSOController* psocon, F
 ID3D12Resource* DX12MeshComputeCulling::Compute(ID3D12GraphicsCommandList* cmd, unsigned int numDatas, ID3D12Resource* uploadBuffer, unsigned int frame, const std::string& csName)
 {
 	cmd->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_Commands[frame].Get(),
-		D3D12_RESOURCE_STATE_GENERIC_READ, D3D12_RESOURCE_STATE_COPY_DEST));
+		D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT, D3D12_RESOURCE_STATE_COPY_DEST));
 
 	cmd->CopyBufferRegion(m_Commands[frame].Get(), 0, uploadBuffer, 0, numDatas * m_ObjectStride);
 	cmd->CopyBufferRegion(m_Commands[frame].Get(), m_CounterOffset, m_Zero.Get(), 0, sizeof(unsigned int));
 
 	cmd->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_Commands[frame].Get(),
-		D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_GENERIC_READ));
+		D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_UNORDERED_ACCESS));
 
 	m_PsoCon->SetPSOToCommnadList(cmd, "cullingCompute", csName);
 	auto heapPtr = m_CommandSRVUAVHeap->GetGPUDescriptorHandleForHeapStart();
@@ -96,6 +99,9 @@ ID3D12Resource* DX12MeshComputeCulling::Compute(ID3D12GraphicsCommandList* cmd, 
 	cmd->SetComputeRootDescriptorTable(COMPUTE_RESOURCE_TABLE, heapPtr);
 	cmd->SetComputeRoot32BitConstant(COMPUTE_OBJECTNUM_CONST, numDatas, 0);
 	cmd->Dispatch(numDatas, 1, 1);
+
+	cmd->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_Commands[frame].Get(),
+		D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT));
 
 	return m_Commands[frame].Get();
 }
@@ -144,7 +150,7 @@ void DX12MeshComputeCulling::CreateResourceAndViewHeap(ID3D12Device* device, Fra
 			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
 			D3D12_HEAP_FLAG_NONE,
 			&CD3DX12_RESOURCE_DESC::Buffer(m_CounterOffset + sizeof(unsigned int), D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS),
-			D3D12_RESOURCE_STATE_GENERIC_READ,
+			D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT,
 			nullptr,
 			IID_PPV_ARGS(m_Commands[i].GetAddressOf())));
 
