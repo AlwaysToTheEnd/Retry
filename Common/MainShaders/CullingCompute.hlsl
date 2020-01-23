@@ -12,7 +12,6 @@ struct objectData
 };
 
 #ifdef SKINNED
-
 struct IndirectCommand
 {
     uint2   cbvAddress;
@@ -30,19 +29,20 @@ struct IndirectCommand
     uint    drawArguments2;
     uint    pad;
 };
-
 #endif
 
 unsigned int numObjects :                                   register(c0);
-
 StructuredBuffer<objectData> cbv :                          register(t0);
+
 StructuredBuffer<IndirectCommand> inputCommands :           register(t1);
 AppendStructuredBuffer<IndirectCommand> outputCommands :    register(u0);
 
 [numthreads(1, 1, 1)]
 void CS(uint3 id : SV_DispatchThreadID)
 {
-    //#TODO Culling.
+    
+    
+    
     if (id.x < numObjects)
     {
         outputCommands.Append(inputCommands[id.x]);
