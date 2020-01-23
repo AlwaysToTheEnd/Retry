@@ -5,11 +5,14 @@
 #include "DX12MeshSet.h"
 #include "DX12MeshComputeCulling.h"
 
+#pragma pack(push, 4)
 struct DX12NormalMeshIndirectCommand
 {
 	D3D12_GPU_VIRTUAL_ADDRESS		cbv;
 	D3D12_DRAW_INDEXED_ARGUMENTS	draw;
+	int								pad;
 };
+#pragma pack(pop)
 
 class DX12DrawSetNormalMesh :public DX12DrawSet
 {

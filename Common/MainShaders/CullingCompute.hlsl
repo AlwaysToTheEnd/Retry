@@ -15,18 +15,20 @@ struct objectData
 
 struct IndirectCommand
 {
-    uint2 cbvAddress;
-    uint2 aniboneAddress;
-    uint4 drawArguments;
-    uint drawArguments2;
+    uint2   cbvAddress;
+    uint2   aniboneAddress;
+    uint4   drawArguments;
+    uint    drawArguments2;
+    uint3   pad;
 };
 
 #else
 struct IndirectCommand
 {
-    uint2 cbvAddress;
-    uint4 drawArguments;
-    uint drawArguments2;
+    uint2   cbvAddress;
+    uint4   drawArguments;
+    uint    drawArguments2;
+    uint    pad;
 };
 
 #endif
@@ -41,7 +43,7 @@ AppendStructuredBuffer<IndirectCommand> outputCommands :    register(u0);
 void CS(uint3 id : SV_DispatchThreadID)
 {
     //#TODO Culling.
-    if(id.x<3)
+    if (id.x < numObjects)
     {
         outputCommands.Append(inputCommands[id.x]);
     }

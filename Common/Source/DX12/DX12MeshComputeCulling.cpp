@@ -70,20 +70,19 @@ void DX12MeshComputeCulling::BaseSetting(ID3D12Device* device, PSOController* ps
 	m_Zero->Unmap(0, nullptr);
 }
 
-void DX12MeshComputeCulling::Init(ID3D12Device* device, PSOController* psocon, FrameObjectCBs& obCB, unsigned int objectNum, unsigned int objectStride)
+void DX12MeshComputeCulling::Init(ID3D12Device* device, PSOController* psocon, FrameObjectCBs& obCB, FrameUploadSRVs& srvs, unsigned int objectNum, unsigned int objectStride)
 {
 	m_NumObject = objectNum;
 	m_ObjectStride = objectStride;
 	m_CounterOffset = AlignForUavCounter(m_NumObject * m_ObjectStride);
-	CreateResourceAndViewHeap(device, obCB);
+	CreateResourceAndViewHeap(device, obCB, srvs);
 }
 
-ID3D12Resource* DX12MeshComputeCulling::Compute(ID3D12GraphicsCommandList* cmd, unsigned int numDatas, ID3D12Resource* uploadBuffer, unsigned int frame, const std::string& csName)
+ID3D12Resource* DX12MeshComputeCulling::Compute(ID3D12GraphicsCommandList* cmd, unsigned int numDatas, unsigned int frame, const std::string& csName)
 {
 	cmd->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_Commands[frame].Get(),
 		D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT, D3D12_RESOURCE_STATE_COPY_DEST));
 
-	cmd->CopyBufferRegion(m_Commands[frame].Get(), 0, uploadBuffer, 0, numDatas * m_ObjectStride);
 	cmd->CopyBufferRegion(m_Commands[frame].Get(), m_CounterOffset, m_Zero.Get(), 0, sizeof(unsigned int));
 
 	cmd->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_Commands[frame].Get(),
@@ -106,7 +105,7 @@ ID3D12Resource* DX12MeshComputeCulling::Compute(ID3D12GraphicsCommandList* cmd, 
 	return m_Commands[frame].Get();
 }
 
-void DX12MeshComputeCulling::CreateResourceAndViewHeap(ID3D12Device* device, FrameObjectCBs& obCB)
+void DX12MeshComputeCulling::CreateResourceAndViewHeap(ID3D12Device* device, FrameObjectCBs& obCB, FrameUploadSRVs& srvs)
 {
 	D3D12_DESCRIPTOR_HEAP_DESC heapDesc;
 	heapDesc.NumDescriptors = obCB.size() * 3;
@@ -156,7 +155,7 @@ void DX12MeshComputeCulling::CreateResourceAndViewHeap(ID3D12Device* device, Fra
 
 		device->CreateShaderResourceView(obCB[i]->Resource(), &obCBDesc, heapHandle);
 		heapHandle.ptr += m_UavSrvSize;
-		device->CreateShaderResourceView(m_Commands[i].Get(), &srvDesc, heapHandle);
+		device->CreateShaderResourceView(srvs[i], &srvDesc, heapHandle);
 		heapHandle.ptr += m_UavSrvSize;
 		device->CreateUnorderedAccessView(m_Commands[i].Get(), m_Commands[i].Get(), &uavDesc, heapHandle);
 		heapHandle.ptr += m_UavSrvSize;

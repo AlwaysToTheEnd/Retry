@@ -658,7 +658,6 @@ void GraphicDX12::Draw()
 	auto cmdListAlloc = m_CmdListAllocs[m_CurrFrame].Get();
 
 	ThrowIfFailed(cmdListAlloc->Reset());
-
 	ThrowIfFailed(m_CommandList->Reset(cmdListAlloc, nullptr));
 
 	m_CommandList->RSSetViewports(1, &m_ScreenViewport);
@@ -682,6 +681,9 @@ void GraphicDX12::Draw()
 
 	m_CommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_Swap->CurrentBackBuffer(),
 		D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
+
+	FlushCommandQueue();
+
 	ThrowIfFailed(m_CommandList->Close());
 	ID3D12CommandList* cmdsLists[] = { m_CommandList.Get() };
 	m_CommandQueue->ExecuteCommandLists(_countof(cmdsLists), cmdsLists);

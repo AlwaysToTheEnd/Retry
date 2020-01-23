@@ -14,6 +14,7 @@ enum DX12_COMPUTE_CULLING_ROOT
 };
 
 typedef std::vector<std::unique_ptr<DX12UploadBuffer<DX12ObjectConstants>>> FrameObjectCBs;
+typedef std::vector<ID3D12Resource*> FrameUploadSRVs;
 
 class DX12MeshComputeCulling
 {
@@ -22,9 +23,9 @@ public:
 	virtual ~DX12MeshComputeCulling();
 
 	static void			BaseSetting(ID3D12Device* device, PSOController* psocon);
-	void				Init(ID3D12Device* device, PSOController* psocon, FrameObjectCBs& obCB, unsigned int objectNum, unsigned int objectStride);
+	void				Init(ID3D12Device* device, PSOController* psocon, FrameObjectCBs& obCB, FrameUploadSRVs& srvs, unsigned int objectNum, unsigned int objectStride);
 	
-	ID3D12Resource*		Compute(ID3D12GraphicsCommandList* cmd, unsigned int numDatas, ID3D12Resource* uploadBuffer, unsigned int frame, const std::string& csName);
+	ID3D12Resource*		Compute(ID3D12GraphicsCommandList* cmd, unsigned int numDatas, unsigned int frame, const std::string& csName);
 	unsigned int		GetCounterOffset() const { return m_CounterOffset; }
 
 private:
@@ -34,7 +35,7 @@ private:
 		return (bufferSize + (alignment - 1)) & ~(alignment - 1);
 	}
 
-	void CreateResourceAndViewHeap(ID3D12Device* device, FrameObjectCBs& obCB);
+	void CreateResourceAndViewHeap(ID3D12Device* device, FrameObjectCBs& obCB, FrameUploadSRVs& srvs);
 
 private:
 	static Microsoft::WRL::ComPtr<ID3D12Resource>		m_Zero;

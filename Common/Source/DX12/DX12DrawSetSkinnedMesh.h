@@ -5,13 +5,15 @@
 #include "DX12MeshSet.h"
 #include "DX12MeshComputeCulling.h"
 
+#pragma pack(push, 4)
 struct DX12SkinnedMeshIndirectCommand
 {
 	D3D12_GPU_VIRTUAL_ADDRESS		objectCbv;
 	D3D12_GPU_VIRTUAL_ADDRESS		aniBoneCbv;
 	D3D12_DRAW_INDEXED_ARGUMENTS	draw;
-	int								pad[2];
+	int								pad[3];
 };
+#pragma pack(pop)
 
 class DX12DrawSetSkinnedMesh : public DX12DrawSet
 {
