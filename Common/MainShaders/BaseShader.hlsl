@@ -42,6 +42,7 @@ VertexOut VS(SkinnedVertexIn vin)
 	normalVertex.TexC = vin.TexC;
 	normalVertex.PosL = posL;
 	normalVertex.NormalL = normalL;
+
 	return VertexBaseWork(normalVertex, World, NormalMapIndex);
 }
 #else

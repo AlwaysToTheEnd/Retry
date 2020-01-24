@@ -5,12 +5,6 @@
 #include <memory>
 #include <initializer_list>
 
-enum class DX12_LIGHT_TYPE
-{
-	DX12_LIGHT_TYPE_DIRECTIONAL,
-	DX12_LIGHT_TYPE_POINT,
-	DX12_LIGHT_TYPE_SPOT,
-};
 
 class DX12Light
 {

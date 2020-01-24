@@ -60,7 +60,6 @@ void DX12ShadowMap::GetShadowMatrix(const physx::PxVec3& startSpot, const physx:
 
 	XMMATRIX shadowMat = lookAtMat * proj * NDCtoTEX;
 	XMStoreFloat4x4(out, shadowMat);
-
 }
 
 void DX12ShadowMap::CreateResource(ID3D12Device* device, unsigned int width, unsigned int height)

@@ -40,6 +40,9 @@ class DX12TextureBuffer;
 
 class DX12DrawSet
 {
+public:
+	static const std::string ShadowMapShaderCallName;
+
 protected:
 	enum BASE_ROOT_PARAM
 	{
@@ -75,8 +78,9 @@ public:
 	static void		SetBaseResource(ID3D12Resource* mainPass, DX12IndexManagementBuffer<Material>* material);
 
 protected:
-	void BaseRootParamSetting(CD3DX12_ROOT_PARAMETER params[BASE_ROOT_PARAM_COUNT]);
-	void SetBaseRoots(ID3D12GraphicsCommandList* cmd);
+	void				BaseRootParamSetting(CD3DX12_ROOT_PARAMETER params[BASE_ROOT_PARAM_COUNT]);
+	void				SetBaseRoots(ID3D12GraphicsCommandList* cmd);
+	virtual std::string GetShadowRenderShaderName(DX12_SHADER_TYPE type) { return ""; }
 
 private:
 	void AttributeSetToPSO(ID3D12GraphicsCommandList* cmd, const DX12PSOAttributeNames& custom);

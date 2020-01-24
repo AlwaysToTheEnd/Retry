@@ -115,7 +115,8 @@ void DX12DrawSetNormalMesh::UpdateFrameCountAndClearWork()
 	m_RenderCount = 0;
 }
 
-void DX12DrawSetNormalMesh::ResizeCurrFrameCB()
+std::string DX12DrawSetNormalMesh::GetShadowRenderShaderName(DX12_SHADER_TYPE type)
 {
 
+	return std::string();
 }

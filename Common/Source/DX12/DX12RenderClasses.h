@@ -14,15 +14,23 @@ enum DX12_SHADER_TYPE
 	DX12_SHADER_TYPE_COUNT
 };
 
+enum class DX12_LIGHT_TYPE
+{
+	DX12_LIGHT_TYPE_DIRECTIONAL,
+	DX12_LIGHT_TYPE_POINT,
+	DX12_LIGHT_TYPE_SPOT,
+};
+
 struct DX12_LIGHT_VALUE
 {
+	physx::PxMat44	shadowMat = physx::PxMat44(physx::PxIdentity);
 	physx::PxVec3	lightColor = { 0.5f, 0.5f, 0.5f };
 	float			falloffStart = 1.0f;				// point/spot light only
 	physx::PxVec3	direction = { 0.5f, 0.5f, 0.5f };	// directional/spot light only
 	float			falloffEnd = 10.0f;					// point/spot light only
 	physx::PxVec3	position = { 0.00f, 0.0f, 0.0f };	// point/spot light only
 	float			spotPower = 50.0f;					// spot light only
-	unsigned int	type;
+	DX12_LIGHT_TYPE	type = DX12_LIGHT_TYPE::DX12_LIGHT_TYPE_DIRECTIONAL;
 	unsigned int	pad0;
 	unsigned int	pad1;
 	unsigned int	pad2;

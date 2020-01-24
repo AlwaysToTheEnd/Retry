@@ -41,7 +41,7 @@ void DX12DrawSetSkinnedMesh::Init(ID3D12Device* device)
 	"MAXTEXTURE", textureNum.c_str(),
 	"BONEMAXMATRIX", boneMaxMatrixNum.c_str(),
 	"SKINNED_VERTEX_SAHDER",NULL,
-	NULL, NULL };
+	NULL, NULL, NULL, NULL };
 
 	m_PSOA.primitive = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
 	m_PSOA.rootSig = "skin";
@@ -143,4 +143,10 @@ void DX12DrawSetSkinnedMesh::UpdateAniBoneCB(const std::vector<AniBoneMat>& rese
 		m_AniBoneCB[m_CurrFrame]->CopyData(index, reservedData[index]);
 		index++;
 	}
+}
+
+std::string DX12DrawSetSkinnedMesh::GetShadowRenderShaderName(DX12_SHADER_TYPE type)
+{
+
+	return std::string();
 }

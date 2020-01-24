@@ -41,7 +41,7 @@ public:
 	virtual void	UpdateFrameCountAndClearWork() override;
 
 private:
-	void ResizeCurrFrameCB();
+	virtual std::string GetShadowRenderShaderName(DX12_SHADER_TYPE type) override;
 
 private:
 	FrameObjectCBs																	m_MeshObjectCB;

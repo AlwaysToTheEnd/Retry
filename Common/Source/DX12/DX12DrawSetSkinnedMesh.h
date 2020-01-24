@@ -46,6 +46,9 @@ public:
 	void			UpdateAniBoneCB(const std::vector<AniBoneMat>& reservedData);
 
 private:
+	virtual std::string GetShadowRenderShaderName(DX12_SHADER_TYPE type) override;
+
+private:
 	FrameObjectCBs																	m_MeshObjectCB;
 	std::vector<std::unique_ptr<DX12UploadBuffer<AniBoneMat>>>						m_AniBoneCB;
 	std::vector<std::unique_ptr<DX12UploadBuffer<DX12SkinnedMeshIndirectCommand>>>	m_ReservedCommands;

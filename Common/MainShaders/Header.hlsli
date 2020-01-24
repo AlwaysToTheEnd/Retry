@@ -2,27 +2,28 @@
 
 struct MaterialData
 {
-    float4 DriffuseAlbedo;
-    float3 FresnelR0;
-    float Roughness;
+    float4  DriffuseAlbedo;
+    float3  FresnelR0;
+    float   Roughness;
 };
 
 struct Light
 {
-    float3       lightColor;
-    float        falloffStart;
-    float3       direction;
-    float        falloffEnd;
-    float3       position;
-    float        spotPower;
-    unsigned int type;
-    unsigned int pad0;
-    unsigned int pad1;
-    unsigned int pad2;
+    float4x4        shadowMatrix;
+    float3          lightColor;
+    float           falloffStart;
+    float3          direction;
+    float           falloffEnd;
+    float3          position;
+    float           spotPower;
+    int             type;
+    unsigned int    pad0;
+    unsigned int    pad1;
+    unsigned int    pad2;
 };
 
 Texture2D gMainTexture[MAXTEXTURE]              : register(t0);
-StructuredBuffer<MaterialData> gMaterialData    : register(t0, space1);
+StructuredBuffer<MaterialData>  gMaterialData   : register(t0, space1);
 
 SamplerState            gsamPointWrap           : register(s0);
 SamplerState            gsamPointClamp          : register(s1);

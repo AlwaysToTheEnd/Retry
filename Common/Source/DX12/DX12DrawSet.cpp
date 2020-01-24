@@ -5,6 +5,7 @@
 std::vector<DX12DrawSet*> DX12DrawSet::m_Draws;
 DX12IndexManagementBuffer<Material>* DX12DrawSet::m_MaterialBuffer = nullptr;
 ID3D12Resource* DX12DrawSet::m_MainPassCB = nullptr;
+const std::string DX12DrawSet::ShadowMapShaderCallName = "&_shadowRender";
 
 D3D12_STATIC_SAMPLER_DESC DX12DrawSet::m_StaticSamplers[7] =
 {
@@ -103,10 +104,28 @@ void DX12DrawSet::SetPSO(ID3D12GraphicsCommandList* cmd, const DX12PSOAttributeN
 		{
 			temp.vs = m_PSOA.vs;
 		}
+		else if(custom->vs == ShadowMapShaderCallName)
+		{
+			temp.vs = GetShadowRenderShaderName(DX12_SHADER_VERTEX);
+
+			if (temp.vs.empty())
+			{
+				temp.vs = m_PSOA.vs;
+			}
+		}
 
 		if (custom->ps.empty())
 		{
 			temp.ps = m_PSOA.ps;
+		}
+		else if (custom->ps == ShadowMapShaderCallName)
+		{
+			temp.ps = GetShadowRenderShaderName(DX12_SHADER_PIXEL);
+
+			if (temp.ps.empty())
+			{
+				temp.ps = m_PSOA.ps;
+			}
 		}
 
 		if (custom->gs.empty())
