@@ -27,7 +27,7 @@ public:
 	virtual ~DX12DrawSetUI() = default;
 
 	virtual void	Init(ID3D12Device* device) override;
-	virtual void	Draw(ID3D12GraphicsCommandList* cmd, const DX12PSOAttributeNames* custom = nullptr) override;
+	virtual void	Draw(ID3D12GraphicsCommandList* cmd, const DX12PSOAttributeNames* custom = nullptr, const DX12_COMPUTE_CULLING_DESC* culling = nullptr) override;
 	virtual void	ReserveRender(const RenderInfo& info) override;
 	virtual void	UpdateFrameCountAndClearWork() override;
 

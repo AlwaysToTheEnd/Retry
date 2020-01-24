@@ -207,13 +207,13 @@ bool D3DApp::Initialize()
 	if (!InitMainWindow()) return false;
 
 	SelectDevices();
+	m_GDevice->SetCamera(&m_Camera);
 
 	if (!m_GDevice->Init(m_hMainWnd, DEFAULTWINDOWSIZE, DEFAULTWINDOWSIZE)) return false;
 	if (!m_PXDevice->Init(m_GDevice->GetDevicePtr())) return false;
 
 	m_GDevice->ReadyWorks(	m_TargetTextureFolders, m_TargetMeshFolders,
 							m_TargetFontFolders, m_TargetAniTreeFolder);
-	m_GDevice->SetCamera(&m_Camera);
 
 	LoadObjectsFromFile();
 	InitObjects();

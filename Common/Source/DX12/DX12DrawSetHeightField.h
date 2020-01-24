@@ -55,7 +55,7 @@ public:
 	virtual ~DX12DrawSetHeightField() = default;
 
 	virtual void	Init(ID3D12Device* device) override;
-	virtual void	Draw(ID3D12GraphicsCommandList* cmd, const DX12PSOAttributeNames* custom = nullptr) override;
+	virtual void	Draw(ID3D12GraphicsCommandList* cmd, const DX12PSOAttributeNames* custom = nullptr, const DX12_COMPUTE_CULLING_DESC* culling = nullptr) override;
 	virtual void	ReserveRender(const RenderInfo& info) override;
 	virtual void	UpdateFrameCountAndClearWork() override;
 	void			ReComputeHeightField(const std::string& name, physx::PxVec3 scale, ID3D12Device* device, ID3D12GraphicsCommandList* cmd);

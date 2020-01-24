@@ -19,6 +19,7 @@
 #include "DX12/DX12RenderClasses.h"
 #include "DX12/PSOController.h"
 #include "DX12/DX12SwapChain.h"
+#include "DX12/DX12MeshComputeCulling.h"
 
 #pragma comment(lib, "D3D12.lib")
 #pragma comment(lib, "dxgi.lib")
@@ -102,6 +103,8 @@ private:
 
 	physx::PxVec3						m_RayOrigin;
 	physx::PxVec3						m_Ray;
+
+	DX12_COMPUTE_CULLING_FRUSTUM		m_BaseFrustum;
 
 private:
 	std::unique_ptr<PSOController>											m_PSOCon;

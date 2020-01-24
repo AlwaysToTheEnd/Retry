@@ -3,7 +3,6 @@
 #include "DX12RenderClasses.h"
 #include "DX12DrawSet.h"
 #include "DX12MeshSet.h"
-#include "DX12MeshComputeCulling.h"
 
 #pragma pack(push, 4)
 struct DX12NormalMeshIndirectCommand
@@ -37,7 +36,7 @@ public:
 	virtual ~DX12DrawSetNormalMesh() = default;
 
 	virtual void	Init(ID3D12Device* device) override;
-	virtual void	Draw(ID3D12GraphicsCommandList * cmd, const DX12PSOAttributeNames* custom = nullptr) override;
+	virtual void	Draw(ID3D12GraphicsCommandList * cmd, const DX12PSOAttributeNames* custom = nullptr, const DX12_COMPUTE_CULLING_DESC* culling = nullptr) override;
 	virtual void	ReserveRender(const RenderInfo& info) override;
 	virtual void	UpdateFrameCountAndClearWork() override;
 

@@ -9,6 +9,10 @@ cbuffer objectData : register(b1)
     int			MaterialIndex;
 	int			PrevAniBone;
 	float		BlendFactor;
+    float       BoundSphereRad;
+    int         pad0;
+    int         pad1;
+    int         pad2;
 };
 
 #ifdef SKINNED_VERTEX_SAHDER

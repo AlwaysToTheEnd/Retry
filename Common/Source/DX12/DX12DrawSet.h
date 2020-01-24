@@ -8,6 +8,7 @@
 #include "GraphicBase.h"
 #include "PSOController.h"
 #include "DX12IndexManagementBuffer.h"
+#include "DX12MeshComputeCulling.h"
 
 //struct DX12_TARGET_SHADER
 //{
@@ -65,7 +66,7 @@ public:
 	virtual ~DX12DrawSet() = default;
 
 	virtual void	Init(ID3D12Device* device) = 0;
-	virtual void	Draw(ID3D12GraphicsCommandList* cmd, const DX12PSOAttributeNames* custom = nullptr) = 0;
+	virtual void	Draw(ID3D12GraphicsCommandList* cmd, const DX12PSOAttributeNames* custom = nullptr, const DX12_COMPUTE_CULLING_DESC* culling = nullptr) = 0;
 	virtual void	ReserveRender(const RenderInfo& info) = 0;
 	virtual void	UpdateFrameCountAndClearWork();
 

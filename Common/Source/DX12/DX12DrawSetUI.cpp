@@ -44,7 +44,7 @@ void DX12DrawSetUI::Init(ID3D12Device* device)
 		});
 }
 
-void DX12DrawSetUI::Draw(ID3D12GraphicsCommandList* cmd, const DX12PSOAttributeNames* custom)
+void DX12DrawSetUI::Draw(ID3D12GraphicsCommandList* cmd, const DX12PSOAttributeNames* custom, const DX12_COMPUTE_CULLING_DESC* culling)
 {
 	if (m_NumRenderUIs)
 	{

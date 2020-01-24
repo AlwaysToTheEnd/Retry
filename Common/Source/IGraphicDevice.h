@@ -18,6 +18,8 @@ public:
 	IGraphicDevice() = default;
 	virtual ~IGraphicDevice() = default;
 
+	cCamera*	GetCamera() { return m_CurrCamera; }
+
 protected:
 	virtual bool Init(HWND hWnd, UINT windowWidth, UINT windowHeight) = 0;
 	virtual void Update(const CGHScene& scene, float delta) = 0;

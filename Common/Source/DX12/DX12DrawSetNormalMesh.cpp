@@ -54,14 +54,14 @@ void DX12DrawSetNormalMesh::Init(ID3D12Device* device)
 		});
 }
 
-void DX12DrawSetNormalMesh::Draw(ID3D12GraphicsCommandList* cmd, const DX12PSOAttributeNames* custom)
+void DX12DrawSetNormalMesh::Draw(ID3D12GraphicsCommandList* cmd, const DX12PSOAttributeNames* custom, const DX12_COMPUTE_CULLING_DESC* culling)
 {
 	auto objectCBVritualAD = m_MeshObjectCB[m_CurrFrame]->Resource()->GetGPUVirtualAddress();
 	const UINT objectStrideSize = m_MeshObjectCB[m_CurrFrame]->GetElementByteSize();
 
 	if (m_RenderCount)
 	{
-		auto result = m_Culling.Compute(cmd, m_RenderCount, m_CurrFrame, "normalCulling");
+		auto result = m_Culling.Compute(cmd, m_RenderCount, m_CurrFrame, "normalCulling", culling);
 		////////////////////////////////////////////////////////////////////////////////////
 
 		SetPSO(cmd, custom);
@@ -86,6 +86,7 @@ void DX12DrawSetNormalMesh::ReserveRender(const RenderInfo& info)
 	DX12ObjectConstants data;
 	data.world = info.world;
 	data.scale = info.scale;
+	data.boundSphereRad = info.boundSphereRad;
 
 	for (auto& it : mesh.subs)
 	{

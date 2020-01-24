@@ -60,6 +60,11 @@ namespace CGH
 			bool				wireFrameMode = false;
 			physx::PxVec3		dirLight = { 0,-1,0 };
 			float				dirLightPower =1;
+			float				fovAngleY= 0.785398163f;
+			float				fovAngleX= 0;
+			float				aspectRatio = 1;
+			float				perspectiveNearZ = 1.0f;
+			float				perspectiveFarZ = 1000.0f;
 
 		}graphic;
 

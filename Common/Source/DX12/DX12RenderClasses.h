@@ -37,6 +37,10 @@ struct DX12ObjectConstants
 	int				materialIndex = -1;
 	int				PrevAniBone;
 	float			blendFactor;
+	float			boundSphereRad = 1.0f;
+	int				pad0;
+	int				pad1;
+	int				pad2;
 };
 
 struct DX12OnlyTexObjectConstants

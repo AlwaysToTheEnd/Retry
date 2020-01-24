@@ -49,7 +49,7 @@ void DX12DrawSetPointBase::Init(ID3D12Device* device)
 		});
 }
 
-void DX12DrawSetPointBase::Draw(ID3D12GraphicsCommandList* cmd, const DX12PSOAttributeNames* custom)
+void DX12DrawSetPointBase::Draw(ID3D12GraphicsCommandList* cmd, const DX12PSOAttributeNames* custom, const DX12_COMPUTE_CULLING_DESC* culling)
 {
 	if (m_NumRenderPointObjects)
 	{

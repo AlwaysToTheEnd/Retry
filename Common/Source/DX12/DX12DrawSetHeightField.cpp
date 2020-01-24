@@ -31,7 +31,7 @@ void DX12DrawSetHeightField::Init(ID3D12Device* device)
 	m_PSOCon->AddShader(heightFieldCreateCSName+"1", DX12_SHADER_COMPUTE, L"../Common/MainShaders/HeightFieldMeshCreate.hlsl", nullptr, "SettingVerticesNormalAndIndices");
 }
 
-void DX12DrawSetHeightField::Draw(ID3D12GraphicsCommandList* cmd, const DX12PSOAttributeNames* custom)
+void DX12DrawSetHeightField::Draw(ID3D12GraphicsCommandList* cmd, const DX12PSOAttributeNames* custom, const DX12_COMPUTE_CULLING_DESC* culling)
 {
 	if (m_MeshSet.VB.get())
 	{
@@ -73,6 +73,7 @@ void DX12DrawSetHeightField::ReserveRender(const RenderInfo& info)
 
 	DX12ObjectConstants data;
 	data.world = info.world;
+	data.boundSphereRad = info.boundSphereRad;
 
 	assert(mesh.IsOneSub());
 	for (auto& it : mesh.subs)

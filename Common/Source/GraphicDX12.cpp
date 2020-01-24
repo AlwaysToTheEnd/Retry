@@ -119,7 +119,21 @@ void GraphicDX12::OnResize()
 		m_FontManager->Resize(m_ClientWidth, m_ClientHeight);
 	}
 
-	XMMATRIX P = XMMatrixPerspectiveFovLH(XM_PIDIV4, (float)m_ClientWidth / m_ClientHeight, 1.0f, 1000.0f);
+	CGH::GO.graphic.aspectRatio = (float)m_ClientWidth / m_ClientHeight;
+	CGH::GO.graphic.fovAngleX = 2 * atanf(CGH::GO.graphic.aspectRatio * tanf(CGH::GO.graphic.fovAngleY));
+	
+	m_BaseFrustum.near_Far.x = CGH::GO.graphic.perspectiveNearZ;
+	m_BaseFrustum.near_Far.y = CGH::GO.graphic.perspectiveFarZ;
+	
+	m_BaseFrustum.rightNormal = physx::PxVec4(physx::PxQuat(CGH::GO.graphic.fovAngleX / 2, physx::PxVec3(0, 1, 0)).rotate(physx::PxVec3(1, 0, 0)),0).getNormalized();
+	m_BaseFrustum.leftNormal = m_BaseFrustum.rightNormal;
+	m_BaseFrustum.leftNormal.x = -m_BaseFrustum.leftNormal.x;
+	m_BaseFrustum.upNormal = physx::PxVec4(physx::PxQuat(CGH::GO.graphic.fovAngleY / 2, -physx::PxVec3(1, 0, 0)).rotate(physx::PxVec3(0, 1, 0)), 0).getNormalized();
+	m_BaseFrustum.downNormal = m_BaseFrustum.upNormal;
+	m_BaseFrustum.downNormal.y = -m_BaseFrustum.downNormal.y;
+
+	XMMATRIX P = XMMatrixPerspectiveFovLH(CGH::GO.graphic.fovAngleY, CGH::GO.graphic.aspectRatio, 
+		CGH::GO.graphic.perspectiveNearZ, CGH::GO.graphic.perspectiveFarZ);
 	XMMATRIX OrthoP = XMMatrixOrthographicOffCenterLH(m_ScissorRect.left, m_ScissorRect.right,
 		m_ScissorRect.bottom, m_ScissorRect.top, D3D12_MIN_DEPTH, D3D12_MAX_DEPTH);
 	XMStoreFloat4x4(m_ProjectionMat, P);
@@ -700,7 +714,7 @@ void GraphicDX12::Draw()
 void GraphicDX12::BuildDrawSets()
 {
 	DX12DrawSet::SetBaseResource(m_PassCB->Resource(), m_Materials.get());
-	DX12MeshComputeCulling::BaseSetting(m_D3dDevice.Get(), m_PSOCon.get());
+	DX12MeshComputeCulling::BaseSetting(m_D3dDevice.Get(), m_PSOCon.get(), &m_BaseFrustum);
 	std::vector<DXGI_FORMAT> rtv = { m_BackBufferFormat };
 
 	m_NormalMeshDrawSet = std::make_unique<DX12DrawSetNormalMesh>(1, m_PSOCon.get(), 
@@ -781,12 +795,14 @@ void GraphicDX12::UpdateMainPassCB(float delta)
 	{
 		ray = m_CurrCamera->GetViewRay(m_ProjectionMat, m_ClientWidth, m_ClientHeight);
 	}
-
+	
 	rayOrigin = invView.transform(rayOrigin);
 	ray = invView.rotate(ray).getNormalized();
 
 	m_RayOrigin = rayOrigin;
 	m_Ray = ray;
+
+	m_BaseFrustum.viewMat = mainPass.view;
 }
 
 void GraphicDX12::UpdateObjectCB()

@@ -60,6 +60,7 @@ struct RenderInfo
 		: type(_type)
 		, world(physx::PxIdentity)
 		, scale(1,1,1)
+		, boundSphereRad(1.0f)
 	{
 
 	}
@@ -70,6 +71,7 @@ struct RenderInfo
 		type = src.type;
 		world = src.world;
 		scale = src.scale;
+		boundSphereRad = src.boundSphereRad;
 		meshOrTextureName = src.meshOrTextureName;
 	}
 
@@ -84,6 +86,7 @@ struct RenderInfo
 		type = src.type;
 		world = src.world;
 		scale = src.scale;
+		boundSphereRad = src.boundSphereRad;
 		meshOrTextureName = src.meshOrTextureName;
 
 		return *this;
@@ -92,6 +95,7 @@ struct RenderInfo
 	RENDER_TYPE		type;
 	physx::PxMat44	world;
 	physx::PxVec3	scale;
+	float			boundSphereRad;
 	std::string		meshOrTextureName;
 
 	union

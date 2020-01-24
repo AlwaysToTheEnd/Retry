@@ -22,7 +22,7 @@ void DX12DrawSetSkinnedMesh::Init(ID3D12Device* device)
 	CD3DX12_ROOT_SIGNATURE_DESC rootDesc;
 	rootDesc.Init(ROOT_COUNT, baseRootParam, _countof(m_StaticSamplers),
 		m_StaticSamplers, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
-	
+
 	D3D12_INDIRECT_ARGUMENT_DESC argumentDescs[3] = {};
 	argumentDescs[0].Type = D3D12_INDIRECT_ARGUMENT_TYPE_CONSTANT_BUFFER_VIEW;
 	argumentDescs[0].ConstantBufferView.RootParameterIndex = OBJECT_CB;
@@ -63,11 +63,11 @@ void DX12DrawSetSkinnedMesh::Init(ID3D12Device* device)
 		});
 }
 
-void DX12DrawSetSkinnedMesh::Draw(ID3D12GraphicsCommandList* cmd, const DX12PSOAttributeNames* custom)
+void DX12DrawSetSkinnedMesh::Draw(ID3D12GraphicsCommandList* cmd, const DX12PSOAttributeNames* custom, const DX12_COMPUTE_CULLING_DESC* culling)
 {
 	if (m_RenderCount)
 	{
-		auto result = m_Culling.Compute(cmd, m_RenderCount, m_CurrFrame, "skinnedCulling");
+		auto result = m_Culling.Compute(cmd, m_RenderCount, m_CurrFrame, "skinnedCulling", culling);
 		////////////////////////////////////////////////////////////////////////////////////
 
 		SetPSO(cmd, custom);
@@ -96,6 +96,7 @@ void DX12DrawSetSkinnedMesh::ReserveRender(const RenderInfo& info)
 	DX12ObjectConstants data;
 	data.world = info.world;
 	data.scale = info.scale;
+	data.boundSphereRad = info.boundSphereRad;
 
 	for (auto& it : mesh.subs)
 	{
