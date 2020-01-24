@@ -81,20 +81,25 @@ cbuffer CullingDesc :                                       register(b0)
     float4x4    viewMat;
     float2      near_Far;
     uint        type;
+    int         lightIndex;
     uint        numObjects;
+    int         isRenderAfterCulling;
+    int         pad1;
+    int         pad2;
 };
 
-StructuredBuffer<ObjectData> cbv : register(t0);
+StructuredBuffer<ObjectData> cbv :                          register(t0);
 
 StructuredBuffer<IndirectCommand> inputCommands :           register(t1);
 AppendStructuredBuffer<IndirectCommand> outputCommands :    register(u0);
+RWStructuredBuffer<uint> objectsLightFlag :                 register(u1);
 
 bool CheckInPlane(float3 normal, float3 pos, float rad)
 {
     return dot(normal, pos) <= rad;
 }
 
-void CullingByFrustum(uint index)
+bool CullingByFrustum(uint index)
 {
     ObjectData data = cbv[index];
     float4 pos = float4(data.World._41_42_43, 1);
@@ -106,12 +111,14 @@ void CullingByFrustum(uint index)
             CheckInPlane(upNormal.xyz, pos.xyz, data.BoundSphereRad) &&
             CheckInPlane(downNormal.xyz, pos.xyz, data.BoundSphereRad))
         {
-            outputCommands.Append(inputCommands[index]);
+            return true;
         }
     }
+    
+    return false;
 }
 
-void CullingBySphere(uint index)
+bool CullingBySphere(uint index)
 {
     ObjectData data = cbv[index];
     float4 pos = float4(data.World._41_42_43, 1);
@@ -122,14 +129,17 @@ void CullingBySphere(uint index)
     float3 dir = pos.xyz - cullSpherePos;
     dir *= dir;
     float squaredDistance = dir.x + dir.y + dir.z - (data.BoundSphereRad * data.BoundSphereRad);
-
+    int test = 1;
+   
     if (squaredDistance <= (cullSphereRad * cullSphereRad))
     {
-        outputCommands.Append(inputCommands[index]);
+        return true;
     }
+    
+    return false;
 }
 
-void CullingByBox(uint index)
+bool CullingByBox(uint index)
 {
     ObjectData data = cbv[index];
     float3 pos = data.World._41_42_43;
@@ -143,11 +153,13 @@ void CullingByBox(uint index)
         pos.z + data.BoundSphereRad > (boxCenter.z - boxHalfSize.z) &&
         pos.z - data.BoundSphereRad < (boxCenter.z + boxHalfSize.z))
     {
-        outputCommands.Append(inputCommands[index]);
+        return true;
     }
+    
+    return false;
 }
 
-void CullingByCon(uint index)
+bool CullingByCon(uint index)
 {
     ObjectData data = cbv[index];
     float3 pos = data.World._41_42_43;
@@ -170,9 +182,33 @@ void CullingByCon(uint index)
         
         if (angle >= abs(toObjectAngle))
         {
-            outputCommands.Append(inputCommands[index]);
+            return true;
         }
     }
+    
+    return false;
+}
+
+bool CheckCulling(uint index)
+{
+    if (type == 0)
+    {
+        return CullingByFrustum(index);
+    }
+    else if (type == 1)
+    {
+        return CullingBySphere(index);
+    }
+    else if (type == 2)
+    {
+        return CullingByBox(index);
+    }
+    else if (type == 3)
+    {
+        return CullingByCon(index);
+    }
+    
+    return false;
 }
 
 [numthreads(1, 1, 1)]
@@ -180,21 +216,17 @@ void CS(uint3 id : SV_DispatchThreadID)
 {
     if (id.x < numObjects)
     {
-        if (type == 0)
+        if (CheckCulling(id.x))
         {
-            CullingByFrustum(id.x);
-        }
-        else if (type == 1)
-        {
-            CullingBySphere(id.x);
-        }
-        else if (type == 2)
-        {
-            CullingByBox(id.x);
-        }
-        else if (type == 3)
-        {
-            CullingByCon(id.x);
+            if (isRenderAfterCulling)
+            {
+                outputCommands.Append(inputCommands[id.x]);
+            }
+            
+            if (lightIndex>-1)
+            {
+                objectsLightFlag[id.x] |= (1<<lightIndex);
+            }
         }
     }
 }

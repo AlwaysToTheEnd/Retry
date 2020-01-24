@@ -50,6 +50,7 @@ private:
 
 private:
 	FrameObjectCBs																	m_MeshObjectCB;
+	FrameObjectLightFlags															m_MeshObjectLightFlags;
 	std::vector<std::unique_ptr<DX12UploadBuffer<AniBoneMat>>>						m_AniBoneCB;
 	std::vector<std::unique_ptr<DX12UploadBuffer<DX12SkinnedMeshIndirectCommand>>>	m_ReservedCommands;
 

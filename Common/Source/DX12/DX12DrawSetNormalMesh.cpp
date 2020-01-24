@@ -4,14 +4,23 @@
 void DX12DrawSetNormalMesh::Init(ID3D12Device* device)
 {
 	FrameUploadSRVs srvs;
+	m_MeshObjectLightFlags.resize(m_NumFrame);
 	for (int i = 0; i < m_NumFrame; i++)
 	{
 		m_MeshObjectCB.push_back(std::make_unique<DX12UploadBuffer<DX12ObjectConstants>>(device, 100, true));
 		m_ReservedCommands.push_back(std::make_unique<DX12UploadBuffer<DX12NormalMeshIndirectCommand>>(device, 100, false));
 		srvs.push_back(m_ReservedCommands.back()->Resource());
+
+		ThrowIfFailed(device->CreateCommittedResource(
+			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+			D3D12_HEAP_FLAG_NONE,
+			&CD3DX12_RESOURCE_DESC::Buffer(sizeof(unsigned int) * 100, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS),
+			D3D12_RESOURCE_STATE_GENERIC_READ,
+			nullptr,
+			IID_PPV_ARGS(m_MeshObjectLightFlags[i].GetAddressOf())));
 	}
 
-	m_Culling.Init(device, m_PSOCon, m_MeshObjectCB, srvs, 100, sizeof(DX12NormalMeshIndirectCommand));
+	m_Culling.Init(device, m_PSOCon, m_MeshObjectCB, srvs, m_MeshObjectLightFlags, 100, sizeof(DX12NormalMeshIndirectCommand));
 
 	CD3DX12_ROOT_PARAMETER baseRootParam[ROOT_COUNT];
 	BaseRootParamSetting(baseRootParam);
@@ -61,8 +70,13 @@ void DX12DrawSetNormalMesh::Draw(ID3D12GraphicsCommandList* cmd, const DX12PSOAt
 
 	if (m_RenderCount)
 	{
-		auto result = m_Culling.Compute(cmd, m_RenderCount, m_CurrFrame, "normalCulling", culling);
+		auto result = m_Culling.RenderCompute(cmd, m_RenderCount, m_CurrFrame, "normalCulling", culling);
 		////////////////////////////////////////////////////////////////////////////////////
+
+		if (culling && !culling->isRenderAfterCulling)
+		{
+			return;
+		}
 
 		SetPSO(cmd, custom);
 		SetBaseRoots(cmd);

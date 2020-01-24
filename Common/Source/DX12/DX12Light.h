@@ -16,7 +16,7 @@ public:
 	void InitSpotLight(const physx::PxVec3& pos, const physx::PxVec3& dir, float fallOffStart, float fallOffEnd);
 	
 	void SetShadowMap(ID3D12Device* device, unsigned int width, unsigned int height);
-	void ShadowMapUpdate(ID3D12GraphicsCommandList* cmd, std::initializer_list<DX12DrawSet*> targets);
+	void LightUpdate(ID3D12GraphicsCommandList* cmd, std::initializer_list<DX12DrawSet*> targets);
 
 private:
 	DX12_LIGHT_VALUE				m_Value;
