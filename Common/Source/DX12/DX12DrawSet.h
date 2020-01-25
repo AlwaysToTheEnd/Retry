@@ -37,6 +37,7 @@ struct DX12PSOAttributeNames
 
 class CD3DX12_ROOT_PARAMETER;
 class DX12TextureBuffer;
+class DX12SwapChain;
 
 class DX12DrawSet
 {
@@ -48,6 +49,7 @@ protected:
 	{
 		PASS_CB,
 		MATERIAL_SRV,
+		TARGETTEXTURE_TABLE,
 		TEXTURE_TABLE,
 		BASE_ROOT_PARAM_COUNT
 	};
@@ -75,7 +77,7 @@ public:
 
 	void			SetPSO(ID3D12GraphicsCommandList* cmd, const DX12PSOAttributeNames* custom);
 	static void		AllDrawsFrameCountAndClearWork();
-	static void		SetBaseResource(ID3D12Resource* mainPass, DX12IndexManagementBuffer<Material>* material);
+	static void		SetBaseResource(ID3D12Resource* mainPass, DX12IndexManagementBuffer<Material>* material, DX12SwapChain* swapChain);
 
 protected:
 	void				BaseRootParamSetting(CD3DX12_ROOT_PARAMETER params[BASE_ROOT_PARAM_COUNT]);
@@ -90,6 +92,7 @@ protected:
 	static std::vector<DX12DrawSet*>			m_Draws;
 	static DX12IndexManagementBuffer<Material>* m_MaterialBuffer;
 	static ID3D12Resource*						m_MainPassCB;
+	static DX12SwapChain*						m_SwapChain;
 
 	const unsigned int							m_NumFrame;
 	unsigned int								m_CurrFrame = 0;

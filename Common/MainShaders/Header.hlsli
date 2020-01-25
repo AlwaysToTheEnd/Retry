@@ -7,7 +7,11 @@ struct MaterialData
     float   Roughness;
 };
 
-Texture2D gMainTexture[MAXTEXTURE]              : register(t0);
+Texture2D gDepthTexture                         : register(t0);
+Texture2D gNormalTexture                        : register(t1);
+Texture2D gSpecPowerTexture                     : register(t2);
+Texture2D gColorTexture                         : register(t3);
+Texture2D gMainTexture[MAXTEXTURE]              : register(t4);
 StructuredBuffer<MaterialData>  gMaterialData   : register(t0, space1);
 
 SamplerState            gsamPointWrap           : register(s0);
@@ -57,8 +61,7 @@ VertexOut VertexBaseWork(VertexIn vin, float4x4 worldMat)
     VertexOut vout;
     
     vout.TexC = vin.TexC;
-    vout.PosH = float4(vin.PosL, 1.0f);
-    vout.PosH = mul(vout.PosH, worldMat);
+    vout.PosH = mul(float4(vin.PosL, 1.0f), worldMat);
     vout.PosH = mul(vout.PosH, gViewProj);
     vout.Normal = mul(vin.NormalL, (float3x3) worldMat);
     

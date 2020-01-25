@@ -1,11 +1,13 @@
 #include "DX12DrawSet.h"
 #include "DX12RenderClasses.h"
 #include "DX12TextureBuffer.h"
+#include "DX12SwapChain.h"
 
 std::vector<DX12DrawSet*> DX12DrawSet::m_Draws;
 DX12IndexManagementBuffer<Material>* DX12DrawSet::m_MaterialBuffer = nullptr;
 ID3D12Resource* DX12DrawSet::m_MainPassCB = nullptr;
 const std::string DX12DrawSet::ShadowMapShaderCallName = "&_shadowRender";
+DX12SwapChain* DX12DrawSet::m_SwapChain = nullptr;
 
 D3D12_STATIC_SAMPLER_DESC DX12DrawSet::m_StaticSamplers[7] =
 {
@@ -159,29 +161,36 @@ void DX12DrawSet::AllDrawsFrameCountAndClearWork()
 	}
 }
 
-void DX12DrawSet::SetBaseResource(ID3D12Resource* mainPass, DX12IndexManagementBuffer<Material>* material)
+void DX12DrawSet::SetBaseResource(ID3D12Resource* mainPass, DX12IndexManagementBuffer<Material>* material, DX12SwapChain* swapChain)
 {
 	m_MainPassCB = mainPass;
 	m_MaterialBuffer = material;
+	m_SwapChain = swapChain;
 }
 
 void DX12DrawSet::BaseRootParamSetting(CD3DX12_ROOT_PARAMETER params[BASE_ROOT_PARAM_COUNT])
 {
+	static CD3DX12_DESCRIPTOR_RANGE targetTexTable = {};
 	static CD3DX12_DESCRIPTOR_RANGE texTable = {};
-	texTable.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, m_TextureBuffer->GetTexturesNum(), 0);
+	targetTexTable.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, DX12SwapChain::GBUFFER_RESOURCE_COUNT, 0);
+	texTable.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, m_TextureBuffer->GetTexturesNum(), DX12SwapChain::GBUFFER_RESOURCE_COUNT);
 
 	params[PASS_CB].InitAsConstantBufferView(0);
 	params[MATERIAL_SRV].InitAsShaderResourceView(0, 1);
+	params[TARGETTEXTURE_TABLE].InitAsDescriptorTable(1, &targetTexTable, D3D12_SHADER_VISIBILITY_PIXEL);
 	params[TEXTURE_TABLE].InitAsDescriptorTable(1, &texTable, D3D12_SHADER_VISIBILITY_PIXEL);
 }
 
 void DX12DrawSet::SetBaseRoots(ID3D12GraphicsCommandList* cmd)
 {
-	ID3D12DescriptorHeap* descriptorHeaps[] = { m_TextureBuffer->GetHeap() };
-	cmd->SetDescriptorHeaps(1, descriptorHeaps);
-	cmd->SetGraphicsRootDescriptorTable(TEXTURE_TABLE, m_TextureBuffer->GetHeap()->GetGPUDescriptorHandleForHeapStart());
+	ID3D12DescriptorHeap* targetTexHeap[] = {  m_SwapChain->GetSrvHeap() };
+	ID3D12DescriptorHeap* textureHeap[] = { m_TextureBuffer->GetHeap() };
+	cmd->SetDescriptorHeaps(1, targetTexHeap);
 	cmd->SetGraphicsRootConstantBufferView(PASS_CB, m_MainPassCB->GetGPUVirtualAddress());
 	cmd->SetGraphicsRootShaderResourceView(MATERIAL_SRV, m_MaterialBuffer->GetBufferResource()->GetGPUVirtualAddress());
+	cmd->SetGraphicsRootDescriptorTable(TARGETTEXTURE_TABLE, m_SwapChain->CurrSRVsGPU());
+	cmd->SetDescriptorHeaps(1, textureHeap);
+	cmd->SetGraphicsRootDescriptorTable(TEXTURE_TABLE, m_TextureBuffer->GetHeap()->GetGPUDescriptorHandleForHeapStart());
 }
 
 void DX12DrawSet::AttributeSetToPSO(ID3D12GraphicsCommandList* cmd, const DX12PSOAttributeNames& custom)

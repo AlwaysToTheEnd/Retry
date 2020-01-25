@@ -706,7 +706,7 @@ void GraphicDX12::Draw()
 
 void GraphicDX12::BuildDrawSets()
 {
-	DX12DrawSet::SetBaseResource(m_PassCB->Resource(), m_Materials.get());
+	DX12DrawSet::SetBaseResource(m_PassCB->Resource(), m_Materials.get(), m_Swap.get());
 	DX12MeshComputeCulling::BaseSetting(m_D3dDevice.Get(), m_PSOCon.get(), &m_BaseFrustum);
 	std::vector<DXGI_FORMAT> rtv;
 	m_Swap->GetRenderTargetFormats(rtv);
