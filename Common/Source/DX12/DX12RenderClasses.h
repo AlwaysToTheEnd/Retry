@@ -84,5 +84,4 @@ struct DX12PassConstants
 	physx::PxVec4		ambientLight = { 0.0f, 0.0f, 0.0f, 1.0f };
 	physx::PxVec3		eyePosW = { 0.0f, 0.0f, 0.0f };
 	unsigned int		samplerIndex = 0;
-	DX12_LIGHT_VALUE	lights[MAXLIGHT];
 };

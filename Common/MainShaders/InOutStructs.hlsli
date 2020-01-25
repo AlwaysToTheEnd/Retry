@@ -18,9 +18,7 @@ struct VertexOut
 {
     float4 PosH : SV_POSITION;
     float2 TexC : TEXCOORD0;
-    float3 Diffuse : TEXCOORD1;
-    float3 ViewDir : TEXCOORD2;
-    float3 Reflection : TEXCOORD3;
+    float3 Normal : TEXCOORD2;
 };
 
 struct POINTVertexIn
@@ -45,4 +43,11 @@ struct UIVertexIn
     float2 size : UISIZE;
     int uiType : UITYPE;
     int textureIndex : UITEXTURE;
+};
+
+struct PSOut
+{
+    float4 color : SV_Target;
+    float4 normal : SV_Target1;
+    float4 specPow : SV_Target2;
 };

@@ -41,38 +41,21 @@ void DX12Light::SetShadowMap(ID3D12Device* device, unsigned int width, unsigned 
 
 void DX12Light::LightUpdate(ID3D12GraphicsCommandList* cmd, std::initializer_list<DX12DrawSet*> targets)
 {
-	DX12_COMPUTE_CULLING_DESC culling = {};
-	DX12PSOAttributeNames psocon;
-	psocon.dsvFormat = DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
-	psocon.vs = DX12DrawSet::ShadowMapShaderCallName;
-	psocon.ps = DX12DrawSet::ShadowMapShaderCallName;
-
-	switch (DX12_LIGHT_TYPE(m_Value.type))
-	{
-	case DX12_LIGHT_TYPE::DX12_LIGHT_TYPE_DIRECTIONAL:
-		break;
-	case DX12_LIGHT_TYPE::DX12_LIGHT_TYPE_POINT:
-		culling.type = DX12_COMPUTE_CULLING_TYPE_SPHERE;
-		culling.sphere.pos_Radian = physx::PxVec4(m_Value.position, m_Value.falloffEnd);
-		break;
-	case DX12_LIGHT_TYPE::DX12_LIGHT_TYPE_SPOT:
-		culling.type = DX12_COMPUTE_CULLING_TYPE_CON;
-		culling.con.dir_cos = physx::PxVec4(m_Value.direction, 0.1f);
-		culling.con.pos_Length = physx::PxVec4(m_Value.position, m_Value.falloffEnd);
-		break;
-	default:
-		break;
-	}
-
 	if (CGH::GO.graphic.shadowMap && m_ShadowMap.get())
 	{
 		cmd->OMSetRenderTargets(0, nullptr, true, &m_ShadowMap->GetDsv());
 
+		DX12_COMPUTE_CULLING_DESC culling = {};
 		static const float radius = 500.0f;
 		physx::PxMat44 shadowProj;
 		physx::PxVec3 startPos;
 		physx::PxVec3 dir;
 		physx::PxVec2 shadowMapSize = m_ShadowMap->GetSize();
+		DX12PSOAttributeNames psocon;
+
+		psocon.dsvFormat = DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
+		psocon.vs = DX12DrawSet::ShadowMapShaderCallName;
+		psocon.ps = DX12DrawSet::ShadowMapShaderCallName;
 
 		switch (DX12_LIGHT_TYPE(m_Value.type))
 		{
@@ -81,15 +64,19 @@ void DX12Light::LightUpdate(ID3D12GraphicsCommandList* cmd, std::initializer_lis
 			break;
 		case DX12_LIGHT_TYPE::DX12_LIGHT_TYPE_POINT:
 			XMStoreFloat4x4(shadowProj, XMMatrixPerspectiveFovLH(CGH::GO.graphic.fovAngleY, shadowMapSize.x / shadowMapSize.y, -m_Value.falloffEnd, m_Value.falloffEnd));
+			culling.type = DX12_COMPUTE_CULLING_TYPE_SPHERE;
+			culling.sphere.pos_Radian = physx::PxVec4(m_Value.position, m_Value.falloffEnd);
 			break;
 		case DX12_LIGHT_TYPE::DX12_LIGHT_TYPE_SPOT:
 			XMStoreFloat4x4(shadowProj, XMMatrixPerspectiveFovLH(CGH::GO.graphic.fovAngleY, 1.0, m_Value.falloffEnd * 0.02, m_Value.falloffEnd));
+			culling.type = DX12_COMPUTE_CULLING_TYPE_CON;
+			culling.con.dir_cos = physx::PxVec4(m_Value.direction, 0.1f);
+			culling.con.pos_Length = physx::PxVec4(m_Value.position, m_Value.falloffEnd);
 			break;
 		default:
 			break;
 		}
 
-		culling.isRenderAfterCulling = true;
 		DX12ShadowMap::GetShadowMatrix(startPos, dir, shadowProj, m_Value.shadowMat);
 
 		if (m_Value.type == DX12_LIGHT_TYPE::DX12_LIGHT_TYPE_DIRECTIONAL)
@@ -104,24 +91,6 @@ void DX12Light::LightUpdate(ID3D12GraphicsCommandList* cmd, std::initializer_lis
 			for (auto& it : targets)
 			{
 				it->Draw(cmd, &psocon, &culling);
-			}
-		}
-	}
-	else
-	{
-
-		if (m_Value.type == DX12_LIGHT_TYPE::DX12_LIGHT_TYPE_DIRECTIONAL)
-		{
-			for (auto& it : targets)
-			{
-				it->Draw(cmd, nullptr, nullptr);
-			}
-		}
-		else
-		{
-			for (auto& it : targets)
-			{
-				it->Draw(cmd, nullptr, &culling);
 			}
 		}
 	}

@@ -677,13 +677,7 @@ void GraphicDX12::Draw()
 	m_CommandList->RSSetViewports(1, &m_ScreenViewport);
 	m_CommandList->RSSetScissorRects(1, &m_ScissorRect);
 
-	m_CommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_Swap->CurrentBackBuffer(),
-		D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
-
-	m_CommandList->OMSetRenderTargets(1, &m_Swap->CurrentBackBufferView(), true, &m_Swap->DepthStencilView());
-
-	m_CommandList->ClearRenderTargetView(m_Swap->CurrentBackBufferView(), Colors::Gray, 0, nullptr);
-	m_CommandList->ClearDepthStencilView(m_Swap->DepthStencilView(), D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
+	m_Swap->RenderBegin(m_CommandList.Get(), Colors::Gray);
 
 	m_NormalMeshDrawSet->Draw(m_CommandList.Get());
 	m_SkinnedMeshDrawSet->Draw(m_CommandList.Get());
@@ -693,8 +687,7 @@ void GraphicDX12::Draw()
 
 	m_FontManager->RenderCommandWrite(m_CommandList.Get(), m_ReservedFonts);
 
-	m_CommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_Swap->CurrentBackBuffer(),
-		D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
+	m_Swap->RenderEnd(m_CommandList.Get());
 
 	FlushCommandQueue();
 
@@ -715,7 +708,8 @@ void GraphicDX12::BuildDrawSets()
 {
 	DX12DrawSet::SetBaseResource(m_PassCB->Resource(), m_Materials.get());
 	DX12MeshComputeCulling::BaseSetting(m_D3dDevice.Get(), m_PSOCon.get(), &m_BaseFrustum);
-	std::vector<DXGI_FORMAT> rtv = { m_BackBufferFormat };
+	std::vector<DXGI_FORMAT> rtv;
+	m_Swap->GetRenderTargetFormats(rtv);
 
 	m_NormalMeshDrawSet = std::make_unique<DX12DrawSetNormalMesh>(1, m_PSOCon.get(), 
 		m_TextureBuffers[L"MESH"].get(), rtv, m_DepthStencilFormat, *m_NormalMeshSet);

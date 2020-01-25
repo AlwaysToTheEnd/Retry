@@ -45,7 +45,6 @@ private:
 
 private:
 	FrameObjectCBs																	m_MeshObjectCB;
-	FrameObjectLightFlags															m_MeshObjectLightFlags;
 	std::vector<std::unique_ptr<DX12UploadBuffer<DX12NormalMeshIndirectCommand>>>	m_ReservedCommands;
 
 	DX12MeshComputeCulling											m_Culling;

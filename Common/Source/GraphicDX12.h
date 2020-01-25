@@ -76,7 +76,7 @@ private: // Base object Builds
 	void BuildDrawSets();
 	void BuildDepthStencilAndBlendsAndRasterizer();
 
-private: // Used in frame.
+private: // Used in frame update
 	void UpdateMainPassCB(float delta);
 	void UpdateObjectCB();
 

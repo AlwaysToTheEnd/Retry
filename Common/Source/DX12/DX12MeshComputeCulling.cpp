@@ -38,7 +38,7 @@ void DX12MeshComputeCulling::BaseSetting(ID3D12Device* device, PSOController* ps
 	tableRange[0].BaseShaderRegister = 0;
 	tableRange[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 	tableRange[1].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
-	tableRange[1].NumDescriptors = 2;
+	tableRange[1].NumDescriptors = 1;
 	tableRange[1].BaseShaderRegister = 0;
 	tableRange[1].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
@@ -72,12 +72,12 @@ void DX12MeshComputeCulling::BaseSetting(ID3D12Device* device, PSOController* ps
 	m_Zero->Unmap(0, nullptr);
 }
 
-void DX12MeshComputeCulling::Init(ID3D12Device* device, PSOController* psocon, FrameObjectCBs& obCB, FrameUploadSRVs& srvs, FrameObjectLightFlags& lightFlags,unsigned int objectNum, unsigned int objectStride)
+void DX12MeshComputeCulling::Init(ID3D12Device* device, PSOController* psocon, FrameObjectCBs& obCB, FrameUploadSRVs& srvs, unsigned int objectNum, unsigned int objectStride)
 {
 	m_NumObject = objectNum;
 	m_ObjectStride = objectStride;
 	m_CounterOffset = AlignForUavCounter(m_NumObject * m_ObjectStride);
-	CreateResourceAndViewHeap(device, obCB, srvs, lightFlags);
+	CreateResourceAndViewHeap(device, obCB, srvs);
 }
 
 ID3D12Resource* DX12MeshComputeCulling::RenderCompute(ID3D12GraphicsCommandList* cmd, unsigned int numDatas, unsigned int frame, const std::string& csName, const DX12_COMPUTE_CULLING_DESC* culling)
@@ -95,8 +95,6 @@ ID3D12Resource* DX12MeshComputeCulling::RenderCompute(ID3D12GraphicsCommandList*
 	{
 		cull.type = DX12_COMPUTE_CULLING_TYPE_FRUSTUM;
 		cull.numObjects = numDatas;
-		cull.isRenderAfterCulling = true;
-		cull.lightIndex - 1;
 		cull.frustum = *m_BaseFrustum;
 	}
 
@@ -109,7 +107,7 @@ ID3D12Resource* DX12MeshComputeCulling::RenderCompute(ID3D12GraphicsCommandList*
 
 	m_PsoCon->SetPSOToCommnadList(cmd, "cullingCompute", csName);
 	auto heapPtr = m_CommandSRVUAVHeap->GetGPUDescriptorHandleForHeapStart();
-	heapPtr.ptr += (m_UavSrvSize * 4) * frame;
+	heapPtr.ptr += (m_UavSrvSize * 3) * frame;
 
 	auto cbPtr = m_CullingDescBuffer->Resource()->GetGPUVirtualAddress();
 	auto cbElementSize = m_CullingDescBuffer->GetElementByteSize();
@@ -128,10 +126,10 @@ ID3D12Resource* DX12MeshComputeCulling::RenderCompute(ID3D12GraphicsCommandList*
 	return m_Commands[frame].Get();
 }
 
-void DX12MeshComputeCulling::CreateResourceAndViewHeap(ID3D12Device* device, FrameObjectCBs& obCB, FrameUploadSRVs& srvs, FrameObjectLightFlags& lightFlags)
+void DX12MeshComputeCulling::CreateResourceAndViewHeap(ID3D12Device* device, FrameObjectCBs& obCB, FrameUploadSRVs& srvs)
 {
 	D3D12_DESCRIPTOR_HEAP_DESC heapDesc;
-	heapDesc.NumDescriptors = obCB.size() * 4;
+	heapDesc.NumDescriptors = obCB.size() * 3;
 	heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 	heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
 	heapDesc.NodeMask = 1;
@@ -164,13 +162,6 @@ void DX12MeshComputeCulling::CreateResourceAndViewHeap(ID3D12Device* device, Fra
 	uavDesc.Buffer.CounterOffsetInBytes = m_CounterOffset;
 	uavDesc.Buffer.Flags = D3D12_BUFFER_UAV_FLAG_NONE;
 
-	D3D12_UNORDERED_ACCESS_VIEW_DESC lightFlagUavDesc = {};
-	lightFlagUavDesc.Format = DXGI_FORMAT_UNKNOWN;
-	lightFlagUavDesc.ViewDimension = D3D12_UAV_DIMENSION_BUFFER;
-	lightFlagUavDesc.Buffer.NumElements = obCB[0]->GetNumElement();
-	lightFlagUavDesc.Buffer.StructureByteStride = sizeof(unsigned int);
-	lightFlagUavDesc.Buffer.Flags = D3D12_BUFFER_UAV_FLAG_NONE;
-
 	m_Commands.resize(obCB.size());
 
 	for (int i = 0; i < obCB.size(); i++)
@@ -188,8 +179,6 @@ void DX12MeshComputeCulling::CreateResourceAndViewHeap(ID3D12Device* device, Fra
 		device->CreateShaderResourceView(srvs[i], &srvDesc, heapHandle);
 		heapHandle.ptr += m_UavSrvSize;
 		device->CreateUnorderedAccessView(m_Commands[i].Get(), m_Commands[i].Get(), &uavDesc, heapHandle);
-		heapHandle.ptr += m_UavSrvSize;
-		device->CreateUnorderedAccessView(lightFlags[i].Get(), nullptr, &lightFlagUavDesc, heapHandle);
 		heapHandle.ptr += m_UavSrvSize;
 	}
 

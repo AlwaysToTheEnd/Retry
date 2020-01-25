@@ -28,10 +28,10 @@ struct IndirectCommand
 #else
 struct IndirectCommand
 {
-    uint2   cbvAddress;
-    uint4   drawArguments;
-    uint    drawArguments2;
-    uint    pad;
+    uint2 cbvAddress;
+    uint4 drawArguments;
+    uint drawArguments2;
+    uint pad;
 };
 
 #endif
@@ -72,27 +72,22 @@ struct DX12_COMPUTE_CULLING_CON
     physx::PxVec4 dir_cos;
 };*/
 
-cbuffer CullingDesc :                                       register(b0)
+cbuffer CullingDesc : register(b0)
 {
-    float4      rightNormal;
-    float4      leftNormal;
-    float4      upNormal;
-    float4      downNormal;
-    float4x4    viewMat;
-    float2      near_Far;
-    uint        type;
-    int         lightIndex;
-    uint        numObjects;
-    int         isRenderAfterCulling;
-    int         pad1;
-    int         pad2;
+    float4 rightNormal;
+    float4 leftNormal;
+    float4 upNormal;
+    float4 downNormal;
+    float4x4 viewMat;
+    float2 near_Far;
+    uint type;
+    uint numObjects;
 };
 
-StructuredBuffer<ObjectData> cbv :                          register(t0);
+StructuredBuffer<ObjectData> cbv : register(t0);
 
-StructuredBuffer<IndirectCommand> inputCommands :           register(t1);
-AppendStructuredBuffer<IndirectCommand> outputCommands :    register(u0);
-RWStructuredBuffer<uint> objectsLightFlag :                 register(u1);
+StructuredBuffer<IndirectCommand> inputCommands : register(t1);
+AppendStructuredBuffer<IndirectCommand> outputCommands : register(u0);
 
 bool CheckInPlane(float3 normal, float3 pos, float rad)
 {
@@ -101,6 +96,7 @@ bool CheckInPlane(float3 normal, float3 pos, float rad)
 
 bool CullingByFrustum(uint index)
 {
+    bool result = false;
     ObjectData data = cbv[index];
     float4 pos = float4(data.World._41_42_43, 1);
     pos = mul(pos, viewMat);
@@ -111,11 +107,11 @@ bool CullingByFrustum(uint index)
             CheckInPlane(upNormal.xyz, pos.xyz, data.BoundSphereRad) &&
             CheckInPlane(downNormal.xyz, pos.xyz, data.BoundSphereRad))
         {
-            return true;
+            result = true;
         }
     }
     
-    return false;
+    return result;
 }
 
 bool CullingBySphere(uint index)
@@ -130,17 +126,13 @@ bool CullingBySphere(uint index)
     dir *= dir;
     float squaredDistance = dir.x + dir.y + dir.z - (data.BoundSphereRad * data.BoundSphereRad);
     int test = 1;
-   
-    if (squaredDistance <= (cullSphereRad * cullSphereRad))
-    {
-        return true;
-    }
-    
-    return false;
+ 
+    return squaredDistance <= (cullSphereRad * cullSphereRad);
 }
 
 bool CullingByBox(uint index)
 {
+    bool result = false;
     ObjectData data = cbv[index];
     float3 pos = data.World._41_42_43;
     float3 boxCenter = rightNormal.xyz;
@@ -153,14 +145,15 @@ bool CullingByBox(uint index)
         pos.z + data.BoundSphereRad > (boxCenter.z - boxHalfSize.z) &&
         pos.z - data.BoundSphereRad < (boxCenter.z + boxHalfSize.z))
     {
-        return true;
+        result = true;
     }
     
-    return false;
+    return result;
 }
 
 bool CullingByCon(uint index)
 {
+    bool result = false;
     ObjectData data = cbv[index];
     float3 pos = data.World._41_42_43;
 
@@ -169,11 +162,11 @@ bool CullingByCon(uint index)
     float conRength = rightNormal.w;
     float angle = leftNormal.w;
     
-    float originToObjectDir = pos - conOrigin;
+    float3 originToObjectDir = pos - conOrigin;
     
     float dotValue = dot(conDir, originToObjectDir);
     
-    if(dotValue>0 && dotValue< conRength)
+    if (dotValue > 0 && dotValue < conRength)
     {
         float3 verticalToCondirPos = conOrigin + (conDir * dotValue);
         float3 objectBundPos = pos + (normalize(verticalToCondirPos - pos) * data.BoundSphereRad);
@@ -182,33 +175,35 @@ bool CullingByCon(uint index)
         
         if (angle >= abs(toObjectAngle))
         {
-            return true;
+            result = true;
         }
     }
     
-    return false;
+    return result;
 }
 
 bool CheckCulling(uint index)
 {
+    bool result = false;
+    
     if (type == 0)
     {
-        return CullingByFrustum(index);
+        result = CullingByFrustum(index);
     }
     else if (type == 1)
     {
-        return CullingBySphere(index);
+        result = CullingBySphere(index);
     }
     else if (type == 2)
     {
-        return CullingByBox(index);
+        result = CullingByBox(index);
     }
     else if (type == 3)
     {
-        return CullingByCon(index);
+        result = CullingByCon(index);
     }
     
-    return false;
+    return result;
 }
 
 [numthreads(1, 1, 1)]
@@ -218,15 +213,7 @@ void CS(uint3 id : SV_DispatchThreadID)
     {
         if (CheckCulling(id.x))
         {
-            if (isRenderAfterCulling)
-            {
-                outputCommands.Append(inputCommands[id.x]);
-            }
-            
-            if (lightIndex>-1)
-            {
-                objectsLightFlag[id.x] |= (1<<lightIndex);
-            }
+            outputCommands.Append(inputCommands[id.x]);
         }
     }
 }

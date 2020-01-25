@@ -7,7 +7,6 @@
 #include "DX12UploadBuffer.h"
 
 typedef std::vector<std::unique_ptr<DX12UploadBuffer<DX12ObjectConstants>>> FrameObjectCBs;
-typedef std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>> FrameObjectLightFlags;
 typedef std::vector<ID3D12Resource*> FrameUploadSRVs;
 
 enum DX12_COMPUTE_CULLING_TYPE
@@ -57,11 +56,7 @@ struct DX12_COMPUTE_CULLING_DESC
 	};
 
 	DX12_COMPUTE_CULLING_TYPE	type;
-	int							lightIndex;
 	unsigned int				numObjects;
-	bool						isRenderAfterCulling;
-	int							pad1;
-	int							pad2;
 };
 #pragma pack(pop)
 
@@ -82,7 +77,7 @@ public:
 	virtual ~DX12MeshComputeCulling();
 
 	static void			BaseSetting(ID3D12Device* device, PSOController* psocon, const DX12_COMPUTE_CULLING_FRUSTUM* basFrustum);
-	void				Init(ID3D12Device* device, PSOController* psocon, FrameObjectCBs& obCB, FrameUploadSRVs& srvs, FrameObjectLightFlags& lightFlags,unsigned int objectNum, unsigned int objectStride);
+	void				Init(ID3D12Device* device, PSOController* psocon, FrameObjectCBs& obCB, FrameUploadSRVs& srvs, unsigned int objectNum, unsigned int objectStride);
 	
 	ID3D12Resource*		RenderCompute(ID3D12GraphicsCommandList* cmd, unsigned int numDatas, unsigned int frame, const std::string& csName, const DX12_COMPUTE_CULLING_DESC* culling);
 	unsigned int		GetCounterOffset() const { return m_CounterOffset; }
@@ -94,7 +89,7 @@ private:
 		return (bufferSize + (alignment - 1)) & ~(alignment - 1);
 	}
 
-	void CreateResourceAndViewHeap(ID3D12Device* device, FrameObjectCBs& obCB, FrameUploadSRVs& srvs, FrameObjectLightFlags& lightFlags);
+	void CreateResourceAndViewHeap(ID3D12Device* device, FrameObjectCBs& obCB, FrameUploadSRVs& srvs);
 
 private:
 	static Microsoft::WRL::ComPtr<ID3D12Resource>		m_Zero;
