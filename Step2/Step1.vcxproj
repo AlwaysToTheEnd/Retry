@@ -133,7 +133,7 @@
     <ClInclude Include="TestObject.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\Common\MainShaders\BaseShader.hlsl">
+    <None Include="..\Common\MainShaders\MeshShader.hlsl">
       <FileType>Document</FileType>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.1</ShaderModel>

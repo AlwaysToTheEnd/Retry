@@ -42,8 +42,8 @@ void DX12DrawSetNormalMesh::Init(ID3D12Device* device)
 	m_PSOA.ps = "normal";
 	m_PSOCon->AddRootSignature("normal", rootDesc);
 	m_PSOCon->AddCommandSignature("normal", "normal", commandSignatureDesc);
-	m_PSOCon->AddShader("normal", DX12_SHADER_VERTEX, L"../Common/MainShaders/BaseShader.hlsl", macros, "VS");
-	m_PSOCon->AddShader("normal", DX12_SHADER_PIXEL, L"../Common/MainShaders/BaseShader.hlsl", macros, "PS");
+	m_PSOCon->AddShader("normal", DX12_SHADER_VERTEX, L"../Common/MainShaders/MeshShader.hlsl", macros, "VS");
+	m_PSOCon->AddShader("normal", DX12_SHADER_PIXEL, L"../Common/MainShaders/MeshShader.hlsl", macros, "PS");
 
 	m_PSOA.input = "normal";
 	m_PSOCon->AddInputLayout("normal",

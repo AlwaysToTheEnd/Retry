@@ -49,8 +49,8 @@ void DX12DrawSetSkinnedMesh::Init(ID3D12Device* device)
 	m_PSOA.ps = "skin";
 	m_PSOCon->AddRootSignature("skin", rootDesc);
 	m_PSOCon->AddCommandSignature("skin", "skin", commandSignatureDesc);
-	m_PSOCon->AddShader("skin", DX12_SHADER_VERTEX, L"../Common/MainShaders/BaseShader.hlsl", macros, "VS");
-	m_PSOCon->AddShader("skin", DX12_SHADER_PIXEL, L"../Common/MainShaders/BaseShader.hlsl", macros, "PS");
+	m_PSOCon->AddShader("skin", DX12_SHADER_VERTEX, L"../Common/MainShaders/MeshShader.hlsl", macros, "VS");
+	m_PSOCon->AddShader("skin", DX12_SHADER_PIXEL, L"../Common/MainShaders/MeshShader.hlsl", macros, "PS");
 
 	m_PSOA.input = "skin";
 	m_PSOCon->AddInputLayout("skin",

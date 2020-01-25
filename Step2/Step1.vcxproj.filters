@@ -412,9 +412,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\Common\MainShaders\BaseShader.hlsl">
-      <Filter>Common\DeviceInstance\DX12Supporters\DrawSets\Shader</Filter>
-    </None>
     <None Include="..\Common\MainShaders\pointShader.hlsl">
       <Filter>Common\DeviceInstance\DX12Supporters\DrawSets\Shader</Filter>
     </None>
@@ -431,6 +428,9 @@
       <Filter>Common\DeviceInstance\DX12Supporters\DrawSets\Shader</Filter>
     </None>
     <None Include="..\Common\MainShaders\CullingCompute.hlsl">
+      <Filter>Common\DeviceInstance\DX12Supporters\DrawSets\Shader</Filter>
+    </None>
+    <None Include="..\Common\MainShaders\MeshShader.hlsl">
       <Filter>Common\DeviceInstance\DX12Supporters\DrawSets\Shader</Filter>
     </None>
   </ItemGroup>
