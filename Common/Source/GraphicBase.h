@@ -28,7 +28,20 @@ enum RENDER_TYPE
 	RENDER_BOX,
 	RENDER_PLANE,
 	RENDER_2DPLANE,
+	RENDER_LIGHT,
 	RENDER_UI,
+};
+
+enum LIGHT_TYPE
+{
+	LIGHT_TYPE_DIRECTIONAL,
+	LIGHT_TYPE_POINT,
+	LIGHT_TYPE_SPOT,
+};
+
+struct AniBoneMat
+{
+	physx::PxMat44		bones[BONEMAXMATRIX];
 };
 
 struct RenderSkinnedMeshInfo
@@ -36,9 +49,13 @@ struct RenderSkinnedMeshInfo
 	int	aniBoneIndex = -1;
 };
 
-struct AniBoneMat
+struct RenderLightInfo
 {
-	physx::PxMat44		bones[BONEMAXMATRIX];
+	physx::PxVec3	color = { 0.5f, 0.5f, 0.5f };
+	LIGHT_TYPE		type = LIGHT_TYPE_DIRECTIONAL;
+	float			falloffStart = 1.0f;
+	float			falloffEnd = 10.0f;
+	float			spotPower = 50.0f;
 };
 
 struct RenderPointInfo
@@ -67,7 +84,7 @@ struct RenderInfo
 
 	RenderInfo(const RenderInfo& src)
 	{
-		std::memcpy(&uiInfo, &src.uiInfo, sizeof(RenderUIInfo));
+		std::memcpy(&lightInfo, &src.lightInfo, sizeof(RenderLightInfo));
 		type = src.type;
 		world = src.world;
 		scale = src.scale;
@@ -82,7 +99,7 @@ struct RenderInfo
 
 	RenderInfo& operator=(const RenderInfo& src)
 	{
-		std::memcpy(&point, &src.point, sizeof(RenderPointInfo));
+		std::memcpy(&lightInfo, &src.lightInfo, sizeof(RenderLightInfo));
 		type = src.type;
 		world = src.world;
 		scale = src.scale;
@@ -103,6 +120,7 @@ struct RenderInfo
 		RenderSkinnedMeshInfo	skin;
 		RenderPointInfo			point;
 		RenderUIInfo			uiInfo;
+		RenderLightInfo			lightInfo;
 	};
 };
 
@@ -129,12 +147,13 @@ struct RenderFont
 	physx::PxVec2*		drawSize = nullptr; //Output: If not nullptr, Get font drawSize from Device 
 };
 
-
 struct Material
 {
 	physx::PxVec4	diffuseAlbedo = { 1,1,1,1 };
-	physx::PxVec3	fresnel0 = { 0.01f,0.01f,0.01f };
-	float			roughness = 0.25f;
+	physx::PxVec3	specular = { 0.01f,0.01f,0.01f };
+	float			specularExponent = 0.25f;
+	physx::PxVec3	emissive = { 0,0,0 };
+	float			pad0;
 };
 
 struct SubmeshData

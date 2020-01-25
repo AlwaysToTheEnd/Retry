@@ -70,7 +70,7 @@ void DX12DrawSetNormalMesh::Draw(ID3D12GraphicsCommandList* cmd, const DX12PSOAt
 		cmd->IASetVertexBuffers(0, 1, &m_MeshSet.GetVertexBufferView());
 		cmd->IASetIndexBuffer(&m_MeshSet.GetIndexBufferView());
 		cmd->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY::D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
+		
 		cmd->ExecuteIndirect(m_PSOCon->GetCommandSignature("normal"), m_RenderCount,
 			result, 0, result, m_Culling.GetCounterOffset());
 	}

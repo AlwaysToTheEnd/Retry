@@ -232,6 +232,7 @@ void DORenderer::Update(float delta)
 		m_RenderInfo.world = comTransform->GetRTMatrix().getTranspose();
 		m_RenderInfo.scale = comTransform->GetScale();
 		break;
+	case RENDER_LIGHT:
 	case RENDER_UI:
 		m_RenderInfo.world = comTransform->GetRTMatrix();
 		break;

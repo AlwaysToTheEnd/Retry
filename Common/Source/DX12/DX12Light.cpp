@@ -9,13 +9,13 @@ void DX12Light::SetColor(const physx::PxVec3& color)
 
 void DX12Light::InitDirectionalLight(const physx::PxVec3& dir)
 {
-	m_Value.type = DX12_LIGHT_TYPE::DX12_LIGHT_TYPE_DIRECTIONAL;
+	m_Value.type = LIGHT_TYPE_DIRECTIONAL;
 	m_Value.direction = dir;
 }
 
 void DX12Light::InitPointLight(const physx::PxVec3& pos, float fallOffStart, float fallOffEnd)
 {
-	m_Value.type = DX12_LIGHT_TYPE::DX12_LIGHT_TYPE_POINT;
+	m_Value.type = LIGHT_TYPE_POINT;
 
 	m_Value.position = pos;
 	m_Value.falloffStart = fallOffStart;
@@ -24,7 +24,7 @@ void DX12Light::InitPointLight(const physx::PxVec3& pos, float fallOffStart, flo
 
 void DX12Light::InitSpotLight(const physx::PxVec3& pos, const physx::PxVec3& dir, float fallOffStart, float fallOffEnd)
 {
-	m_Value.type = DX12_LIGHT_TYPE::DX12_LIGHT_TYPE_SPOT;
+	m_Value.type = LIGHT_TYPE_SPOT;
 	m_Value.position = pos;
 	m_Value.direction = dir;
 }
@@ -57,17 +57,17 @@ void DX12Light::LightUpdate(ID3D12GraphicsCommandList* cmd, std::initializer_lis
 		psocon.vs = DX12DrawSet::ShadowMapShaderCallName;
 		psocon.ps = DX12DrawSet::ShadowMapShaderCallName;
 
-		switch (DX12_LIGHT_TYPE(m_Value.type))
+		switch (m_Value.type)
 		{
-		case DX12_LIGHT_TYPE::DX12_LIGHT_TYPE_DIRECTIONAL:
+		case LIGHT_TYPE_DIRECTIONAL:
 			XMStoreFloat4x4(shadowProj, XMMatrixOrthographicOffCenterLH(-radius, radius, -radius, radius, -radius, radius));
 			break;
-		case DX12_LIGHT_TYPE::DX12_LIGHT_TYPE_POINT:
+		case LIGHT_TYPE_POINT:
 			XMStoreFloat4x4(shadowProj, XMMatrixPerspectiveFovLH(CGH::GO.graphic.fovAngleY, shadowMapSize.x / shadowMapSize.y, -m_Value.falloffEnd, m_Value.falloffEnd));
 			culling.type = DX12_COMPUTE_CULLING_TYPE_SPHERE;
 			culling.sphere.pos_Radian = physx::PxVec4(m_Value.position, m_Value.falloffEnd);
 			break;
-		case DX12_LIGHT_TYPE::DX12_LIGHT_TYPE_SPOT:
+		case LIGHT_TYPE_SPOT:
 			XMStoreFloat4x4(shadowProj, XMMatrixPerspectiveFovLH(CGH::GO.graphic.fovAngleY, 1.0, m_Value.falloffEnd * 0.02, m_Value.falloffEnd));
 			culling.type = DX12_COMPUTE_CULLING_TYPE_CON;
 			culling.con.dir_cos = physx::PxVec4(m_Value.direction, 0.1f);
@@ -79,7 +79,7 @@ void DX12Light::LightUpdate(ID3D12GraphicsCommandList* cmd, std::initializer_lis
 
 		DX12ShadowMap::GetShadowMatrix(startPos, dir, shadowProj, m_Value.shadowMat);
 
-		if (m_Value.type == DX12_LIGHT_TYPE::DX12_LIGHT_TYPE_DIRECTIONAL)
+		if (m_Value.type == LIGHT_TYPE_DIRECTIONAL)
 		{
 			for (auto& it : targets)
 			{

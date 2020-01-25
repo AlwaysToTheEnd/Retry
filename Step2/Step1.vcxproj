@@ -25,6 +25,7 @@
     <ClCompile Include="..\Common\Source\AnimationTreeScene\AnimationTreeScene.cpp" />
     <ClCompile Include="..\Common\Source\DX12\DX12DrawSet.cpp" />
     <ClCompile Include="..\Common\Source\DX12\DX12DrawSetHeightField.cpp" />
+    <ClCompile Include="..\Common\Source\DX12\DX12DrawSetLight.cpp" />
     <ClCompile Include="..\Common\Source\DX12\DX12DrawSetNormalMesh.cpp" />
     <ClCompile Include="..\Common\Source\DX12\DX12DrawSetPointBase.cpp" />
     <ClCompile Include="..\Common\Source\DX12\DX12DrawSetSkinnedMesh.cpp" />
@@ -82,6 +83,7 @@
     <ClInclude Include="..\Common\Source\BaseClass.h" />
     <ClInclude Include="..\Common\Source\DX12\DX12DefaultBuffer.h" />
     <ClInclude Include="..\Common\Source\DX12\DX12DrawSetHeightField.h" />
+    <ClInclude Include="..\Common\Source\DX12\DX12DrawSetLight.h" />
     <ClInclude Include="..\Common\Source\DX12\DX12DrawSetPointBase.h" />
     <ClInclude Include="..\Common\Source\DX12\DX12DrawSetSkinnedMesh.h" />
     <ClInclude Include="..\Common\Source\DX12\DX12DrawSetUI.h" />
@@ -133,6 +135,7 @@
     <ClInclude Include="TestObject.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\Common\MainShaders\CullingFunc.hlsli" />
     <None Include="..\Common\MainShaders\MeshShader.hlsl">
       <FileType>Document</FileType>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>

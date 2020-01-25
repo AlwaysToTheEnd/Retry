@@ -530,8 +530,9 @@ void GraphicDX12::LoadMeshAndMaterialFromFolder(const std::vector<std::wstring>&
 				}
 
 				material.diffuseAlbedo = it2.diffuse;
-				material.fresnel0 = it2.specular;
-				material.roughness = it2.specularExponent;
+				material.specular = it2.specular;
+				material.specularExponent = it2.specularExponent;
+				material.emissive = it2.emissive;
 				matDatas.push_back(material);
 				matNames.push_back(it2.name);
 			}
@@ -825,6 +826,11 @@ void GraphicDX12::UpdateObjectCB()
 		case RENDER_2DPLANE:
 		{
 			m_PointBaseDrawSet->ReserveRender(it);
+		}
+		break;
+		case RENDER_LIGHT:
+		{
+			assert(false);
 		}
 		break;
 		case RENDER_UI:

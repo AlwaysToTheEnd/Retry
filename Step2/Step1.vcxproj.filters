@@ -240,6 +240,9 @@
     <ClCompile Include="..\Common\Source\DX12\DX12MeshComputeCulling.cpp">
       <Filter>Common\DeviceInstance\DX12Supporters\Managing</Filter>
     </ClCompile>
+    <ClCompile Include="..\Common\Source\DX12\DX12DrawSetLight.cpp">
+      <Filter>Common\DeviceInstance\DX12Supporters\DrawSets</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Common\Source\IGraphicDevice.h">
@@ -410,6 +413,9 @@
     <ClInclude Include="..\Common\Source\DX12\DX12MeshComputeCulling.h">
       <Filter>Common\DeviceInstance\DX12Supporters\Managing</Filter>
     </ClInclude>
+    <ClInclude Include="..\Common\Source\DX12\DX12DrawSetLight.h">
+      <Filter>Common\DeviceInstance\DX12Supporters\DrawSets</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Common\MainShaders\pointShader.hlsl">
@@ -431,6 +437,9 @@
       <Filter>Common\DeviceInstance\DX12Supporters\DrawSets\Shader</Filter>
     </None>
     <None Include="..\Common\MainShaders\MeshShader.hlsl">
+      <Filter>Common\DeviceInstance\DX12Supporters\DrawSets\Shader</Filter>
+    </None>
+    <None Include="..\Common\MainShaders\CullingFunc.hlsli">
       <Filter>Common\DeviceInstance\DX12Supporters\DrawSets\Shader</Filter>
     </None>
   </ItemGroup>

@@ -3,8 +3,10 @@
 struct MaterialData
 {
     float4  DriffuseAlbedo;
-    float3  FresnelR0;
-    float   Roughness;
+    float3  Specular;
+    float   SpecularExponent;
+    float3  Emissive;
+    float   Pad0;
 };
 
 Texture2D gDepthTexture                         : register(t0);

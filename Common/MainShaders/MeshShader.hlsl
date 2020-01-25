@@ -56,16 +56,19 @@ VertexOut VS(VertexIn vin)
 
 PSOut PS(VertexOut pin)
 {
-    float4 diffuse = float4(0, 0, 0, 1);
+    float4 diffuse = float4(1, 1, 1, 1);
     float3 normal = float3(0, 1, 0);
+    float specPower = 0;
 	
     if (TextureIndex > -1)
     {
         diffuse = GetTexel(TextureIndex, pin.TexC);
     }
-    else if (MaterialIndex > -1)
+    
+    if (MaterialIndex > -1)
     {
-        diffuse = gMaterialData[MaterialIndex].DriffuseAlbedo;
+        diffuse *= gMaterialData[MaterialIndex].DriffuseAlbedo;
+        specPower = gMaterialData[MaterialIndex].SpecularExponent;
     }
 	
     if (NormalMapIndex > -1)
@@ -78,5 +81,5 @@ PSOut PS(VertexOut pin)
         normal = normalize(pin.Normal);
     }
 	
-    return GetPSOut(diffuse, normal, 1);
+    return GetPSOut(diffuse, normal, specPower);
 }
