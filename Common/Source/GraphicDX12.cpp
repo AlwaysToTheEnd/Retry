@@ -776,18 +776,8 @@ void GraphicDX12::UpdateMainPassCB(float delta)
 	mainPass.renderTargetSize = physx::PxVec2((float)m_ClientWidth, (float)m_ClientHeight);
 	mainPass.invRenderTargetSize = physx::PxVec2(1.0f / m_ClientWidth, 1.0f / m_ClientHeight);
 	mainPass.samplerIndex = CGH::GO.graphic.samplerIndex;
-
+	mainPass.eyePosW = m_CurrCamera->GetEyePos();
 	mainPass.ambientLight = { 0.25f, 0.25f, 0.35f, 1.0f };
-
-	static physx::PxVec3 baseDir = physx::PxVec3(0, -0.707f, -0.707f);
-	static physx::PxVec3 sunAxis = baseDir.cross(physx::PxVec3(0, 1, 0));
-	static float currTime = 0;
-	currTime += delta;
-
-	if (currTime > CGH::GO.graphic.onedayTime)
-	{
-		currTime -= CGH::GO.graphic.onedayTime;
-	}
 
 	m_PassCB->CopyData(0, mainPass);
 	m_UIDrawSet->UpdateUIPassCB(CGH::GO.ui);

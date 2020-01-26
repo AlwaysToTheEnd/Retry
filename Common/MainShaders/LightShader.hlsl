@@ -1,14 +1,11 @@
 #include "Header.hlsli"
 
-struct LightData
+struct LightVSIn
 {
-    float4 PosnAngle;
-    float3 Color;
-    int Type;
-    float3 FallOffnPower;
-    int Pad0;
-    float3 dir;
-    int Pad1;
+    float4 PosnAngle : POSITIONANGLE;
+    float3 Color : LIGHTCOLOR;
+    float3 FallOffnPower : FALLOFFnPOWER;
+    float3 Dir : LIGHTDIR;
 };
 
 struct PatchTess
@@ -17,26 +14,21 @@ struct PatchTess
     float Inside[2] : SV_InsideTessFactor;
 };
 
-struct LightHSOutput
-{
-    float3 pos : POSITION;
-    uint Index : LIGHTINDEX;
-};
-
 struct LightDSOutput
 {
     float4 Position : SV_POSITION;
     float2 cpPos : CSPOS;
+    float3 Color : LIGHTCOLOR;
     float3 Normal : DSNORMAL;
-    nointerpolation uint Index : LIGHTINDEX;
+    nointerpolation float3 Dir : LIGHTDIR;
 };
 
-StructuredBuffer<LightData> LightDatas : register(t1, space1);
+int LightType : register(c1);
 /////////////////////////////////////////////////////////////////////////////////
 
-float4 VS() : SV_Position
+LightVSIn VS(LightVSIn In)
 {
-    return float4(0, 0, 0, 1);
+    return In;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////
@@ -46,18 +38,18 @@ PatchTess LightConstantHS()
     PatchTess Output;
     float tessFactor = 8;
     
-    //switch (LightDatas[PatchID].Type)
-    //{
-    //    case 0:
-    //        tessFactor = 2;
-    //        break;
-    //    case 1:
-    //        tessFactor = 18;
-    //        break;
-    //    case 2:
-    //        tessFactor = 2;
-    //        break;
-    //}
+    switch (LightType)
+    {
+        case 0:
+            tessFactor = 1;
+            break;
+        case 1:
+            tessFactor = 18;
+            break;
+        case 2:
+            tessFactor = 2;
+            break;
+    }
     
     Output.Edges[0] = Output.Edges[1] = Output.Edges[2] = Output.Edges[3] = tessFactor;
     Output.Inside[0] = Output.Inside[1] = tessFactor;
@@ -67,34 +59,29 @@ PatchTess LightConstantHS()
 
 [domain("quad")]
 [partitioning("integer")]
-[outputtopology("triangle_cw")]
+[outputtopology("triangle_ccw")]
 [outputcontrolpoints(4)]
-[maxtessfactor(32.0f)]
 [patchconstantfunc("LightConstantHS")]
-LightHSOutput HS(uint PatchID : SV_PrimitiveID)
+LightVSIn HS(InputPatch<LightVSIn, 1> patch)
 {
-    LightHSOutput Output;
-    Output.pos = 0;
-    Output.Index = PatchID;
-    return Output;
+    return patch[0];
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 [domain("quad")]
-LightDSOutput DS(PatchTess input, float2 UV : SV_DomainLocation, const OutputPatch<LightHSOutput, 4> quad)
+LightDSOutput DS(PatchTess input, float2 UV : SV_DomainLocation, const OutputPatch<LightVSIn, 4> quad)
 {
-    LightData lightData = LightDatas[quad[0].Index];
     LightDSOutput Output;
-    Output.Index = quad[0].Index;
     Output.Normal = float3(0, 1, 0);
-    Output.cpPos = UV.xy * 2.0 - 1.0;
-    Output.Position = float4(Output.cpPos, 0.95, 1);
-    switch (lightData.Type)
+    Output.cpPos = UV * 2.0 - 1.0;
+    Output.Color = quad[0].Color;
+    Output.Dir = quad[0].Dir;
+
+    switch (LightType)
     {
         case 0:
-            Output.cpPos = UV.xy * 2.0 - 1.0;
-            Output.Position = float4(Output.cpPos, 0.95, 1);
+            Output.Position = float4(Output.cpPos, 0, 1);
             break;
         case 1:
             break;
@@ -107,51 +94,32 @@ LightDSOutput DS(PatchTess input, float2 UV : SV_DomainLocation, const OutputPat
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 
-float3 CalcAmbient(float3 normal, float3 color)
+float4 CalcDirectional(float3 position, SurfaceData surface, float3 color, float3 dir)
 {
-    float up = normal.y * 0.5 + 0.5;
-
-    float3 ambient = float3(0.1, 0.2f, 0.1f) + up * float3(0.1, 0.2f, 0.2f);
-
-    return ambient * color;
-}
-
-float3 CalcDirectional(float3 position, SurfaceData surface, LightData light)
-{
-    float NDotL = dot(-light.dir, surface.Normal);
-    float3 finalColor = light.Color * saturate(NDotL);
+    float NDotL = dot(-dir, surface.Normal);
+    float3 finalColor = color * saturate(NDotL);
    
     float3 ToEye = gEyePosW - position;
     ToEye = normalize(ToEye);
-    float3 HalfWay = normalize(ToEye + -light.dir);
+    float3 HalfWay = normalize(ToEye + -dir);
     float NDotH = saturate(dot(HalfWay, surface.Normal));
-    finalColor += light.Color * pow(NDotH, surface.SpecPower);
+    finalColor += color * pow(NDotH, surface.SpecPower);
 
-    return finalColor * surface.Color.rgb;
-}
-
-float4 DirectionalLightRender(LightDSOutput In, SurfaceData gbd, LightData light)
-{
-    float3 position = CalcWorldPos(In.cpPos, gbd.LinearDepth);
-
-    float3 finalColor = CalcAmbient(gbd.Normal, gbd.Color.rgb);
-
-    finalColor += CalcDirectional(position, gbd, light);
-
-    return float4(finalColor, 1.0);
+    return float4(finalColor * surface.Color.rgb, 1);
 }
 
 float4 PS(LightDSOutput In) : SV_Target
-{
-    float4 result = float4(1, 1, 1, 1);
+{    
+    SurfaceData gbd = UnpackGBufferL(In.Position.xy);
+    In.Dir = normalize(In.Dir);
+    float3 position = CalcWorldPos(In.Position.xy, gbd.LinearDepth);
+    float3 finalColor = float3(0, 0, 0);
     
-    SurfaceData gbd = UnpackGBuffer(In.cpPos);
-    LightData lightData = LightDatas[In.Index];
-
-    if (lightData.Type == 0)
+    if (LightType == 0)
     {
-        result = DirectionalLightRender(In, gbd, lightData);
+        finalColor = (gbd.Color * gAmbientLight).rgb;
+        finalColor += CalcDirectional(position, gbd, In.Color, In.Dir);
     }
 
-    return float4(1, 1, 1, 1);
+    return float4(finalColor, 1);
 }

@@ -58,7 +58,7 @@ PSOut PS(VertexOut pin)
 {
     float4 diffuse = float4(1, 1, 1, 1);
     float3 normal = float3(0, 1, 0);
-    float specPower = 0;
+    float specPower = 1;
 	
     if (TextureIndex > -1)
     {
@@ -74,12 +74,12 @@ PSOut PS(VertexOut pin)
     if (NormalMapIndex > -1)
     {
         normal = gMainTexture[NormalMapIndex].Sample(gsamLinearWrap, pin.TexC).rgb;
-        normal = normalize(mul(normal, (float3x3) World));
+        normal = mul(normal, (float3x3) World);
     }
 	else
     {
-        normal = normalize(pin.Normal);
+        normal = pin.Normal;
     }
 	
-    return GetPSOut(diffuse, normal, specPower);
+    return GetPSOut(diffuse, normalize(normal), specPower);
 }

@@ -141,7 +141,7 @@ void DX12PSOController::SetPSOToCommnadList(ID3D12GraphicsCommandList* cmd,
 		}
 		else
 		{
-			depthStencilI = m_DepthStencils.find(blend);
+			depthStencilI = m_DepthStencils.find(depthStencil);
 		}
 
 		assert(rootSigI != m_RootSignature.end());

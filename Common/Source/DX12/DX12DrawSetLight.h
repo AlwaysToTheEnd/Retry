@@ -8,7 +8,7 @@ class DX12DrawSetLight : public DX12DrawSet
 {
 	enum
 	{
-		LIGHTS_SRV = BASE_ROOT_PARAM_COUNT,
+		LIGHTTYPE_CONST = BASE_ROOT_PARAM_COUNT,
 		ROOT_COUNT
 	};
 

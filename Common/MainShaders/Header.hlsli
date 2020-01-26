@@ -11,9 +11,9 @@ struct MaterialData
 
 struct SurfaceData
 {
-    float   LinearDepth;
-    float3  Color;
+    float4  Color;
     float3  Normal;
+    float   LinearDepth;
     float   SpecPower;
 };
 
@@ -83,8 +83,8 @@ PSOut GetPSOut(float4 baseColor, float3 normal, float specPower)
     PSOut result;
     
     result.color = baseColor;
-    result.normal = float4(normal * 0.5 + 0.5 , 0);
-    result.specPow = float4(specPower, 0, 0, 0);
+    result.normal = float4(normal * 0.5 + 0.5 , 1);
+    result.specPow = float4(specPower, 0, 0, 1);
     
     return result;
 }
@@ -104,13 +104,13 @@ SurfaceData UnpackGBuffer(float2 UV)
 {
     SurfaceData result;
 
-    float depth = gDepthTexture.Sample(gsamPointClamp, UV.xy).x;
+    float depth = gDepthTexture.Sample(gsamPointWrap, UV.xy).x;
     result.LinearDepth = gProj._43 / (depth + gProj._33);
-    result.Color = gColorTexture.Sample(gsamPointClamp, UV.xy).xyz;
+    result.Color = gColorTexture.Sample(gsamPointWrap, UV.xy);
     
-    result.Normal = gNormalTexture.Sample(gsamPointClamp, UV.xy).xyz;
+    result.Normal = gNormalTexture.Sample(gsamPointWrap, UV.xy).xyz;
     result.Normal = normalize(result.Normal * 2.0 - 1.0);
-    result.SpecPower = gSpecPowerTexture.Sample(gsamPointClamp, UV.xy).x;
+    result.SpecPower = gSpecPowerTexture.Sample(gsamPointWrap, UV.xy).x;
 
     return result;
 }
@@ -122,7 +122,7 @@ SurfaceData UnpackGBufferL(int2 location)
     int3 location3= int3(location, 0);
     float depth = gDepthTexture.Load(location3).x;
     result.LinearDepth = gProj._43 / (depth + gProj._33);
-    result.Color = gColorTexture.Load(location3).xyz;
+    result.Color = gColorTexture.Load(location3);
     
     result.Normal = gNormalTexture.Load(location3).xyz;
     result.Normal = normalize(result.Normal * 2.0f - 1.0);
