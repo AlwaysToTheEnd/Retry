@@ -2,11 +2,19 @@
 
 struct MaterialData
 {
-    float4  DriffuseAlbedo;
+    float4  DiffuseAlbedo;
     float3  Specular;
     float   SpecularExponent;
     float3  Emissive;
     float   Pad0;
+};
+
+struct SurfaceData
+{
+    float   LinearDepth;
+    float3  Color;
+    float3  Normal;
+    float   SpecPower;
 };
 
 Texture2D gDepthTexture                         : register(t0);
@@ -79,4 +87,46 @@ PSOut GetPSOut(float4 baseColor, float3 normal, float specPower)
     result.specPow = float4(specPower, 0, 0, 0);
     
     return result;
+}
+
+float3 CalcWorldPos(float2 csPos, float depth)
+{
+    float4 position;
+
+    position.xy = csPos.xy * float2(1/gProj._11, 1/gProj._22) * depth;
+    position.z = depth;
+    position.w = 1.0;
+	
+    return mul(position, gInvView).xyz;
+}
+
+SurfaceData UnpackGBuffer(float2 UV)
+{
+    SurfaceData result;
+
+    float depth = gDepthTexture.Sample(gsamPointClamp, UV.xy).x;
+    result.LinearDepth = gProj._43 / (depth + gProj._33);
+    result.Color = gColorTexture.Sample(gsamPointClamp, UV.xy).xyz;
+    
+    result.Normal = gNormalTexture.Sample(gsamPointClamp, UV.xy).xyz;
+    result.Normal = normalize(result.Normal * 2.0 - 1.0);
+    result.SpecPower = gSpecPowerTexture.Sample(gsamPointClamp, UV.xy).x;
+
+    return result;
+}
+
+SurfaceData UnpackGBufferL(int2 location)
+{
+    SurfaceData result;
+    
+    int3 location3= int3(location, 0);
+    float depth = gDepthTexture.Load(location3).x;
+    result.LinearDepth = gProj._43 / (depth + gProj._33);
+    result.Color = gColorTexture.Load(location3).xyz;
+    
+    result.Normal = gNormalTexture.Load(location3).xyz;
+    result.Normal = normalize(result.Normal * 2.0f - 1.0);
+    result.SpecPower = gSpecPowerTexture.Load(location3).x;
+    
+    return result;  
 }

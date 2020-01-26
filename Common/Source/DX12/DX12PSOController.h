@@ -7,16 +7,34 @@
 
 using Microsoft::WRL::ComPtr;
 
-class PSOController
+struct DX12PSOAttributeNames
+{
+	std::vector<DXGI_FORMAT>		rtvFormats;
+	DXGI_FORMAT						dsvFormat;
+	D3D12_PRIMITIVE_TOPOLOGY_TYPE	primitive = D3D12_PRIMITIVE_TOPOLOGY_TYPE_UNDEFINED;
+	std::string						input = "";
+	std::string						rootSig = "";
+	std::string						rasterizer = "";
+	std::string						blend = "";
+	std::string						depthStencil = "";
+	std::string						vs = "";
+	std::string						ps = "";
+	std::string						gs = "";
+	std::string						hs = "";
+	std::string						ds = "";
+};
+
+class DX12PSOController
 {
 	const char* baseAttributeName = "_`b";
 	const char* shaderVersion = "_5_1";
 public:
-	PSOController(ID3D12Device* device);
-	~PSOController();
+	DX12PSOController(ID3D12Device* device);
+	~DX12PSOController();
 	
 	void InitBase_Raster_Blend_Depth();
 
+	void SetPSOToCommnadList(ID3D12GraphicsCommandList* cmd, const DX12PSOAttributeNames& psoAttribute);
 	void SetPSOToCommnadList(ID3D12GraphicsCommandList* cmd, const std::string& rootSig, const std::string& cs);
 	void SetPSOToCommnadList(ID3D12GraphicsCommandList* cmd,
 		const std::vector<DXGI_FORMAT>& rtvFormats, DXGI_FORMAT dsvFormat, D3D12_PRIMITIVE_TOPOLOGY_TYPE primitive,

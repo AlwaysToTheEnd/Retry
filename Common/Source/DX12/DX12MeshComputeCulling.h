@@ -3,7 +3,7 @@
 #include <d3d12.h>
 #include <wrl.h>
 #include <vector>
-#include "PSOController.h"
+#include "DX12PSOController.h"
 #include "DX12UploadBuffer.h"
 
 typedef std::vector<std::unique_ptr<DX12UploadBuffer<DX12ObjectConstants>>> FrameObjectCBs;
@@ -76,8 +76,8 @@ public:
 	DX12MeshComputeCulling();
 	virtual ~DX12MeshComputeCulling();
 
-	static void			BaseSetting(ID3D12Device* device, PSOController* psocon, const DX12_COMPUTE_CULLING_FRUSTUM* basFrustum);
-	void				Init(ID3D12Device* device, PSOController* psocon, FrameObjectCBs& obCB, FrameUploadSRVs& srvs, unsigned int objectNum, unsigned int objectStride);
+	static void			BaseSetting(ID3D12Device* device, DX12PSOController* psocon, const DX12_COMPUTE_CULLING_FRUSTUM* basFrustum);
+	void				Init(ID3D12Device* device, DX12PSOController* psocon, FrameObjectCBs& obCB, FrameUploadSRVs& srvs, unsigned int objectNum, unsigned int objectStride);
 	
 	ID3D12Resource*		RenderCompute(ID3D12GraphicsCommandList* cmd, unsigned int numDatas, unsigned int frame, const std::string& csName, const DX12_COMPUTE_CULLING_DESC* culling);
 	unsigned int		GetCounterOffset() const { return m_CounterOffset; }
@@ -94,7 +94,7 @@ private:
 private:
 	static Microsoft::WRL::ComPtr<ID3D12Resource>		m_Zero;
 	static unsigned int									m_InstanceCount;
-	static PSOController*								m_PsoCon;
+	static DX12PSOController*								m_PsoCon;
 	static const DX12_COMPUTE_CULLING_FRUSTUM*			m_BaseFrustum;
 	static unsigned int									m_UavSrvSize;
 

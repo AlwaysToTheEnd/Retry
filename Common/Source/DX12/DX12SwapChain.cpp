@@ -97,6 +97,11 @@ void DX12SwapChain::CreateSwapChain(HWND handle, ID3D12CommandQueue* queue,
 		IID_PPV_ARGS(m_SRVHeap.GetAddressOf())));
 }
 
+void DX12SwapChain::ClearDepth(ID3D12GraphicsCommandList* cmd)
+{
+	cmd->ClearDepthStencilView(m_DSVHeap->GetCPUDescriptorHandleForHeapStart(), D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
+}
+
 void DX12SwapChain::ReSize(ID3D12GraphicsCommandList* cmd, unsigned int x, unsigned int y)
 {
 	assert(m_SwapChain);

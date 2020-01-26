@@ -21,7 +21,7 @@ class DX12DrawSetPointBase :public DX12DrawSet
 
 public:
 	DX12DrawSetPointBase(unsigned int numFrameResource,
-		PSOController* psoCon,
+		DX12PSOController* psoCon,
 		DX12TextureBuffer* textureBuffer,
 		const std::vector<DXGI_FORMAT>& rtvFormats,
 		DXGI_FORMAT dsvFormat)

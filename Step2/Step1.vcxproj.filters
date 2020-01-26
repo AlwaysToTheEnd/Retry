@@ -228,9 +228,6 @@
     <ClCompile Include="..\Common\Source\DX12\DX12SwapChain.cpp">
       <Filter>Common\DeviceInstance\DX12Supporters\Managing</Filter>
     </ClCompile>
-    <ClCompile Include="..\Common\Source\DX12\PSOController.cpp">
-      <Filter>Common\DeviceInstance\DX12Supporters\Managing</Filter>
-    </ClCompile>
     <ClCompile Include="..\Common\Source\DX12\DX12ShadowMap.cpp">
       <Filter>Common\DeviceInstance\DX12Supporters\Managing</Filter>
     </ClCompile>
@@ -242,6 +239,9 @@
     </ClCompile>
     <ClCompile Include="..\Common\Source\DX12\DX12DrawSetLight.cpp">
       <Filter>Common\DeviceInstance\DX12Supporters\DrawSets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Source\DX12\DX12PSOController.cpp">
+      <Filter>Common\DeviceInstance\DX12Supporters\Managing</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -398,9 +398,6 @@
     <ClInclude Include="..\Common\Source\DX12\DX12SwapChain.h">
       <Filter>Common\DeviceInstance\DX12Supporters\Managing</Filter>
     </ClInclude>
-    <ClInclude Include="..\Common\Source\DX12\PSOController.h">
-      <Filter>Common\DeviceInstance\DX12Supporters\Managing</Filter>
-    </ClInclude>
     <ClInclude Include="..\Common\Source\DX12\DX12ShadowMap.h">
       <Filter>Common\DeviceInstance\DX12Supporters\Managing</Filter>
     </ClInclude>
@@ -415,6 +412,9 @@
     </ClInclude>
     <ClInclude Include="..\Common\Source\DX12\DX12DrawSetLight.h">
       <Filter>Common\DeviceInstance\DX12Supporters\DrawSets</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\DX12\DX12PSOController.h">
+      <Filter>Common\DeviceInstance\DX12Supporters\Managing</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -442,5 +442,10 @@
     <None Include="..\Common\MainShaders\CullingFunc.hlsli">
       <Filter>Common\DeviceInstance\DX12Supporters\DrawSets\Shader</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="..\Common\MainShaders\LightShader.hlsl">
+      <Filter>Common\DeviceInstance\DX12Supporters\DrawSets\Shader</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

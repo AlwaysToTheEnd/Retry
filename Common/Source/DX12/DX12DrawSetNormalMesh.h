@@ -23,7 +23,7 @@ class DX12DrawSetNormalMesh :public DX12DrawSet
 
 public:
 	DX12DrawSetNormalMesh(unsigned int numFrameResource,
-		PSOController* psoCon,
+		DX12PSOController* psoCon,
 		DX12TextureBuffer* textureBuffer,
 		const std::vector<DXGI_FORMAT>& rtvFormats,
 		DXGI_FORMAT dsvFormat, DX12MeshSet<Vertex>& meshSet)

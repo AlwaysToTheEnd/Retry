@@ -26,7 +26,7 @@ class DX12DrawSetSkinnedMesh : public DX12DrawSet
 
 public:
 	DX12DrawSetSkinnedMesh(unsigned int numFrameResource,
-		PSOController* psoCon,
+		DX12PSOController* psoCon,
 		DX12TextureBuffer* textureBuffer,
 		const std::vector<DXGI_FORMAT>& rtvFormats,
 		DXGI_FORMAT dsvFormat, DX12MeshSet<SkinnedVertex>& meshSet)

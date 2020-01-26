@@ -32,7 +32,7 @@ enum RENDER_TYPE
 	RENDER_UI,
 };
 
-enum LIGHT_TYPE
+enum class LIGHT_TYPE
 {
 	LIGHT_TYPE_DIRECTIONAL,
 	LIGHT_TYPE_POINT,
@@ -52,10 +52,9 @@ struct RenderSkinnedMeshInfo
 struct RenderLightInfo
 {
 	physx::PxVec3	color = { 0.5f, 0.5f, 0.5f };
-	LIGHT_TYPE		type = LIGHT_TYPE_DIRECTIONAL;
-	float			falloffStart = 1.0f;
-	float			falloffEnd = 10.0f;
-	float			spotPower = 50.0f;
+	physx::PxVec3	falloffAndPower = { 1.0f, 10.0f, 50.0f };
+	float			angle = 0.0f;
+	LIGHT_TYPE		type = LIGHT_TYPE::LIGHT_TYPE_DIRECTIONAL;
 };
 
 struct RenderPointInfo

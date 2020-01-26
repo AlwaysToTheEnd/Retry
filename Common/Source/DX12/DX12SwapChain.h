@@ -28,6 +28,7 @@ public:
 							DXGI_FORMAT renderTarget, DXGI_FORMAT depthStencil,
 							unsigned int x, unsigned int y, unsigned int numSwapChain);
 	
+	void ClearDepth(ID3D12GraphicsCommandList* cmd);
 	void ReSize(ID3D12GraphicsCommandList* cmd, unsigned int x, unsigned int y);
 	void RenderBegin(ID3D12GraphicsCommandList* cmd, const float clearColor[4]);
 	void RenderEnd(ID3D12GraphicsCommandList* cmd);

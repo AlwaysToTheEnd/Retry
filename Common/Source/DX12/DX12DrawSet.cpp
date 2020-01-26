@@ -145,11 +145,11 @@ void DX12DrawSet::SetPSO(ID3D12GraphicsCommandList* cmd, const DX12PSOAttributeN
 			temp.ds = m_PSOA.ds;
 		}
 
-		AttributeSetToPSO(cmd, temp);
+		m_PSOCon->SetPSOToCommnadList(cmd, temp);
 	}
 	else
 	{
-		AttributeSetToPSO(cmd, m_PSOA);
+		m_PSOCon->SetPSOToCommnadList(cmd, m_PSOA);
 	}
 }
 
@@ -184,18 +184,12 @@ void DX12DrawSet::BaseRootParamSetting(CD3DX12_ROOT_PARAMETER params[BASE_ROOT_P
 void DX12DrawSet::SetBaseRoots(ID3D12GraphicsCommandList* cmd)
 {
 	ID3D12DescriptorHeap* targetTexHeap[] = {  m_SwapChain->GetSrvHeap() };
-	ID3D12DescriptorHeap* textureHeap[] = { m_TextureBuffer->GetHeap() };
 	cmd->SetDescriptorHeaps(1, targetTexHeap);
 	cmd->SetGraphicsRootConstantBufferView(PASS_CB, m_MainPassCB->GetGPUVirtualAddress());
 	cmd->SetGraphicsRootShaderResourceView(MATERIAL_SRV, m_MaterialBuffer->GetBufferResource()->GetGPUVirtualAddress());
 	cmd->SetGraphicsRootDescriptorTable(TARGETTEXTURE_TABLE, m_SwapChain->CurrSRVsGPU());
+
+	ID3D12DescriptorHeap* textureHeap[] = { m_TextureBuffer->GetHeap() };
 	cmd->SetDescriptorHeaps(1, textureHeap);
 	cmd->SetGraphicsRootDescriptorTable(TEXTURE_TABLE, m_TextureBuffer->GetHeap()->GetGPUDescriptorHandleForHeapStart());
-}
-
-void DX12DrawSet::AttributeSetToPSO(ID3D12GraphicsCommandList* cmd, const DX12PSOAttributeNames& custom)
-{
-	m_PSOCon->SetPSOToCommnadList(cmd, custom.rtvFormats, custom.dsvFormat,
-		custom.primitive, custom.input, custom.rootSig, custom.rasterizer, custom.blend,
-		custom.depthStencil, custom.vs, custom.ps, custom.gs, custom.hs, custom.ds);
 }

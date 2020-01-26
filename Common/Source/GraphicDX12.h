@@ -17,7 +17,7 @@
 #include "DX12/DX12MeshSet.h"
 #include "DX12/DX12UploadBuffer.h"
 #include "DX12/DX12RenderClasses.h"
-#include "DX12/PSOController.h"
+#include "DX12/DX12PSOController.h"
 #include "DX12/DX12SwapChain.h"
 #include "DX12/DX12MeshComputeCulling.h"
 
@@ -28,6 +28,7 @@ class DX12DrawSetNormalMesh;
 class DX12DrawSetSkinnedMesh;
 class DX12DrawSetHeightField;
 class DX12DrawSetPointBase;
+class DX12DrawSetLight;
 class DX12DrawSetUI;
 
 using Microsoft::WRL::ComPtr;
@@ -107,7 +108,7 @@ private:
 	DX12_COMPUTE_CULLING_FRUSTUM		m_BaseFrustum;
 
 private:
-	std::unique_ptr<PSOController>											m_PSOCon;
+	std::unique_ptr<DX12PSOController>											m_PSOCon;
 
 	std::vector<ComPtr<ID3D12CommandAllocator>>								m_CmdListAllocs;
 	std::unique_ptr<DX12UploadBuffer<DX12PassConstants>>					m_PassCB;
@@ -122,6 +123,7 @@ private:
 	std::unique_ptr<DX12DrawSetNormalMesh>									m_NormalMeshDrawSet;
 	std::unique_ptr<DX12DrawSetSkinnedMesh>									m_SkinnedMeshDrawSet;
 	std::unique_ptr<DX12DrawSetHeightField>									m_HeightFieldMeshDrawSet;
+	std::unique_ptr<DX12DrawSetLight>										m_LightDrawSet;
 	std::unique_ptr<DX12DrawSetPointBase>									m_PointBaseDrawSet;
 	std::unique_ptr<DX12DrawSetUI>											m_UIDrawSet;
 	std::unique_ptr<DX12FontManager>										m_FontManager;

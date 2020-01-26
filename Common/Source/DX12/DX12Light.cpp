@@ -4,29 +4,29 @@ using namespace DirectX;
 
 void DX12Light::SetColor(const physx::PxVec3& color)
 {
-	m_Value.lightColor = color;
+	//m_Value.lightColor = color;
 }
 
 void DX12Light::InitDirectionalLight(const physx::PxVec3& dir)
 {
-	m_Value.type = LIGHT_TYPE_DIRECTIONAL;
-	m_Value.direction = dir;
+	/*m_Value.type = LIGHT_TYPE_DIRECTIONAL;
+	m_Value.direction = dir;*/
 }
 
 void DX12Light::InitPointLight(const physx::PxVec3& pos, float fallOffStart, float fallOffEnd)
 {
-	m_Value.type = LIGHT_TYPE_POINT;
+	/*m_Value.type = LIGHT_TYPE_POINT;
 
 	m_Value.position = pos;
 	m_Value.falloffStart = fallOffStart;
-	m_Value.falloffEnd = fallOffEnd;
+	m_Value.falloffEnd = fallOffEnd;*/
 }
 
 void DX12Light::InitSpotLight(const physx::PxVec3& pos, const physx::PxVec3& dir, float fallOffStart, float fallOffEnd)
 {
-	m_Value.type = LIGHT_TYPE_SPOT;
-	m_Value.position = pos;
-	m_Value.direction = dir;
+	//m_Value.type = LIGHT_TYPE_SPOT;
+	//m_Value.position = pos;
+	//m_Value.direction = dir;
 }
 
 void DX12Light::SetShadowMap(ID3D12Device* device, unsigned int width, unsigned int height)
@@ -57,7 +57,7 @@ void DX12Light::LightUpdate(ID3D12GraphicsCommandList* cmd, std::initializer_lis
 		psocon.vs = DX12DrawSet::ShadowMapShaderCallName;
 		psocon.ps = DX12DrawSet::ShadowMapShaderCallName;
 
-		switch (m_Value.type)
+		/*switch (m_Value.type)
 		{
 		case LIGHT_TYPE_DIRECTIONAL:
 			XMStoreFloat4x4(shadowProj, XMMatrixOrthographicOffCenterLH(-radius, radius, -radius, radius, -radius, radius));
@@ -75,11 +75,11 @@ void DX12Light::LightUpdate(ID3D12GraphicsCommandList* cmd, std::initializer_lis
 			break;
 		default:
 			break;
-		}
+		}*/
 
-		DX12ShadowMap::GetShadowMatrix(startPos, dir, shadowProj, m_Value.shadowMat);
+		//DX12ShadowMap::GetShadowMatrix(startPos, dir, shadowProj, m_Value.shadowMat);
 
-		if (m_Value.type == LIGHT_TYPE_DIRECTIONAL)
+		/*if (m_Value.type == LIGHT_TYPE_DIRECTIONAL)
 		{
 			for (auto& it : targets)
 			{
@@ -92,6 +92,6 @@ void DX12Light::LightUpdate(ID3D12GraphicsCommandList* cmd, std::initializer_lis
 			{
 				it->Draw(cmd, &psocon, &culling);
 			}
-		}
+		}*/
 	}
 }

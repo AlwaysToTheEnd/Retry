@@ -14,21 +14,6 @@ enum DX12_SHADER_TYPE
 	DX12_SHADER_TYPE_COUNT
 };
 
-struct DX12_LIGHT_VALUE
-{
-	physx::PxMat44	shadowMat = physx::PxMat44(physx::PxIdentity);
-	physx::PxVec3	lightColor = { 0.5f, 0.5f, 0.5f };
-	float			falloffStart = 1.0f;				// point/spot light only
-	physx::PxVec3	direction = { 0.5f, 0.5f, 0.5f };	// directional/spot light only
-	float			falloffEnd = 10.0f;					// point/spot light only
-	physx::PxVec3	position = { 0.00f, 0.0f, 0.0f };	// point/spot light only
-	float			spotPower = 50.0f;					// spot light only
-	LIGHT_TYPE		type = LIGHT_TYPE_DIRECTIONAL;
-	unsigned int	pad0;
-	unsigned int	pad1;
-	unsigned int	pad2;
-};
-
 struct DX12ObjectConstants
 {
 	physx::PxMat44	world;
@@ -60,6 +45,17 @@ struct DX12UIInfomation
 	physx::PxVec2	size;
 	int				uiType = 0;
 	int				textureIndex = -1;
+};
+
+struct DX12LightInfomation
+{
+	physx::PxVec4	posnAngle = { 0.0f, 0.0f, 0.0f, 1.0f };	
+	physx::PxVec3	lightColor = { 0.5f, 0.5f, 0.5f };
+	LIGHT_TYPE		type = LIGHT_TYPE::LIGHT_TYPE_DIRECTIONAL;
+	physx::PxVec3	falloffAndPower = { 1.0f, 10.0f, 50.0f };
+	int				pad0;
+	physx::PxVec3	dir = { 0, 0, 1 };
+	int				pad1;
 };
 
 struct DX12PassConstants

@@ -3,7 +3,7 @@
 
 Microsoft::WRL::ComPtr<ID3D12Resource> DX12MeshComputeCulling::m_Zero = nullptr;
 unsigned int DX12MeshComputeCulling::m_InstanceCount = 0;
-PSOController* DX12MeshComputeCulling::m_PsoCon = nullptr;
+DX12PSOController* DX12MeshComputeCulling::m_PsoCon = nullptr;
 unsigned int DX12MeshComputeCulling::m_UavSrvSize = 0;
 const DX12_COMPUTE_CULLING_FRUSTUM* DX12MeshComputeCulling::m_BaseFrustum = nullptr;
 
@@ -26,7 +26,7 @@ DX12MeshComputeCulling::~DX12MeshComputeCulling()
 	}
 }
 
-void DX12MeshComputeCulling::BaseSetting(ID3D12Device* device, PSOController* psocon, const DX12_COMPUTE_CULLING_FRUSTUM* basFrustum)
+void DX12MeshComputeCulling::BaseSetting(ID3D12Device* device, DX12PSOController* psocon, const DX12_COMPUTE_CULLING_FRUSTUM* basFrustum)
 {
 	m_PsoCon = psocon;
 	m_BaseFrustum = basFrustum;
@@ -72,7 +72,7 @@ void DX12MeshComputeCulling::BaseSetting(ID3D12Device* device, PSOController* ps
 	m_Zero->Unmap(0, nullptr);
 }
 
-void DX12MeshComputeCulling::Init(ID3D12Device* device, PSOController* psocon, FrameObjectCBs& obCB, FrameUploadSRVs& srvs, unsigned int objectNum, unsigned int objectStride)
+void DX12MeshComputeCulling::Init(ID3D12Device* device, DX12PSOController* psocon, FrameObjectCBs& obCB, FrameUploadSRVs& srvs, unsigned int objectNum, unsigned int objectStride)
 {
 	m_NumObject = objectNum;
 	m_ObjectStride = objectStride;

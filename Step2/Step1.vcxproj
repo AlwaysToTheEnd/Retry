@@ -36,7 +36,7 @@
     <ClCompile Include="..\Common\Source\DX12\DX12TextureBuffer.cpp" />
     <ClCompile Include="..\Common\Source\DX12\DX12FontMG.cpp" />
     <ClCompile Include="..\Common\Source\DX12\DX12SwapChain.cpp" />
-    <ClCompile Include="..\Common\Source\DX12\PSOController.cpp" />
+    <ClCompile Include="..\Common\Source\DX12\DX12PSOController.cpp" />
     <ClCompile Include="..\Common\Source\GraphicBase.cpp" />
     <ClCompile Include="..\Common\Source\HeightMapCreateScene\HeightMapCreateScene.cpp" />
     <ClCompile Include="..\Common\Source\GameCreator.cpp" />
@@ -99,7 +99,7 @@
     <ClInclude Include="..\Common\Source\DX12\DX12RenderClasses.h" />
     <ClInclude Include="..\Common\Source\DX12\DX12SwapChain.h" />
     <ClInclude Include="..\Common\Source\DX12\DX12UploadBuffer.h" />
-    <ClInclude Include="..\Common\Source\DX12\PSOController.h" />
+    <ClInclude Include="..\Common\Source\DX12\DX12PSOController.h" />
     <ClInclude Include="..\Common\Source\GraphicBase.h" />
     <ClInclude Include="..\Common\Source\HeightMapCreateScene\HeightMapCreateScene.h" />
     <ClInclude Include="..\Common\Source\GameCreator.h" />
@@ -191,6 +191,15 @@
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
+      <FileType>Document</FileType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Common\MainShaders\LightShader.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
       <FileType>Document</FileType>
     </None>
   </ItemGroup>

@@ -19,6 +19,6 @@ public:
 	void LightUpdate(ID3D12GraphicsCommandList* cmd, std::initializer_list<DX12DrawSet*> targets);
 
 private:
-	DX12_LIGHT_VALUE				m_Value;
+	//DX12_LIGHT_VALUE				m_Value;
 	std::unique_ptr<DX12ShadowMap>	m_ShadowMap;
 };

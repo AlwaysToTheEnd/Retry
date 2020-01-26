@@ -67,7 +67,7 @@ PSOut PS(VertexOut pin)
     
     if (MaterialIndex > -1)
     {
-        diffuse *= gMaterialData[MaterialIndex].DriffuseAlbedo;
+        diffuse *= gMaterialData[MaterialIndex].DiffuseAlbedo;
         specPower = gMaterialData[MaterialIndex].SpecularExponent;
     }
 	

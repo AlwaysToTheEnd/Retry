@@ -1,4 +1,4 @@
-#include "PSOController.h"
+#include "DX12PSOController.h"
 #include "d3dUtil.h"
 #include <d3dx12.h>
 #include <D3Dcompiler.h>
@@ -6,17 +6,17 @@
 
 using namespace std;
 
-PSOController::PSOController(ID3D12Device* device)
+DX12PSOController::DX12PSOController(ID3D12Device* device)
 	:m_Device(device)
 {
 }
 
-PSOController::~PSOController()
+DX12PSOController::~DX12PSOController()
 {
 
 }
 
-void PSOController::InitBase_Raster_Blend_Depth()
+void DX12PSOController::InitBase_Raster_Blend_Depth()
 {
 	CD3DX12_BLEND_DESC baseBlendDesc(D3D12_DEFAULT);
 	D3D12_RENDER_TARGET_BLEND_DESC baseBlendTargetDesc;
@@ -47,7 +47,14 @@ void PSOController::InitBase_Raster_Blend_Depth()
 	AddDepthStencil(baseAttributeName, baseDepthStencil);
 }
 
-void PSOController::SetPSOToCommnadList(ID3D12GraphicsCommandList* cmd, const std::string& rootSig, const std::string& cs)
+void DX12PSOController::SetPSOToCommnadList(ID3D12GraphicsCommandList* cmd, const DX12PSOAttributeNames& psoAttribute)
+{
+	SetPSOToCommnadList(cmd, psoAttribute.rtvFormats, psoAttribute.dsvFormat,
+		psoAttribute.primitive, psoAttribute.input, psoAttribute.rootSig, psoAttribute.rasterizer, psoAttribute.blend,
+		psoAttribute.depthStencil, psoAttribute.vs, psoAttribute.ps, psoAttribute.gs, psoAttribute.hs, psoAttribute.ds);
+}
+
+void DX12PSOController::SetPSOToCommnadList(ID3D12GraphicsCommandList* cmd, const std::string& rootSig, const std::string& cs)
 {
 	std::string keyName = rootSig + ',' + cs;
 
@@ -77,7 +84,7 @@ void PSOController::SetPSOToCommnadList(ID3D12GraphicsCommandList* cmd, const st
 	}
 }
 
-void PSOController::SetPSOToCommnadList(ID3D12GraphicsCommandList* cmd,
+void DX12PSOController::SetPSOToCommnadList(ID3D12GraphicsCommandList* cmd,
 	const std::vector<DXGI_FORMAT>& rtvFormats, DXGI_FORMAT dsvFormat, D3D12_PRIMITIVE_TOPOLOGY_TYPE primitive,
 	const std::string& input, const std::string& rootSig,
 	const std::string& rasterizer, const std::string& blend, const std::string& depthStencil,
@@ -106,7 +113,6 @@ void PSOController::SetPSOToCommnadList(ID3D12GraphicsCommandList* cmd,
 		D3D12_GRAPHICS_PIPELINE_STATE_DESC newPSO = {};
 
 		auto inputI = m_InputLayouts.find(input);
-
 		auto rasterI = m_Rasterizers.end();
 		auto blendI = m_Blends.end();
 		auto depthStencilI = m_DepthStencils.end();
@@ -139,15 +145,19 @@ void PSOController::SetPSOToCommnadList(ID3D12GraphicsCommandList* cmd,
 		}
 
 		assert(rootSigI != m_RootSignature.end());
-		assert(inputI != m_InputLayouts.end());
 		assert(rasterI != m_Rasterizers.end());
 		assert(blendI != m_Blends.end());
 		assert(depthStencilI != m_DepthStencils.end());
 
-		D3D12_INPUT_LAYOUT_DESC inputDesc;
-		inputDesc.NumElements = inputI->second.size();
-		inputDesc.pInputElementDescs = inputI->second.data();
-		newPSO.InputLayout = inputDesc;
+		if (input.size())
+		{
+			assert(inputI != m_InputLayouts.end());
+			D3D12_INPUT_LAYOUT_DESC inputDesc;
+			inputDesc.NumElements = inputI->second.size();
+			inputDesc.pInputElementDescs = inputI->second.data();
+			newPSO.InputLayout = inputDesc;
+		}
+
 		newPSO.pRootSignature = rootSigI->second.Get();
 
 		newPSO.RasterizerState = rasterI->second;
@@ -219,7 +229,7 @@ void PSOController::SetPSOToCommnadList(ID3D12GraphicsCommandList* cmd,
 	}
 }
 
-void PSOController::AddShader(const std::string& shaderName, DX12_SHADER_TYPE type,
+void DX12PSOController::AddShader(const std::string& shaderName, DX12_SHADER_TYPE type,
 	const std::wstring& filename, const D3D_SHADER_MACRO* defines,
 	const std::string& entrypoint)
 {
@@ -278,7 +288,7 @@ void PSOController::AddShader(const std::string& shaderName, DX12_SHADER_TYPE ty
 	m_Shaders[type].insert({ shaderName, byteCode });
 }
 
-void PSOController::AddInputLayout(const std::string& name, const std::vector<D3D12_INPUT_ELEMENT_DESC>& inputLayout)
+void DX12PSOController::AddInputLayout(const std::string& name, const std::vector<D3D12_INPUT_ELEMENT_DESC>& inputLayout)
 {
 	auto iter = m_InputLayouts.find(name);
 	assert(iter == m_InputLayouts.end());
@@ -286,7 +296,7 @@ void PSOController::AddInputLayout(const std::string& name, const std::vector<D3
 	m_InputLayouts[name] = inputLayout;
 }
 
-void PSOController::AddBlend(const std::string& name, const D3D12_BLEND_DESC& blend)
+void DX12PSOController::AddBlend(const std::string& name, const D3D12_BLEND_DESC& blend)
 {
 	auto iter = m_Blends.find(name);
 	assert(iter == m_Blends.end());
@@ -294,7 +304,7 @@ void PSOController::AddBlend(const std::string& name, const D3D12_BLEND_DESC& bl
 	m_Blends[name] = blend;
 }
 
-void PSOController::AddDepthStencil(const std::string& name, const D3D12_DEPTH_STENCIL_DESC& depthStencil)
+void DX12PSOController::AddDepthStencil(const std::string& name, const D3D12_DEPTH_STENCIL_DESC& depthStencil)
 {
 	auto iter = m_DepthStencils.find(name);
 	assert(iter == m_DepthStencils.end());
@@ -302,7 +312,7 @@ void PSOController::AddDepthStencil(const std::string& name, const D3D12_DEPTH_S
 	m_DepthStencils[name] = depthStencil;
 }
 
-void PSOController::AddRasterizer(const std::string& name, const D3D12_RASTERIZER_DESC& rasterizer)
+void DX12PSOController::AddRasterizer(const std::string& name, const D3D12_RASTERIZER_DESC& rasterizer)
 {
 	auto iter = m_Rasterizers.find(name);
 	assert(iter == m_Rasterizers.end());
@@ -310,7 +320,7 @@ void PSOController::AddRasterizer(const std::string& name, const D3D12_RASTERIZE
 	m_Rasterizers[name] = rasterizer;
 }
 
-void PSOController::AddRootSignature(const std::string& name, const D3D12_ROOT_SIGNATURE_DESC& rootSignature)
+void DX12PSOController::AddRootSignature(const std::string& name, const D3D12_ROOT_SIGNATURE_DESC& rootSignature)
 {
 	auto iter = m_RootSignature.find(name);
 	assert(iter == m_RootSignature.end());
@@ -330,7 +340,7 @@ void PSOController::AddRootSignature(const std::string& name, const D3D12_ROOT_S
 		serializedRootSig->GetBufferSize(), IID_PPV_ARGS(m_RootSignature[name].GetAddressOf())));
 }
 
-void PSOController::AddCommandSignature(const std::string& name, const std::string& rootSigName, const D3D12_COMMAND_SIGNATURE_DESC& commandSigDesc)
+void DX12PSOController::AddCommandSignature(const std::string& name, const std::string& rootSigName, const D3D12_COMMAND_SIGNATURE_DESC& commandSigDesc)
 {
 	auto rootIter = m_RootSignature.find(rootSigName);
 	assert(rootIter != m_RootSignature.end());
@@ -341,7 +351,7 @@ void PSOController::AddCommandSignature(const std::string& name, const std::stri
 	ThrowIfFailed(m_Device->CreateCommandSignature(&commandSigDesc, rootIter->second.Get(), IID_PPV_ARGS(m_CommandSignature[name].GetAddressOf())));
 }
 
-ID3D12CommandSignature* PSOController::GetCommandSignature(const std::string& name)
+ID3D12CommandSignature* DX12PSOController::GetCommandSignature(const std::string& name)
 {
 	auto commandIter = m_CommandSignature.find(name);
 	assert(commandIter != m_CommandSignature.end());

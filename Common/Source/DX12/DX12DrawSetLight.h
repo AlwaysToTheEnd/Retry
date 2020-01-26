@@ -1,17 +1,20 @@
 #pragma once
+#include <memory>
 #include "DX12DrawSet.h"
+#include "DX12UploadBuffer.h"
+#include "DX12RenderClasses.h"
 
 class DX12DrawSetLight : public DX12DrawSet
 {
 	enum
 	{
-		OBJECT_CB = BASE_ROOT_PARAM_COUNT,
+		LIGHTS_SRV = BASE_ROOT_PARAM_COUNT,
 		ROOT_COUNT
 	};
 
 public:
 	DX12DrawSetLight(unsigned int numFrameResource,
-		PSOController* psoCon,
+		DX12PSOController* psoCon,
 		DX12TextureBuffer* textureBuffer,
 		const std::vector<DXGI_FORMAT>& rtvFormats,
 		DXGI_FORMAT dsvFormat)
@@ -28,5 +31,6 @@ public:
 	virtual void	UpdateFrameCountAndClearWork() override;
 
 private:
-	unsigned int	m_RenderCount;
+	std::vector<std::unique_ptr<DX12UploadBuffer<DX12LightInfomation>>>		m_LightInfomations;
+	unsigned int															m_RenderCount;
 };

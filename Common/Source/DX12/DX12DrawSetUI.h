@@ -15,7 +15,7 @@ class DX12DrawSetUI :public DX12DrawSet
 
 public:
 	DX12DrawSetUI(unsigned int numFrameResource,
-		PSOController* psoCon,
+		DX12PSOController* psoCon,
 		DX12TextureBuffer* textureBuffer,
 		const std::vector<DXGI_FORMAT>& rtvFormats,
 		DXGI_FORMAT dsvFormat)

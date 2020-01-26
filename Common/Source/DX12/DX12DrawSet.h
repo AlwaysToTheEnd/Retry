@@ -6,7 +6,7 @@
 #include <dxgiformat.h>
 #include <string>
 #include "GraphicBase.h"
-#include "PSOController.h"
+#include "DX12PSOController.h"
 #include "DX12IndexManagementBuffer.h"
 #include "DX12MeshComputeCulling.h"
 
@@ -17,23 +17,6 @@
 //	std::vector<DX12_SHADER_TYPE>	types;
 //	std::vector<D3D_SHADER_MACRO>	macros;
 //};
-
-struct DX12PSOAttributeNames
-{
-	std::vector<DXGI_FORMAT>		rtvFormats;
-	DXGI_FORMAT						dsvFormat;
-	D3D12_PRIMITIVE_TOPOLOGY_TYPE	primitive = D3D12_PRIMITIVE_TOPOLOGY_TYPE_UNDEFINED;
-	std::string						input = "";
-	std::string						rootSig = "";
-	std::string						rasterizer = "";
-	std::string						blend = "";
-	std::string						depthStencil = "";
-	std::string						vs = "";
-	std::string						ps = "";
-	std::string						gs = "";
-	std::string						hs = "";
-	std::string						ds = "";
-};
 
 class CD3DX12_ROOT_PARAMETER;
 class DX12TextureBuffer;
@@ -56,7 +39,7 @@ protected:
 	
 public:
 	DX12DrawSet(unsigned int numFrameResource, 
-		PSOController* psoCon,
+		DX12PSOController* psoCon,
 		DX12TextureBuffer* textureBuffer, 
 		const std::vector<DXGI_FORMAT>& rtvFormats,
 		DXGI_FORMAT dsvFormat)
@@ -84,9 +67,6 @@ protected:
 	void				SetBaseRoots(ID3D12GraphicsCommandList* cmd);
 	virtual std::string GetShadowRenderShaderName(DX12_SHADER_TYPE type) { return ""; }
 
-private:
-	void AttributeSetToPSO(ID3D12GraphicsCommandList* cmd, const DX12PSOAttributeNames& custom);
-
 protected:
 	static D3D12_STATIC_SAMPLER_DESC			m_StaticSamplers[7];
 	static std::vector<DX12DrawSet*>			m_Draws;
@@ -97,7 +77,7 @@ protected:
 	const unsigned int							m_NumFrame;
 	unsigned int								m_CurrFrame = 0;
 	DX12PSOAttributeNames						m_PSOA;
-	PSOController*								m_PSOCon = nullptr;
+	DX12PSOController*							m_PSOCon = nullptr;
 
 	DX12TextureBuffer*							m_TextureBuffer = nullptr;
 };

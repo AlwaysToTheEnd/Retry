@@ -4,6 +4,7 @@
 #include "DX12/DX12DrawSetSkinnedMesh.h"
 #include "DX12/DX12DrawSetHeightField.h"
 #include "DX12/DX12DrawSetPointBase.h"
+#include "DX12/DX12DrawSetLight.h"
 #include "DX12/DX12DrawSetUI.h"
 #include "GraphicDO.h"
 #include "BaseClass.h"
@@ -52,7 +53,7 @@ bool GraphicDX12::Init(HWND hWnd, UINT windowWidth, UINT windowHeight)
 
 	ThrowIfFailed(m_DirectCmdListAlloc->Reset());
 
-	m_PSOCon = make_unique<PSOController>(m_D3dDevice.Get());
+	m_PSOCon = make_unique<DX12PSOController>(m_D3dDevice.Get());
 	m_PSOCon->InitBase_Raster_Blend_Depth();
 	m_NormalMeshSet = make_unique<DX12MeshSet<Vertex>>();
 	m_SkinnedMeshSet = make_unique<DX12MeshSet<SkinnedVertex>>();
@@ -684,6 +685,10 @@ void GraphicDX12::Draw()
 	m_SkinnedMeshDrawSet->Draw(m_CommandList.Get());
 	m_PointBaseDrawSet->Draw(m_CommandList.Get());
 	m_HeightFieldMeshDrawSet->Draw(m_CommandList.Get());
+
+	m_LightDrawSet->Draw(m_CommandList.Get());
+
+	m_Swap->ClearDepth(m_CommandList.Get());
 	m_UIDrawSet->Draw(m_CommandList.Get());
 
 	m_FontManager->RenderCommandWrite(m_CommandList.Get(), m_ReservedFonts);
@@ -724,6 +729,9 @@ void GraphicDX12::BuildDrawSets()
 	m_PointBaseDrawSet = std::make_unique<DX12DrawSetPointBase>(1, m_PSOCon.get(),
 		m_TextureBuffers[L"BASE"].get(), rtv, m_DepthStencilFormat);
 
+	m_LightDrawSet = std::make_unique<DX12DrawSetLight>(1, m_PSOCon.get(),
+		m_TextureBuffers[L"BASE"].get(), rtv, m_DepthStencilFormat);
+
 	m_UIDrawSet = std::make_unique<DX12DrawSetUI>(1, m_PSOCon.get(),
 		m_TextureBuffers[L"UI"].get(), rtv, m_DepthStencilFormat);
 
@@ -731,6 +739,7 @@ void GraphicDX12::BuildDrawSets()
 	m_SkinnedMeshDrawSet->Init(m_D3dDevice.Get());
 	m_HeightFieldMeshDrawSet->Init(m_D3dDevice.Get());
 	m_PointBaseDrawSet->Init(m_D3dDevice.Get());
+	m_LightDrawSet->Init(m_D3dDevice.Get());
 	m_UIDrawSet->Init(m_D3dDevice.Get());
 }
 
@@ -830,7 +839,7 @@ void GraphicDX12::UpdateObjectCB()
 		break;
 		case RENDER_LIGHT:
 		{
-			assert(false);
+			m_LightDrawSet->ReserveRender(it);
 		}
 		break;
 		case RENDER_UI:
