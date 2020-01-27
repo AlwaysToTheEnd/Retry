@@ -17,6 +17,14 @@ struct SurfaceData
     float   SpecPower;
 };
 
+struct LightData
+{
+    float4 PosnAngle;
+    float4 Color;
+    float4 FallOffnPower;
+    float4 Dir;
+};
+
 Texture2D gDepthTexture                         : register(t0);
 Texture2D gNormalTexture                        : register(t1);
 Texture2D gSpecPowerTexture                     : register(t2);

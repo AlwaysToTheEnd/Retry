@@ -8,11 +8,10 @@ class DX12DrawSetLight : public DX12DrawSet
 {
 	enum
 	{
-		LIGHTTYPE_CONST = BASE_ROOT_PARAM_COUNT,
+		LIGHTDATA_SRV = BASE_ROOT_PARAM_COUNT,
 		ROOT_COUNT
 	};
 
-	const char* signatureName = "light";
 	const char* pointSpotSignatureName = "pointSpot";
 	unsigned int PointLightBaseIndex = 10;
 	unsigned int SpotLightBaseIndex = 50;
@@ -37,5 +36,7 @@ public:
 private:
 	std::vector<std::unique_ptr<DX12UploadBuffer<DX12LightInfomation>>>		m_LightInfomations;
 
-	unsigned int m_RenderCount[static_cast<int>(LIGHT_TYPE::LIGHT_TYPE_COUNT)] = {};
+	DX12PSOAttributeNames	m_PointLightPSOA;
+	DX12PSOAttributeNames	m_SpotLightPSOA;
+	unsigned int			m_RenderCount[LIGHT_TYPE_COUNT] = {};
 };

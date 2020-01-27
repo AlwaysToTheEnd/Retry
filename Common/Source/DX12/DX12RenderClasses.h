@@ -50,9 +50,9 @@ struct DX12UIInfomation
 struct DX12LightInfomation
 {
 	physx::PxVec4	posnAngle = { 0.0f, 0.0f, 0.0f, 1.0f };	
-	physx::PxVec3	lightColor = { 1.0f, 1.0f, 1.0f };
-	physx::PxVec3	falloffAndPower = { 1.0f, 10.0f, 50.0f };
-	physx::PxVec3	dir = { 0, 0, 1 };
+	physx::PxVec4	lightColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+	physx::PxVec4	falloffAndPower = { 1.0f, 10.0f, 50.0f, 1.0f };
+	physx::PxVec4	dir = { 0, 0, 1, 0 };
 };
 
 struct DX12PassConstants

@@ -76,6 +76,9 @@
     <Filter Include="Common\DeviceInstance\DX12Supporters\DrawSets\Shader">
       <UniqueIdentifier>{3c457f7f-7a52-4b0a-8079-ca10a5f8b00c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Common\DeviceInstance\DX12Supporters\DrawSets\Shader\LightShader">
+      <UniqueIdentifier>{6a1a7861-fc2f-458f-b186-ba7095de7202}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Step2.cpp">
@@ -242,6 +245,9 @@
     </ClCompile>
     <ClCompile Include="..\Common\Source\DX12\DX12PSOController.cpp">
       <Filter>Common\DeviceInstance\DX12Supporters\Managing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Source\GameLight.cpp">
+      <Filter>Common\GameObject</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -416,6 +422,9 @@
     <ClInclude Include="..\Common\Source\DX12\DX12PSOController.h">
       <Filter>Common\DeviceInstance\DX12Supporters\Managing</Filter>
     </ClInclude>
+    <ClInclude Include="..\Common\Source\GameLight.h">
+      <Filter>Common\GameObject</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Common\MainShaders\pointShader.hlsl">
@@ -442,8 +451,13 @@
     <None Include="..\Common\MainShaders\CullingFunc.hlsli">
       <Filter>Common\DeviceInstance\DX12Supporters\DrawSets\Shader</Filter>
     </None>
-    <None Include="..\Common\MainShaders\LightShader.hlsl">
-      <Filter>Common\DeviceInstance\DX12Supporters\DrawSets\Shader</Filter>
+    <None Include="..\Common\MainShaders\DirectionalLightShader.hlsl">
+      <Filter>Common\DeviceInstance\DX12Supporters\DrawSets\Shader\LightShader</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="..\Common\MainShaders\PointLightShader.hlsl">
+      <Filter>Common\DeviceInstance\DX12Supporters\DrawSets\Shader\LightShader</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

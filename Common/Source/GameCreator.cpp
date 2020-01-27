@@ -2,6 +2,7 @@
 #include "GraphicDO.h"
 #include "PhysicsDO.h"
 #include "d3dApp.h"
+#include "GameLight.h"
 #include "../../UIObjects/HeightMapControlPanel.h"
 
 void GameCreator::Delete()
@@ -17,6 +18,8 @@ void GameCreator::Update(float delta)
 
 	physx::PxQuat rotation(angle, physx::PxVec3(1, 0, 0));
 	trans->SetTransform(physx::PxTransform(rotation));
+
+	GetComponent<GameLight>()->GetComponent<DOTransform>()->AddVector(physx::PxVec3(0, 0, delta));
 }
 
 void GameCreator::Init()
@@ -28,6 +31,10 @@ void GameCreator::Init()
 	auto& rInfo = light->GetRenderInfo();
 	rInfo.type = RENDER_LIGHT;
 	rInfo.lightInfo.color = { 0.8f, 0.8f, 0.8f };
+
+	auto pointLight = CreateComponenet<GameLight>();
+
+	pointLight->SetPointLight({ 0,1,1 }, { 0,3,3 }, 1, 15);
 }
 
 void GameCreator::SetUI()

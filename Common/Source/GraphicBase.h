@@ -55,7 +55,7 @@ struct RenderLightInfo
 	physx::PxVec3	color = { 0.5f, 0.5f, 0.5f };
 	physx::PxVec3	falloffAndPower = { 1.0f, 10.0f, 50.0f };
 	float			angle = 0.0f;
-	LIGHT_TYPE		type = LIGHT_TYPE::LIGHT_TYPE_DIRECTIONAL;
+	LIGHT_TYPE		type = LIGHT_TYPE::LIGHT_TYPE_COUNT;
 };
 
 struct RenderPointInfo
