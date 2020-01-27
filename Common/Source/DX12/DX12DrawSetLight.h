@@ -12,6 +12,11 @@ class DX12DrawSetLight : public DX12DrawSet
 		ROOT_COUNT
 	};
 
+	const char* signatureName = "light";
+	const char* pointSpotSignatureName = "pointSpot";
+	unsigned int PointLightBaseIndex = 10;
+	unsigned int SpotLightBaseIndex = 50;
+
 public:
 	DX12DrawSetLight(unsigned int numFrameResource,
 		DX12PSOController* psoCon,
@@ -19,18 +24,18 @@ public:
 		const std::vector<DXGI_FORMAT>& rtvFormats,
 		DXGI_FORMAT dsvFormat)
 		: DX12DrawSet(numFrameResource, psoCon, textureBuffer, rtvFormats, dsvFormat)
-		, m_RenderCount(0)
 	{
 
 	}
 	virtual ~DX12DrawSetLight() = default;
 
 	virtual void	Init(ID3D12Device* device) override;
-	virtual void	Draw(ID3D12GraphicsCommandList* cmd, const DX12PSOAttributeNames* custom = nullptr, const DX12_COMPUTE_CULLING_DESC* culling = nullptr) override;
+	virtual void	Draw(ID3D12GraphicsCommandList* cmd, const DX12PSOAttributeNames* = nullptr, const DX12_COMPUTE_CULLING_DESC* culling = nullptr) override;
 	virtual void	ReserveRender(const RenderInfo& info) override;
 	virtual void	UpdateFrameCountAndClearWork() override;
 
 private:
 	std::vector<std::unique_ptr<DX12UploadBuffer<DX12LightInfomation>>>		m_LightInfomations;
-	unsigned int															m_RenderCount;
+
+	unsigned int m_RenderCount[static_cast<int>(LIGHT_TYPE::LIGHT_TYPE_COUNT)] = {};
 };

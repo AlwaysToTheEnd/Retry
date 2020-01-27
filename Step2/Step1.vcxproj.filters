@@ -442,10 +442,8 @@
     <None Include="..\Common\MainShaders\CullingFunc.hlsli">
       <Filter>Common\DeviceInstance\DX12Supporters\DrawSets\Shader</Filter>
     </None>
-  </ItemGroup>
-  <ItemGroup>
-    <FxCompile Include="..\Common\MainShaders\LightShader.hlsl">
+    <None Include="..\Common\MainShaders\LightShader.hlsl">
       <Filter>Common\DeviceInstance\DX12Supporters\DrawSets\Shader</Filter>
-    </FxCompile>
+    </None>
   </ItemGroup>
 </Project>

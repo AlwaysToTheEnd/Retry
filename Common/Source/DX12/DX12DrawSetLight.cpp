@@ -3,7 +3,6 @@
 
 void DX12DrawSetLight::Init(ID3D12Device* device)
 {
-	const char* signatureName = "light";
 
 	for (int i = 0; i < m_NumFrame; i++)
 	{
@@ -24,8 +23,9 @@ void DX12DrawSetLight::Init(ID3D12Device* device)
 		NULL, NULL };
 
 	D3D12_DEPTH_STENCIL_DESC dsDesc = {};
-	dsDesc.DepthEnable = false;
-	dsDesc.StencilEnable = false;
+	dsDesc.DepthEnable = true;
+	dsDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
+	dsDesc.DepthFunc = D3D12_COMPARISON_FUNC_GREATER_EQUAL;
 
 	m_PSOA.primitive = D3D12_PRIMITIVE_TOPOLOGY_TYPE_PATCH;
 	m_PSOA.rootSig = signatureName;
@@ -51,12 +51,12 @@ void DX12DrawSetLight::Init(ID3D12Device* device)
 		});
 }
 
-void DX12DrawSetLight::Draw(ID3D12GraphicsCommandList* cmd, const DX12PSOAttributeNames* custom, const DX12_COMPUTE_CULLING_DESC* culling)
+void DX12DrawSetLight::Draw(ID3D12GraphicsCommandList* cmd, const DX12PSOAttributeNames*, const DX12_COMPUTE_CULLING_DESC* culling)
 {
 	if (m_RenderCount)
 	{
 		////////////////////////////////////////////////////////////////////////////////////
-		SetPSO(cmd, custom);
+		m_PSOCon->SetPSOToCommnadList(cmd, m_PSOA);
 		SetBaseRoots(cmd);
 
 		D3D12_VERTEX_BUFFER_VIEW VB = {};
@@ -67,25 +67,56 @@ void DX12DrawSetLight::Draw(ID3D12GraphicsCommandList* cmd, const DX12PSOAttribu
 
 		cmd->IASetVertexBuffers(0, 1, &VB);
 		cmd->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY::D3D_PRIMITIVE_TOPOLOGY_1_CONTROL_POINT_PATCHLIST);
-		cmd->SetGraphicsRoot32BitConstant(LIGHTTYPE_CONST, 0, 0);
-		cmd->DrawInstanced(m_RenderCount, 1, 0, 0);
+		
+		cmd->SetGraphicsRoot32BitConstant(LIGHTTYPE_CONST, LIGHT_TYPE_DIRECTIONAL, 0);
+		cmd->DrawInstanced(m_RenderCount[LIGHT_TYPE_DIRECTIONAL], 1, 0, 0);
+
+		cmd->SetGraphicsRoot32BitConstant(LIGHTTYPE_CONST, LIGHT_TYPE_POINT, 0);
+		cmd->DrawInstanced(m_RenderCount[LIGHT_TYPE_POINT], 1, PointLightBaseIndex, 0);
+
+		cmd->SetGraphicsRoot32BitConstant(LIGHTTYPE_CONST, LIGHT_TYPE_SPOT, 0);
+		cmd->DrawInstanced(m_RenderCount[LIGHT_TYPE_SPOT], 1, SpotLightBaseIndex, 0);
 	}
 }
 
 void DX12DrawSetLight::ReserveRender(const RenderInfo& info)
 {
+	unsigned int targetIndex = 0;
 	DX12LightInfomation data;
 	data.falloffAndPower = info.lightInfo.falloffAndPower;
 	data.lightColor = info.lightInfo.color;
 	data.posnAngle = physx::PxVec4(info.world.getPosition(), info.lightInfo.angle);
 	data.dir = info.world.rotate(physx::PxVec3(0, 0, 1));
 
-	m_LightInfomations[m_CurrFrame]->CopyData(m_RenderCount, data);
-	m_RenderCount++;
+	switch (info.lightInfo.type)
+	{
+	case LIGHT_TYPE::LIGHT_TYPE_DIRECTIONAL:
+		targetIndex = m_RenderCount[info.lightInfo.type];
+		assert(m_RenderCount[info.lightInfo.type] < PointLightBaseIndex);
+		break;
+	case LIGHT_TYPE::LIGHT_TYPE_POINT:
+		targetIndex = m_RenderCount[info.lightInfo.type] + PointLightBaseIndex;
+		assert(m_RenderCount[info.lightInfo.type] < SpotLightBaseIndex- PointLightBaseIndex);
+		break;
+	case LIGHT_TYPE::LIGHT_TYPE_SPOT:
+		targetIndex = m_RenderCount[info.lightInfo.type] + SpotLightBaseIndex;
+		assert(m_RenderCount[info.lightInfo.type] < SpotLightBaseIndex - 100);
+		break;
+	default:
+		assert(false);
+		break;
+	}
+
+	m_LightInfomations[m_CurrFrame]->CopyData(targetIndex, data);
+	m_RenderCount[info.lightInfo.type]++;
 }
 
 void DX12DrawSetLight::UpdateFrameCountAndClearWork()
 {
 	DX12DrawSet::UpdateFrameCountAndClearWork();
-	m_RenderCount = 0;
+	
+	for (auto& it : m_RenderCount)
+	{
+		it = 0;
+	}
 }

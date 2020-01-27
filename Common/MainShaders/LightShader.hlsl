@@ -47,7 +47,7 @@ PatchTess LightConstantHS()
             tessFactor = 18;
             break;
         case 2:
-            tessFactor = 2;
+            tessFactor = 12;
             break;
     }
     
@@ -81,7 +81,7 @@ LightDSOutput DS(PatchTess input, float2 UV : SV_DomainLocation, const OutputPat
     switch (LightType)
     {
         case 0:
-            Output.Position = float4(Output.cpPos, 0, 1);
+            Output.Position = float4(Output.cpPos, 0.999999f, 1);
             break;
         case 1:
             break;

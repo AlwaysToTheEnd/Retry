@@ -105,10 +105,15 @@ SurfaceData UnpackGBuffer(float2 UV)
     SurfaceData result;
 
     float depth = gDepthTexture.Sample(gsamPointWrap, UV.xy).x;
+    result.Normal = gNormalTexture.Sample(gsamPointWrap, UV.xy).xyz;
+    
+    //if (result.Normal.x == 0 && result.Normal.y == 0 && result.Normal.z == 0 && depth == 1.0f)
+    //{
+    //    clip(-1);
+    //}
+    
     result.LinearDepth = gProj._43 / (depth + gProj._33);
     result.Color = gColorTexture.Sample(gsamPointWrap, UV.xy);
-    
-    result.Normal = gNormalTexture.Sample(gsamPointWrap, UV.xy).xyz;
     result.Normal = normalize(result.Normal * 2.0 - 1.0);
     result.SpecPower = gSpecPowerTexture.Sample(gsamPointWrap, UV.xy).x;
 
@@ -121,10 +126,15 @@ SurfaceData UnpackGBufferL(int2 location)
     
     int3 location3= int3(location, 0);
     float depth = gDepthTexture.Load(location3).x;
+    result.Normal = gNormalTexture.Load(location3).xyz;
+    
+    //if (result.Normal.x == 0 && result.Normal.y == 0 && result.Normal.z == 0 && depth==1.0f)
+    //{
+    //    clip(-1);
+    //}
+    
     result.LinearDepth = gProj._43 / (depth + gProj._33);
     result.Color = gColorTexture.Load(location3);
-    
-    result.Normal = gNormalTexture.Load(location3).xyz;
     result.Normal = normalize(result.Normal * 2.0f - 1.0);
     result.SpecPower = gSpecPowerTexture.Load(location3).x;
     

@@ -38,7 +38,6 @@ void DX12PSOController::InitBase_Raster_Blend_Depth()
 
 	//////////////////////////////////////////////////////////////////////////
 	CD3DX12_RASTERIZER_DESC baseRasterizer(D3D12_DEFAULT);
-	baseRasterizer.CullMode = D3D12_CULL_MODE_BACK;
 
 	AddRasterizer(baseAttributeName, baseRasterizer);
 
