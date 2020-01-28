@@ -28,14 +28,20 @@ void DX12DrawSetLight::Init(ID3D12Device* device)
 
 	const char* dirLight = "DLight";
 
+	D3D12_RASTERIZER_DESC rasterizer = {};
+	rasterizer.FillMode = D3D12_FILL_MODE_SOLID;
+	rasterizer.CullMode = D3D12_CULL_MODE_BACK;
+
 	m_PSOA.primitive = D3D12_PRIMITIVE_TOPOLOGY_TYPE_POINT;
 	m_PSOA.rootSig = dirLight;
 	m_PSOA.depthStencil = dirLight;
+	m_PSOA.rasterizer = dirLight;
 	m_PSOA.vs = dirLight;
 	m_PSOA.ps = dirLight;
 	m_PSOA.gs = dirLight;
 	m_PSOCon->AddRootSignature(dirLight, rootDesc);
 	m_PSOCon->AddDepthStencil(dirLight, dsDesc);
+	m_PSOCon->AddRasterizer(dirLight, rasterizer);
 	m_PSOCon->AddShader(dirLight, DX12_SHADER_VERTEX, L"../Common/MainShaders/DirectionalLightShader.hlsl", macros, "VS");
 	m_PSOCon->AddShader(dirLight, DX12_SHADER_PIXEL, L"../Common/MainShaders/DirectionalLightShader.hlsl", macros, "PS");
 	m_PSOCon->AddShader(dirLight, DX12_SHADER_GEOMETRY, L"../Common/MainShaders/DirectionalLightShader.hlsl", macros, "GS");
@@ -44,11 +50,14 @@ void DX12DrawSetLight::Init(ID3D12Device* device)
 	m_PointLightPSOA = m_PSOA;
 
 	m_PointLightPSOA.primitive = D3D12_PRIMITIVE_TOPOLOGY_TYPE_PATCH;
+	m_PointLightPSOA.depthStencil = pointLight;
 	m_PointLightPSOA.gs = "";
 	m_PointLightPSOA.vs = pointLight;
 	m_PointLightPSOA.hs = pointLight;
 	m_PointLightPSOA.ds = pointLight;
 	m_PointLightPSOA.ps = pointLight;
+	dsDesc.DepthFunc = D3D12_COMPARISON_FUNC_ALWAYS;
+	m_PSOCon->AddDepthStencil(pointLight, dsDesc);
 	m_PSOCon->AddShader(pointLight, DX12_SHADER_VERTEX, L"../Common/MainShaders/PointLightShader.hlsl", macros, "VS");
 	m_PSOCon->AddShader(pointLight, DX12_SHADER_PIXEL, L"../Common/MainShaders/PointLightShader.hlsl", macros, "PS");
 	m_PSOCon->AddShader(pointLight, DX12_SHADER_HULL, L"../Common/MainShaders/PointLightShader.hlsl", macros, "HS");
@@ -70,13 +79,13 @@ void DX12DrawSetLight::Draw(ID3D12GraphicsCommandList* cmd, const DX12PSOAttribu
 		cmd->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY::D3D_PRIMITIVE_TOPOLOGY_POINTLIST);
 		cmd->IASetVertexBuffers(0, 0, nullptr);
 		
-		/*cmd->SetGraphicsRootShaderResourceView(LIGHTDATA_SRV, LightInfoSrv);
-		cmd->DrawInstanced(m_RenderCount[LIGHT_TYPE_DIRECTIONAL], 1, 0, 0);*/
+		cmd->SetGraphicsRootShaderResourceView(LIGHTDATA_SRV, LightInfoSrv);
+		cmd->DrawInstanced(m_RenderCount[LIGHT_TYPE_DIRECTIONAL], 1, 0, 0);
 
 		m_PSOCon->SetPSOToCommnadList(cmd, m_PointLightPSOA);
 		cmd->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY::D3D_PRIMITIVE_TOPOLOGY_1_CONTROL_POINT_PATCHLIST);
 		cmd->SetGraphicsRootShaderResourceView(LIGHTDATA_SRV, LightInfoSrv + LightInfoSize* PointLightBaseIndex);
-		cmd->DrawInstanced(m_RenderCount[LIGHT_TYPE_POINT]*2, 1, 0, 0);
+		cmd->DrawInstanced(m_RenderCount[LIGHT_TYPE_POINT], 1, 0, 0);
 	}
 }
 
@@ -101,7 +110,7 @@ void DX12DrawSetLight::ReserveRender(const RenderInfo& info)
 		break;
 	case LIGHT_TYPE::LIGHT_TYPE_SPOT:
 		targetIndex = m_RenderCount[info.lightInfo.type] + SpotLightBaseIndex;
-		assert(m_RenderCount[info.lightInfo.type] < SpotLightBaseIndex - 100);
+		assert(m_RenderCount[info.lightInfo.type] < 100 - SpotLightBaseIndex);
 		break;
 	default:
 		return;

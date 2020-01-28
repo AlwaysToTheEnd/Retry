@@ -12,7 +12,7 @@ void GameLight::SetDirectionalLight(const physx::PxVec3& color, const physx::PxV
 	physx::PxVec3 baseDir = { 0,0,1 };
 	physx::PxVec3 crossVec = baseDir.cross(normalDir);
 	
-	m_Trans->SetTransform(physx::PxTransform(physx::PxQuat(baseDir.dot(normalDir), crossVec)));
+	m_Trans->SetTransform(physx::PxTransform(physx::PxQuat(acosf(baseDir.dot(normalDir)), crossVec)));
 }
 
 void GameLight::SetPointLight(const physx::PxVec3& color, const physx::PxVec3& pos, float fallOffStart, float fallOffEnd)
