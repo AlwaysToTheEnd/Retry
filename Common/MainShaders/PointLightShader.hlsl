@@ -35,7 +35,7 @@ struct HS_OUTPUT
 
 [domain("quad")]
 [partitioning("integer")]
-[outputtopology("triangle_ccw")]
+[outputtopology("triangle_cw")]
 [outputcontrolpoints(4)]
 [patchconstantfunc("PointLightConstantHS")]
 HS_OUTPUT HS()
@@ -57,7 +57,7 @@ struct DS_OUTPUT
 DS_OUTPUT DS(HS_CONSTANT_DATA_OUTPUT input, float2 UV : SV_DomainLocation, const OutputPatch<HS_OUTPUT, 4> quad)
 {
     LightData light = gLightDatas[input.Index];
-    float2 posClipSpace = UV.xy * 2.0 - 1.0;
+    float2 posClipSpace = UV.xy * float2(2.0, -2.0) + float2(-1.0, 1.0);
     float3 CenterPos = mul(float4(light.PosnAngle.xyz, 1), gView).xyz;
     
     float3 normDir = normalize(float3(posClipSpace.xy, 0));

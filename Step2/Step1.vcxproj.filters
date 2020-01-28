@@ -454,9 +454,12 @@
     <None Include="..\Common\MainShaders\DirectionalLightShader.hlsl">
       <Filter>Common\DeviceInstance\DX12Supporters\DrawSets\Shader\LightShader</Filter>
     </None>
+    <None Include="..\Common\MainShaders\PointLightShader.hlsl">
+      <Filter>Common\DeviceInstance\DX12Supporters\DrawSets\Shader\LightShader</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="..\Common\MainShaders\PointLightShader.hlsl">
+    <FxCompile Include="..\Common\MainShaders\SpotLightShader.hlsl">
       <Filter>Common\DeviceInstance\DX12Supporters\DrawSets\Shader\LightShader</Filter>
     </FxCompile>
   </ItemGroup>
