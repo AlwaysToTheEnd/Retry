@@ -108,13 +108,12 @@ namespace AniTree
 
 	public:
 		void SetIndexFunc(std::function<int()> func) { m_IndexFunc = func; }
-		friend std::ostream& operator <<(std::ostream& os, const AniNode& node);
 
 	private:
 		bool CheckArrowTrigger(NodeArrow& arrow, std::vector<TriggerData>& triggers,
 			unsigned long long currTick, unsigned long long aniEndTick);
 
-	private:
+	public:
 		physx::PxVec2			m_Pos;
 		unsigned int			m_AniEndTime;
 		std::string				m_TargetAniName;
@@ -125,6 +124,8 @@ namespace AniTree
 
 		std::function<int()>	m_IndexFunc;
 	};
+
+	std::ostream& operator <<(std::ostream& os, const AniNode& node);
 
 	class AnimationTree final
 	{
