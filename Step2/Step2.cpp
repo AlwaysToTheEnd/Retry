@@ -32,7 +32,8 @@ void Step2::SelectDevices()
 
 void Step2::LoadObjectsFromFile()
 {
-
+	//Internet ping
+	//Test Code. 
 }
 
 void Step2::InitObjects()
