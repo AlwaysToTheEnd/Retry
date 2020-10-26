@@ -182,7 +182,7 @@ D3D12_CPU_DESCRIPTOR_HANDLE DX12SwapChain::CurrRTV(BUFFER_RESURECE_TYPE type) co
 	case DX12SwapChain::GBUFFER_RESOURCE_COLORS:
 	{
 		resultHandle = m_RTVHeap->GetCPUDescriptorHandleForHeapStart();
-		resultHandle.ptr += m_RTVDescriptorSize * ((type - 1) + (GBUFFER_RESOURCE_COUNT - 1) * m_CurrBackBufferIndex);
+		resultHandle.ptr += m_RTVDescriptorSize * ((type - 1) + ((GBUFFER_RESOURCE_COUNT - 1) * m_CurrBackBufferIndex));
 	}
 	break;
 	default:
@@ -292,13 +292,13 @@ void DX12SwapChain::CreateResourceViews()
 		const unsigned int offsetValue = GBUFFER_RESOURCE_COUNT * i;
 
 		//Fill rtvHeap.
-		m_Device->CreateRenderTargetView(m_Resources[GBUFFER_RESOURCE_COLORS + offsetValue].Get(), nullptr, rtvHandle);
-		rtvHandle.Offset(1, m_RTVDescriptorSize);
-
 		m_Device->CreateRenderTargetView(m_Resources[GBUFFER_RESOURCE_NORMAL + offsetValue].Get(), nullptr, rtvHandle);
 		rtvHandle.Offset(1, m_RTVDescriptorSize);
 
 		m_Device->CreateRenderTargetView(m_Resources[GBUFFER_RESOURCE_SPECPOWER + offsetValue].Get(), nullptr, rtvHandle);
+		rtvHandle.Offset(1, m_RTVDescriptorSize);
+
+		m_Device->CreateRenderTargetView(m_Resources[GBUFFER_RESOURCE_COLORS + offsetValue].Get(), nullptr, rtvHandle);
 		rtvHandle.Offset(1, m_RTVDescriptorSize);
 
 		//Fill dsvHeap.
