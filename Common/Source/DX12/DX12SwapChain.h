@@ -10,7 +10,7 @@
 class DX12SwapChain
 {
 public:
-	enum
+	enum BUFFER_RESURECE_TYPE
 	{
 		GBUFFER_RESOURCE_DS,
 		GBUFFER_RESOURCE_NORMAL,
@@ -32,13 +32,13 @@ public:
 	void ReSize(ID3D12GraphicsCommandList* cmd, unsigned int x, unsigned int y);
 	void RenderBegin(ID3D12GraphicsCommandList* cmd, const float clearColor[4]);
 	void RenderEnd(ID3D12GraphicsCommandList* cmd);
-	void Presnet();
+	void Present();
 
 	void GetRenderTargetFormats(std::vector<DXGI_FORMAT>& out);
 
 	ID3D12DescriptorHeap*		GetSrvHeap() { return m_SRVHeap.Get(); }
-	D3D12_CPU_DESCRIPTOR_HANDLE CurrentBackBufferView() const;
-	D3D12_CPU_DESCRIPTOR_HANDLE DepthStencilView() const;
+	D3D12_CPU_DESCRIPTOR_HANDLE CurrRTV(BUFFER_RESURECE_TYPE type) const;
+	D3D12_CPU_DESCRIPTOR_HANDLE CurrDSV() const;
 	D3D12_GPU_DESCRIPTOR_HANDLE CurrSRVsGPU() const;
 
 private:
@@ -52,7 +52,7 @@ private:
 	DXGI_FORMAT												m_SpecPowBufferFormat;
 	DXGI_FORMAT												m_ColorBufferFormat;
 	size_t													m_NumSwapBuffer;
-	size_t													m_CurrBackBuffer;
+	size_t													m_CurrBackBufferIndex;
 	unsigned int											m_RTVDescriptorSize;
 	unsigned int											m_DSVDescriptorSize;
 	unsigned int											m_SRVDescriptorSize;

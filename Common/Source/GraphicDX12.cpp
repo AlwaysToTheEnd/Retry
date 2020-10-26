@@ -702,10 +702,10 @@ void GraphicDX12::Draw()
 	m_CommandQueue->ExecuteCommandLists(_countof(cmdsLists), cmdsLists);
 	m_FontManager->Commit(m_CommandQueue.Get());
 
-	m_Swap->Presnet();
+	m_Swap->Present();
 
 	FlushCommandQueue();
-
+	
 	DX12DrawSet::AllDrawsFrameCountAndClearWork();
 	m_CurrFrame = (m_CurrFrame + 1) % m_NumFrameResource;
 }
