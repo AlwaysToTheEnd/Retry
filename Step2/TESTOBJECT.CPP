@@ -5,30 +5,30 @@
 
 void TestObject::Update(float delta)
 {
+
 }
 
 void TestObject::Init()
 {
-	CreateComponenet<DOTransform>();
-	auto colMesh = CreateComponenet<DOCollsionMesh>(true, physx::PxGeometryType::eBOX, physx::PxVec4(1,1,1,0), true);
-	auto rigid = CreateComponenet<DORigidDynamic>();
+	/*auto trans = CreateComponenet<DOTransform>();
+	auto mesh = CreateComponenet<DORenderMesh>();
+	auto Renderer = CreateComponenet<DORenderer>();
+	auto Animator = CreateComponenet<DOAnimator>();
 
-	rigid->AttachCollisionMesh(colMesh);
-	rigid->SetPos(physx::PxTransform(5, 10, 5));
-	rigid->AddFunc(std::bind(&TestObject::TestClickedFunc, this));
+	std::vector<std::string> skins;
+	std::vector<std::string> anis;
 
-	auto renderer = CreateComponenet<DORenderer>();
+	Renderer->SetRenderInfo(RenderInfo(RENDER_SKIN));
+	Animator->GetSkinNames(skins);
+	Animator->SelectSkin(skins[1]);
+	mesh->SelectMesh(CGH::SKINNED_MESH, skins[1]);
+	Animator->GetAniNames(anis);
+	Animator->SelectAnimation(anis[1]);
 
-	RenderInfo renderInfo(RENDER_BOX);
-	renderInfo.point.color = { 0,1,0,1 };
-	renderInfo.point.size = { 1,1,1 };
-
-	renderer->SetRenderInfo(renderInfo);
+	trans->SetPos({ 0,0,0 });*/
 }
 
 void TestObject::TestClickedFunc()
 {
-	auto rigid = reinterpret_cast<physx::PxRigidDynamic*> (GetComponent<DORigidDynamic>()->GetPxObject());
 
-	rigid->addForce(physx::PxVec3(3, 5, 3), physx::PxForceMode::eVELOCITY_CHANGE);
 }

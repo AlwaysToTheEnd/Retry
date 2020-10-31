@@ -10,8 +10,10 @@ struct SkinnedVertexIn
     float3 PosL : POSITION;
     float3 NormalL : NORMAL;
     float2 TexC : TEXCOORD;
-    float3 BoneWeights : WEIGHTS;
-    uint4 BoneIndices : BONEINDICES;
+    float4 BoneWeights1 : WEIGHTS0;
+    float4 BoneWeights2 : WEIGHTS1;
+    uint4 BoneIndices1 : BONEINDICES0;
+    uint4 BoneIndices2 : BONEINDICES1;
 };
 
 struct VertexOut

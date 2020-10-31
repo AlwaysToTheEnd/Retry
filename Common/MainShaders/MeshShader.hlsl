@@ -23,19 +23,30 @@ cbuffer cbSkinned : register(b2)
 
 VertexOut VS(SkinnedVertexIn vin)
 {
-	float weights[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-	weights[0] = vin.BoneWeights.x;
-	weights[1] = vin.BoneWeights.y;
-	weights[2] = vin.BoneWeights.z;
-	weights[3] = 1.0f - weights[0] - weights[1] - weights[2];
+	float weights[8] = { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f };
+	weights[0] = vin.BoneWeights1.x;
+	weights[1] = vin.BoneWeights1.y;
+	weights[2] = vin.BoneWeights1.z;
+	weights[3] = vin.BoneWeights1.w;
+
+	weights[4] = vin.BoneWeights2.x;
+	weights[5] = vin.BoneWeights2.y;
+	weights[6] = vin.BoneWeights2.z;
+	weights[7] = vin.BoneWeights2.w;
 
 	float3 posL = float3(0.0f, 0.0f, 0.0f);
 	float3 normalL = float3(0.0f, 0.0f, 0.0f);
 
 	for (int i = 0; i < 4; ++i)
 	{
-		posL += weights[i] * mul(float4(vin.PosL, 1.0f), gAniBoneMat[vin.BoneIndices[i]]).xyz;
-		normalL += weights[i] * mul(vin.NormalL, (float3x3)gAniBoneMat[vin.BoneIndices[i]]);
+		posL += weights[i] * mul(float4(vin.PosL, 1.0f), gAniBoneMat[vin.BoneIndices1[i]]).xyz;
+		normalL += weights[i] * mul(vin.NormalL, (float3x3)gAniBoneMat[vin.BoneIndices1[i]]);
+	}
+
+	for (int j = 0; j < 4; ++j)
+	{
+		posL += weights[j+4] * mul(float4(vin.PosL, 1.0f), gAniBoneMat[vin.BoneIndices2[j]]).xyz;
+		normalL += weights[j+4] * mul(vin.NormalL, (float3x3)gAniBoneMat[vin.BoneIndices2[j]]);
 	}
 	
 	VertexIn normalVertex;

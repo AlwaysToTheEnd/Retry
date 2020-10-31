@@ -23,7 +23,7 @@
 //Supported number of texture coord sets (UV(W) channels) per mesh
 #define AI_MAX_NUMBER_OF_TEXTURECOORDS 0x8
 
-class XFileParser;
+class MeshReplacer;
 struct AniBoneMat;
 
 namespace Ani
@@ -60,10 +60,10 @@ namespace Ani
 	{
 		std::string name;
 		bool isReference = false; // if true, mName holds a name by which the actual material can be found in the material list
-		physx::PxVec4 diffuse;
-		float specularExponent;
-		physx::PxVec3 specular;
-		physx::PxVec3 emissive;
+		physx::PxVec4 diffuse = { 1.0f,1.0f,1.0f,1.0f };
+		float specularExponent = 0.25f;
+		physx::PxVec3 specular = { 0.01f,0.01f,0.01f };
+		physx::PxVec3 emissive = { 0,0,0 };
 		std::vector<TexEntry> textures;
 	};
 
@@ -94,7 +94,7 @@ namespace Ani
 	class SkinnedData
 	{
 	public:
-		friend XFileParser;
+		friend MeshReplacer;
 
 	public:
 		unsigned int				BoneCount() const { return static_cast<unsigned int>(m_BoneOffsets.size()); }

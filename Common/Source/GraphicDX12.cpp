@@ -8,6 +8,9 @@
 #include "DX12/DX12DrawSetUI.h"
 #include "GraphicDO.h"
 #include "BaseClass.h"
+#include "assimp/Importer.hpp"
+#include "assimp/postprocess.h"
+#include "MeshReplacer.h"
 
 using namespace DirectX;
 using namespace std;
@@ -122,18 +125,18 @@ void GraphicDX12::OnResize()
 
 	CGH::GO.graphic.aspectRatio = (float)m_ClientWidth / m_ClientHeight;
 	CGH::GO.graphic.fovAngleX = 2 * atanf(CGH::GO.graphic.aspectRatio * tanf(CGH::GO.graphic.fovAngleY));
-	
+
 	m_BaseFrustum.near_Far.x = CGH::GO.graphic.perspectiveNearZ;
 	m_BaseFrustum.near_Far.y = CGH::GO.graphic.perspectiveFarZ;
-	
-	m_BaseFrustum.rightNormal = physx::PxVec4(physx::PxQuat(CGH::GO.graphic.fovAngleX / 2, physx::PxVec3(0, 1, 0)).rotate(physx::PxVec3(1, 0, 0)),0).getNormalized();
+
+	m_BaseFrustum.rightNormal = physx::PxVec4(physx::PxQuat(CGH::GO.graphic.fovAngleX / 2, physx::PxVec3(0, 1, 0)).rotate(physx::PxVec3(1, 0, 0)), 0).getNormalized();
 	m_BaseFrustum.leftNormal = m_BaseFrustum.rightNormal;
 	m_BaseFrustum.leftNormal.x = -m_BaseFrustum.leftNormal.x;
 	m_BaseFrustum.upNormal = physx::PxVec4(physx::PxQuat(CGH::GO.graphic.fovAngleY / 2, -physx::PxVec3(1, 0, 0)).rotate(physx::PxVec3(0, 1, 0)), 0).getNormalized();
 	m_BaseFrustum.downNormal = m_BaseFrustum.upNormal;
 	m_BaseFrustum.downNormal.y = -m_BaseFrustum.downNormal.y;
 
-	XMMATRIX P = XMMatrixPerspectiveFovLH(CGH::GO.graphic.fovAngleY, CGH::GO.graphic.aspectRatio, 
+	XMMATRIX P = XMMatrixPerspectiveFovLH(CGH::GO.graphic.fovAngleY, CGH::GO.graphic.aspectRatio,
 		CGH::GO.graphic.perspectiveNearZ, CGH::GO.graphic.perspectiveFarZ);
 	XMMATRIX OrthoP = XMMatrixOrthographicOffCenterLH(m_ScissorRect.left, m_ScissorRect.right,
 		m_ScissorRect.bottom, m_ScissorRect.top, D3D12_MIN_DEPTH, D3D12_MAX_DEPTH);
@@ -450,7 +453,6 @@ void GraphicDX12::LoadMeshAndMaterialFromFolder(const std::vector<std::wstring>&
 		SearchAllFileFromFolder(it, true, files);
 	}
 
-	XFileParser xfileP;
 	vector<Vertex> combinedVertex;
 	vector<unsigned int> combinedIndices;
 
@@ -475,12 +477,20 @@ void GraphicDX12::LoadMeshAndMaterialFromFolder(const std::vector<std::wstring>&
 	std::vector<MeshObject> skinnedMeshs;
 	std::vector<MeshObject> normalMeshs;
 
+	Assimp::Importer importer;
+	MeshReplacer replacer;
+
 	for (auto& it : files)
 	{
 		bool isSkinnedMesh = true;
 		MeshObject meshObject;
 		string extension;
 		string fileName = GetFileNameFromPath(it, extension);
+
+		const aiScene* scene = importer.ReadFile(it,
+			aiProcess_Triangulate |
+			aiProcess_ConvertToLeftHanded);
+
 		wstring temp(it.begin(), it.end());
 		indices.clear();
 
@@ -490,66 +500,64 @@ void GraphicDX12::LoadMeshAndMaterialFromFolder(const std::vector<std::wstring>&
 		skinnedVertices.clear();
 		vertices.clear();
 
-		if (extension == "X")
+		baseVertexOffset = static_cast<UINT>(combinedSkinnedVertex.size());
+		baseIndexOffset = static_cast<UINT>(combinedSkinnedIndices.size());
+
+		replacer.Replace(scene, skinnedVertices, indices, subsets, mats, skinnedData);
+
+		for (auto& it2 : subsets)
 		{
-			baseVertexOffset = static_cast<UINT>(combinedSkinnedVertex.size());
-			baseIndexOffset = static_cast<UINT>(combinedSkinnedIndices.size());
+			UINT faceCount = 0;
 
-			xfileP.LoadXfile(it, skinnedVertices, indices, subsets, mats, skinnedData);
-
-			for (auto& it2 : subsets)
+			for (auto& materalIndex : it2.materialIndexCount)
 			{
-				UINT faceCount = 0;
+				SubmeshData sub;
+				sub.material = materalIndex.first;
+				sub.indexOffset = it2.indexStart + baseIndexOffset + faceCount;
+				sub.numIndex = materalIndex.second;
+				sub.vertexOffset = baseVertexOffset;
+				sub.numVertex = it2.vertexCount;
 
-				for (auto& materalIndex : it2.materialIndexCount)
+				faceCount += materalIndex.second;
+				meshObject.subs.insert({ materalIndex.first ,sub });
+			}
+		}
+
+		for (auto& it2 : mats)
+		{
+			Material material;
+			for (auto& textureIter : it2.textures)
+			{
+				if (textureIter.isNormalMap)
 				{
-					SubmeshData sub;
-					sub.material = materalIndex.first;
-					sub.indexOffset = it2.indexStart + baseIndexOffset + faceCount;
-					sub.numIndex = materalIndex.second;
-					sub.vertexOffset = baseVertexOffset;
-					sub.numVertex = it2.vertexCount;
-
-					faceCount += materalIndex.second;
-					meshObject.subs.insert({ materalIndex.first ,sub });
+					meshObject.subs[it2.name].normalMap = textureIter.name;
+				}
+				else
+				{
+					meshObject.subs[it2.name].diffuseMap = textureIter.name;
 				}
 			}
 
-			for (auto& it2 : mats)
-			{
-				Material material;
-				for (auto& textureIter : it2.textures)
-				{
-					if (textureIter.isNormalMap)
-					{
-						meshObject.subs[it2.name].normalMap = textureIter.name;
-					}
-					else
-					{
-						meshObject.subs[it2.name].diffuseMap = textureIter.name;
-					}
-				}
+			material.diffuseAlbedo = it2.diffuse;
+			material.specular = it2.specular;
+			material.specularExponent = it2.specularExponent;
+			material.emissive = it2.emissive;
+			matDatas.push_back(material);
+			matNames.push_back(it2.name);
+		}
 
-				material.diffuseAlbedo = it2.diffuse;
-				material.specular = it2.specular;
-				material.specularExponent = it2.specularExponent;
-				material.emissive = it2.emissive;
-				matDatas.push_back(material);
-				matNames.push_back(it2.name);
-			}
-
-			if (!skinnedData.GetAnimationNum())
-			{
-				normalMeshs.push_back(meshObject);
-				normalMeshNames.push_back(fileName);
-				isSkinnedMesh = false;
-			}
-			else
-			{
-				m_SkinnedDatas.insert({ fileName, skinnedData });
-				skinnedMeshs.push_back(meshObject);
-				skinnedMeshNames.push_back(fileName);
-			}
+		if (!skinnedData.GetAnimationNum())
+		{
+			normalMeshs.push_back(meshObject);
+			normalMeshNames.push_back(fileName);
+			isSkinnedMesh = false;
+		}
+		else
+		{
+			assert(m_SkinnedDatas.find(fileName) == m_SkinnedDatas.end());
+			m_SkinnedDatas.insert({ fileName, skinnedData });
+			skinnedMeshs.push_back(meshObject);
+			skinnedMeshNames.push_back(fileName);
 		}
 
 		if (isSkinnedMesh)
@@ -562,6 +570,8 @@ void GraphicDX12::LoadMeshAndMaterialFromFolder(const std::vector<std::wstring>&
 			combinedVertex.insert(combinedVertex.end(), vertices.begin(), vertices.end());
 			combinedIndices.insert(combinedIndices.end(), indices.begin(), indices.end());
 		}
+
+		importer.FreeScene();
 	}
 
 	m_Materials = make_unique<DX12IndexManagementBuffer<Material>>(m_D3dDevice.Get(),
@@ -705,7 +715,7 @@ void GraphicDX12::Draw()
 	m_Swap->Present();
 
 	FlushCommandQueue();
-	
+
 	DX12DrawSet::AllDrawsFrameCountAndClearWork();
 	m_CurrFrame = (m_CurrFrame + 1) % m_NumFrameResource;
 }
@@ -717,7 +727,7 @@ void GraphicDX12::BuildDrawSets()
 	std::vector<DXGI_FORMAT> rtv;
 	m_Swap->GetRenderTargetFormats(rtv);
 
-	m_NormalMeshDrawSet = std::make_unique<DX12DrawSetNormalMesh>(1, m_PSOCon.get(), 
+	m_NormalMeshDrawSet = std::make_unique<DX12DrawSetNormalMesh>(1, m_PSOCon.get(),
 		m_TextureBuffers[L"MESH"].get(), rtv, m_DepthStencilFormat, *m_NormalMeshSet);
 
 	m_SkinnedMeshDrawSet = std::make_unique<DX12DrawSetSkinnedMesh>(1, m_PSOCon.get(),
@@ -745,7 +755,7 @@ void GraphicDX12::BuildDrawSets()
 
 void GraphicDX12::BuildDepthStencilAndBlendsAndRasterizer()
 {
-	
+
 }
 
 void GraphicDX12::UpdateMainPassCB(float delta)
@@ -789,7 +799,7 @@ void GraphicDX12::UpdateMainPassCB(float delta)
 	{
 		ray = m_CurrCamera->GetViewRay(m_ProjectionMat, m_ClientWidth, m_ClientHeight);
 	}
-	
+
 	rayOrigin = invView.transform(rayOrigin);
 	ray = invView.rotate(ray).getNormalized();
 

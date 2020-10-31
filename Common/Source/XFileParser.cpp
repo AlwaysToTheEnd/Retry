@@ -1521,7 +1521,7 @@ void XFileParser::DataRearrangement(std::vector<SkinnedVertex>& vertices,
 
 		for (auto& it : currBone.weights)
 		{
-			float* weightData = &vertices[it.vertexIndex].boneWeights.x;
+			float* weightData = &vertices[it.vertexIndex].boneWeights[0];
 			bool isEndWeight = true;
 			for (int j = 0; j < 3; j++)
 			{

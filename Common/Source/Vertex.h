@@ -22,8 +22,8 @@ struct SkinnedVertex
 	physx::PxVec3	position;
 	physx::PxVec3	normal;
 	physx::PxVec2	uv;
-	physx::PxVec3	boneWeights;
-	unsigned char	boneIndices[4];
+	float			boneWeights[8] = {};
+	unsigned char	boneIndices[8] = {};
 };
 
 

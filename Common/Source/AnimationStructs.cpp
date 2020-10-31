@@ -68,7 +68,8 @@ void Ani::SkinnedData::GetFinalTransforms(
 {
 	std::vector<physx::PxMat44> localTransform;
 	std::vector<physx::PxMat44> combinedMats;
-	localTransform.resize(m_FrameHierarchy.size());
+
+	localTransform.resize(m_FrameHierarchy.size(), physx::PxMat44(physx::PxIDENTITY::PxIdentity));
 	combinedMats.resize(m_FrameHierarchy.size());
 
 	assert(BONEMAXMATRIX >= m_BoneOffsets.size());
@@ -212,7 +213,6 @@ DirectX::XMVECTOR XM_CALLCONV Ani::SkinnedData::GetAnimationKeyOnTick(const std:
 				DirectX::XMVECTOR next = DirectX::XMLoadFloat4(&values[i + 1].value);
 
 				result = DirectX::XMQuaternionSlerp(prev, next, lerpPercent);
-
 				break;
 			}
 		}

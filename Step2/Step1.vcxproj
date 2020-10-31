@@ -42,6 +42,7 @@
     <ClCompile Include="..\Common\Source\HeightMapCreateScene\HeightMapCreateScene.cpp" />
     <ClCompile Include="..\Common\Source\GameCreator.cpp" />
     <ClCompile Include="..\Common\Source\IGraphicDevice.cpp" />
+    <ClCompile Include="..\Common\Source\MeshReplacer.cpp" />
     <ClCompile Include="..\Common\Source\PhysicsDO.cpp" />
     <ClCompile Include="..\Common\Source\cCamera.cpp" />
     <ClCompile Include="..\Common\Source\CGHScene.cpp" />
@@ -57,17 +58,7 @@
     <ClCompile Include="..\Common\Source\InputTextureNameList.cpp" />
     <ClCompile Include="..\Common\Source\PhysX4_1.cpp" />
     <ClCompile Include="..\Common\Source\StaticObject.cpp" />
-    <ClCompile Include="..\Common\Source\XFileParser.cpp" />
     <ClCompile Include="..\Common\Source\Xml\Xml.cpp" />
-    <ClCompile Include="..\Common\Source\zlib\adler32.c" />
-    <ClCompile Include="..\Common\Source\zlib\compress.c" />
-    <ClCompile Include="..\Common\Source\zlib\crc32.c" />
-    <ClCompile Include="..\Common\Source\zlib\deflate.c" />
-    <ClCompile Include="..\Common\Source\zlib\inffast.c" />
-    <ClCompile Include="..\Common\Source\zlib\inflate.c" />
-    <ClCompile Include="..\Common\Source\zlib\inftrees.c" />
-    <ClCompile Include="..\Common\Source\zlib\trees.c" />
-    <ClCompile Include="..\Common\Source\zlib\zutil.c" />
     <ClCompile Include="..\Common\UIObjects\HeightMapControlPanel.cpp" />
     <ClCompile Include="..\Common\UIObjects\UIButton.cpp" />
     <ClCompile Include="..\Common\UIObjects\UIObject.cpp" />
@@ -105,6 +96,7 @@
     <ClInclude Include="..\Common\Source\GraphicBase.h" />
     <ClInclude Include="..\Common\Source\HeightMapCreateScene\HeightMapCreateScene.h" />
     <ClInclude Include="..\Common\Source\GameCreator.h" />
+    <ClInclude Include="..\Common\Source\MeshReplacer.h" />
     <ClInclude Include="..\Common\Source\PhysicsDO.h" />
     <ClInclude Include="..\Common\Source\cCamera.h" />
     <ClInclude Include="..\Common\Source\CGHScene.h" />
@@ -126,7 +118,6 @@
     <ClInclude Include="..\Common\Source\Px1RefPtr.h" />
     <ClInclude Include="..\Common\Source\StaticObject.h" />
     <ClInclude Include="..\Common\Source\Vertex.h" />
-    <ClInclude Include="..\Common\Source\XFileParser.h" />
     <ClInclude Include="..\Common\Source\Xml\Xml.h" />
     <ClInclude Include="..\Common\UIObjects\HeightMapControlPanel.h" />
     <ClInclude Include="..\Common\UIObjects\UIObject.h" />
@@ -303,7 +294,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <ConformanceMode>true</ConformanceMode>
+      <ConformanceMode>false</ConformanceMode>
       <AdditionalIncludeDirectories>./../Common/Source;./../Common/Include;./../Common/Include/DirectXTK;</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -312,15 +303,17 @@
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <FloatingPointModel>Fast</FloatingPointModel>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <AdditionalLibraryDirectories>./../Common/Lib</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
-      <AdditionalOptions>/LIBPATH:./../Common/Lib SimulationController_static_64.lib SceneQuery_static_64.lib PhysXVehicle_static_64.lib PhysXTask_static_64.lib PhysXPvdSDK_static_64.lib PhysXFoundation_64.lib PhysXExtensions_static_64.lib PhysXCooking_64.lib PhysXCommon_64.lib PhysXCharacterKinematic_static_64.lib PhysX_64.lib LowLevelDynamics_static_64.lib LowLevelAABB_static_64.lib FastXml_static_64.lib LowLevel_static_64.lib DirectXTex.lib DirectXTK12.lib /DEBUG</AdditionalOptions>
+      <AdditionalOptions>/LIBPATH:./../Common/Lib zlibstaticd.lib IrrXMLd.lib zlibd.lib assimp-vc142-mtd.lib SimulationController_static_64.lib SceneQuery_static_64.lib PhysXVehicle_static_64.lib PhysXTask_static_64.lib PhysXPvdSDK_static_64.lib PhysXFoundation_64.lib PhysXExtensions_static_64.lib PhysXCooking_64.lib PhysXCommon_64.lib PhysXCharacterKinematic_static_64.lib PhysX_64.lib LowLevelDynamics_static_64.lib LowLevelAABB_static_64.lib FastXml_static_64.lib LowLevel_static_64.lib DirectXTex.lib DirectXTK12.lib /DEBUG</AdditionalOptions>
       <IgnoreSpecificDefaultLibraries>
       </IgnoreSpecificDefaultLibraries>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
