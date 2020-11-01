@@ -60,22 +60,22 @@ void DORenderMesh::Init(PhysX4_1*, IGraphicDevice* graphicDevice)
 
 void DOAnimator::Update(float delta)
 {
-	m_CurrTick += delta;
+	m_CurrTime += delta;
 
 	if (m_AniTree != nullptr)
 	{
 		if (m_AniTree->Update(delta))
 		{
-			m_CurrTick = m_AniTree->GetCurrAnimationTick();
+			m_CurrTime = m_AniTree->GetCurrAnimationTime();
 			m_CurrAniName = m_AniTree->GetCurrAnimationName();
 		}
 	}
-
+	
 	if (m_CurrSkinnedData && m_CurrAniName.length())
 	{
-		m_BoneMatStoredIndex = m_ReservedAniBone->size();
+		m_BoneMatStoredIndex = CGH::SizeTTransINT(m_ReservedAniBone->size());
 		m_ReservedAniBone->emplace_back();
-		m_CurrSkinnedData->GetFinalTransforms(m_CurrAniName, m_CurrTick, m_ReservedAniBone->back());
+		m_CurrSkinnedData->GetFinalTransforms(m_CurrAniName, m_CurrTime, m_ReservedAniBone->back());
 	}
 	else
 	{

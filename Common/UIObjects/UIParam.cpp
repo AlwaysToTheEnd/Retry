@@ -309,7 +309,7 @@ void UIParam::ParamController::Excute()
 			*reinterpret_cast<bool*>(m_CurrParam->m_ParamPtr) = atoi(m_InputData.c_str());
 			break;
 		case CGH::DATA_TYPE::TYPE_FLOAT:
-			*reinterpret_cast<float*>(m_CurrParam->m_ParamPtr) = atof(m_InputData.c_str());
+			*reinterpret_cast<float*>(m_CurrParam->m_ParamPtr) = static_cast<float>(atof(m_InputData.c_str()));
 			break;
 		case CGH::DATA_TYPE::TYPE_INT:
 			*reinterpret_cast<int*>(m_CurrParam->m_ParamPtr) = atoi(m_InputData.c_str());

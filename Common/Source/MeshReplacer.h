@@ -45,4 +45,5 @@ private:
 
 private:
 	std::unordered_map<std::string, unsigned int> m_FramesIndex;
+	std::vector<std::pair<std::string, unsigned int>> m_NodeNames;
 };

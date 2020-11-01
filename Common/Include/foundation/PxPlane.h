@@ -53,7 +53,7 @@ class PxPlane
 	/**
 	\brief Constructor
 	*/
-	PX_CUDA_CALLABLE PX_FORCE_INLINE PxPlane()
+	PX_CUDA_CALLABLE PX_FORCE_INLINE PxPlane() : n(0, 0, 0), d(0)
 	{
 	}
 

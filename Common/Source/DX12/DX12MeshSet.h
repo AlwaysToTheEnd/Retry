@@ -90,10 +90,10 @@ inline DX12MeshSetResult DX12MeshSet<Vertex_T>::AddMesh(ID3D12Device* device, ID
 		UINT baseVertexLocation = 0;
 		UINT baseIndexLocation = 0;
 		UINT numIndices = 0;
-
+		
 		baseVertexLocation = VB->GetNumDatas();
 		baseIndexLocation = IB->GetNumDatas();
-		numIndices = indices.size();
+		numIndices = CGH::SizeTTransUINT(indices.size());
 
 		for (auto& it : mesh.subs)
 		{
@@ -129,8 +129,8 @@ inline DX12MeshSetResult DX12MeshSet<Vertex_T>::AddMeshs(ID3D12Device* device, I
 
 		baseVertexLocation = VB->GetNumDatas();
 		baseIndexLocation = IB->GetNumDatas();
-		numVertices = vertices.size();
-		numIndices = indices.size();
+		numVertices = CGH::SizeTTransUINT(vertices.size());
+		numIndices = CGH::SizeTTransUINT(indices.size());
 
 		for (auto it : meshs)
 		{
@@ -163,7 +163,7 @@ inline bool DX12MeshSet<Vertex_T>::EditMesh(ID3D12Device* device, ID3D12Graphics
 		return false;
 	}
 
-	return 	VB->EditDatas(device, commandList, iter->second.GetStartVertexOffset(), vertices.size(), vertices.data());
+	return 	VB->EditDatas(device, commandList, iter->second.GetStartVertexOffset(), CGH::SizeTTransUINT(vertices.size()), vertices.data());
 }
 
 template<typename Vertex_T>
@@ -179,7 +179,7 @@ inline D3D12_VERTEX_BUFFER_VIEW DX12MeshSet<Vertex_T>::GetVertexBufferView() con
 	D3D12_VERTEX_BUFFER_VIEW result = {};
 
 	result.BufferLocation = VB->GetBufferResource()->GetGPUVirtualAddress();
-	result.SizeInBytes = VB->GetBufferSize();
+	result.SizeInBytes = CGH::SizeTTransUINT(VB->GetBufferSize());
 	result.StrideInBytes = sizeof(Vertex_T);
 
 	return result;
@@ -191,7 +191,7 @@ inline D3D12_INDEX_BUFFER_VIEW DX12MeshSet<Vertex_T>::GetIndexBufferView() const
 	D3D12_INDEX_BUFFER_VIEW result = {};
 	result.Format = DXGI_FORMAT_R32_UINT;
 	result.BufferLocation = IB->GetBufferResource()->GetGPUVirtualAddress();
-	result.SizeInBytes = IB->GetBufferSize();
+	result.SizeInBytes = CGH::SizeTTransUINT(IB->GetBufferSize());
 
 	return result;
 }

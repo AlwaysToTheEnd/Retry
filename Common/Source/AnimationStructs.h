@@ -36,6 +36,7 @@ namespace Ani
 		unsigned int indexCount = 0;
 		unsigned int numTexture = 0;
 		unsigned int numColors = 0;
+		unsigned int primitiveType = 0;
 		std::vector<std::pair<std::string, unsigned int>> materialIndexCount;
 	};
 
@@ -72,7 +73,7 @@ namespace Ani
 	template <typename T>
 	struct TimeValue
 	{
-		unsigned int time = 0;
+		double time = 0;
 		T value;
 	};
 
@@ -88,7 +89,8 @@ namespace Ani
 
 	struct Animation
 	{
-		std::vector<AnimBone> animBones;
+		double					tickPerSecond = 0.0l;
+		std::vector<AnimBone>	animBones;
 	};
 
 	class SkinnedData
@@ -98,24 +100,25 @@ namespace Ani
 
 	public:
 		unsigned int				BoneCount() const { return static_cast<unsigned int>(m_BoneOffsets.size()); }
-		unsigned int				GetClipStartTime(const std::string& clipName) const;
-		unsigned int				GetClipEndTime(const std::string& clipName) const;
-		void						GetFinalTransforms(const std::string& clipName, unsigned long long timePos, AniBoneMat& finalTransforms) const;
+		double						GetClipStartTime(const std::string& clipName) const;
+		double						GetClipEndTime(const std::string& clipName) const;
+		void						GetFinalTransforms(const std::string& clipName, double timePos, AniBoneMat& finalTransforms) const;
 		unsigned int				GetAnimationNum() const { return static_cast<unsigned int>(m_Animations.size()); }
 		void						GetAnimationNames(std::vector<std::string>& out) const;
 		
 		bool						CheckAnimation(const std::string& key) const;
 
 	private:
-		void CalLocalTransformFromAnimation(const std::string& clipName, std::vector<physx::PxMat44>& LocalTransforms , unsigned long long timePos) const;
+		void CalLocalTransformFromAnimation(const std::string& clipName, std::vector<physx::PxMat44>& LocalTransforms , double timePos) const;
 
-		DirectX::XMVECTOR XM_CALLCONV GetAnimationKeyOnTick(const std::vector<TimeValue<DirectX::XMFLOAT3>>& values, unsigned long long timePos) const;
-		DirectX::XMVECTOR XM_CALLCONV GetAnimationKeyOnTick(const std::vector<TimeValue<DirectX::XMFLOAT4>>& values, unsigned long long timePos) const;
-		DirectX::XMMATRIX XM_CALLCONV GetAnimationKeyOnTick(const std::vector<TimeValue<physx::PxMat44>>& values, unsigned long long timePos) const;
+		DirectX::XMVECTOR XM_CALLCONV GetAnimationKeyOnTick(const std::vector<TimeValue<DirectX::XMFLOAT3>>& values, double timePos) const;
+		DirectX::XMVECTOR XM_CALLCONV GetAnimationKeyOnTick(const std::vector<TimeValue<DirectX::XMFLOAT4>>& values, double timePos) const;
+		DirectX::XMMATRIX XM_CALLCONV GetAnimationKeyOnTick(const std::vector<TimeValue<physx::PxMat44>>& values, double timePos) const;
 
 	private:
 		std::vector<int>							m_FrameHierarchy;
 		std::vector<unsigned int>					m_BoneOffsetsFrameIndex;
+		std::vector<physx::PxMat44>					m_FrameNodesTransform;
 		std::vector<physx::PxMat44>					m_BoneOffsets;
 		std::unordered_map<std::string, Animation>	m_Animations;
 	};

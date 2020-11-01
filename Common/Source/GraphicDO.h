@@ -51,7 +51,7 @@ public:
 		, m_AniTree(nullptr)
 		, m_BoneMatStoredIndex(-1)
 		, m_CurrSkinnedData(nullptr)
-		, m_CurrTick(0)
+		, m_CurrTime(0)
 	{
 		
 	}
@@ -60,7 +60,7 @@ public:
 	void					GetAnimationTreeNames(std::vector<std::string>& out) const;
 	AniTree::AnimationTree* GetCurrAnimationTree() { return m_AniTree; }
 	void					GetSkinNames(std::vector<std::string>& out) const;
-	unsigned int			GetAniEndTime(const std::string& name) const { return m_CurrSkinnedData->GetClipEndTime(name); }
+	double					GetAniEndTime(const std::string& name) const { return m_CurrSkinnedData->GetClipEndTime(name); }
 	const Ani::SkinnedData* GetSkinnedData(const std::string& name) const { return &m_SkinnedDatas->find(name)->second; }
 	int						GetBoneMatStoredIndex() const { return m_BoneMatStoredIndex; }
 	void					GetAniNames(std::vector<std::string>& out) const;
@@ -85,7 +85,7 @@ private:
 
 	AniTree::AnimationTree*					m_AniTree;
 	const Ani::SkinnedData*					m_CurrSkinnedData;
-	unsigned long long						m_CurrTick;
+	double									m_CurrTime;
 	std::string								m_CurrAniName;
 	int										m_BoneMatStoredIndex;
 };

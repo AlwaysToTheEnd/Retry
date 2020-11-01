@@ -79,7 +79,7 @@ struct RenderInfo
 		, scale(1,1,1)
 		, boundSphereRad(1.0f)
 	{
-
+		lightInfo = {};
 	}
 
 	RenderInfo(const RenderInfo& src)
@@ -169,11 +169,11 @@ struct SubmeshData
 
 struct MeshObject
 {
-	size_t	GetTotalVertexNum() const;
-	size_t	GetStartVertexOffset() const;
-	size_t	GetTotalIndexNum() const;
-	size_t	GetStartIndexOffset() const;
-	bool	IsOneSub() const { return subs.size() == 1; }
+	unsigned int	GetTotalVertexNum() const;
+	unsigned int	GetStartVertexOffset() const;
+	unsigned int	GetTotalIndexNum() const;
+	unsigned int	GetStartIndexOffset() const;
+	bool			IsOneSub() const { return subs.size() == 1; }
 
 	unsigned int	primitiveType = 0;
 	std::unordered_map<std::string, SubmeshData> subs;

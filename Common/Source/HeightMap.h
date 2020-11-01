@@ -43,9 +43,9 @@ private:
 	virtual void*			GetPxObject() override { return m_PxStatic; }
 
 private:
-	void LoadRAWFile(const std::wstring& filePath, int& fileHeight, int& fileWidth, std::vector<int>& datas);
-	void CreateRigidStatic(PhysX4_1* pxd, int fileHeight, int fileWidth, const std::vector<int>& datas, std::vector<float>& heights);
-	void CreateRenderMesh(IGraphicDevice* gd, int fileHeight, int fileWidth, const std::vector<float>& heights);
+	void LoadRAWFile(const std::wstring& filePath, unsigned int& fileHeight, unsigned int& fileWidth, std::vector<int>& datas);
+	void CreateRigidStatic(PhysX4_1* pxd, unsigned int fileHeight, unsigned int fileWidth, const std::vector<int>& datas, std::vector<float>& heights);
+	void CreateRenderMesh(IGraphicDevice* gd, unsigned int fileHeight, unsigned int fileWidth, const std::vector<float>& heights);
 		 
 	void StartMapPickingWork();
 

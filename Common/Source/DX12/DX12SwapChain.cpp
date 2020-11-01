@@ -12,6 +12,9 @@ DX12SwapChain::DX12SwapChain()
 	, m_CurrBackBufferIndex(0)
 	, m_RTVDescriptorSize(0)
 	, m_DSVDescriptorSize(0)
+	, m_NormalBufferFormat(DXGI_FORMAT_UNKNOWN)
+	, m_SRVDescriptorSize(0)
+	, m_SpecPowBufferFormat(DXGI_FORMAT_UNKNOWN)
 {
 
 }
@@ -69,12 +72,12 @@ void DX12SwapChain::CreateSwapChain(HWND handle, ID3D12CommandQueue* queue,
 
 	ThrowIfFailed(m_DxgiFactory->CreateSwapChain(queue, &sd, m_SwapChain.GetAddressOf()));
 
-	m_Resources.resize(GBUFFER_RESOURCE_COUNT * m_NumSwapBuffer);
+	m_Resources.resize(GBUFFER_RESOURCE_COUNT * static_cast<size_t>(m_NumSwapBuffer));
 
 	D3D12_DESCRIPTOR_HEAP_DESC rtvHeapDesc;
 	rtvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
 	rtvHeapDesc.NodeMask = 0;
-	rtvHeapDesc.NumDescriptors = m_Resources.size() - m_NumSwapBuffer;
+	rtvHeapDesc.NumDescriptors = CGH::SizeTTransUINT(m_Resources.size() - m_NumSwapBuffer);
 	rtvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
 
 	D3D12_DESCRIPTOR_HEAP_DESC dsvHeapDesc;
@@ -106,7 +109,7 @@ void DX12SwapChain::ReSize(ID3D12GraphicsCommandList* cmd, unsigned int x, unsig
 {
 	assert(m_SwapChain);
 
-	for (int i = 0; i < m_Resources.size(); i++)
+	for (size_t i = 0; i < m_Resources.size(); i++)
 	{
 		m_Resources[i] = nullptr;
 	}
@@ -114,9 +117,9 @@ void DX12SwapChain::ReSize(ID3D12GraphicsCommandList* cmd, unsigned int x, unsig
 	CreateResources(x, y);
 	CreateResourceViews();
 
-	for (int i = 0; i < m_NumSwapBuffer; i++)
+	for (size_t i = 0; i < m_NumSwapBuffer; i++)
 	{
-		unsigned int currOffset = GBUFFER_RESOURCE_COUNT * i;
+		size_t currOffset = GBUFFER_RESOURCE_COUNT * i;
 
 		cmd->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_Resources[GBUFFER_RESOURCE_DS + currOffset].Get(),
 			D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_DEPTH_WRITE));
@@ -125,7 +128,7 @@ void DX12SwapChain::ReSize(ID3D12GraphicsCommandList* cmd, unsigned int x, unsig
 
 void DX12SwapChain::RenderBegin(ID3D12GraphicsCommandList* cmd, const float clearColor[4])
 {
-	unsigned int currOffset = GBUFFER_RESOURCE_COUNT * m_CurrBackBufferIndex;
+	UINT64 currOffset = static_cast<UINT64>(GBUFFER_RESOURCE_COUNT) * m_CurrBackBufferIndex;
 
 	auto depthStencil = CurrDSV();
 	auto base = CurrRTV(GBUFFER_RESOURCE_COLORS);
@@ -151,7 +154,7 @@ void DX12SwapChain::RenderBegin(ID3D12GraphicsCommandList* cmd, const float clea
 
 void DX12SwapChain::RenderEnd(ID3D12GraphicsCommandList* cmd)
 {
-	unsigned int currOffset = GBUFFER_RESOURCE_COUNT * m_CurrBackBufferIndex;
+	UINT64 currOffset = static_cast<UINT64>(GBUFFER_RESOURCE_COUNT) * m_CurrBackBufferIndex;
 
 	cmd->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_Resources[GBUFFER_RESOURCE_COLORS + currOffset].Get(),
 		D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
@@ -182,7 +185,7 @@ D3D12_CPU_DESCRIPTOR_HANDLE DX12SwapChain::CurrRTV(BUFFER_RESURECE_TYPE type) co
 	case DX12SwapChain::GBUFFER_RESOURCE_COLORS:
 	{
 		resultHandle = m_RTVHeap->GetCPUDescriptorHandleForHeapStart();
-		resultHandle.ptr += m_RTVDescriptorSize * ((type - 1) + ((GBUFFER_RESOURCE_COUNT - 1) * m_CurrBackBufferIndex));
+		resultHandle.ptr += m_RTVDescriptorSize * (((static_cast<SIZE_T>(GBUFFER_RESOURCE_COUNT) - 1) * m_CurrBackBufferIndex) + type -1);
 	}
 	break;
 	default:
@@ -196,7 +199,7 @@ D3D12_CPU_DESCRIPTOR_HANDLE DX12SwapChain::CurrRTV(BUFFER_RESURECE_TYPE type) co
 D3D12_CPU_DESCRIPTOR_HANDLE DX12SwapChain::CurrDSV() const
 {
 	D3D12_CPU_DESCRIPTOR_HANDLE currHandle = m_DSVHeap->GetCPUDescriptorHandleForHeapStart();
-	currHandle.ptr += m_DSVDescriptorSize * m_CurrBackBufferIndex;
+	currHandle.ptr += static_cast<SIZE_T>(m_DSVDescriptorSize) * m_CurrBackBufferIndex;
 
 	return currHandle;
 }
@@ -204,7 +207,7 @@ D3D12_CPU_DESCRIPTOR_HANDLE DX12SwapChain::CurrDSV() const
 D3D12_GPU_DESCRIPTOR_HANDLE DX12SwapChain::CurrSRVsGPU() const
 {
 	auto result = m_SRVHeap->GetGPUDescriptorHandleForHeapStart();
-	result.ptr += (m_CurrBackBufferIndex * GBUFFER_RESOURCE_COUNT * m_SRVDescriptorSize);
+	result.ptr += (static_cast<SIZE_T>(m_CurrBackBufferIndex) * GBUFFER_RESOURCE_COUNT * m_SRVDescriptorSize);
 	return result;
 }
 
@@ -251,14 +254,14 @@ void DX12SwapChain::CreateResources(unsigned int x, unsigned int y)
 	dsDesc.SampleDesc.Count = 1;
 	dsDesc.SampleDesc.Quality = 0;
 
-	for (int i = 0; i < m_NumSwapBuffer; i++)
+	for (size_t i = 0; i < m_NumSwapBuffer; i++)
 	{
-		unsigned int offsetValue = GBUFFER_RESOURCE_COUNT * i;
+		const size_t offsetValue = GBUFFER_RESOURCE_COUNT * i;
 
 		D3D12_CLEAR_VALUE clearValue = {};
 		clearValue.Format = normalDesc.Format;
 
-		ThrowIfFailed(m_SwapChain->GetBuffer(i, IID_PPV_ARGS(m_Resources[GBUFFER_RESOURCE_COLORS + offsetValue].GetAddressOf())));
+		ThrowIfFailed(m_SwapChain->GetBuffer(CGH::SizeTTransUINT(i), IID_PPV_ARGS(m_Resources[GBUFFER_RESOURCE_COLORS + offsetValue].GetAddressOf())));
 
 		ThrowIfFailed(m_Device->CreateCommittedResource(
 			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT), D3D12_HEAP_FLAG_NONE, &normalDesc,
@@ -289,7 +292,7 @@ void DX12SwapChain::CreateResourceViews()
 
 	for (size_t i = 0; i < m_NumSwapBuffer; i++)
 	{
-		const unsigned int offsetValue = GBUFFER_RESOURCE_COUNT * i;
+		const size_t offsetValue = GBUFFER_RESOURCE_COUNT * i;
 
 		//Fill rtvHeap.
 		m_Device->CreateRenderTargetView(m_Resources[GBUFFER_RESOURCE_NORMAL + offsetValue].Get(), nullptr, rtvHandle);

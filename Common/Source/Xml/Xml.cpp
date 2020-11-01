@@ -2418,7 +2418,7 @@ namespace Xml
 			fwrite(data, sizeof(char), size, _fp);
 		}
 		else {
-			char* p = _buffer.PushArr(size) - 1;   // back up over the null terminator.
+			char* p = _buffer.PushArr((int)size) - 1;   // back up over the null terminator.
 			memcpy(p, data, size);
 			p[size] = 0;
 		}

@@ -21,21 +21,21 @@ struct DX12ObjectConstants
 	int				diffuseMapIndex = -1;
 	int				normalMapIndex = -1;
 	int				materialIndex = -1;
-	int				PrevAniBone;
-	float			blendFactor;
+	int				PrevAniBone = -1;
+	float			blendFactor = 0.0f;
 	float			boundSphereRad = 1.0f;
-	int				pad0;
-	int				pad1;
-	int				pad2;
+	int				pad0 = 0;
+	int				pad1 = 0;
+	int				pad2 = 0;
 };
 
 struct DX12OnlyTexObjectConstants
 {
 	physx::PxMat44	world;
 	int				textureIndex = -1;
-	int				pad0;
-	int				pad1;
-	int				pad2;
+	int				pad0 = 0;
+	int				pad1 = 0;
+	int				pad2 = 0;
 };
 
 struct DX12UIInfomation

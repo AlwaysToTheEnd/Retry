@@ -41,7 +41,7 @@ inline unsigned int InstanceAndIndexManager<T>::GetNextID()
 	}
 	else
 	{
-		index = m_Datas.size();
+		index = CGH::SizeTTransUINT(m_Datas.size());
 	}
 
 	return index;

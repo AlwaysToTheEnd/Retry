@@ -147,7 +147,7 @@ bool PhysX4_1::ExcuteFuncOfClickedObject(CGHScene& scene, float origin_x, float 
 		currScene->raycast(origin, ray, dist, rayBuffer, PxHitFlags(0), filterData);
 
 		PxU32 hitNum = rayBuffer.getNbAnyHits();
-		PxU32 hitDistance = -1;
+		PxF32 hitDistance = -1.0f;
 		PxRigidActor* targetActor = nullptr;
 		for (PxU32 i = 0; i < hitNum; i++)
 		{

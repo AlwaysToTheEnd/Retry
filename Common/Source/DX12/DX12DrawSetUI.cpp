@@ -5,7 +5,7 @@ void DX12DrawSetUI::Init(ID3D12Device* device)
 {
 	m_UIPass = std::make_unique<DX12UploadBuffer<CGH::GlobalOptions::UIOption>>(device, m_NumFrame, true);
 	m_VBs.resize(m_NumFrame);
-	for (int i = 0; i < m_NumFrame; i++)
+	for (unsigned int i = 0; i < m_NumFrame; i++)
 	{
 		m_VBs[i] = std::make_unique<DX12UploadBuffer<DX12UIInfomation>>(device, 100, false);
 	}
@@ -54,12 +54,13 @@ void DX12DrawSetUI::Draw(ID3D12GraphicsCommandList* cmd, const DX12PSOAttributeN
 
 		static unsigned int uiPassStride = (sizeof(CGH::GlobalOptions::UIOption) + 255) & ~255;
 
-		cmd->SetGraphicsRootConstantBufferView(UI_UIPASS_CB, m_UIPass->Resource()->GetGPUVirtualAddress() + (m_CurrFrame * uiPassStride));
+		cmd->SetGraphicsRootConstantBufferView(UI_UIPASS_CB, m_UIPass->Resource()->GetGPUVirtualAddress() + 
+			(static_cast<D3D12_GPU_VIRTUAL_ADDRESS>(m_CurrFrame) * uiPassStride));
 
 		D3D12_VERTEX_BUFFER_VIEW vertexBufferView = {};
 
 		vertexBufferView.BufferLocation = m_VBs[m_CurrFrame]->Resource()->GetGPUVirtualAddress();
-		vertexBufferView.SizeInBytes = m_VBs[m_CurrFrame]->GetBufferSize();
+		vertexBufferView.SizeInBytes = CGH::SizeTTransUINT(m_VBs[m_CurrFrame]->GetBufferSize());
 		vertexBufferView.StrideInBytes = m_VBs[m_CurrFrame]->GetElementByteSize();
 
 		cmd->IASetVertexBuffers(0, 1, &vertexBufferView);

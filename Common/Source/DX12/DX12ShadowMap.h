@@ -22,7 +22,7 @@ public:
 
 	ID3D12Resource*				GetResource() { return m_Resource.Get(); }
 	D3D12_CPU_DESCRIPTOR_HANDLE GetDsv() const;
-	physx::PxVec2				GetSize() const { return physx::PxVec2(m_Width, m_Height); }
+	physx::PxVec2				GetSize() const { return physx::PxVec2((float)m_Width, (float)m_Height); }
 
 private:
 	void						CreateResource(ID3D12Device* device, unsigned int width, unsigned int height);

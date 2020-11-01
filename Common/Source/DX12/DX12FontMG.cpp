@@ -16,7 +16,7 @@ void DX12FontManager::Init(ID3D12Device* device, ID3D12CommandQueue* queue,
 
 
 	D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
-	heapDesc.NumDescriptors = filePaths.size();
+	heapDesc.NumDescriptors = CGH::SizeTTransUINT(filePaths.size());
 	heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
 	heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 

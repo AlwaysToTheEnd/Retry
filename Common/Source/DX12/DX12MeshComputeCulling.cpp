@@ -107,10 +107,10 @@ ID3D12Resource* DX12MeshComputeCulling::RenderCompute(ID3D12GraphicsCommandList*
 
 	m_PsoCon->SetPSOToCommnadList(cmd, "cullingCompute", csName);
 	auto heapPtr = m_CommandSRVUAVHeap->GetGPUDescriptorHandleForHeapStart();
-	heapPtr.ptr += (m_UavSrvSize * 3) * frame;
+	heapPtr.ptr += (UINT64(m_UavSrvSize) * 3) * frame;
 
 	auto cbPtr = m_CullingDescBuffer->Resource()->GetGPUVirtualAddress();
-	auto cbElementSize = m_CullingDescBuffer->GetElementByteSize();
+	auto cbElementSize = static_cast<D3D12_GPU_VIRTUAL_ADDRESS>(m_CullingDescBuffer->GetElementByteSize());
 
 	ID3D12DescriptorHeap* heaps[] = { m_CommandSRVUAVHeap.Get() };
 	cmd->SetDescriptorHeaps(1, heaps);
@@ -121,7 +121,7 @@ ID3D12Resource* DX12MeshComputeCulling::RenderCompute(ID3D12GraphicsCommandList*
 	cmd->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_Commands[frame].Get(),
 		D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT));
 
-	m_CurrCDBufferIndex = (m_CurrCDBufferIndex + 1) % (MaxCullingNumPerFrame * m_Commands.size());
+	m_CurrCDBufferIndex = (m_CurrCDBufferIndex + 1) % (MaxCullingNumPerFrame * CGH::SizeTTransUINT(m_Commands.size()));
 
 	return m_Commands[frame].Get();
 }
@@ -129,7 +129,7 @@ ID3D12Resource* DX12MeshComputeCulling::RenderCompute(ID3D12GraphicsCommandList*
 void DX12MeshComputeCulling::CreateResourceAndViewHeap(ID3D12Device* device, FrameObjectCBs& obCB, FrameUploadSRVs& srvs)
 {
 	D3D12_DESCRIPTOR_HEAP_DESC heapDesc;
-	heapDesc.NumDescriptors = obCB.size() * 3;
+	heapDesc.NumDescriptors = CGH::SizeTTransUINT(obCB.size() * 3);
 	heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 	heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
 	heapDesc.NodeMask = 1;

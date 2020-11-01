@@ -5,17 +5,12 @@
 
 using namespace DirectX;
 
-unsigned int Ani::SkinnedData::GetClipStartTime(const std::string& clipName) const
+double Ani::SkinnedData::GetClipStartTime(const std::string& clipName) const
 {
 	auto aniIter = m_Animations.find(clipName);
 	assert(aniIter != m_Animations.end() && ("This skinned don't have [" + clipName + "] animation").c_str());
 
 	auto boneIter = aniIter->second.animBones.begin();
-
-	if (boneIter == aniIter->second.animBones.end())
-	{
-		return -1.0f;
-	}
 
 	if (boneIter->posKeys.size())
 	{
@@ -33,17 +28,12 @@ unsigned int Ani::SkinnedData::GetClipStartTime(const std::string& clipName) con
 	return -1.0f;
 }
 
-unsigned int Ani::SkinnedData::GetClipEndTime(const std::string& clipName) const
+double Ani::SkinnedData::GetClipEndTime(const std::string& clipName) const
 {
 	auto aniIter = m_Animations.find(clipName);
 	assert(aniIter != m_Animations.end() && ("This skinned don't have [" + clipName + "] animation").c_str());
 
 	auto boneIter = aniIter->second.animBones.begin();
-
-	if (boneIter == aniIter->second.animBones.end())
-	{
-		return -1.0f;
-	}
 
 	if (boneIter->posKeys.size())
 	{
@@ -63,13 +53,12 @@ unsigned int Ani::SkinnedData::GetClipEndTime(const std::string& clipName) const
 
 void Ani::SkinnedData::GetFinalTransforms(
 	const std::string& clipName, 
-	unsigned long long timePos,
+	double timePos,
 	AniBoneMat& finalTransforms) const
 {
-	std::vector<physx::PxMat44> localTransform;
+	std::vector<physx::PxMat44> localTransform(m_FrameNodesTransform.begin(), m_FrameNodesTransform.end());
 	std::vector<physx::PxMat44> combinedMats;
 
-	localTransform.resize(m_FrameHierarchy.size(), physx::PxMat44(physx::PxIDENTITY::PxIdentity));
 	combinedMats.resize(m_FrameHierarchy.size());
 
 	assert(BONEMAXMATRIX >= m_BoneOffsets.size());
@@ -121,7 +110,7 @@ bool Ani::SkinnedData::CheckAnimation(const std::string& key) const
 	return m_Animations.find(key) != m_Animations.end();
 }
 
-void Ani::SkinnedData::CalLocalTransformFromAnimation(const std::string& clipName, std::vector<physx::PxMat44>& LocalTransforms, unsigned long long timePos) const
+void Ani::SkinnedData::CalLocalTransformFromAnimation(const std::string& clipName, std::vector<physx::PxMat44>& LocalTransforms, double timePos) const
 {
 	auto aniIter = m_Animations.find(clipName);
 	assert(aniIter != m_Animations.end() && ("This skinned don't have [" + clipName + "] animation").c_str());
@@ -151,7 +140,7 @@ void Ani::SkinnedData::CalLocalTransformFromAnimation(const std::string& clipNam
 	}
 }
 
-DirectX::XMVECTOR XM_CALLCONV Ani::SkinnedData::GetAnimationKeyOnTick(const std::vector<TimeValue<DirectX::XMFLOAT3>>& values, unsigned long long timePos) const
+DirectX::XMVECTOR XM_CALLCONV Ani::SkinnedData::GetAnimationKeyOnTick(const std::vector<TimeValue<DirectX::XMFLOAT3>>& values, double timePos) const
 {
 
 	DirectX::XMVECTOR result = DirectX::XMVectorSet(0, 0, 0, 1);
@@ -171,8 +160,7 @@ DirectX::XMVECTOR XM_CALLCONV Ani::SkinnedData::GetAnimationKeyOnTick(const std:
 			if (timePos >= values[i].time && timePos <= values[i + 1].time)
 			{
 				float lerpPercent =
-					(timePos - values[i].time) /
-					static_cast<float>((values[i + 1].time - values[i].time));
+					static_cast<float>((timePos - values[i].time) / (values[i + 1].time - values[i].time));
 
 				DirectX::XMVECTOR prev = DirectX::XMLoadFloat3(&values[i].value);
 				DirectX::XMVECTOR next = DirectX::XMLoadFloat3(&values[i + 1].value);
@@ -187,7 +175,7 @@ DirectX::XMVECTOR XM_CALLCONV Ani::SkinnedData::GetAnimationKeyOnTick(const std:
 	return result;
 }
 
-DirectX::XMVECTOR XM_CALLCONV Ani::SkinnedData::GetAnimationKeyOnTick(const std::vector<TimeValue<DirectX::XMFLOAT4>>& values, unsigned long long timePos) const
+DirectX::XMVECTOR XM_CALLCONV Ani::SkinnedData::GetAnimationKeyOnTick(const std::vector<TimeValue<DirectX::XMFLOAT4>>& values, double timePos) const
 {
 	DirectX::XMVECTOR result = DirectX::XMVectorSet(0, 0, 0, 1);
 
@@ -206,8 +194,7 @@ DirectX::XMVECTOR XM_CALLCONV Ani::SkinnedData::GetAnimationKeyOnTick(const std:
 			if (timePos >= values[i].time && timePos <= values[i + 1].time)
 			{
 				float lerpPercent =
-					(timePos - values[i].time) /
-					static_cast<float>((values[i + 1].time - values[i].time));
+					static_cast<float>((timePos - values[i].time) / (values[i + 1].time - values[i].time));
 
 				DirectX::XMVECTOR prev = DirectX::XMLoadFloat4(&values[i].value);
 				DirectX::XMVECTOR next = DirectX::XMLoadFloat4(&values[i + 1].value);
@@ -221,7 +208,7 @@ DirectX::XMVECTOR XM_CALLCONV Ani::SkinnedData::GetAnimationKeyOnTick(const std:
 	return result;
 }
 
-DirectX::XMMATRIX XM_CALLCONV Ani::SkinnedData::GetAnimationKeyOnTick(const std::vector<TimeValue<physx::PxMat44>>& values, unsigned long long timePos) const
+DirectX::XMMATRIX XM_CALLCONV Ani::SkinnedData::GetAnimationKeyOnTick(const std::vector<TimeValue<physx::PxMat44>>& values, double timePos) const
 {
 	DirectX::XMMATRIX result = DirectX::XMMatrixIdentity();
 
@@ -240,8 +227,7 @@ DirectX::XMMATRIX XM_CALLCONV Ani::SkinnedData::GetAnimationKeyOnTick(const std:
 			if (timePos >= values[i].time && timePos <= values[i + 1].time)
 			{
 				float lerpPercent =
-					(timePos - values[i].time) /
-					static_cast<float>((values[i + 1].time - values[i].time));
+					static_cast<float>((timePos - values[i].time) /	(values[i + 1].time - values[i].time));
 				DirectX::XMMATRIX prev = DirectX::XMLoadFloat4x4(values[i].value);
 				DirectX::XMMATRIX next = DirectX::XMLoadFloat4x4(values[i + 1].value);
 				

@@ -51,8 +51,8 @@ private:
 	DXGI_FORMAT												m_NormalBufferFormat;
 	DXGI_FORMAT												m_SpecPowBufferFormat;
 	DXGI_FORMAT												m_ColorBufferFormat;
-	size_t													m_NumSwapBuffer;
-	size_t													m_CurrBackBufferIndex;
+	unsigned int											m_NumSwapBuffer;
+	unsigned int											m_CurrBackBufferIndex;
 	unsigned int											m_RTVDescriptorSize;
 	unsigned int											m_DSVDescriptorSize;
 	unsigned int											m_SRVDescriptorSize;

@@ -52,7 +52,7 @@ class PxQuat
 	/**
 	\brief Default constructor, does not do any initialization.
 	*/
-	PX_CUDA_CALLABLE PX_FORCE_INLINE PxQuat()
+	PX_CUDA_CALLABLE PX_FORCE_INLINE PxQuat() : x(0.0f), y(0.0f), z(0.0f), w(1.0f)
 	{
 	}
 

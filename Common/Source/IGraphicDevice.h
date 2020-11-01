@@ -49,7 +49,7 @@ public: // pure virtual funcs.
 	virtual void	ReComputeHeightField(const std::string& name, physx::PxVec3 scale) = 0;
 
 private: // used by D3DApp.
-	physx::PxVec2	GetClientSize() const { return physx::PxVec2(m_ClientWidth, m_ClientHeight); }
+	physx::PxVec2	GetClientSize() const { return physx::PxVec2((float)m_ClientWidth, (float)m_ClientHeight); }
 	void			SetCamera(cCamera* camera) { m_CurrCamera = camera; }
 	void			ReservedWorksClear();
 	void			SetClientSize(UINT width, UINT height) { m_ClientWidth = width, m_ClientHeight = height; }

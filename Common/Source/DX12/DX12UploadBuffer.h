@@ -22,7 +22,7 @@ public:
 		auto hr = device->CreateCommittedResource(
 			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
 			D3D12_HEAP_FLAG_NONE,
-			&CD3DX12_RESOURCE_DESC::Buffer(m_ElementByteSize * elementCount),
+			&CD3DX12_RESOURCE_DESC::Buffer(static_cast<UINT64>(m_ElementByteSize) * elementCount),
 			D3D12_RESOURCE_STATE_GENERIC_READ, nullptr,
 			IID_PPV_ARGS(m_UploadBuffer.GetAddressOf()));
 		
@@ -69,15 +69,15 @@ public:
 	}
 
 	T* GetMappedData() { return reinterpret_cast<T*>(m_MappedData); }
-	unsigned int	GetElementByteSize() const { return m_ElementByteSize; }
-	unsigned int	GetBufferSize() const { return m_ElementByteSize * m_NumElement; }
-	unsigned int	GetNumElement() const { return m_NumElement; }
+	unsigned int		GetElementByteSize() const { return m_ElementByteSize; }
+	unsigned long long	GetBufferSize() const { return static_cast<unsigned long long>(m_ElementByteSize) * m_NumElement; }
+	unsigned int		GetNumElement() const { return m_NumElement; }
 
 private:
 	Microsoft::WRL::ComPtr<ID3D12Resource>	m_UploadBuffer;
 	unsigned char*							m_MappedData = nullptr;
 
 	unsigned int							m_NumElement = 0;
-	unsigned long long						m_ElementByteSize = 0;
+	unsigned int							m_ElementByteSize = 0;
 	bool									m_IsConstantBuffer = false;
 };

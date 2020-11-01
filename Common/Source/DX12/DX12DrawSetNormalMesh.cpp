@@ -4,7 +4,7 @@
 void DX12DrawSetNormalMesh::Init(ID3D12Device* device)
 {
 	FrameUploadSRVs srvs;
-	for (int i = 0; i < m_NumFrame; i++)
+	for (unsigned i = 0; i < m_NumFrame; i++)
 	{
 		m_MeshObjectCB.push_back(std::make_unique<DX12UploadBuffer<DX12ObjectConstants>>(device, 100, true));
 		m_ReservedCommands.push_back(std::make_unique<DX12UploadBuffer<DX12NormalMeshIndirectCommand>>(device, 100, false));
@@ -80,7 +80,7 @@ void DX12DrawSetNormalMesh::ReserveRender(const RenderInfo& info)
 {
 	auto& mesh = m_MeshSet.MS.find(info.meshOrTextureName)->second;
 	auto objectCBVritualAD = m_MeshObjectCB[m_CurrFrame]->Resource()->GetGPUVirtualAddress();
-	const UINT objectStrideSize = m_MeshObjectCB[m_CurrFrame]->GetElementByteSize();
+	const unsigned int objectStrideSize = m_MeshObjectCB[m_CurrFrame]->GetElementByteSize();
 
 	DX12NormalMeshIndirectCommand idc;
 	DX12ObjectConstants data;
@@ -96,7 +96,7 @@ void DX12DrawSetNormalMesh::ReserveRender(const RenderInfo& info)
 
 		m_MeshObjectCB[m_CurrFrame]->CopyData(m_RenderCount, data);
 
-		idc.cbv = objectCBVritualAD + (m_RenderCount * objectStrideSize);
+		idc.cbv = objectCBVritualAD + (static_cast<D3D12_GPU_VIRTUAL_ADDRESS>(m_RenderCount) * objectStrideSize);
 		idc.draw.IndexCountPerInstance = it.second.numIndex;
 		idc.draw.StartIndexLocation = it.second.indexOffset;
 		idc.draw.BaseVertexLocation = it.second.vertexOffset;

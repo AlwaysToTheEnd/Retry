@@ -71,7 +71,7 @@ public:
 	void SetPos(physx::PxVec2 pos);
 	void SetTargetAninode(AniTree::AniNode* node);
 	void SetDeleteAniNodeFunc(std::function<void()> func);
-	void SetSkinAnimationInfoVectorPtr(const std::vector<std::string>* aniNames, const std::vector<unsigned int>* aniEnds);
+	void SetSkinAnimationInfoVectorPtr(const std::vector<std::string>* aniNames, const std::vector<double>* aniEnds);
 
 	AniTree::AniNode*		GetNode() { return m_TargetAniNode; }
 	physx::PxVec2			GetPos() const;
@@ -85,7 +85,7 @@ private:
 
 private:
 	const std::vector<std::string>*			m_CurrSkinAnimationNames;
-	const std::vector<unsigned int>*		m_CurrSkinAnimationEndTick;
+	const std::vector<double>*				m_CurrSkinAnimationEndTick;
 
 	std::string								m_CurrAniName;
 	std::vector<AniTreeArowVisual*>			m_Arrows;
@@ -208,7 +208,7 @@ private:
 	std::vector<std::string>					m_SkinNames;
 
 	std::vector<std::string>					m_AniNames;
-	std::vector<unsigned int>					m_AniEndTimes;
+	std::vector<double>							m_AniEndTimes;
 
 	std::list<AniNodeVisual*>					m_AniNodeVs;
 };

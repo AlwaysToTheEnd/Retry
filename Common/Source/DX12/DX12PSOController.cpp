@@ -152,7 +152,7 @@ void DX12PSOController::SetPSOToCommnadList(ID3D12GraphicsCommandList* cmd,
 		{
 			assert(inputI != m_InputLayouts.end());
 			D3D12_INPUT_LAYOUT_DESC inputDesc;
-			inputDesc.NumElements = inputI->second.size();
+			inputDesc.NumElements = CGH::SizeTTransUINT(inputI->second.size());
 			inputDesc.pInputElementDescs = inputI->second.data();
 			newPSO.InputLayout = inputDesc;
 		}
@@ -165,7 +165,7 @@ void DX12PSOController::SetPSOToCommnadList(ID3D12GraphicsCommandList* cmd,
 		
 		newPSO.PrimitiveTopologyType = primitive;
 		newPSO.DSVFormat = dsvFormat;
-		newPSO.NumRenderTargets = rtvFormats.size();
+		newPSO.NumRenderTargets = CGH::SizeTTransUINT(rtvFormats.size());
 		memcpy(newPSO.RTVFormats, rtvFormats.data(), rtvFormats.size() * sizeof(DXGI_FORMAT));
 
 		if (vs.size())

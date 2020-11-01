@@ -3,7 +3,7 @@
 
 void DX12DrawSetPointBase::Init(ID3D12Device* device)
 {
-	for (int i = 0; i < m_NumFrame; i++)
+	for (unsigned int i = 0; i < m_NumFrame; i++)
 	{
 		m_FrameResource.emplace_back();
 		m_FrameResource.back().SRV = std::make_unique<DX12UploadBuffer<DX12OnlyTexObjectConstants>>(device, 100, false);
@@ -62,7 +62,7 @@ void DX12DrawSetPointBase::Draw(ID3D12GraphicsCommandList* cmd, const DX12PSOAtt
 		D3D12_VERTEX_BUFFER_VIEW vertexBufferView = {};
 
 		vertexBufferView.BufferLocation = currFrameSource.VB->Resource()->GetGPUVirtualAddress();
-		vertexBufferView.SizeInBytes = currFrameSource.VB->GetBufferSize();
+		vertexBufferView.SizeInBytes = CGH::SizeTTransUINT(currFrameSource.VB->GetBufferSize());
 		vertexBufferView.StrideInBytes = currFrameSource.VB->GetElementByteSize();
 
 		cmd->IASetVertexBuffers(0, 1, &vertexBufferView);

@@ -69,8 +69,8 @@ void HeightMap::Init(PhysX4_1* pxd, IGraphicDevice* gd)
 		m_GetPickingPosFunc = std::bind(&PhysX4_1::GetPickingPos, pxd);
 	}
 
-	int fileSizeHight = 0;
-	int fileSizeLow = 0;
+	unsigned int fileSizeHight = 0;
+	unsigned int fileSizeLow = 0;
 	std::vector<int> datas;
 	std::vector<float> heights;
 	LoadRAWFile(m_filePath, fileSizeHight, fileSizeLow, datas);
@@ -78,14 +78,14 @@ void HeightMap::Init(PhysX4_1* pxd, IGraphicDevice* gd)
 	CreateRenderMesh(gd, fileSizeHight, fileSizeLow, heights);
 }
 
-void HeightMap::LoadRAWFile(const std::wstring& filePath, int& fileHeight, int& fileWidth, std::vector<int>& datas)
+void HeightMap::LoadRAWFile(const std::wstring& filePath, unsigned int& fileHeight, unsigned int& fileWidth, std::vector<int>& datas)
 {
 	_WIN32_FILE_ATTRIBUTE_DATA fileInfo = {};
 	GetFileAttributesEx(m_filePath.c_str(), GET_FILEEX_INFO_LEVELS::GetFileExInfoStandard, reinterpret_cast<LPVOID>(&fileInfo));
 
 	if (fileInfo.nFileSizeHigh == 0)
 	{
-		fileWidth = sqrt(long double(fileInfo.nFileSizeLow));
+		fileWidth = static_cast<int>(sqrt(long double(fileInfo.nFileSizeLow)));
 		fileHeight = fileWidth;
 	}
 	else
@@ -94,8 +94,8 @@ void HeightMap::LoadRAWFile(const std::wstring& filePath, int& fileHeight, int& 
 		fileHeight = fileInfo.nFileSizeHigh;
 	}
 
-	m_MapOriginSize.x = fileWidth;
-	m_MapOriginSize.y = fileHeight;
+	m_MapOriginSize.x = static_cast<float>(fileWidth);
+	m_MapOriginSize.y = static_cast<float>(fileHeight);
 	FILE* fp = nullptr;
 
 	_wfopen_s(&fp, filePath.c_str(), L"rb");
@@ -123,22 +123,22 @@ void HeightMap::LoadRAWFile(const std::wstring& filePath, int& fileHeight, int& 
 	assert(numData == readNum);
 }
 
-void HeightMap::CreateRigidStatic(PhysX4_1* pxd, int fileHeight, int fileWidth, const std::vector<int>& datas, std::vector<float>& heights)
+void HeightMap::CreateRigidStatic(PhysX4_1* pxd, unsigned int fileHeight, unsigned int fileWidth, const std::vector<int>& datas, std::vector<float>& heights)
 {
 	auto pxDevice = pxd->GetPhysics();
 	auto cooking = pxd->GetCooking();
-	const int samplesSize = datas.size();
+	const int samplesSize = CGH::SizeTTransINT(datas.size());
 
 	std::vector<PxHeightFieldSample> samples(samplesSize);
 	heights.resize(samplesSize);
 
-	int index = 0;
+	unsigned int index = 0;
 	for (int y = fileHeight-1; y >= 0; y--)
 	{
-		int baseIndex = y * fileWidth;
-		for (int x = 0; x < fileWidth; x++)
+	 	unsigned int baseIndex = y * fileWidth;
+		for (unsigned int x = 0; x < fileWidth; x++)
 		{
-			samples[index].height = datas[baseIndex+x];
+			samples[index].height = datas[static_cast<size_t>(baseIndex)+x];
 			samples[index].materialIndex0 = 0;
 			samples[index].materialIndex1 = 0;
 			samples[index].setTessFlag();
@@ -159,10 +159,10 @@ void HeightMap::CreateRigidStatic(PhysX4_1* pxd, int fileHeight, int fileWidth, 
 	index = 0;
 	for (int y = fileHeight - 1; y >= 0; y--)
 	{
-		int baseIndex = y * fileWidth;
-		for (int x = 0; x < fileWidth; x++)
+		unsigned int baseIndex = y * fileWidth;
+		for (unsigned int x = 0; x < fileWidth; x++)
 		{
-			heights[index] = samples[baseIndex + x].height;
+			heights[index] = samples[static_cast<size_t>(baseIndex) + x].height;
 			index++;
 		}
 	}
@@ -180,7 +180,7 @@ void HeightMap::CreateRigidStatic(PhysX4_1* pxd, int fileHeight, int fileWidth, 
 	m_PxStatic->userData = m_Funcs.get();
 }
 
-void HeightMap::CreateRenderMesh(IGraphicDevice* gd, int fileHeight, int fileWidth, const std::vector<float>& heights)
+void HeightMap::CreateRenderMesh(IGraphicDevice* gd, unsigned int fileHeight, unsigned int fileWidth, const std::vector<float>& heights)
 {
 	const size_t numVertices = heights.size();
 	std::vector<unsigned int> indices;
@@ -193,8 +193,8 @@ void HeightMap::CreateRenderMesh(IGraphicDevice* gd, int fileHeight, int fileWid
 	SubmeshData oneSub;
 	oneSub.indexOffset = 0;
 	oneSub.vertexOffset = 0;
-	oneSub.numIndex = indices.size();
-	oneSub.numVertex = numVertices;
+	oneSub.numIndex = CGH::SizeTTransUINT(indices.size());
+	oneSub.numVertex = CGH::SizeTTransUINT(numVertices);
 	oneSub.material = "HeightFieldMaterial";
 	oneSub.diffuseMap = "HeightMap3.jpg";
 
@@ -206,7 +206,7 @@ void HeightMap::CreateRenderMesh(IGraphicDevice* gd, int fileHeight, int fileWid
 	auto renderer = CreateComponenet<DORenderer>();
 	auto mesh = CreateComponenet<DORenderMesh>();
 
-	gd->CreateMesh(meshName, meshObject, CGH::HEIGHTFIELD_MESH, numVertices, heights.data(), indices);
+	gd->CreateMesh(meshName, meshObject, CGH::HEIGHTFIELD_MESH, CGH::SizeTTransUINT(numVertices), heights.data(), indices);
 	mesh->SelectMesh(CGH::HEIGHTFIELD_MESH, meshName);
 	mesh->ReComputeHeightField(m_Scale);
 

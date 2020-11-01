@@ -7,18 +7,18 @@ const AniNode* AniTree::AniNode::Update(float deltaTime)
 {
 	const AniNode* result = nullptr;
 
-	m_CurrTick += deltaTime * 1000;
+	m_CurrTime += deltaTime * 1000;
 
-	if (m_RoofAni && m_CurrTick > m_AniEndTime)
+	if (m_RoofAni && m_CurrTime > m_AniEndTime)
 	{
-		m_CurrTick = 0;
+		m_CurrTime = 0;
 	}
 
 	for (auto& it : m_Arrows)
 	{
-		if (CheckArrowTrigger(it, it.triggers, m_CurrTick, m_AniEndTime))
+		if (CheckArrowTrigger(it, it.triggers, m_CurrTime, m_AniEndTime))
 		{
-			m_CurrTick = 0;
+			m_CurrTime = 0;
 			result = it.targetNode;
 			break;
 		}
@@ -32,11 +32,11 @@ const std::string& AniTree::AniNode::GetAniName() const
 	return m_TargetAniName;
 }
 
-void AniTree::AniNode::SetAniName(const std::string& name, unsigned int aniEndTime)
+void AniTree::AniNode::SetAniName(const std::string& name, double aniEndTime)
 {
 	m_TargetAniName = name;
 	m_AniEndTime = aniEndTime;
-	m_CurrTick = 0;
+	m_CurrTime = 0;
 }
 
 void AniTree::AniNode::GetArrows(std::vector<OutputArrow>& out, const AniNode* to)
@@ -183,7 +183,7 @@ std::ostream& AniTree::operator<<(std::ostream& os, const AniNode& node)
 	return os;
 }
 
-bool AniTree::AniNode::CheckArrowTrigger(NodeArrow& arrow, std::vector<TriggerData>& triggers, unsigned long long currTick, unsigned long long aniEndTick)
+bool AniTree::AniNode::CheckArrowTrigger(NodeArrow& arrow, std::vector<TriggerData>& triggers, double currTick, double aniEndTick)
 {
 	switch (arrow.type)
 	{
@@ -436,13 +436,13 @@ std::string AniTree::AnimationTree::GetCurrAnimationName() const
 	return "";
 }
 
-unsigned long long AniTree::AnimationTree::GetCurrAnimationTick() const
+double AniTree::AnimationTree::GetCurrAnimationTime() const
 {
-	unsigned long long result = 0;
+	double result = 0;
 
 	if (m_AniNodes.size())
 	{
-		result = m_AniNodes[m_CurrAniNodeIndex]->GetCurrTick();
+		result = m_AniNodes[m_CurrAniNodeIndex]->GetCurrTime();
 	}
 
 	return result;

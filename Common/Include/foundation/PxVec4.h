@@ -52,7 +52,7 @@ class PxVec4
 	/**
 	\brief default constructor leaves data uninitialized.
 	*/
-	PX_CUDA_CALLABLE PX_INLINE PxVec4()
+	PX_CUDA_CALLABLE PX_INLINE PxVec4() : x(0.0f), y(0.0f), z(0.0f), w(0.0f)
 	{
 	}
 

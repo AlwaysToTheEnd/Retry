@@ -23,8 +23,8 @@ public:
 
 	void				ClearUploadBuffer() { m_UploadBuffer = nullptr; }
 
-	UINT				GetBufferSize() { return m_BufferSize; }
-	UINT				GetNumDatas() { return (m_BufferSize - m_Redundancy) / sizeof(T); }
+	UINT64				GetBufferSize() { return m_BufferSize; }
+	UINT				GetNumDatas() { return static_cast<UINT>((m_BufferSize - m_Redundancy) / sizeof(T)); }
 	ID3D12Resource*		GetBufferResource() { return m_Resource.Get(); }
 
 	Microsoft::WRL::ComPtr<ID3D12Resource>	AddData(ID3D12Device* device, ID3D12GraphicsCommandList* commandList, UINT numData, const T* datas);
@@ -32,8 +32,8 @@ public:
 	bool									EditDatas(ID3D12Device* device, ID3D12GraphicsCommandList* commandList, UINT objectNumOffset, UINT dataNum, const T* datas);
 
 protected:
-	UINT									m_BufferSize;
-	UINT									m_Redundancy;
+	UINT64									m_BufferSize;
+	UINT64									m_Redundancy;
 	Microsoft::WRL::ComPtr<ID3D12Resource>	m_Resource;
 	Microsoft::WRL::ComPtr<ID3D12Resource>	m_UploadBuffer;
 };
@@ -45,7 +45,7 @@ inline DX12DefaultBuffer<T>::DX12DefaultBuffer(
 	const std::vector<T>& datas,
 	D3D12_RESOURCE_STATES endState)
 {
-	UINT elementByteSize = sizeof(T);
+	size_t elementByteSize = sizeof(T);
 	BYTE* mappedData = nullptr;
 	m_BufferSize = elementByteSize * datas.size();
 	m_Redundancy = 0;
@@ -151,7 +151,7 @@ inline Microsoft::WRL::ComPtr<ID3D12Resource> DX12DefaultBuffer<T>::AddData(ID3D
 		UINT elementByteSize = sizeof(T);
 		BYTE* mappedData = nullptr;
 		UINT addDataByteSize = elementByteSize * numData;
-		UINT usingByte = m_BufferSize - m_Redundancy;
+		UINT64 usingByte = m_BufferSize - m_Redundancy;
 
 		if (m_Redundancy < addDataByteSize)
 		{
@@ -241,7 +241,7 @@ inline bool DX12DefaultBuffer<T>::EditDatas(ID3D12Device* device, ID3D12Graphics
 {
 	const int byteSize = sizeof(T) * dataNum;
 
-	if ((m_BufferSize - m_Redundancy) < ((dataNum + objectNumOffset) * sizeof(T)))
+	if ((m_BufferSize - m_Redundancy) < ((static_cast<size_t>(dataNum) + objectNumOffset) * sizeof(T)))
 	{
 		return false;
 	}

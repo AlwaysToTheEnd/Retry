@@ -28,9 +28,6 @@
     <Filter Include="Step2">
       <UniqueIdentifier>{cf1685e7-cd46-4a98-ad9f-1ababc9a7c30}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Common\CodeResources\Parser">
-      <UniqueIdentifier>{50d9665b-1fd6-4595-a761-3be464ecf4d8}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Common\CodeResources\Procedure Class">
       <UniqueIdentifier>{f8b7cc8e-b6ca-43c8-b634-649675801085}</UniqueIdentifier>
     </Filter>

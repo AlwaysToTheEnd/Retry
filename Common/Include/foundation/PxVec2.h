@@ -52,7 +52,7 @@ class PxVec2
 	/**
 	\brief default constructor leaves data uninitialized.
 	*/
-	PX_CUDA_CALLABLE PX_FORCE_INLINE PxVec2()
+	PX_CUDA_CALLABLE PX_FORCE_INLINE PxVec2() : x(0.0f), y(0.0f)
 	{
 	}
 

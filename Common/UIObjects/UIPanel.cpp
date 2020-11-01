@@ -199,7 +199,7 @@ void UIPanel::UIPanelController::Update(float delta)
 		if (GETMOUSE(m_CurrPanel->GetConstructor()))
 		{
 			auto mouseState = mouse->GetLastState();
-			physx::PxVec2 mousePos = physx::PxVec2(mouseState.x, mouseState.y);
+			physx::PxVec2 mousePos = physx::PxVec2(static_cast<float>(mouseState.x), static_cast<float>(mouseState.y));
 			m_PressedTime += delta;
 
 			auto state = m_CurrPanel->GetClickedState();
@@ -208,7 +208,7 @@ void UIPanel::UIPanelController::Update(float delta)
 			case GameObject::CLICKEDSTATE::HELD:
 			{
 				physx::PxVec2 moveValue = mousePos - m_PrevMousePos;
-				m_CurrPanel->GetComponent<DOTransform>()->AddVector({ moveValue.x,moveValue.y,0 });
+				m_CurrPanel->GetComponent<DOTransform>()->AddVector({ static_cast<float>(moveValue.x),static_cast<float>(moveValue.y),0.0f });
 				m_PrevMousePos = mousePos;
 			}
 			break;
@@ -241,7 +241,7 @@ void UIPanel::UIPanelController::Update(float delta)
 				if (GETMOUSE(it->GetConstructor()))
 				{
 					auto mouseState = mouse->GetLastState();
-					physx::PxVec2 mousePos = physx::PxVec2(mouseState.x, mouseState.y);
+					physx::PxVec2 mousePos = physx::PxVec2(static_cast<float>(mouseState.x), static_cast<float>(mouseState.y));
 
 					m_PrevMousePos = mousePos;
 					m_PressedTime = 0;

@@ -10,7 +10,7 @@ using Microsoft::WRL::ComPtr;
 struct DX12PSOAttributeNames
 {
 	std::vector<DXGI_FORMAT>		rtvFormats;
-	DXGI_FORMAT						dsvFormat;
+	DXGI_FORMAT						dsvFormat = DXGI_FORMAT_UNKNOWN;
 	D3D12_PRIMITIVE_TOPOLOGY_TYPE	primitive = D3D12_PRIMITIVE_TOPOLOGY_TYPE_UNDEFINED;
 	std::string						input = "";
 	std::string						rootSig = "";

@@ -19,7 +19,7 @@ bool MeshReplacer::Replace(const aiScene* assimpData, std::vector<SkinnedVertex>
 	skinInfo.m_BoneOffsets.clear();
 	skinInfo.m_BoneOffsetsFrameIndex.clear();
 	m_FramesIndex.clear();
-
+	
 	ReplaceMaterialData(assimpData, mats);
 	ReplaceMeshData(assimpData, subsets, vertices, indices, mats);
 	ReplaceFrameHierarchy(assimpData->mRootNode, -1, skinInfo);
@@ -52,7 +52,8 @@ void MeshReplacer::ReplaceMaterialData(const aiScene* assimpData, std::vector<An
 				aiReturn result = currMaterial->GetTexture(aiTextureType(type), textureCount-1, &temp);
 				assert(result == aiReturn_SUCCESS);
 
-				texTemp.name = std::string(temp.C_Str());
+				std::string extension;
+				texTemp.name = GetFileNameFromPath(std::string(temp.C_Str()), extension);
 				texTemp.isNormalMap = aiTextureType_NORMALS == aiTextureType(type);
 				materTemp.textures.push_back(texTemp);
 
@@ -76,21 +77,12 @@ void MeshReplacer::ReplaceMeshData(const aiScene* assimpData,
 	for (unsigned int i = 0; i < assimpData->mNumMeshes; i++)
 	{
 		aiMesh* currMesh = assimpData->mMeshes[i];
-
+		
 		SkinnedVertex tempVertex;
 		Ani::Subset tempSub;
 		
 		const unsigned int numVertices = currMesh->mNumVertices;
-		if (currMesh->mNormals==nullptr)
-		{
-			//Fill Position
-			for (unsigned int j = 0; j < numVertices; j++)
-			{
-				tempVertex.position = physx::PxVec3(currMesh->mVertices[j].x, currMesh->mVertices[j].y, currMesh->mVertices[j].z);
-				vertices.push_back(tempVertex);
-			}
-		}
-		else
+		if (currMesh->HasNormals())
 		{
 			//Fill Position, Normal
 			for (unsigned int j = 0; j < numVertices; j++)
@@ -100,17 +92,25 @@ void MeshReplacer::ReplaceMeshData(const aiScene* assimpData,
 				vertices.push_back(tempVertex);
 			}
 		}
+		else
+		{
+			//Fill Position
+			for (unsigned int j = 0; j < numVertices; j++)
+			{
+				tempVertex.position = physx::PxVec3(currMesh->mVertices[j].x, currMesh->mVertices[j].y, currMesh->mVertices[j].z);
+				vertices.push_back(tempVertex);
+			}
+		}
 
-		if (currMesh->mNumUVComponents[0])
+		if (currMesh->HasTextureCoords(0))
 		{
 			//Fill UV
 			aiVector3D* currTexCoords = currMesh->mTextureCoords[0];
 			for (unsigned int j = 0; j < numVertices; j++)
 			{
-				vertices[j+ accumVertices].uv= physx::PxVec2(currTexCoords[j].x, currTexCoords[j].y);
+				vertices[static_cast<UINT64>(j)+ accumVertices].uv= physx::PxVec2(currTexCoords[j].x, currTexCoords[j].y);
 			}
 		}
-
 
 		//Change vertex weight ID of bone to different standard
 		const unsigned int numBone = currMesh->mNumBones;
@@ -126,35 +126,44 @@ void MeshReplacer::ReplaceMeshData(const aiScene* assimpData,
 
 		//Fill Index
 		const unsigned int numFace = currMesh->mNumFaces;
-
-		aiFace* currFace = currMesh->mFaces;
-		for (unsigned int j = 0; j < numFace; j++, currFace++)
+		unsigned int numIndices = 0;
+		
+		for (unsigned int j = 0; j < numFace; j++)
 		{
-			for (unsigned int k = 0; k < currFace->mNumIndices; k++)
+			aiFace& currFace = currMesh->mFaces[j];
+			numIndices += currFace.mNumIndices;
+
+			for (unsigned int k = 0; k < currFace.mNumIndices; k++)
 			{
-				indices.push_back(currFace->mIndices[k] + accumVertices);
+				indices.push_back(currFace.mIndices[k] + accumVertices);
 			}
 		}
-
+		
 		//Fill Subset
-		tempSub.materialIndexCount.push_back({ mats[currMesh->mMaterialIndex].name, numFace * 3 });
+		tempSub.materialIndexCount.push_back({ mats[currMesh->mMaterialIndex].name, numIndices });
+		tempSub.primitiveType = currMesh->mPrimitiveTypes;
 		tempSub.vertexCount = numVertices;
 		tempSub.vertexStart = accumVertices;
-		tempSub.indexCount = numFace * 3;
+		tempSub.indexCount = numIndices;
 		tempSub.indexStart = accumIndices;
-		tempSub.numTexture = mats[currMesh->mMaterialIndex].textures.size();
+		tempSub.numTexture = CGH::SizeTTransUINT(mats[currMesh->mMaterialIndex].textures.size());
 		subsets.push_back(tempSub);
 
 		accumVertices += numVertices;
-		accumIndices += numFace * 3;
+		accumIndices += numIndices;
 	}
 }
 
 void MeshReplacer::ReplaceFrameHierarchy(const aiNode* node, int parent, Ani::SkinnedData& skinInfo)
 {
-	unsigned int currFrameIndex = skinInfo.m_FrameHierarchy.size();
+	unsigned int currFrameIndex = CGH::SizeTTransUINT(skinInfo.m_FrameHierarchy.size());
 	std::string nodeName = node->mName.C_Str();
-	
+	skinInfo.m_FrameNodesTransform.emplace_back();
+	memcpy(&skinInfo.m_FrameNodesTransform.back(), &node->mTransformation.a1, sizeof(physx::PxMat44));
+	skinInfo.m_FrameNodesTransform.back() = skinInfo.m_FrameNodesTransform.back().getTranspose();
+
+	m_NodeNames.push_back({ nodeName, currFrameIndex });
+
 	assert(m_FramesIndex.find(nodeName) == m_FramesIndex.end());
 	m_FramesIndex.insert({ nodeName,currFrameIndex });
 	skinInfo.m_FrameHierarchy.push_back(parent);
@@ -210,7 +219,9 @@ void MeshReplacer::ReplaceAnimationData(const aiScene* assimpData, Ani::SkinnedD
 		aiAnimation* currAni = assimpData->mAnimations[i];
 		Ani::Animation aniTemp;
 		std::string aniName = currAni->mName.C_Str();
-
+		
+		aniTemp.tickPerSecond = currAni->mTicksPerSecond;
+		
 		for (unsigned int j = 0; j < currAni->mNumChannels; j++)
 		{
 			aiNodeAnim* currNode = currAni->mChannels[j];

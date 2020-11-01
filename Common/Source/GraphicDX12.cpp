@@ -17,6 +17,8 @@ using namespace std;
 
 GraphicDX12::GraphicDX12()
 {
+	m_ScissorRect = {};
+	m_ScreenViewport = {};
 }
 
 GraphicDX12::~GraphicDX12()
@@ -48,7 +50,7 @@ bool GraphicDX12::Init(HWND hWnd, UINT windowWidth, UINT windowHeight)
 		IID_PPV_ARGS(m_Fence.GetAddressOf())));
 
 	CreateCommandObject();
-
+	
 	m_Swap->CreateSwapChain(m_MainWndHandle, m_CommandQueue.Get(),
 		m_BackBufferFormat, m_DepthStencilFormat, m_ClientWidth, m_ClientHeight, 2);
 
@@ -138,8 +140,8 @@ void GraphicDX12::OnResize()
 
 	XMMATRIX P = XMMatrixPerspectiveFovLH(CGH::GO.graphic.fovAngleY, CGH::GO.graphic.aspectRatio,
 		CGH::GO.graphic.perspectiveNearZ, CGH::GO.graphic.perspectiveFarZ);
-	XMMATRIX OrthoP = XMMatrixOrthographicOffCenterLH(m_ScissorRect.left, m_ScissorRect.right,
-		m_ScissorRect.bottom, m_ScissorRect.top, D3D12_MIN_DEPTH, D3D12_MAX_DEPTH);
+	XMMATRIX OrthoP = XMMatrixOrthographicOffCenterLH(static_cast<float>(m_ScissorRect.left), static_cast<float>(m_ScissorRect.right),
+		static_cast<float>(m_ScissorRect.bottom), static_cast<float>(m_ScissorRect.top), D3D12_MIN_DEPTH, D3D12_MAX_DEPTH);
 	XMStoreFloat4x4(m_ProjectionMat, P);
 	XMStoreFloat4x4(m_OrthoProjectionMat, OrthoP);
 }
@@ -192,8 +194,8 @@ const std::unordered_map<std::string, MeshObject>* GraphicDX12::GetMeshDataMap(C
 		break;
 	case CGH::MESH_TYPE_COUNT:
 	default:
-		return nullptr;
 		assert(false);
+		return nullptr;
 		break;
 	}
 }
@@ -296,7 +298,8 @@ bool GraphicDX12::CreateMaterials(const std::vector<std::string>& materialNames,
 	ThrowIfFailed(m_D3dDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT,
 		allocator.Get(), nullptr, IID_PPV_ARGS(commandList.GetAddressOf())));
 
-	auto result = m_Materials->IndexedAddData(m_D3dDevice.Get(), commandList.Get(), materials.size(), materials.data(), materialNames);
+	auto result = m_Materials->IndexedAddData(m_D3dDevice.Get(), commandList.Get(), 
+		CGH::SizeTTransUINT(materials.size()), materials.data(), materialNames);
 
 	commandList->Close();
 
@@ -488,7 +491,7 @@ void GraphicDX12::LoadMeshAndMaterialFromFolder(const std::vector<std::wstring>&
 		string fileName = GetFileNameFromPath(it, extension);
 
 		const aiScene* scene = importer.ReadFile(it,
-			aiProcess_Triangulate |
+			aiProcess_Triangulate | 
 			aiProcess_ConvertToLeftHanded);
 
 		wstring temp(it.begin(), it.end());
@@ -509,17 +512,27 @@ void GraphicDX12::LoadMeshAndMaterialFromFolder(const std::vector<std::wstring>&
 		{
 			UINT faceCount = 0;
 
-			for (auto& materalIndex : it2.materialIndexCount)
+			if (it2.primitiveType == aiPrimitiveType_TRIANGLE)
 			{
-				SubmeshData sub;
-				sub.material = materalIndex.first;
-				sub.indexOffset = it2.indexStart + baseIndexOffset + faceCount;
-				sub.numIndex = materalIndex.second;
-				sub.vertexOffset = baseVertexOffset;
-				sub.numVertex = it2.vertexCount;
+				for (auto& materalIndex : it2.materialIndexCount)
+				{
+					SubmeshData sub;
+					sub.material = materalIndex.first;
+					sub.indexOffset = it2.indexStart + baseIndexOffset + faceCount;
+					sub.numIndex = materalIndex.second;
+					sub.vertexOffset = baseVertexOffset;
+					sub.numVertex = it2.vertexCount;
 
-				faceCount += materalIndex.second;
-				meshObject.subs.insert({ materalIndex.first ,sub });
+					faceCount += materalIndex.second;
+					meshObject.subs.insert({ materalIndex.first ,sub });
+				}
+			}
+			else
+			{
+				for (auto& materalIndex : it2.materialIndexCount)
+				{
+					faceCount += materalIndex.second;
+				}
 			}
 		}
 
@@ -662,8 +675,15 @@ void GraphicDX12::FlushCommandQueue()
 
 		ThrowIfFailed(m_Fence->SetEventOnCompletion(m_CurrentFence, eventHandle));
 
-		WaitForSingleObject(eventHandle, INFINITE);
-		CloseHandle(eventHandle);
+		if (eventHandle)
+		{
+			WaitForSingleObject(eventHandle, INFINITE);
+			CloseHandle(eventHandle);
+		}
+		else
+		{
+			assert(false);
+		}
 	}
 }
 

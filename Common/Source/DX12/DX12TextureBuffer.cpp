@@ -207,14 +207,14 @@ void DX12TextureBuffer::DataToDevice(
 	CD3DX12_RANGE range(0, scratch.GetPixelsSize());
 
 	textureDesc.Alignment = D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT;
-	textureDesc.DepthOrArraySize= metadata.arraySize;
+	textureDesc.DepthOrArraySize= static_cast<UINT16>(metadata.arraySize);
 	textureDesc.Dimension = static_cast<D3D12_RESOURCE_DIMENSION>(metadata.dimension);
 	textureDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
 	textureDesc.Format = metadata.format;
-	textureDesc.Height = metadata.height;
-	textureDesc.Width = metadata.width;
+	textureDesc.Height = static_cast<UINT>(metadata.height);
+	textureDesc.Width = static_cast<UINT>(metadata.width);
 	textureDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
-	textureDesc.MipLevels = metadata.mipLevels;
+	textureDesc.MipLevels = static_cast<UINT16>(metadata.mipLevels);
 	textureDesc.SampleDesc.Count = 1;
 	textureDesc.SampleDesc.Quality = 0;
 

@@ -82,7 +82,7 @@ namespace DirectX
 
             State __cdecl GetLastState() const noexcept { return lastState; }
 
-            physx::PxVec2 GetMousePos() const noexcept { return physx::PxVec2(lastState.x, lastState.y); }
+            physx::PxVec2 GetMousePos() const noexcept { return { static_cast<float>(lastState.x), static_cast<float>(lastState.y) }; }
 
         private:
             State lastState;

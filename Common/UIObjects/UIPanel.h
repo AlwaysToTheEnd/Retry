@@ -57,7 +57,7 @@ public:
 	void			AddUICom(UIObject* ui);
 
 	physx::PxVec2	GetPos();
-	unsigned int	GetNumAddedComs() { return m_UIComs.size(); }
+	unsigned int	GetNumAddedComs() { return CGH::SizeTTransUINT(m_UIComs.size()); }
 
 	void			SetBackGroundColor(const physx::PxVec4& color);
 	void			SetSize(const physx::PxVec2& size);

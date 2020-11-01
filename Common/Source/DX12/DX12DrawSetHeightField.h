@@ -35,8 +35,8 @@ class DX12DrawSetHeightField :public DX12DrawSet
 	struct FieldInfo
 	{
 		physx::PxVec3	Scale;
-		unsigned int	MapSize;
-		unsigned int	NumVertices;
+		unsigned int	MapSize = 0;
+		unsigned int	NumVertices = 0;
 	};
 	
 	const std::string heightFieldCreateCSName = "HFCreate";

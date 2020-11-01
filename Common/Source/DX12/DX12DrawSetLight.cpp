@@ -3,7 +3,7 @@
 
 void DX12DrawSetLight::Init(ID3D12Device* device)
 {
-	for (int i = 0; i < m_NumFrame; i++)
+	for (unsigned int i = 0; i < m_NumFrame; i++)
 	{
 		m_LightInfomations.push_back(std::make_unique<DX12UploadBuffer<DX12LightInfomation>>(device, 100, false));
 	}
@@ -84,7 +84,7 @@ void DX12DrawSetLight::Draw(ID3D12GraphicsCommandList* cmd, const DX12PSOAttribu
 
 		m_PSOCon->SetPSOToCommnadList(cmd, m_PointLightPSOA);
 		cmd->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY::D3D_PRIMITIVE_TOPOLOGY_1_CONTROL_POINT_PATCHLIST);
-		cmd->SetGraphicsRootShaderResourceView(LIGHTDATA_SRV, LightInfoSrv + LightInfoSize* PointLightBaseIndex);
+		cmd->SetGraphicsRootShaderResourceView(LIGHTDATA_SRV, LightInfoSrv + static_cast<D3D12_GPU_VIRTUAL_ADDRESS>(LightInfoSize)* PointLightBaseIndex);
 		cmd->DrawInstanced(m_RenderCount[LIGHT_TYPE_POINT]*2, 1, 0, 0);
 	}
 }

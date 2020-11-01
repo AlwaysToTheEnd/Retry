@@ -18,7 +18,7 @@
 //	std::vector<D3D_SHADER_MACRO>	macros;
 //};
 
-class CD3DX12_ROOT_PARAMETER;
+struct CD3DX12_ROOT_PARAMETER;
 class DX12TextureBuffer;
 class DX12SwapChain;
 

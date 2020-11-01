@@ -138,7 +138,7 @@ void AniNodeVisual::SetDeleteAniNodeFunc(std::function<void()> func)
 	m_DeleteAninodeFunc = func;
 }
 
-void AniNodeVisual::SetSkinAnimationInfoVectorPtr(const std::vector<std::string>* aniNames, const std::vector<unsigned int>* aniEnds)
+void AniNodeVisual::SetSkinAnimationInfoVectorPtr(const std::vector<std::string>* aniNames, const std::vector<double>* aniEnds)
 {
 	m_CurrSkinAnimationNames = aniNames;
 	m_CurrSkinAnimationEndTick = aniEnds;

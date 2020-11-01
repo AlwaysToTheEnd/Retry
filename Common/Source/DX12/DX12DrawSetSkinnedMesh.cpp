@@ -4,7 +4,7 @@
 void DX12DrawSetSkinnedMesh::Init(ID3D12Device* device)
 {
 	FrameUploadSRVs srvs;
-	for (int i = 0; i < m_NumFrame; i++)
+	for (unsigned int i = 0; i < m_NumFrame; i++)
 	{
 		m_MeshObjectCB.push_back(std::make_unique<DX12UploadBuffer<DX12ObjectConstants>>(device, 100, true));
 		m_AniBoneCB.push_back(std::make_unique<DX12UploadBuffer<AniBoneMat>>(device, 100, true));
@@ -110,14 +110,14 @@ void DX12DrawSetSkinnedMesh::ReserveRender(const RenderInfo& info)
 
 		if (info.skin.aniBoneIndex > -1)
 		{
-			idc.aniBoneCbv = AniBoneCBVritualAD + (info.skin.aniBoneIndex * AniBoneStrideSize);
+			idc.aniBoneCbv = AniBoneCBVritualAD + (static_cast<D3D12_GPU_VIRTUAL_ADDRESS>(info.skin.aniBoneIndex) * AniBoneStrideSize);
 		}
 		else
 		{
 			idc.aniBoneCbv = AniBoneCBVritualAD;
 		}
 
-		idc.objectCbv = objectCBVritualAD + (m_RenderCount * objectStrideSize);
+		idc.objectCbv = objectCBVritualAD + (static_cast<D3D12_GPU_VIRTUAL_ADDRESS>(m_RenderCount) * objectStrideSize);
 		idc.draw.IndexCountPerInstance = it.second.numIndex;
 		idc.draw.StartIndexLocation = it.second.indexOffset;
 		idc.draw.BaseVertexLocation = it.second.vertexOffset;
@@ -138,7 +138,7 @@ void DX12DrawSetSkinnedMesh::UpdateFrameCountAndClearWork()
 
 void DX12DrawSetSkinnedMesh::UpdateAniBoneCB(const std::vector<AniBoneMat>& reservedData)
 {
-	size_t index = 0;
+	int index = 0;
 
 	for (auto& it : reservedData)
 	{

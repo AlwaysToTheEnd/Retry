@@ -7,7 +7,7 @@ unsigned int RenderFont::GetFontIndex(const std::wstring& fontName)
 	{
 		if (fontNames[i] == fontName)
 		{
-			return i;
+			return CGH::SizeTTransUINT(i);
 		}
 	}
 
@@ -15,9 +15,9 @@ unsigned int RenderFont::GetFontIndex(const std::wstring& fontName)
 	return 0;
 }
 
-size_t MeshObject::GetTotalVertexNum() const
+unsigned int MeshObject::GetTotalVertexNum() const
 {
-	size_t result = 0;
+	unsigned int result = 0;
 
 	for (auto& it : subs)
 	{
@@ -27,9 +27,9 @@ size_t MeshObject::GetTotalVertexNum() const
 	return result;
 }
 
-size_t MeshObject::GetStartVertexOffset() const
+unsigned int MeshObject::GetStartVertexOffset() const
 {
-	size_t result = -1;
+	unsigned int result = -1;
 
 	for (auto& it : subs)
 	{
@@ -42,9 +42,9 @@ size_t MeshObject::GetStartVertexOffset() const
 	return result;
 }
 
-size_t MeshObject::GetTotalIndexNum() const
+unsigned int MeshObject::GetTotalIndexNum() const
 {
-	size_t result = 0;
+	unsigned int result = 0;
 
 	for (auto& it : subs)
 	{
@@ -54,9 +54,9 @@ size_t MeshObject::GetTotalIndexNum() const
 	return result;
 }
 
-size_t MeshObject::GetStartIndexOffset() const
+unsigned int MeshObject::GetStartIndexOffset() const
 {
-	size_t result = -1;
+	unsigned int result = -1;
 
 	for (auto& it : subs)
 	{

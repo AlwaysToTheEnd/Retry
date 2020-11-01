@@ -13,6 +13,11 @@ class UIButton :public UIObject
 public:
 	UIButton(CGHScene& scene, GameObject* parent, const char* typeName)
 		: UIObject(scene, parent, typeName)
+		, m_isOnlyFontMode(false)
+		, m_Trans(nullptr)
+		, m_Font(nullptr)
+		, m_Render(nullptr)
+		, m_UICollision(nullptr)
 	{
 	}
 	virtual ~UIButton() = default;

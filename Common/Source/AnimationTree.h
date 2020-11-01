@@ -79,7 +79,7 @@ namespace AniTree
 		AniNode()
 			: m_Pos(0,0)
 			, m_AniEndTime(0)
-			, m_CurrTick(0)
+			, m_CurrTime(0)
 			, m_RoofAni(false)
 		{
 
@@ -88,9 +88,9 @@ namespace AniTree
 		const AniNode* Update(float deltaTime);
 
 		const std::string& GetAniName() const;
-		void SetAniName(const std::string& name, unsigned int aniEndTime);
-		unsigned long long GetCurrTick() const { return m_CurrTick; }
-		unsigned long long GetEndTick() const { return m_AniEndTime; }
+		void SetAniName(const std::string& name, double aniEndTime);
+		double GetCurrTime() const { return m_CurrTime; }
+		double GetEndTime() const { return m_AniEndTime; }
 		void GetArrows(std::vector<OutputArrow>& out, const AniNode* to=nullptr);
 		const std::vector<NodeArrow>& GetArrows() { return m_Arrows; }
 
@@ -111,15 +111,15 @@ namespace AniTree
 
 	private:
 		bool CheckArrowTrigger(NodeArrow& arrow, std::vector<TriggerData>& triggers,
-			unsigned long long currTick, unsigned long long aniEndTick);
+			double currTick, double aniEndTick);
 
 	public:
 		physx::PxVec2			m_Pos;
-		unsigned int			m_AniEndTime;
+		double					m_AniEndTime;
 		std::string				m_TargetAniName;
 
 		bool					m_RoofAni;
-		unsigned long long		m_CurrTick;
+		double					m_CurrTime;
 		std::vector<NodeArrow>	m_Arrows;
 
 		std::function<int()>	m_IndexFunc;
@@ -143,9 +143,9 @@ namespace AniTree
 		void LoadTree(const std::wstring& fileFath);
 
 		void				GetArrows(std::vector<OutputArrow>& out);
-		unsigned int		GetNumNodes() { return m_AniNodes.size(); }
+		unsigned int		GetNumNodes() { return CGH::SizeTTransUINT(m_AniNodes.size()); }
 		AniNode*			GetNode(unsigned int index) {return m_AniNodes[index].get(); }
-		unsigned long long	GetCurrAnimationTick() const;
+		double				GetCurrAnimationTime() const;
 		std::string			GetCurrAnimationName() const;
 		const std::string&	GetCurrSkinName() const { return m_CurrSkinName; }
 		const std::string&	GetCurrMeshName() const { return m_CurrMeshName; }

@@ -3,7 +3,7 @@
 
 void DX12DrawSetHeightField::Init(ID3D12Device* device)
 {
-	for (int i = 0; i < m_NumFrame; i++)
+	for (unsigned int i = 0; i < m_NumFrame; i++)
 	{
 		m_MeshObjectCB.push_back(std::make_unique<DX12UploadBuffer<DX12ObjectConstants>>(device, 100, true));
 	}
@@ -82,7 +82,7 @@ void DX12DrawSetHeightField::ReserveRender(const RenderInfo& info)
 		data.diffuseMapIndex = m_TextureBuffer->GetTextureIndex(it.second.diffuseMap);
 		data.normalMapIndex = m_TextureBuffer->GetTextureIndex(it.second.normalMap);
 
-		m_MeshObjectCB[m_CurrFrame]->CopyData(m_TargetMeshs.size(), data);
+		m_MeshObjectCB[m_CurrFrame]->CopyData(CGH::SizeTTransINT(m_TargetMeshs.size()), data);
 	}
 
 	m_TargetMeshs.push_back(&m_ResultMesh.find(info.meshOrTextureName)->second);
@@ -106,7 +106,7 @@ void DX12DrawSetHeightField::ReComputeHeightField(const std::string& name, physx
 		auto& newMesh = m_ResultMesh[name];
 
 		newMesh.numVertices = meshIter->second.GetTotalVertexNum();
-		newMesh.mapSize = sqrt(newMesh.numVertices);
+		newMesh.mapSize = static_cast<unsigned int>(sqrt(newMesh.numVertices));
 		newMesh.numIndices = 6 * (newMesh.mapSize) * (newMesh.mapSize);
 
 		D3D12_HEAP_PROPERTIES vhp = {};
