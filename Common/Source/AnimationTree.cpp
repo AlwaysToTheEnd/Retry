@@ -7,7 +7,7 @@ const AniNode* AniTree::AniNode::Update(float deltaTime)
 {
 	const AniNode* result = nullptr;
 
-	m_CurrTime += deltaTime * 1000;
+	m_CurrTime += deltaTime;
 
 	if (m_RoofAni && m_CurrTime > m_AniEndTime)
 	{

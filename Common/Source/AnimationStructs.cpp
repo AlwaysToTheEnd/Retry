@@ -31,17 +31,18 @@ double Ani::SkinnedData::GetClipStartTime(const std::string& clipName) const
 double Ani::SkinnedData::GetClipEndTime(const std::string& clipName) const
 {
 	auto aniIter = m_Animations.find(clipName);
-	assert(aniIter != m_Animations.end() && ("This skinned don't have [" + clipName + "] animation").c_str());
-
 	auto boneIter = aniIter->second.animBones.begin();
+
+	assert(aniIter != m_Animations.end() && ("This skinned don't have [" + clipName + "] animation").c_str());
+	assert(boneIter != aniIter->second.animBones.end() && "This skinned don't have bones");
 
 	if (boneIter->posKeys.size())
 	{
-		return boneIter->posKeys.back().time;
+		return boneIter->posKeys.back().time / aniIter->second.tickPerSecond;
 	}
 	else if (boneIter->trafoKeys.size())
 	{
-		return boneIter->trafoKeys.back().time;
+		return boneIter->trafoKeys.back().time / aniIter->second.tickPerSecond;
 	}
 	else
 	{
@@ -115,23 +116,25 @@ void Ani::SkinnedData::CalLocalTransformFromAnimation(const std::string& clipNam
 	auto aniIter = m_Animations.find(clipName);
 	assert(aniIter != m_Animations.end() && ("This skinned don't have [" + clipName + "] animation").c_str());
 
+	double tickPerTime = aniIter->second.tickPerSecond * timePos;
 	for (auto& it : aniIter->second.animBones)
 	{
 		XMMATRIX mat = XMMatrixIdentity();
 		XMVECTOR zero = XMVectorSet(0, 0, 0, 1);
 
+
 		if (it.posKeys.size())
 		{
-			XMVECTOR s =  GetAnimationKeyOnTick(reinterpret_cast<const std::vector<TimeValue<DirectX::XMFLOAT3>>&>(it.scaleKeys), timePos);
-			XMVECTOR t = GetAnimationKeyOnTick(reinterpret_cast<const std::vector<TimeValue<DirectX::XMFLOAT3>>&>(it.posKeys), timePos);
-			XMVECTOR r = GetAnimationKeyOnTick(reinterpret_cast<const std::vector<TimeValue<DirectX::XMFLOAT4>>&>(it.rotKeys), timePos);
+			XMVECTOR s =  GetAnimationKeyOnTick(reinterpret_cast<const std::vector<TimeValue<DirectX::XMFLOAT3>>&>(it.scaleKeys), tickPerTime);
+			XMVECTOR t = GetAnimationKeyOnTick(reinterpret_cast<const std::vector<TimeValue<DirectX::XMFLOAT3>>&>(it.posKeys), tickPerTime);
+			XMVECTOR r = GetAnimationKeyOnTick(reinterpret_cast<const std::vector<TimeValue<DirectX::XMFLOAT4>>&>(it.rotKeys), tickPerTime);
 
 			mat = XMMatrixAffineTransformation(s, zero, r, t);
 			XMStoreFloat4x4(LocalTransforms[it.localMatIndex], mat);
 		}
 		else if (it.trafoKeys.size())
 		{
-			XMStoreFloat4x4(LocalTransforms[it.localMatIndex], GetAnimationKeyOnTick(it.trafoKeys, timePos));
+			XMStoreFloat4x4(LocalTransforms[it.localMatIndex], GetAnimationKeyOnTick(it.trafoKeys, tickPerTime));
 		}
 		else
 		{

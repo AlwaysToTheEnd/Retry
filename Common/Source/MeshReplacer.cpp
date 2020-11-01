@@ -16,6 +16,7 @@ bool MeshReplacer::Replace(const aiScene* assimpData, std::vector<SkinnedVertex>
 	mats.clear();
 	skinInfo.m_Animations.clear();
 	skinInfo.m_FrameHierarchy.clear();
+	skinInfo.m_FrameNodesTransform.clear();
 	skinInfo.m_BoneOffsets.clear();
 	skinInfo.m_BoneOffsetsFrameIndex.clear();
 	m_FramesIndex.clear();
@@ -220,7 +221,7 @@ void MeshReplacer::ReplaceAnimationData(const aiScene* assimpData, Ani::SkinnedD
 		Ani::Animation aniTemp;
 		std::string aniName = currAni->mName.C_Str();
 		
-		aniTemp.tickPerSecond = currAni->mTicksPerSecond;
+		aniTemp.tickPerSecond = currAni->mTicksPerSecond ? currAni->mTicksPerSecond : 1.0f;
 		
 		for (unsigned int j = 0; j < currAni->mNumChannels; j++)
 		{
