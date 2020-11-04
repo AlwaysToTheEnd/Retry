@@ -99,6 +99,7 @@ void DX12DrawSetSkinnedMesh::ReserveRender(const RenderInfo& info)
 	data.world = info.world;
 	data.scale = info.scale;
 	data.boundSphereRad = info.boundSphereRad;
+	data.objectID = info.objectID;
 
 	for (auto& it : mesh.subs)
 	{

@@ -10,7 +10,7 @@ void TestObject::Update(float delta)
 
 void TestObject::Init()
 {
-	/*auto trans = CreateComponenet<DOTransform>();
+	auto trans = CreateComponenet<DOTransform>();
 	auto mesh = CreateComponenet<DORenderMesh>();
 	auto Renderer = CreateComponenet<DORenderer>();
 	auto Animator = CreateComponenet<DOAnimator>();
@@ -25,7 +25,7 @@ void TestObject::Init()
 	Animator->GetAniNames(anis);
 	Animator->SelectAnimation(anis[0]);
 
-	trans->SetPos({ 0,0,0 });*/
+	trans->SetPos({ 0,0,0 });
 }
 
 void TestObject::TestClickedFunc()

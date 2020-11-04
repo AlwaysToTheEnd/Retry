@@ -725,8 +725,6 @@ void GraphicDX12::Draw()
 
 	m_Swap->RenderEnd(m_CommandList.Get());
 
-	FlushCommandQueue();
-
 	ThrowIfFailed(m_CommandList->Close());
 	ID3D12CommandList* cmdsLists[] = { m_CommandList.Get() };
 	m_CommandQueue->ExecuteCommandLists(_countof(cmdsLists), cmdsLists);
@@ -808,6 +806,7 @@ void GraphicDX12::UpdateMainPassCB(float delta)
 	mainPass.samplerIndex = CGH::GO.graphic.samplerIndex;
 	mainPass.eyePosW = m_CurrCamera->GetEyePos();
 	mainPass.ambientLight = { 0.25f, 0.25f, 0.35f, 1.0f };
+	mainPass.mousePos = m_CurrCamera->GetMousePos();
 
 	m_PassCB->CopyData(0, mainPass);
 	m_UIDrawSet->UpdateUIPassCB(CGH::GO.ui);

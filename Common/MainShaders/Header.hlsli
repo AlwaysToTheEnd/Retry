@@ -29,8 +29,9 @@ Texture2D gDepthTexture                         : register(t0);
 Texture2D gNormalTexture                        : register(t1);
 Texture2D gSpecPowerTexture                     : register(t2);
 Texture2D gColorTexture                         : register(t3);
-Texture2D gMainTexture[MAXTEXTURE]              : register(t4);
-StructuredBuffer<MaterialData>  gMaterialData   : register(t0, space1);
+StructuredBuffer<int> gObjectIDTexture          : register(t4);
+Texture2D gMainTexture[MAXTEXTURE]              : register(t5);
+StructuredBuffer<MaterialData> gMaterialData    : register(t0, space1);
 
 SamplerState            gsamPointWrap           : register(s0);
 SamplerState            gsamPointClamp          : register(s1);
@@ -55,6 +56,8 @@ cbuffer cbPass                                  : register(b0)
     float4      gAmbientLight;
     float3      gEyePosW;
     uint        gSamplerIndex;
+    float2      gMousePos;
+    float2      gPad0;
 };
 
 float4 GetTexel(uint textureIndex, float2 uv)
@@ -86,13 +89,14 @@ VertexOut VertexBaseWork(VertexIn vin, float4x4 worldMat)
     return vout;
 }
 
-PSOut GetPSOut(float4 baseColor, float3 normal, float specPower)
+PSOut GetPSOut(float4 baseColor, float3 normal, float specPower, int id)
 {
     PSOut result;
     
     result.color = baseColor;
     result.normal = float4(normal * 0.5 + 0.5 , 1);
     result.specPow = float4(specPower, 0, 0, 1);
+    result.objectID = int4(1,1,1,1);
     
     return result;
 }

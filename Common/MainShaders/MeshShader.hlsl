@@ -10,7 +10,7 @@ cbuffer objectData : register(b1)
 	int			PrevAniBone;
 	float		BlendFactor;
     float       BoundSphereRad;
-    int         pad0;
+    int         ObjectID;
     int         pad1;
     int         pad2;
 };
@@ -92,5 +92,5 @@ PSOut PS(VertexOut pin)
         normal = pin.Normal;
     }
 	
-    return GetPSOut(diffuse, normalize(normal), specPower);
+    return GetPSOut(diffuse, normalize(normal), specPower, ObjectID);
 }

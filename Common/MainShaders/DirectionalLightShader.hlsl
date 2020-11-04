@@ -73,5 +73,17 @@ float4 PS(DLightGSOut In) : SV_Target
     finalColor = (gbd.Color * gAmbientLight).rgb;
     finalColor += CalcDirectional(position, gbd, light.Color.rgb, light.Dir.xyz);
 
-    return float4(finalColor, 1);
+    //Test Codes
+    float result = gObjectIDTexture[(int)In.Position.x + ((int)In.Position.x * (int)gRenderTargetSize.x)]*2;
+
+    if (gObjectIDTexture[In.Position.x + (In.Position.x * (int)gRenderTargetSize.x)] == 0)
+    {
+        result = 1.0f;
+    }
+    else
+    {
+        result = 0.0f;
+    }
+
+    return float4(result, result, result, 1);
 }

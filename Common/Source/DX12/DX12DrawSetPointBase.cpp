@@ -83,6 +83,7 @@ void DX12DrawSetPointBase::ReserveRender(const RenderInfo& info)
 	temp.size = info.point.size;
 
 	OTObjectConstnat.world = info.world;
+	OTObjectConstnat.ObjectID = info.objectID;
 
 	if (info.meshOrTextureName.size())
 	{

@@ -159,11 +159,7 @@ void MeshReplacer::ReplaceFrameHierarchy(const aiNode* node, int parent, Ani::Sk
 {
 	unsigned int currFrameIndex = CGH::SizeTTransUINT(skinInfo.m_FrameHierarchy.size());
 	std::string nodeName = node->mName.C_Str();
-	skinInfo.m_FrameNodesTransform.emplace_back();
-	memcpy(&skinInfo.m_FrameNodesTransform.back(), &node->mTransformation.a1, sizeof(physx::PxMat44));
-	skinInfo.m_FrameNodesTransform.back() = skinInfo.m_FrameNodesTransform.back().getTranspose();
-
-	m_NodeNames.push_back({ nodeName, currFrameIndex });
+	skinInfo.m_FrameNodesTransform.emplace_back(((physx::PxMat44*)(&node->mTransformation.a1))->getTranspose());
 
 	assert(m_FramesIndex.find(nodeName) == m_FramesIndex.end());
 	m_FramesIndex.insert({ nodeName,currFrameIndex });

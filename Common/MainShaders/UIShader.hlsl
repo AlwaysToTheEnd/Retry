@@ -59,6 +59,7 @@ void CreatePanel(UIVertexIn vin, inout TriangleStream<POINTVertexOut> output)
     for (int i = 0; i < 6; i++)
     {
         vertices[i].texIndex = -1;
+        vertices[i].objectID = vin.objectID;
         vertices[i].color = gPanelTitleColor;
         vertices[i].posH = float4(vertices[i].posH.xyz + vin.pos, 1.0f);
         vertices[i].posH = mul(vertices[i].posH, gOrthoMatrix);
@@ -68,6 +69,7 @@ void CreatePanel(UIVertexIn vin, inout TriangleStream<POINTVertexOut> output)
     for (int j = 6; j < 12; j++)
     {
         vertices[j].texIndex = vin.textureIndex;
+        vertices[i].objectID = vin.objectID;
         vertices[j].color = vin.color;
         vertices[j].posH = float4(vertices[j].posH.xyz + vin.pos, 1.0f);
         vertices[j].posH = mul(vertices[j].posH, gOrthoMatrix);
@@ -108,6 +110,7 @@ void CreateUI(UIVertexIn vin, inout TriangleStream<POINTVertexOut> output)
     for (int i = 0; i < 4; i++)
     {
         vertices[i].texIndex = vin.textureIndex;
+        vertices[i].objectID = vin.objectID;
         vertices[i].posH = mul(vertices[i].posH, float4(vin.pos, 1));
         vertices[i].posH = mul(vertices[i].posH, gOrthoMatrix);
     }
@@ -147,18 +150,20 @@ void GS(point UIVertexIn input[1], inout TriangleStream<POINTVertexOut> output)
     }
 }
 
-float4 PS(POINTVertexOut pin) : SV_Target
+PointPSOut PS(POINTVertexOut pin)
 {
-    float4 resultColor = float4(0, 0, 0, 0);
+    PointPSOut result;
+    result.color = float4(0, 0, 0, 0);
+    result.objectID = pin.objectID;
 
     if (pin.texIndex > -1)
     {
-        resultColor = GetTexel(pin.texIndex, float2(pin.color.x, pin.color.y));
+        result.color = GetTexel(pin.texIndex, float2(pin.color.x, pin.color.y));
     }
     else
     {
-        resultColor = pin.color;
+        result.color = pin.color;
     }
 
-    return resultColor;
+    return result;
 }

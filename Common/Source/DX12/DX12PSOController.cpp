@@ -30,10 +30,11 @@ void DX12PSOController::InitBase_Raster_Blend_Depth()
 	baseBlendTargetDesc.BlendOpAlpha = D3D12_BLEND_OP_ADD;
 	baseBlendTargetDesc.LogicOp = D3D12_LOGIC_OP_NOOP;
 	baseBlendTargetDesc.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
-
+	
 	baseBlendDesc.RenderTarget[0] = baseBlendTargetDesc;
-	baseBlendDesc.AlphaToCoverageEnable = true;
 
+	baseBlendDesc.IndependentBlendEnable = true;
+	baseBlendDesc.AlphaToCoverageEnable = true;
 	AddBlend(baseAttributeName, baseBlendDesc);
 
 	//////////////////////////////////////////////////////////////////////////
@@ -71,7 +72,7 @@ void DX12PSOController::SetPSOToCommnadList(ID3D12GraphicsCommandList* cmd, cons
 		newPSO.CS.pShaderBytecode = vsI->second->GetBufferPointer();
 		newPSO.pRootSignature = rootSigI->second.Get();
 
-		m_Device->CreateComputePipelineState(&newPSO, IID_PPV_ARGS(m_PSOs[keyName].GetAddressOf()));
+		ThrowIfFailed(m_Device->CreateComputePipelineState(&newPSO, IID_PPV_ARGS(m_PSOs[keyName].GetAddressOf())));
 
 		psoI = m_PSOs.find(keyName);
 	}
@@ -162,7 +163,7 @@ void DX12PSOController::SetPSOToCommnadList(ID3D12GraphicsCommandList* cmd,
 		newPSO.RasterizerState = rasterI->second;
 		newPSO.BlendState = blendI->second;
 		newPSO.DepthStencilState = depthStencilI->second;
-		
+
 		newPSO.PrimitiveTopologyType = primitive;
 		newPSO.DSVFormat = dsvFormat;
 		newPSO.NumRenderTargets = CGH::SizeTTransUINT(rtvFormats.size());

@@ -4,7 +4,7 @@ struct ObjectData
 {
 	float4x4	World;
 	int			TextureIndex;
-	int			pad0;
+	int			ObjectID;
 	int			pad1;
 	int			pad2;
 };
@@ -169,18 +169,20 @@ void GS(point POINTVertexIn input[1], inout TriangleStream<POINTVertexOut> outpu
 	}
 }
 
-float4 PS(POINTVertexOut pin) : SV_Target
+PointPSOut PS(POINTVertexOut pin)
 {
-	float4 resultColor= float4(0,0,0,1);
+	PointPSOut result;
+	result.color = float4(0, 0, 0, 0);
+	result.objectID = pin.objectID;
 
     if (pin.texIndex > -1)
     {
-        resultColor = GetTexel(pin.texIndex, float2(pin.color.x, pin.color.y));
+		result.color = GetTexel(pin.texIndex, float2(pin.color.x, pin.color.y));
     }
     else
     {
-        resultColor = pin.color;
+		result.color = pin.color;
     }
 
-	return resultColor;
+	return result;
 }

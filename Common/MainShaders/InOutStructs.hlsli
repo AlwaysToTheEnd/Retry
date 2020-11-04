@@ -36,6 +36,7 @@ struct POINTVertexOut
     float4 posH : SV_POSITION;
     float4 color : COLOR0;
     nointerpolation int texIndex : MATNDEX;
+    nointerpolation int objectID : POBJECTID;
 };
 
 struct UIVertexIn
@@ -45,6 +46,7 @@ struct UIVertexIn
     float2 size : UISIZE;
     int uiType : UITYPE;
     int textureIndex : UITEXTURE;
+    int objectID : UIOBJECTID;
 };
 
 struct PSOut
@@ -52,4 +54,11 @@ struct PSOut
     float4 color : SV_Target;
     float4 normal : SV_Target1;
     float4 specPow : SV_Target2;
+    int4 objectID : SV_Target3;
+};
+
+struct PointPSOut
+{
+    float4 color : SV_Target;
+    int4 objectID : SV_Target3;
 };

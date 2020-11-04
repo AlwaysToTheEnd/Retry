@@ -97,11 +97,10 @@ public:
 		: DeviceObject(scene, parent, typeName)
 		, m_RenderInfo(RENDER_NONE)
 	{
-		
 	}
 	virtual ~DORenderer() = default;
 
-	void				SetRenderInfo(const RenderInfo& info) { m_RenderInfo = info; }
+	void				SetRenderInfo(const RenderInfo& info) { m_RenderInfo = info; m_RenderInfo.objectID = GetID(); }
 	
 	RenderInfo&			GetRenderInfo() { return m_RenderInfo; }
 

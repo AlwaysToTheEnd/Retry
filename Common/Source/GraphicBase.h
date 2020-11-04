@@ -78,6 +78,7 @@ struct RenderInfo
 		, world(physx::PxIdentity)
 		, scale(1,1,1)
 		, boundSphereRad(1.0f)
+		, objectID(-1)
 	{
 		lightInfo = {};
 	}
@@ -88,6 +89,7 @@ struct RenderInfo
 		type = src.type;
 		world = src.world;
 		scale = src.scale;
+		objectID = src.objectID;
 		boundSphereRad = src.boundSphereRad;
 		meshOrTextureName = src.meshOrTextureName;
 	}
@@ -103,6 +105,7 @@ struct RenderInfo
 		type = src.type;
 		world = src.world;
 		scale = src.scale;
+		objectID = src.objectID;
 		boundSphereRad = src.boundSphereRad;
 		meshOrTextureName = src.meshOrTextureName;
 
@@ -113,6 +116,7 @@ struct RenderInfo
 	physx::PxMat44	world;
 	physx::PxVec3	scale;
 	float			boundSphereRad;
+	int				objectID;
 	std::string		meshOrTextureName;
 
 	union

@@ -251,6 +251,8 @@ void DORenderer::Init(PhysX4_1*, IGraphicDevice* graphicDevice)
 	{
 		m_ReservedRenderObjects = graphicDevice->GetReservedRenderInfoVector();
 	}
+
+	m_RenderInfo.objectID = GetID();
 }
 
 void DORenderer::RenderMesh()

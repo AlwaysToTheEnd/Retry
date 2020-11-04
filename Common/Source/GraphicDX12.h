@@ -59,6 +59,7 @@ public: // Used from DeviceObject Init
 	virtual bool	EditMaterial(const std::string& materialName, const Material& material) override;
 
 	virtual int		GetTextureIndex(const std::wstring& group, const std::string& textureName) override;
+	virtual int		GetRenderedObjectIDFromMousePos() override { return m_RenderedObjectIDFromMousePos; }
 	virtual void	ReComputeHeightField(const std::string& name, physx::PxVec3 scale) override;
 
 private: // Used Function by ReadyWorks 
@@ -104,10 +105,12 @@ private:
 	physx::PxVec3						m_RayOrigin;
 	physx::PxVec3						m_Ray;
 
+	int									m_RenderedObjectIDFromMousePos = -1;
+
 	DX12_COMPUTE_CULLING_FRUSTUM		m_BaseFrustum;
 
 private:
-	std::unique_ptr<DX12PSOController>											m_PSOCon;
+	std::unique_ptr<DX12PSOController>										m_PSOCon;
 
 	std::vector<ComPtr<ID3D12CommandAllocator>>								m_CmdListAllocs;
 	std::unique_ptr<DX12UploadBuffer<DX12PassConstants>>					m_PassCB;

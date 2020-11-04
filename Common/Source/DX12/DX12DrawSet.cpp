@@ -188,7 +188,7 @@ void DX12DrawSet::SetBaseRoots(ID3D12GraphicsCommandList* cmd)
 	cmd->SetGraphicsRootConstantBufferView(PASS_CB, m_MainPassCB->GetGPUVirtualAddress());
 	cmd->SetGraphicsRootShaderResourceView(MATERIAL_SRV, m_MaterialBuffer->GetBufferResource()->GetGPUVirtualAddress());
 	cmd->SetGraphicsRootDescriptorTable(TARGETTEXTURE_TABLE, m_SwapChain->CurrSRVsGPU());
-
+	
 	ID3D12DescriptorHeap* textureHeap[] = { m_TextureBuffer->GetHeap() };
 	cmd->SetDescriptorHeaps(1, textureHeap);
 	cmd->SetGraphicsRootDescriptorTable(TEXTURE_TABLE, m_TextureBuffer->GetHeap()->GetGPUDescriptorHandleForHeapStart());

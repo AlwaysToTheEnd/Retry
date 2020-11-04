@@ -24,7 +24,7 @@ struct DX12ObjectConstants
 	int				PrevAniBone = -1;
 	float			blendFactor = 0.0f;
 	float			boundSphereRad = 1.0f;
-	int				pad0 = 0;
+	int				objectID = -1;
 	int				pad1 = 0;
 	int				pad2 = 0;
 };
@@ -33,7 +33,7 @@ struct DX12OnlyTexObjectConstants
 {
 	physx::PxMat44	world;
 	int				textureIndex = -1;
-	int				pad0 = 0;
+	int				ObjectID = -1;
 	int				pad1 = 0;
 	int				pad2 = 0;
 };
@@ -45,6 +45,7 @@ struct DX12UIInfomation
 	physx::PxVec2	size;
 	int				uiType = 0;
 	int				textureIndex = -1;
+	int				objectID = -1;
 };
 
 struct DX12LightInfomation
@@ -70,4 +71,6 @@ struct DX12PassConstants
 	physx::PxVec4		ambientLight = { 0.0f, 0.0f, 0.0f, 1.0f };
 	physx::PxVec3		eyePosW = { 0.0f, 0.0f, 0.0f };
 	unsigned int		samplerIndex = 0;
+	physx::PxVec2		mousePos;
+	physx::PxVec2		pad;
 };

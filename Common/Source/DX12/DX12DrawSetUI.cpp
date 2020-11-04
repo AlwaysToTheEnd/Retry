@@ -41,6 +41,7 @@ void DX12DrawSetUI::Init(ID3D12Device* device)
 			{ "UISIZE", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 28, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
 			{ "UITYPE", 0, DXGI_FORMAT_R32_SINT, 0, 36, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
 			{ "UITEXTURE", 0, DXGI_FORMAT_R32_SINT, 0, 40, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+			{ "UIOBJECTID", 0, DXGI_FORMAT_R32_SINT, 0, 44, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
 		});
 }
 
@@ -76,6 +77,7 @@ void DX12DrawSetUI::ReserveRender(const RenderInfo& info)
 	temp.uiType = info.uiInfo.uiType;
 	temp.size = info.uiInfo.size;
 	temp.pos = info.world.getPosition();
+	temp.objectID = info.objectID;
 
 	if (info.meshOrTextureName.size())
 	{

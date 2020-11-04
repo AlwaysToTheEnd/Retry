@@ -409,9 +409,6 @@
     <None Include="..\Common\MainShaders\InOutStructs.hlsli">
       <Filter>Common\DeviceInstance\DX12Supporters\DrawSets\Shader</Filter>
     </None>
-    <None Include="..\Common\MainShaders\HeightFieldMeshCreate.hlsl">
-      <Filter>Common\DeviceInstance\DX12Supporters\DrawSets\Shader</Filter>
-    </None>
     <None Include="..\Common\MainShaders\CullingCompute.hlsl">
       <Filter>Common\DeviceInstance\DX12Supporters\DrawSets\Shader</Filter>
     </None>
@@ -427,6 +424,11 @@
     <None Include="..\Common\MainShaders\PointLightShader.hlsl">
       <Filter>Common\DeviceInstance\DX12Supporters\DrawSets\Shader\LightShader</Filter>
     </None>
-    <None Include="..\Common\MainShaders\SpotLightShader.hlsl" />
+    <None Include="..\Common\MainShaders\SpotLightShader.hlsl">
+      <Filter>Common\DeviceInstance\DX12Supporters\DrawSets\Shader\LightShader</Filter>
+    </None>
+    <None Include="..\Common\MainShaders\HeightFieldMeshCreate.hlsl">
+      <Filter>Common\DeviceInstance\DX12Supporters\DrawSets\Shader</Filter>
+    </None>
   </ItemGroup>
 </Project>

@@ -4,6 +4,7 @@
 #include "../UIObjects/UIPanel.h"
 #include "d3dApp.h"
 #include "InputTextureNameList.h"
+#include "d3dUtil.h"
 
 using namespace AniTree;
 
@@ -881,8 +882,8 @@ void VisualizedAniTreeCreator::SaveTree()
 
 			filePath += L"Common\\AniTree";
 
-			SHCreateItemFromParsingName(filePath.c_str(), nullptr, IID_PPV_ARGS(&folder));
-			pfsd->SetFolder(folder);
+			ThrowIfFailed(SHCreateItemFromParsingName(filePath.c_str(), nullptr, IID_PPV_ARGS(&folder)));
+			ThrowIfFailed(pfsd->SetFolder(folder));
 			folder->Release();
 		}
 
@@ -897,7 +898,7 @@ void VisualizedAniTreeCreator::SaveTree()
 				hr = pfsd->GetResult(&psi);
 				if (SUCCEEDED(hr))
 				{
-					psi->GetDisplayName(SIGDN_NORMALDISPLAY, &fileName);
+					ThrowIfFailed(psi->GetDisplayName(SIGDN_NORMALDISPLAY, &fileName));
 					std::wstring wFileName(fileName);
 					filePath += L"\\" + wFileName;
 

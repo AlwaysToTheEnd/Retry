@@ -16,6 +16,7 @@ public:
 		GBUFFER_RESOURCE_NORMAL,
 		GBUFFER_RESOURCE_SPECPOWER,
 		GBUFFER_RESOURCE_COLORS,
+		GBUFFER_RESOURCE_OBJECTID,
 		GBUFFER_RESOURCE_COUNT
 	};
 
@@ -24,9 +25,9 @@ public:
 	virtual ~DX12SwapChain();
 
 	void CreateDXGIFactory(ID3D12Device** device);
-	void CreateSwapChain(	HWND handle, ID3D12CommandQueue* queue, 
-							DXGI_FORMAT renderTarget, DXGI_FORMAT depthStencil,
-							unsigned int x, unsigned int y, unsigned int numSwapChain);
+	void CreateSwapChain(HWND handle, ID3D12CommandQueue* queue, 
+						 DXGI_FORMAT renderTarget, DXGI_FORMAT depthStencil,
+						 unsigned int x, unsigned int y, unsigned int numSwapChain);
 	
 	void ClearDepth(ID3D12GraphicsCommandList* cmd);
 	void ReSize(ID3D12GraphicsCommandList* cmd, unsigned int x, unsigned int y);
@@ -35,6 +36,7 @@ public:
 	void Present();
 
 	void GetRenderTargetFormats(std::vector<DXGI_FORMAT>& out);
+	ID3D12Resource* GetObjectIDTexture();
 
 	ID3D12DescriptorHeap*		GetSrvHeap() { return m_SRVHeap.Get(); }
 	D3D12_CPU_DESCRIPTOR_HANDLE CurrRTV(BUFFER_RESURECE_TYPE type) const;
@@ -50,6 +52,7 @@ private:
 	DXGI_FORMAT												m_DepthStencilFormat;
 	DXGI_FORMAT												m_NormalBufferFormat;
 	DXGI_FORMAT												m_SpecPowBufferFormat;
+	DXGI_FORMAT												m_ObjectIDFormat;
 	DXGI_FORMAT												m_ColorBufferFormat;
 	unsigned int											m_NumSwapBuffer;
 	unsigned int											m_CurrBackBufferIndex;
@@ -65,5 +68,6 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>			m_RTVHeap;
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>			m_DSVHeap;
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>			m_SRVHeap;
-	float													zero[4] = {};
+	float													m_Zero[4] = {};
+	float													m_IntMinor[4] = {};
 };
