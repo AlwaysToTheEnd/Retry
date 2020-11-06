@@ -1,6 +1,6 @@
-#include "Header.hlsli"
+#include "LightHeader.hlsli"
 
-StructuredBuffer<LightData> gLightDatas : register(t1, space1);
+StructuredBuffer<LightData> gLightDatas : register(t5);
 
 float4 SpotLightVS() : SV_Position
 {
@@ -125,7 +125,7 @@ float3 CalcSpot(float3 position, Material material)
     return finalColor;
 }
 
-float4 SpotLightPS(DS_OUTPUT In) : SV_TARGET
+float4 SpotLightPS(DS_OUTPUT In) : SV_Target
 {
 	// Unpack the GBuffer
     SURFACE_DATA gbd = UnpackGBuffer_Loc(In.Position.xy);

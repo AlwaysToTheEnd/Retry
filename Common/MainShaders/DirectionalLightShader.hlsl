@@ -1,4 +1,4 @@
-#include "Header.hlsli"
+#include "LightHeader.hlsli"
 
 struct DLightVSOut
 {
@@ -11,7 +11,7 @@ struct DLightGSOut
     nointerpolation uint Index : LIGHTDATAINDEX;
 };
 
-StructuredBuffer<LightData> gLightDatas : register(t1, space1);
+StructuredBuffer<LightData> gLightDatas : register(t5);
 /////////////////////////////////////////////////////////////////////////////////
 
 DLightVSOut VS(uint id : SV_VertexID)
@@ -42,8 +42,8 @@ void GS(point DLightVSOut input[1], inout TriangleStream<DLightGSOut> output)
     }
 
     output.Append(vertices[0]);
-    output.Append(vertices[1]);
     output.Append(vertices[2]);
+    output.Append(vertices[1]);
     output.Append(vertices[3]);
 }
 
@@ -73,17 +73,5 @@ float4 PS(DLightGSOut In) : SV_Target
     finalColor = (gbd.Color * gAmbientLight).rgb;
     finalColor += CalcDirectional(position, gbd, light.Color.rgb, light.Dir.xyz);
 
-    //Test Codes
-    float result = gObjectIDTexture[(int)In.Position.x + ((int)In.Position.x * (int)gRenderTargetSize.x)]*2;
-
-    if (gObjectIDTexture[In.Position.x + (In.Position.x * (int)gRenderTargetSize.x)] == 0)
-    {
-        result = 1.0f;
-    }
-    else
-    {
-        result = 0.0f;
-    }
-
-    return float4(result, result, result, 1);
+    return float4(finalColor, 1);
 }

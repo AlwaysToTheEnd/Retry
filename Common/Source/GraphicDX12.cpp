@@ -41,7 +41,7 @@ bool GraphicDX12::Init(HWND hWnd, UINT windowWidth, UINT windowHeight)
 
 	HRESULT hr = S_OK;
 
-	hr = D3D12CreateDevice(nullptr, D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(m_D3dDevice.GetAddressOf()));
+	hr = D3D12CreateDevice(nullptr, D3D_FEATURE_LEVEL_12_1, IID_PPV_ARGS(m_D3dDevice.GetAddressOf()));
 
 	m_Swap = std::make_unique<DX12SwapChain>();
 	m_Swap->CreateDXGIFactory(m_D3dDevice.GetAddressOf());
@@ -52,7 +52,7 @@ bool GraphicDX12::Init(HWND hWnd, UINT windowWidth, UINT windowHeight)
 	CreateCommandObject();
 	
 	m_Swap->CreateSwapChain(m_MainWndHandle, m_CommandQueue.Get(),
-		m_BackBufferFormat, m_DepthStencilFormat, m_ClientWidth, m_ClientHeight, 2);
+		m_BackBufferFormat, m_ClientWidth, m_ClientHeight, 2);
 
 	OnResize();
 
@@ -618,7 +618,7 @@ void GraphicDX12::LoadFontFromFolder(const std::vector<std::wstring>& targetFont
 
 	m_FontManager = make_unique<DX12FontManager>();
 	m_FontManager->Init(m_D3dDevice.Get(), m_CommandQueue.Get(),
-		files, m_BackBufferFormat, m_DepthStencilFormat);
+		files, m_BackBufferFormat, DXGI_FORMAT_D24_UNORM_S8_UINT);
 
 	m_FontManager->Resize(m_ClientWidth, m_ClientHeight);
 }
@@ -709,16 +709,18 @@ void GraphicDX12::Draw()
 	m_CommandList->RSSetViewports(1, &m_ScreenViewport);
 	m_CommandList->RSSetScissorRects(1, &m_ScissorRect);
 
-	m_Swap->RenderBegin(m_CommandList.Get(), Colors::Gray);
+	m_Swap->GbufferSetting(m_CommandList.Get());
 
 	m_NormalMeshDrawSet->Draw(m_CommandList.Get());
 	m_SkinnedMeshDrawSet->Draw(m_CommandList.Get());
 	m_PointBaseDrawSet->Draw(m_CommandList.Get());
 	m_HeightFieldMeshDrawSet->Draw(m_CommandList.Get());
 
+	m_Swap->PresentRenderTargetSetting(m_CommandList.Get(), Colors::Gray);
+
 	m_LightDrawSet->Draw(m_CommandList.Get());
 
-	m_Swap->ClearDepth(m_CommandList.Get());
+	m_Swap->UIRenderTargetSetting(m_CommandList.Get());
 	m_UIDrawSet->Draw(m_CommandList.Get());
 
 	m_FontManager->RenderCommandWrite(m_CommandList.Get(), m_ReservedFonts);
@@ -743,25 +745,29 @@ void GraphicDX12::BuildDrawSets()
 	DX12DrawSet::SetBaseResource(m_PassCB->Resource(), m_Materials.get(), m_Swap.get());
 	DX12MeshComputeCulling::BaseSetting(m_D3dDevice.Get(), m_PSOCon.get(), &m_BaseFrustum);
 	std::vector<DXGI_FORMAT> rtv;
-	m_Swap->GetRenderTargetFormats(rtv);
+	m_Swap->GetRenderGBufferFormat(rtv);
 
 	m_NormalMeshDrawSet = std::make_unique<DX12DrawSetNormalMesh>(1, m_PSOCon.get(),
-		m_TextureBuffers[L"MESH"].get(), rtv, m_DepthStencilFormat, *m_NormalMeshSet);
+		m_TextureBuffers[L"MESH"].get(), rtv, DXGI_FORMAT_D24_UNORM_S8_UINT, *m_NormalMeshSet);
 
 	m_SkinnedMeshDrawSet = std::make_unique<DX12DrawSetSkinnedMesh>(1, m_PSOCon.get(),
-		m_TextureBuffers[L"MESH"].get(), rtv, m_DepthStencilFormat, *m_SkinnedMeshSet);
+		m_TextureBuffers[L"MESH"].get(), rtv, DXGI_FORMAT_D24_UNORM_S8_UINT, *m_SkinnedMeshSet);
 
 	m_HeightFieldMeshDrawSet = std::make_unique<DX12DrawSetHeightField>(1, m_PSOCon.get(),
-		m_TextureBuffers[L"HEIGHT"].get(), rtv, m_DepthStencilFormat, *m_HeightFieldMeshSet);
+		m_TextureBuffers[L"HEIGHT"].get(), rtv, DXGI_FORMAT_D24_UNORM_S8_UINT, *m_HeightFieldMeshSet);
 
 	m_PointBaseDrawSet = std::make_unique<DX12DrawSetPointBase>(1, m_PSOCon.get(),
-		m_TextureBuffers[L"BASE"].get(), rtv, m_DepthStencilFormat);
+		m_TextureBuffers[L"BASE"].get(), rtv, DXGI_FORMAT_D24_UNORM_S8_UINT);
+
+	m_Swap->GetRenderTargetFormat(rtv);
 
 	m_LightDrawSet = std::make_unique<DX12DrawSetLight>(1, m_PSOCon.get(),
-		m_TextureBuffers[L"BASE"].get(), rtv, m_DepthStencilFormat);
+		m_TextureBuffers[L"BASE"].get(), rtv, DXGI_FORMAT_D24_UNORM_S8_UINT);
+
+	m_Swap->GetRenderUIFormat(rtv);
 
 	m_UIDrawSet = std::make_unique<DX12DrawSetUI>(1, m_PSOCon.get(),
-		m_TextureBuffers[L"UI"].get(), rtv, m_DepthStencilFormat);
+		m_TextureBuffers[L"UI"].get(), rtv, DXGI_FORMAT_D24_UNORM_S8_UINT);
 
 	m_NormalMeshDrawSet->Init(m_D3dDevice.Get());
 	m_SkinnedMeshDrawSet->Init(m_D3dDevice.Get());
@@ -801,7 +807,8 @@ void GraphicDX12::UpdateMainPassCB(float delta)
 	mainPass.viewProj = viewProj.getTranspose();
 	mainPass.invViewProj = invViewProj.getTranspose();
 	mainPass.orthoMatrix = m_OrthoProjectionMat.getTranspose();
-	mainPass.renderTargetSize = physx::PxVec2((float)m_ClientWidth, (float)m_ClientHeight);
+	mainPass.renderTargetSizeX = m_ClientWidth;
+	mainPass.renderTargetSizeY = m_ClientHeight;
 	mainPass.invRenderTargetSize = physx::PxVec2(1.0f / m_ClientWidth, 1.0f / m_ClientHeight);
 	mainPass.samplerIndex = CGH::GO.graphic.samplerIndex;
 	mainPass.eyePosW = m_CurrCamera->GetEyePos();

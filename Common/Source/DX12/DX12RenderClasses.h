@@ -66,7 +66,8 @@ struct DX12PassConstants
 	physx::PxMat44		invViewProj;
 	physx::PxMat44		rightViewProj;
 	physx::PxMat44		orthoMatrix;
-	physx::PxVec2		renderTargetSize = { 0.0f, 0.0f };
+	unsigned int		renderTargetSizeX = 0;
+	unsigned int		renderTargetSizeY = 0;
 	physx::PxVec2		invRenderTargetSize = { 0.0f, 0.0f };
 	physx::PxVec4		ambientLight = { 0.0f, 0.0f, 0.0f, 1.0f };
 	physx::PxVec3		eyePosW = { 0.0f, 0.0f, 0.0f };

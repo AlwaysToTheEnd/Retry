@@ -76,6 +76,12 @@
     <Filter Include="Common\CodeResources\MeshReplacer">
       <UniqueIdentifier>{5c3f8e7e-fa70-45b7-8c89-9fe2932545ed}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Common\DeviceInstance\DX12Supporters\DrawSets\Shader\Compute">
+      <UniqueIdentifier>{31afdf14-f066-48d2-93c5-2cf3c77550ca}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Common\DeviceInstance\DX12Supporters\DrawSets\Shader\Headers">
+      <UniqueIdentifier>{1afad483-4c26-4b3d-903f-b5efe3e89795}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Step2.cpp">
@@ -403,19 +409,7 @@
     <None Include="..\Common\MainShaders\UIShader.hlsl">
       <Filter>Common\DeviceInstance\DX12Supporters\DrawSets\Shader</Filter>
     </None>
-    <None Include="..\Common\MainShaders\Header.hlsli">
-      <Filter>Common\DeviceInstance\DX12Supporters\DrawSets\Shader</Filter>
-    </None>
-    <None Include="..\Common\MainShaders\InOutStructs.hlsli">
-      <Filter>Common\DeviceInstance\DX12Supporters\DrawSets\Shader</Filter>
-    </None>
-    <None Include="..\Common\MainShaders\CullingCompute.hlsl">
-      <Filter>Common\DeviceInstance\DX12Supporters\DrawSets\Shader</Filter>
-    </None>
     <None Include="..\Common\MainShaders\MeshShader.hlsl">
-      <Filter>Common\DeviceInstance\DX12Supporters\DrawSets\Shader</Filter>
-    </None>
-    <None Include="..\Common\MainShaders\CullingFunc.hlsli">
       <Filter>Common\DeviceInstance\DX12Supporters\DrawSets\Shader</Filter>
     </None>
     <None Include="..\Common\MainShaders\DirectionalLightShader.hlsl">
@@ -427,8 +421,26 @@
     <None Include="..\Common\MainShaders\SpotLightShader.hlsl">
       <Filter>Common\DeviceInstance\DX12Supporters\DrawSets\Shader\LightShader</Filter>
     </None>
+    <None Include="..\Common\MainShaders\CullingCompute.hlsl">
+      <Filter>Common\DeviceInstance\DX12Supporters\DrawSets\Shader\Compute</Filter>
+    </None>
+    <None Include="..\Common\MainShaders\Header.hlsli">
+      <Filter>Common\DeviceInstance\DX12Supporters\DrawSets\Shader\Headers</Filter>
+    </None>
+    <None Include="..\Common\MainShaders\BaseRoot.hlsli">
+      <Filter>Common\DeviceInstance\DX12Supporters\DrawSets\Shader\Headers</Filter>
+    </None>
+    <None Include="..\Common\MainShaders\LightHeader.hlsli">
+      <Filter>Common\DeviceInstance\DX12Supporters\DrawSets\Shader\Headers</Filter>
+    </None>
+    <None Include="..\Common\MainShaders\CullingFunc.hlsli">
+      <Filter>Common\DeviceInstance\DX12Supporters\DrawSets\Shader\Compute</Filter>
+    </None>
     <None Include="..\Common\MainShaders\HeightFieldMeshCreate.hlsl">
-      <Filter>Common\DeviceInstance\DX12Supporters\DrawSets\Shader</Filter>
+      <Filter>Common\DeviceInstance\DX12Supporters\DrawSets\Shader\Compute</Filter>
+    </None>
+    <None Include="..\Common\MainShaders\InOutStructs.hlsli">
+      <Filter>Common\DeviceInstance\DX12Supporters\DrawSets\Shader\Headers</Filter>
     </None>
   </ItemGroup>
 </Project>

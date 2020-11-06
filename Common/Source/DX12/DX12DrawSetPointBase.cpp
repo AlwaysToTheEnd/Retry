@@ -10,12 +10,9 @@ void DX12DrawSetPointBase::Init(ID3D12Device* device)
 		m_FrameResource.back().VB = std::make_unique<DX12UploadBuffer<PointBaseVertex>>(device, 100, false);
 	}
 
-	CD3DX12_DESCRIPTOR_RANGE texTable;
-	texTable.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, m_TextureBuffer->GetTexturesNum(), 0);
-
 	CD3DX12_ROOT_PARAMETER pointRenderRootParam[P1_ROOT_COUNT];
 	BaseRootParamSetting(pointRenderRootParam);
-	pointRenderRootParam[P1_OBJECT_SRV].InitAsShaderResourceView(1, 1);
+	pointRenderRootParam[P1_OBJECT_SRV].InitAsShaderResourceView(0);
 
 	CD3DX12_ROOT_SIGNATURE_DESC pointRenderrootDesc;
 	pointRenderrootDesc.Init(P1_ROOT_COUNT, pointRenderRootParam, _countof(m_StaticSamplers),

@@ -1,5 +1,6 @@
 #include "DX12DrawSetLight.h"
 #include "DX12TextureBuffer.h"
+#include "DX12SwapChain.h"
 
 void DX12DrawSetLight::Init(ID3D12Device* device)
 {
@@ -8,9 +9,12 @@ void DX12DrawSetLight::Init(ID3D12Device* device)
 		m_LightInfomations.push_back(std::make_unique<DX12UploadBuffer<DX12LightInfomation>>(device, 100, false));
 	}
 
+	CD3DX12_DESCRIPTOR_RANGE gbufferTexTableRange;
+	gbufferTexTableRange.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, DX12SwapChain::GBUFFER_RESOURCE_COUNT - 1, 0);
 	CD3DX12_ROOT_PARAMETER baseRootParam[ROOT_COUNT];
 	BaseRootParamSetting(baseRootParam);
-	baseRootParam[LIGHTDATA_SRV].InitAsShaderResourceView(1,1);
+	baseRootParam[GBUFFERTEX_TABLE].InitAsDescriptorTable(1, &gbufferTexTableRange);
+	baseRootParam[LIGHTDATA_SRV].InitAsShaderResourceView(DX12SwapChain::GBUFFER_RESOURCE_COUNT - 1);
 
 	CD3DX12_ROOT_SIGNATURE_DESC rootDesc;
 	rootDesc.Init(ROOT_COUNT, baseRootParam, _countof(m_StaticSamplers),
@@ -22,19 +26,21 @@ void DX12DrawSetLight::Init(ID3D12Device* device)
 		NULL, NULL };
 
 	D3D12_DEPTH_STENCIL_DESC dsDesc = {};
-	dsDesc.DepthEnable = true;
+	dsDesc.DepthEnable = false;
 	dsDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
 	dsDesc.DepthFunc = D3D12_COMPARISON_FUNC_GREATER_EQUAL;
 
 	const char* dirLight = "DLight";
 
-	D3D12_RASTERIZER_DESC rasterizer = {};
+	CD3DX12_RASTERIZER_DESC rasterizer(D3D12_DEFAULT);
 	rasterizer.FillMode = D3D12_FILL_MODE_SOLID;
-	rasterizer.CullMode = D3D12_CULL_MODE_BACK;
+	rasterizer.CullMode = D3D12_CULL_MODE_FRONT;
+	rasterizer.DepthClipEnable = false;
 
 	m_PSOA.primitive = D3D12_PRIMITIVE_TOPOLOGY_TYPE_POINT;
 	m_PSOA.rootSig = dirLight;
 	m_PSOA.depthStencil = dirLight;
+	m_PSOA.dsvFormat = DXGI_FORMAT_UNKNOWN;
 	m_PSOA.rasterizer = dirLight;
 	m_PSOA.vs = dirLight;
 	m_PSOA.ps = dirLight;
@@ -50,14 +56,11 @@ void DX12DrawSetLight::Init(ID3D12Device* device)
 	m_PointLightPSOA = m_PSOA;
 
 	m_PointLightPSOA.primitive = D3D12_PRIMITIVE_TOPOLOGY_TYPE_PATCH;
-	m_PointLightPSOA.depthStencil = pointLight;
 	m_PointLightPSOA.gs = "";
 	m_PointLightPSOA.vs = pointLight;
 	m_PointLightPSOA.hs = pointLight;
 	m_PointLightPSOA.ds = pointLight;
 	m_PointLightPSOA.ps = pointLight;
-	dsDesc.DepthFunc = D3D12_COMPARISON_FUNC_ALWAYS;
-	m_PSOCon->AddDepthStencil(pointLight, dsDesc);
 	m_PSOCon->AddShader(pointLight, DX12_SHADER_VERTEX, L"../Common/MainShaders/PointLightShader.hlsl", macros, "VS");
 	m_PSOCon->AddShader(pointLight, DX12_SHADER_PIXEL, L"../Common/MainShaders/PointLightShader.hlsl", macros, "PS");
 	m_PSOCon->AddShader(pointLight, DX12_SHADER_HULL, L"../Common/MainShaders/PointLightShader.hlsl", macros, "HS");
@@ -75,10 +78,13 @@ void DX12DrawSetLight::Draw(ID3D12GraphicsCommandList* cmd, const DX12PSOAttribu
 
 		auto LightInfoSrv = m_LightInfomations[m_CurrFrame]->Resource()->GetGPUVirtualAddress();
 		auto LightInfoSize = m_LightInfomations[m_CurrFrame]->GetElementByteSize();
+		ID3D12DescriptorHeap* heaps[] = { m_SwapChain->GetSrvHeap() };
 
 		cmd->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY::D3D_PRIMITIVE_TOPOLOGY_POINTLIST);
 		cmd->IASetVertexBuffers(0, 0, nullptr);
-		
+		cmd->SetDescriptorHeaps(1, heaps);
+		cmd->SetGraphicsRootDescriptorTable(GBUFFERTEX_TABLE, m_SwapChain->GetSRVsGPU());
+
 		cmd->SetGraphicsRootShaderResourceView(LIGHTDATA_SRV, LightInfoSrv);
 		cmd->DrawInstanced(m_RenderCount[LIGHT_TYPE_DIRECTIONAL], 1, 0, 0);
 

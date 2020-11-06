@@ -9,7 +9,7 @@ struct ObjectData
 	int			pad2;
 };
 
-StructuredBuffer<ObjectData> gObjectData : register(t1, space1);
+StructuredBuffer<ObjectData> gObjectData : register(t0);
 
 POINTVertexIn VS(POINTVertexIn vin)
 {
@@ -36,6 +36,7 @@ void CreateBox(uint cbIndex, float3 size, float4 color, inout TriangleStream<POI
 	{
 		vertices[i].color = color;
 		vertices[i].texIndex = gObjectData[cbIndex].TextureIndex;
+        vertices[i].objectID = gObjectData[cbIndex].ObjectID;
 		vertices[i].posH = mul(vertices[i].posH, gObjectData[cbIndex].World);
 		vertices[i].posH = mul(vertices[i].posH, gViewProj);
 	}
@@ -82,6 +83,7 @@ void CreatePlane(uint cbIndex, float2 size, float4 color, inout TriangleStream<P
 	for (int i = 0; i < 4; i++)
 	{
 		vertices[i].texIndex = gObjectData[cbIndex].TextureIndex;
+        vertices[i].objectID = gObjectData[cbIndex].ObjectID;
 		vertices[i].posH = mul(vertices[i].posH, gObjectData[cbIndex].World);
 		vertices[i].posH = mul(vertices[i].posH, gViewProj);
 	}
@@ -126,6 +128,7 @@ void Create2DPlane(uint cbIndex, float2 size, float4 color, inout TriangleStream
     for (int i = 0; i < 4; i++)
     {
         vertices[i].texIndex = gObjectData[cbIndex].TextureIndex;
+        vertices[i].objectID = gObjectData[cbIndex].ObjectID;
         vertices[i].posH = mul(vertices[i].posH, gObjectData[cbIndex].World);
         vertices[i].posH = mul(vertices[i].posH, gOrthoMatrix);
     }
@@ -173,7 +176,7 @@ PointPSOut PS(POINTVertexOut pin)
 {
 	PointPSOut result;
 	result.color = float4(0, 0, 0, 0);
-	result.objectID = pin.objectID;
+    result.objectID = pin.objectID;
 
     if (pin.texIndex > -1)
     {

@@ -32,9 +32,9 @@ void DX12PSOController::InitBase_Raster_Blend_Depth()
 	baseBlendTargetDesc.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
 	
 	baseBlendDesc.RenderTarget[0] = baseBlendTargetDesc;
-
-	baseBlendDesc.IndependentBlendEnable = true;
+	
 	baseBlendDesc.AlphaToCoverageEnable = true;
+	baseBlendDesc.IndependentBlendEnable = true;
 	AddBlend(baseAttributeName, baseBlendDesc);
 
 	//////////////////////////////////////////////////////////////////////////
@@ -159,7 +159,6 @@ void DX12PSOController::SetPSOToCommnadList(ID3D12GraphicsCommandList* cmd,
 		}
 
 		newPSO.pRootSignature = rootSigI->second.Get();
-
 		newPSO.RasterizerState = rasterI->second;
 		newPSO.BlendState = blendI->second;
 		newPSO.DepthStencilState = depthStencilI->second;
@@ -268,7 +267,7 @@ void DX12PSOController::AddShader(const std::string& shaderName, DX12_SHADER_TYP
 
 	UINT compileFlags = 0;
 #if defined(DEBUG) || defined(_DEBUG)  
-	compileFlags = D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
+	//compileFlags = D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
 #endif
 
 	HRESULT hr = S_OK;

@@ -51,14 +51,14 @@ struct UIVertexIn
 
 struct PSOut
 {
-    float4 color : SV_Target;
-    float4 normal : SV_Target1;
-    float4 specPow : SV_Target2;
-    int4 objectID : SV_Target3;
+    float4 color : SV_Target0;
+    float3 normal : SV_Target1;
+    float specPow : SV_Target2;
+    int objectID : SV_Target3;
 };
 
 struct PointPSOut
 {
-    float4 color : SV_Target;
-    int4 objectID : SV_Target3;
+    float4 color : SV_Target0;
+    int objectID : SV_Target1;
 };

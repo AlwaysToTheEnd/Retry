@@ -128,7 +128,9 @@
     <ClInclude Include="TestObject.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\Common\MainShaders\BaseRoot.hlsli" />
     <None Include="..\Common\MainShaders\CullingFunc.hlsli" />
+    <None Include="..\Common\MainShaders\LightHeader.hlsli" />
     <None Include="..\Common\MainShaders\MeshShader.hlsl">
       <FileType>Document</FileType>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
@@ -137,7 +139,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Common\MainShaders\Header.hlsli" />
-    <None Include="..\Common\MainShaders\InOutStructs.hlsli" />
+    <None Include="..\Common\MainShaders\InOutStructs.hlsli">
+      <FileType>Document</FileType>
+    </None>
     <None Include="..\Common\MainShaders\pointShader.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>

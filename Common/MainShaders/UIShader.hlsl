@@ -18,6 +18,12 @@ void CreatePanel(UIVertexIn vin, inout TriangleStream<POINTVertexOut> output)
 {
     POINTVertexOut vertices[12];
 
+     [unroll(12)]
+    for (int k = 0; k < 12; k++)
+    {
+        vertices[k].objectID = vin.objectID;
+    }
+    
     const float edgeSize = 5.0f;
     
     vertices[0].posH = float4(0, 0, 0.0f, 1.0f);
@@ -59,7 +65,6 @@ void CreatePanel(UIVertexIn vin, inout TriangleStream<POINTVertexOut> output)
     for (int i = 0; i < 6; i++)
     {
         vertices[i].texIndex = -1;
-        vertices[i].objectID = vin.objectID;
         vertices[i].color = gPanelTitleColor;
         vertices[i].posH = float4(vertices[i].posH.xyz + vin.pos, 1.0f);
         vertices[i].posH = mul(vertices[i].posH, gOrthoMatrix);
@@ -69,7 +74,6 @@ void CreatePanel(UIVertexIn vin, inout TriangleStream<POINTVertexOut> output)
     for (int j = 6; j < 12; j++)
     {
         vertices[j].texIndex = vin.textureIndex;
-        vertices[i].objectID = vin.objectID;
         vertices[j].color = vin.color;
         vertices[j].posH = float4(vertices[j].posH.xyz + vin.pos, 1.0f);
         vertices[j].posH = mul(vertices[j].posH, gOrthoMatrix);

@@ -1,7 +1,6 @@
-#include "Header.hlsli"
+#include "LightHeader.hlsli"
 
-
-StructuredBuffer<LightData> gLightDatas : register(t1, space1);
+StructuredBuffer<LightData> gLightDatas : register(t5);
 
 float4 VS() : SV_Position
 {
@@ -40,7 +39,7 @@ static const float3 HemilDir[2] = {
 
 [domain("quad")]
 [partitioning("integer")]
-[outputtopology("triangle_cw")]
+[outputtopology("triangle_ccw")]
 [outputcontrolpoints(4)]
 [patchconstantfunc("PointLightConstantHS")]
 HS_OUTPUT HS(uint PatchID : SV_PrimitiveID)
@@ -81,38 +80,30 @@ DS_OUTPUT DS(HS_CONSTANT_DATA_OUTPUT input, float2 UV : SV_DomainLocation, const
 }
 
 ////////////////////////////////////////////////////////////////////////////////////
-float3 CalcPoint(float3 position, SurfaceData surface, LightData light)
+float3 CalcPoint(float3 position, float3 surfaceRGB, LightData light)
 {
     float3 toLight = light.PosnAngle.xyz - position;
-    float3 toEye = gEyePosW - position;
     float distToLight = length(toLight);
-
-    // Phong diffuse
-    toLight /= distToLight; // Normalize
-    float NDotL = saturate(dot(toLight, surface.Normal));
-    float3 finalColor = light.Color.rgb;
-
-    // Blinn specular
-    toEye = normalize(toEye);
-    float3 HalfWay = normalize(toEye + toLight);
-    float NDotH = saturate(dot(HalfWay, surface.Normal));
-    finalColor += pow(NDotH, surface.SpecPower);
-
-    // Attenuation
-    float DistToLightNorm = 1.0 - saturate(distToLight * light.FallOffnPower.y);
-    float Attn = DistToLightNorm * DistToLightNorm;
-    finalColor *= light.Color.rgb * Attn;
-
+   
+    if (distToLight > light.FallOffnPower.y)
+    {
+        clip(-1);
+    }
+   
+    float dstToLightNorm = 1.0 - saturate(distToLight / light.FallOffnPower.y);
+    float attn = dstToLightNorm * dstToLightNorm;
+    float3 finalColor = surfaceRGB + light.Color.rgb * attn;
+   
     return finalColor;
 }
 
-float4 PS(DS_OUTPUT In) : SV_TARGET
+float4 PS(DS_OUTPUT In) : SV_Target0
 {
     SurfaceData gbd = UnpackGBufferL(In.Position.xy);
     LightData light = gLightDatas[In.Index];
     
     float3 position = CalcWorldPos(In.cpPos.xy, gbd.LinearDepth);
-    float3 finalColor = CalcPoint(position, gbd, light);
-
+    float3 finalColor = CalcPoint(position, gbd.Color.rgb, light);
+    
     return float4(finalColor, 1.0);
 }
