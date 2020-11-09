@@ -9,6 +9,7 @@
 
 #define GETAPP D3DApp::GetApp()
 #define GETKEY(T) const DirectX::Keyboard::KeyboardStateTracker* keyboard = (D3DApp::GetApp()->GetKeyBoard(T))
+#define PUSHEDESC D3DApp::GetApp()->IsPushedESC()
 #define GETMOUSE(T) const DirectX::Mouse::ButtonStateTracker* mouse = (D3DApp::GetApp()->GetMouse(T))
 #define HOLDCANCLE(T) D3DApp::GetApp()->InputDeviceHoldCancle(T)
 #define DEFAULTWINDOWSIZE 900
@@ -54,6 +55,7 @@ public:
 	void											InputDeviceHoldCancle(const GameObject* const caller);
 	const DirectX::Keyboard::KeyboardStateTracker*	GetKeyBoard(const GameObject* const caller);
 	const DirectX::Mouse::ButtonStateTracker*		GetMouse(const GameObject* const caller);
+	bool											IsPushedESC() { return m_IsPushedESC; }
 
 	void											GetMouseRay(physx::PxVec3& origin, physx::PxVec3& ray) const { origin = m_RayOrigin; ray = m_Ray; }
 	physx::PxVec2									GetMousePos() const { return m_Camera.GetMousePos(); }
@@ -87,6 +89,7 @@ protected:
 	DirectX::Mouse							m_Mouse;
 	DirectX::Mouse::ButtonStateTracker		m_MouseTracker;
 
+	bool									m_IsPushedESC;
 	DirectX::Keyboard						m_Keyboard;
 	DirectX::Keyboard::KeyboardStateTracker	m_KeyboardTracker;
 	const GameObject*						m_CurrInputDeviceHoldObject;

@@ -1,6 +1,5 @@
 #pragma once
 #include "GameObject.h"
-#include <list>
 #include <Keyboard.h>
 #include "AnimationTree.h"
 #include "StaticObject.h"
@@ -10,7 +9,7 @@ class DOAnimator;
 class UIPanel;
 class UIParam;
 class UIButton;
-class AniTreeArowVisual;
+class AniArowVisual;
 class DORenderer;
 class DOUICollision;
 class DOTransform;
@@ -22,58 +21,25 @@ namespace Ani
 
 class AniNodeVisual :public GameObject
 {
-	static class AnimationTreeArrowCreator : public StaticGameObjectController
-	{
-	public:
-		AnimationTreeArrowCreator()
-			:StaticGameObjectController(false)
-			, m_CurrFrom(nullptr)
-			, m_CurrArrow(nullptr)
-			, m_isNextClear(false)
-		{
-
-		}
-		virtual ~AnimationTreeArrowCreator() = default;
-
-		void Excute(AniNodeVisual* aniNode);
-
-	private:
-		virtual void WorkClear() override;
-		virtual void Update(float delta) override;
-
-	private:
-		AniNodeVisual*		m_CurrFrom;
-		AniTreeArowVisual*	m_CurrArrow;
-		bool				m_isNextClear;
-
-	} s_AnitreeArrowCreater;
-
 public:
 	AniNodeVisual(CGHScene& scene, GameObject* parent, const char* typeName)
 		: GameObject(scene, parent, typeName)
 		, m_CurrSkinAnimationNames(nullptr)
 		, m_CurrSkinAnimationEndTick(nullptr)
 		, m_Panel(nullptr)
-		, m_TargetAniNode(nullptr)
+		, m_CurrAniNode(nullptr)
+		, m_RoofControlButton(nullptr)
+		, m_PanelCol(nullptr)
 	{
 
 	}
 	virtual ~AniNodeVisual() = default;
-	virtual void Delete() override;
-	void VisualClear();
 
-	void DeleteArrow(const AniNodeVisual* to);
-	void ArrowVisualDeleted(AniTreeArowVisual* arrow);
-	void AniNameReset() { m_CurrAniName.clear(); }
+	void DeleteAniNode();
+	void SetRenderValue(AniTree::AniNode* node, std::function<void()> excuteFunc, std::function<void()> deleteFunc);
 
-	void AddArrow(AniTreeArowVisual* arrow);
-
-	void SetPos(physx::PxVec2 pos);
-	void SetTargetAninode(AniTree::AniNode* node);
-	void SetDeleteAniNodeFunc(std::function<void()> func);
 	void SetSkinAnimationInfoVectorPtr(const std::vector<std::string>* aniNames, const std::vector<double>* aniEnds);
 
-	AniTree::AniNode*		GetNode() { return m_TargetAniNode; }
 	physx::PxVec2			GetPos() const;
 	const physx::PxVec2&	GetSize() const;
 
@@ -87,84 +53,51 @@ private:
 	const std::vector<std::string>*			m_CurrSkinAnimationNames;
 	const std::vector<double>*				m_CurrSkinAnimationEndTick;
 
+	AniTree::AniNode*						m_CurrAniNode;
 	std::string								m_CurrAniName;
-	std::vector<AniTreeArowVisual*>			m_Arrows;
+	std::vector<AniArowVisual*>				m_Arrows;
 	UIPanel*								m_Panel;
-	AniTree::AniNode*						m_TargetAniNode;
+	DOUICollision*							m_PanelCol;
+	UIButton*								m_RoofControlButton;
 	std::function<void()>					m_DeleteAninodeFunc;
 };
 
-class AniTreeArowVisual :public GameObject
+class AniArowVisual :public GameObject
 {
-private:
-	static class AniTreeArrowArttributeEditer : public StaticGameObjectController
-	{
-	public:
-		AniTreeArrowArttributeEditer()
-			:StaticGameObjectController(false)
-			, m_CurrArrow(nullptr)
-			, m_AttributePanel(nullptr)
-		{
-
-		}
-		virtual ~AniTreeArrowArttributeEditer() = default;
-
-		void SetArrowVisual(AniTreeArowVisual* arrow);
-
-	private:
-		virtual void WorkClear() override;
-		virtual void Update(float delta) override;
-		void CreateAttributePanel();
-		void AddParam();
-		void ChangeType(UIParam* target, CGH::UnionData* data);
-
-	private:
-		const static int					m_FontSize = 12;
-
-		AniTreeArowVisual*					m_CurrArrow;
-		UIPanel*							m_AttributePanel;
-
-		AniTree::TO_ANI_ARROW_TYPE			m_ArrowType;
-		AniTree::TRIGGER_TYPE				m_TriggerType;
-		CGH::UnionData						m_Standard;
-		std::vector<AniTree::OutputArrow>	m_Arrows;
-		
-	} s_ArrowArttributeEditer;
-
 public:
-	AniTreeArowVisual(CGHScene& scene, GameObject* parent, const char* typeName)
+	AniArowVisual(CGHScene& scene, GameObject* parent, const char* typeName)
 		: GameObject(scene, parent, typeName)
-		, m_From(nullptr)
-		, m_To(nullptr)
-		, m_MousePos(0,0)
+		, m_IsIniting(false)
+		, m_Transform(nullptr)
+		, m_UICollison(nullptr)
+		, m_Renderer(nullptr)
 	{
 
 	}
-	virtual ~AniTreeArowVisual() = default;
-	virtual void Delete() override;
-	void VisualClear();
+	virtual ~AniArowVisual() = default;
 
-	void SetFromNode(AniNodeVisual* from) { m_From = from; }
-	void SetToNode(AniNodeVisual* to);
-	void SetCurrMousePos(const physx::PxVec2& pos) { m_MousePos = pos; }
-	const AniNodeVisual* GetToNodeV() const { return m_To; }
+	void SetRenderValue(const physx::PxVec2& _from, const physx::PxVec2& _fromSize,
+		const physx::PxVec2& _to, const physx::PxVec2& _toSize, std::function<void()> excuteFunc, bool isMousePos);
 
 private:
 	virtual void Init() override;
 	virtual void Update(float delta) override;
 
 private:
-	std::string			m_Name;
+	bool				m_IsIniting;
 	DOTransform*		m_Transform;
 	DOUICollision*		m_UICollison;
 	DORenderer*			m_Renderer;
-	AniNodeVisual*		m_From;
-	AniNodeVisual*		m_To;
-	physx::PxVec2		m_MousePos;
 };
 
 class VisualizedAniTreeCreator :public GameObject
 {
+	struct NodePosData
+	{
+		physx::PxVec2 pos;
+		physx::PxVec2 size;
+	};
+
 public:
 	VisualizedAniTreeCreator(CGHScene& scene, GameObject* parent, const char* typeName)
 		: GameObject(scene, parent, typeName)
@@ -173,6 +106,7 @@ public:
 		, m_CurrSkin(nullptr)
 		, m_WorkPanel(nullptr)
 		, m_Animator(nullptr)
+		, m_CurrInitingArrowIndex(-1)
 	{
 
 	}
@@ -183,9 +117,10 @@ public:
 private:
 	virtual void Init() override;
 	virtual void Update(float delta) override;
+	
 	void AddNode();
-	void AddNodeVs(AniTree::AniNode* node);
-	void DeleteNode(AniNodeVisual* node);
+	void AniNodeExcute(const AniTree::AniNode& node);
+	void CancleExcute();
 	
 	void SetAnimationTreeListsParamToPanel(int posX, int posY, UIPanel* workPanel);
 
@@ -194,21 +129,27 @@ private:
 	void SaveTree();
 
 private:
-	std::unique_ptr< AniTree::AnimationTree>	m_NullTree;
-	AniTree::AnimationTree*						m_CurrTree;
-	UIPanel*									m_WorkPanel;
-	UIParam*									m_AniTreeParam;
-	DOAnimator*									m_Animator;
-	DORenderer*									m_Renderer;
+	std::unique_ptr< AniTree::AnimationTree>		m_NullTree;
+	AniTree::AnimationTree*							m_CurrTree;
+	UIPanel*										m_WorkPanel;
+	UIParam*										m_AniTreeParam;
+	DOAnimator*										m_Animator;
+	DORenderer*										m_Renderer;
 
-	std::string									m_CurrTreeName;
-	std::vector<std::string>					m_TreeNames;
+	std::string										m_CurrTreeName;
+	std::vector<std::string>						m_TreeNames;
 
-	const Ani::SkinnedData*						m_CurrSkin;
-	std::vector<std::string>					m_SkinNames;
+	const Ani::SkinnedData*							m_CurrSkin;
+	std::vector<std::string>						m_SkinNames;
 
-	std::vector<std::string>					m_AniNames;
-	std::vector<double>							m_AniEndTimes;
+	std::vector<std::string>						m_AniNames;
+	std::vector<double>								m_AniEndTimes;
 
-	std::list<AniNodeVisual*>					m_AniNodeVs;
+	std::vector<AniNodeVisual*>						m_AniNodeVs;
+	std::vector<AniArowVisual*>						m_AniArowVs;
+
+	std::unordered_map<std::string, NodePosData>	m_NodePosDatas;
+
+	int												m_CurrInitingArrowIndex;
+	physx::PxVec2									m_CurrMousePos;
 };

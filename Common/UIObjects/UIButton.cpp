@@ -93,3 +93,8 @@ void UIButton::AddFunc(std::function<void()> func)
 {
 	m_UICollision->AddFunc(func);
 }
+
+void UIButton::ClearFunc()
+{
+	m_UICollision->ClearFunc();
+}

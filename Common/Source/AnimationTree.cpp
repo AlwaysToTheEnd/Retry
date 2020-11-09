@@ -1,11 +1,12 @@
 #include "AnimationTree.h"
+#include <windows.security.cryptography.h>
 
 using namespace AniTree;
 using namespace std;
 
-const AniNode* AniTree::AniNode::Update(float deltaTime)
+std::string AniTree::AniNode::Update(float deltaTime, std::vector<AniArrow>& arrows)
 {
-	const AniNode* result = nullptr;
+	std::string result;
 
 	m_CurrTime += deltaTime;
 
@@ -14,13 +15,16 @@ const AniNode* AniTree::AniNode::Update(float deltaTime)
 		m_CurrTime = 0;
 	}
 
-	for (auto& it : m_Arrows)
+	for (auto& it : arrows)
 	{
-		if (CheckArrowTrigger(it, it.triggers, m_CurrTime, m_AniEndTime))
+		if (it.nodeName == m_NodeName)
 		{
-			m_CurrTime = 0;
-			result = it.targetNode;
-			break;
+			if (CheckArrowTrigger(it, it.triggers, m_CurrTime, m_AniEndTime))
+			{
+				m_CurrTime = 0;
+				result = it.targetNodeName;
+				break;
+			}
 		}
 	}
 
@@ -37,98 +41,6 @@ void AniTree::AniNode::SetAniName(const std::string& name, double aniEndTime)
 	m_TargetAniName = name;
 	m_AniEndTime = aniEndTime;
 	m_CurrTime = 0;
-}
-
-void AniTree::AniNode::GetArrows(std::vector<OutputArrow>& out, const AniNode* to)
-{
-	out.clear();
-	if (to)
-	{
-		for (auto& it : m_Arrows)
-		{
-			out.emplace_back(this, it.targetNode, it.triggers, it.aniEndIsChange, it.type);
-		}
-	}
-	else
-	{
-		for (auto& it : m_Arrows)
-		{
-			if (it.targetNode == to)
-			{
-				out.emplace_back(this, it.targetNode, it.triggers, it.aniEndIsChange, it.type);
-				break;
-			}
-		}
-	}
-}
-
-AniTree::NodeArrow* AniTree::AniNode::AddArrow(const AniNode* to)
-{
-	AniTree::NodeArrow* result = nullptr;
-
-	for (size_t i = 0; i < m_Arrows.size(); i++)
-	{
-		if (m_Arrows[i].targetNode == to)
-		{
-			result = &m_Arrows[i];
-			break;
-		}
-	}
-
-	if (result==nullptr)
-	{
-		m_Arrows.emplace_back(to);
-		result = &m_Arrows.back();
-	}
-
-	return result;
-}
-
-void AniTree::AniNode::DeleteArrow(const AniNode* to)
-{
-	for (auto iter = m_Arrows.begin(); iter != m_Arrows.end(); iter++)
-	{
-		if (iter->targetNode == to)
-		{
-			m_Arrows.erase(iter);
-			break;
-		}
-	}
-}
-
-void AniTree::AniNode::DeleteTrigger(const AniNode* to, int index)
-{
-	for (size_t i = 0; i < m_Arrows.size(); i++)
-	{
-		if (m_Arrows[i].targetNode == to)
-		{
-			int currIndex = 0;
-			for (auto iter = m_Arrows[i].triggers.begin(); iter != m_Arrows[i].triggers.end(); iter++, currIndex++)
-			{
-				if (index == currIndex)
-				{
-					m_Arrows[i].triggers.erase(iter);
-					break;
-				}
-			}
-
-			break;
-		}
-	}
-}
-
-void AniTree::AniNode::TriggerReset()
-{
-	for (auto& it : m_Arrows)
-	{
-		for (auto& it2 : it.triggers)
-		{
-			if (!(it2.m_TriggerType & TRIGGER_TYPE_OFF_AFTER_CHECK))
-			{
-				it2.m_Trigger._i = 0;
-			}
-		}
-	}
 }
 
 std::ostream& AniTree::operator<<(std::ostream& os, const AniNode& node)
@@ -148,7 +60,7 @@ std::ostream& AniTree::operator<<(std::ostream& os, const AniNode& node)
 	os << node.m_AniEndTime << endl;
 	os << node.m_RoofAni << endl;
 
-	os << node.m_Arrows.size() << endl;
+	/*os << node.m_Arrows.size() << endl;
 
 	for (auto& it : node.m_Arrows)
 	{
@@ -178,12 +90,12 @@ std::ostream& AniTree::operator<<(std::ostream& os, const AniNode& node)
 				break;
 			}
 		}
-	}
+	}*/
 
 	return os;
 }
 
-bool AniTree::AniNode::CheckArrowTrigger(NodeArrow& arrow, std::vector<TriggerData>& triggers, double currTick, double aniEndTick)
+bool AniTree::AniNode::CheckArrowTrigger(const AniArrow& arrow, std::vector<TriggerData>& triggers, double currTick, double aniEndTick)
 {
 	switch (arrow.type)
 	{
@@ -197,9 +109,9 @@ bool AniTree::AniNode::CheckArrowTrigger(NodeArrow& arrow, std::vector<TriggerDa
 			}
 		}
 
-		for (auto& it : triggers)
+		for (auto& it: triggers)
 		{
-			if (it.IsTriggerOK())
+			if (it.IsTriggerOK() == 1)
 			{
 				return true;
 			}
@@ -220,7 +132,7 @@ bool AniTree::AniNode::CheckArrowTrigger(NodeArrow& arrow, std::vector<TriggerDa
 
 		for (auto& it : triggers)
 		{
-			if (!it.IsTriggerOK())
+			if (it.IsTriggerOK() == 0)
 			{
 				return false;
 			}
@@ -242,17 +154,16 @@ bool AniTree::AnimationTree::Update(float deltaTime)
 {
 	if (m_AniNodes.size())
 	{
-		const AniNode* result = m_AniNodes[m_CurrAniNodeIndex]->Update(deltaTime);
+		std::string result = m_AniNodes[m_CurrAniNodeIndex].Update(deltaTime, m_Arrows);
 
-		if (result)
+		if (result.length())
 		{
-			m_CurrAniNodeIndex = GetIndex(result);
+			int index = GetIndex(result);
+			assert(index != -1);
+			m_CurrAniNodeIndex = index;
 		}
 
-		for (auto& it : m_AniNodes)
-		{
-			it->TriggerReset();
-		}
+		TriggerReset();
 
 		return true;
 	}
@@ -295,7 +206,7 @@ void AniTree::AnimationTree::SaveTree(const std::wstring& fileFath)
 
 	for (auto& it : m_AniNodes)
 	{
-		save << (*it);
+		save << it;
 	}
 
 	save.close();
@@ -339,7 +250,7 @@ void AniTree::AnimationTree::LoadTree(const std::wstring& fileFath)
 		unsigned int time = 0;
 		bool isRoofAni = false;
 		size_t numArrows = 0;
-		
+
 		load >> name;
 		load >> pos.x;
 		load >> pos.y;
@@ -349,11 +260,11 @@ void AniTree::AnimationTree::LoadTree(const std::wstring& fileFath)
 
 		if (name != "#none#")
 		{
-			m_AniNodes[i]->SetAniName(name, time);
+			m_AniNodes[i].SetAniName(name, time);
 		}
-		
-		m_AniNodes[i]->SetPos(pos);
-		m_AniNodes[i]->SetRoofAni(isRoofAni);
+
+		m_AniNodes[i].SetPos(pos);
+		m_AniNodes[i].SetRoofAni(isRoofAni);
 
 		for (size_t j = 0; j < numArrows; j++)
 		{
@@ -367,17 +278,17 @@ void AniTree::AnimationTree::LoadTree(const std::wstring& fileFath)
 			load >> arrowType;
 			load >> numTriggers;
 
-			AniNode* toNode = m_AniNodes[targetNodeIndex].get();
-			auto currArrow = m_AniNodes[i]->AddArrow(toNode);
+			/*AniNode* toNode = m_AniNodes[targetNodeIndex].get();
+			auto currArrow = m_AniNodes[i].AddArrow(toNode);
 			currArrow->aniEndIsChange = isAniEndChange;
 			currArrow->type = TO_ANI_ARROW_TYPE(arrowType);
 			currArrow->triggers.reserve(numTriggers);
 
-			for (size_t z= 0; z < numTriggers; z++)
+			for (size_t z = 0; z < numTriggers; z++)
 			{
 				int triggerType = 0;
 				int dataType = 0;
-				
+
 				load >> triggerType;
 				load >> dataType;
 
@@ -401,36 +312,18 @@ void AniTree::AnimationTree::LoadTree(const std::wstring& fileFath)
 				}
 
 				currArrow->triggers.emplace_back(TRIGGER_TYPE(triggerType), standard);
-			}
+			}*/
 		}
 	}
 
 	load.close();
 }
 
-void AniTree::AnimationTree::GetArrows(std::vector<OutputArrow>& out)
-{
-	out.clear();
-
-	for (size_t nodeIndex = 0; nodeIndex < m_AniNodes.size(); nodeIndex++)
-	{
-		m_AniNodes[nodeIndex]->GetArrows(out);
-	}
-}
-
-AniNode* AniTree::AnimationTree::AddAniNode()
-{
-	m_AniNodes.push_back(std::make_unique<AniNode>());
-	m_AniNodes.back()->SetIndexFunc(std::bind(&AniTree::AnimationTree::GetIndex, this, m_AniNodes.back().get()));
-	return m_AniNodes.back().get();
-}
-
-
 std::string AniTree::AnimationTree::GetCurrAnimationName() const
 {
 	if (m_AniNodes.size())
 	{
-		return m_AniNodes[m_CurrAniNodeIndex]->GetAniName();
+		return m_AniNodes[m_CurrAniNodeIndex].GetAniName();
 	}
 
 	return "";
@@ -442,17 +335,22 @@ double AniTree::AnimationTree::GetCurrAnimationTime() const
 
 	if (m_AniNodes.size())
 	{
-		result = m_AniNodes[m_CurrAniNodeIndex]->GetCurrTime();
+		result = m_AniNodes[m_CurrAniNodeIndex].GetCurrTime();
 	}
 
 	return result;
 }
 
-void AniTree::AnimationTree::DeleteNode(const AniNode* node)
+void AniTree::AnimationTree::AddAniNode()
+{
+	m_AniNodes.emplace_back();
+}
+
+void AniTree::AnimationTree::DeleteNode(const std::string& node)
 {
 	for (auto iter = m_AniNodes.begin(); iter != m_AniNodes.end(); iter++)
 	{
-		if (node == (*iter).get())
+		if (node == (*iter).m_NodeName)
 		{
 			m_AniNodes.erase(iter);
 			m_CurrAniNodeIndex = 0;
@@ -461,8 +359,8 @@ void AniTree::AnimationTree::DeleteNode(const AniNode* node)
 	}
 }
 
-bool AniTree::AnimationTree::CheckArrowTrigger(NodeArrow& arrow, std::vector<TriggerData>& triggers,
-	unsigned long long currTick, unsigned long long aniEndTick)
+bool AniTree::AnimationTree::CheckArrowTrigger(AniArrow& arrow, std::vector<TriggerData>& triggers,
+	double currTick, double aniEndTick)
 {
 	switch (arrow.type)
 	{
@@ -517,14 +415,14 @@ bool AniTree::AnimationTree::CheckArrowTrigger(NodeArrow& arrow, std::vector<Tri
 	}
 }
 
-int AniTree::AnimationTree::GetIndex(const AniNode* node)
+int AniTree::AnimationTree::GetIndex(const std::string& nodeName)
 {
 	int result = -1;
 
 	int currIndex = 0;
 	for (auto& it : m_AniNodes)
 	{
-		if (it.get() == node)
+		if (it.m_NodeName == nodeName)
 		{
 			result = currIndex;
 			break;
@@ -536,6 +434,11 @@ int AniTree::AnimationTree::GetIndex(const AniNode* node)
 	return result;
 }
 
+AniTree::TriggerData::TriggerData()
+{
+	ZeroMemory(this, sizeof(AniTree::TriggerData));
+}
+
 AniTree::TriggerData::TriggerData(TRIGGER_TYPE type, CGH::UnionData standard)
 	:m_TriggerType(type)
 	, m_Standard(standard)
@@ -543,9 +446,11 @@ AniTree::TriggerData::TriggerData(TRIGGER_TYPE type, CGH::UnionData standard)
 	m_Trigger._i = 0;
 }
 
-bool AniTree::TriggerData::IsTriggerOK()
+int AniTree::TriggerData::IsTriggerOK()
 {
-	bool result = false;
+	if (m_TriggerType == TRIGGER_TYPE_UNKOWN) return -1;
+
+	int result = 0;
 	TRIGGER_TYPE currFuncTrigger = GetTriggerFuncType();
 
 	switch (m_Standard.type)
@@ -564,7 +469,7 @@ bool AniTree::TriggerData::IsTriggerOK()
 		break;
 	}
 
-	if ((m_TriggerType & TRIGGER_TYPE_OFF_AFTER_CHECK))
+	if ((m_TriggerType & TRIGGER_TYPE_DATA_ZEROSET_AFTER_CHECK))
 	{
 		if (result)
 		{
@@ -575,20 +480,24 @@ bool AniTree::TriggerData::IsTriggerOK()
 	return result;
 }
 
-TRIGGER_TYPE AniTree::TriggerData::GetTriggerFuncType()
+TRIGGER_TYPE AniTree::TriggerData::GetTriggerFuncType() const
 {
 	unsigned int currTrigger = m_TriggerType;
-	currTrigger &= ~TRIGGER_TYPE_OFF_AFTER_CHECK;
+	currTrigger &= ~TRIGGER_TYPE_DATA_ZEROSET_AFTER_CHECK;
 
 	return static_cast<TRIGGER_TYPE>(currTrigger);
 }
 
-AniTree::NodeArrow::NodeArrow(const AniNode* to)
-	: targetNode(to)
-	, aniEndIsChange(false)
-	, type(TO_ANI_NODE_TYPE_ONE_OK)
+void AniTree::AnimationTree::TriggerReset()
 {
-	triggers.reserve(10);
+	for (auto& it : m_Arrows)
+	{
+		for (auto& it2 : it.triggers)
+		{
+			if (!(it2.m_TriggerType & TRIGGER_TYPE_DATA_ZEROSET_AFTER_CHECK))
+			{
+				it2.m_Trigger._i = 0;
+			}
+		}
+	}
 }
-
-

@@ -65,6 +65,7 @@ D3DApp::D3DApp(HINSTANCE hInstance)
 	, m_CurrScene(nullptr)
 	, m_CurrInputDeviceHoldObject(nullptr)
 	, m_PXDevice(nullptr)
+	, m_IsPushedESC(false)
 {
 	assert(m_App == nullptr);
 	m_App = this;
@@ -120,10 +121,12 @@ void D3DApp::BaseUpdate()
 	CameraMove();
 	m_Camera.Update();
 
+	m_IsPushedESC = false;
 	if (m_KeyboardTracker.IsKeyPressed(KEYState::Escape))
 	{
 		StaticGameObjectController::WorkALLEnd();
 		m_CurrInputDeviceHoldObject = nullptr;
+		m_IsPushedESC = true;
 	}
 
 	StaticGameObjectController::StaticsUpdate(m_Timer.DeltaTime());

@@ -29,6 +29,7 @@ public:
 	void			SetTextHeight(int height);
 
 	void			AddFunc(std::function<void()> func);
+	void			ClearFunc();
 	void			OnlyFontMode();
 
 private:

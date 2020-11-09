@@ -124,6 +124,7 @@ public:
 	void					SetSize(const physx::PxVec2& halfSize) { m_Size = halfSize; }
 	void					SetOffset(const physx::PxVec2& offset) { m_Offset = offset; }
 	void					AddFunc(std::function<void()> func) { m_VoidFuncs.push_back(func); }
+	void					ClearFunc() { m_VoidFuncs.clear(); }
 
 private:
 	virtual void	Update(float delta) override;

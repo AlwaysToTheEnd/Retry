@@ -8,19 +8,41 @@
 
 using namespace AniTree;
 
-AniNodeVisual::AnimationTreeArrowCreator AniNodeVisual::s_AnitreeArrowCreater;
-AniTreeArowVisual::AniTreeArrowArttributeEditer AniTreeArowVisual::s_ArrowArttributeEditer;
-
 void AniNodeVisual::Init()
 {
 	m_Panel = CreateComponenet<UIPanel>(true);
-	m_Panel->GetComponent<DOUICollision>()->AddFunc(
-		std::bind(&AniNodeVisual::AnimationTreeArrowCreator::Excute, &s_AnitreeArrowCreater, this));
+	m_PanelCol = m_Panel->GetComponent<DOUICollision>();
+
+	m_Panel->SetSize(physx::PxVec2(100, 60));
+	m_Panel->SetPos({ 300,300 });
+
+#pragma region AddPanel
+	{
+		const int ElementSize = 15;
+		m_Panel->DeleteAllComs();
+
+		auto closeButton = m_Panel->CreateComponenet<UIButton>(true);
+		closeButton->AddFunc(std::bind(&AniNodeVisual::DeleteAniNode, this));
+		closeButton->SetTexture(InputTN::Get("AniNodeVisualPanel_Delete"), { 10,10 });
+		m_Panel->AddUICom(closeButton);
+
+		m_RoofControlButton = m_Panel->CreateComponenet<UIButton>(true);
+		m_RoofControlButton->OnlyFontMode();
+		m_RoofControlButton->SetTextHeight(ElementSize);
+		m_Panel->AddUICom(m_RoofControlButton);
+
+		auto aniNameParam = m_Panel->CreateComponenet<UIParam>(true, UIParam::UIPARAMTYPE::MODIFIER);
+		aniNameParam->SetStringParam(L"Animation", m_CurrSkinAnimationNames, &m_CurrAniName);
+		aniNameParam->SetDirtyCall(std::bind(&AniNodeVisual::ChangedTargetAni, this));
+		aniNameParam->SetTextHeight(ElementSize);
+		m_Panel->AddUICom(aniNameParam);
+
+	}
+#pragma endregion
 }
 
 void AniNodeVisual::Update(float delta)
 {
-	m_TargetAniNode->SetPos(m_Panel->GetPos());
 }
 
 void AniNodeVisual::ChangeAniRoof(AniTree::AniNode* node, UIButton* button)
@@ -38,105 +60,39 @@ void AniNodeVisual::ChangedTargetAni()
 		{
 			if ((*m_CurrSkinAnimationNames)[i] == m_CurrAniName)
 			{
-				m_TargetAniNode->SetAniName(m_CurrAniName, (*m_CurrSkinAnimationEndTick)[i]);
+				m_CurrAniNode->SetAniName(m_CurrAniName, (*m_CurrSkinAnimationEndTick)[i]);
 				break;
 			}
 		}
 	}
 }
 
-void AniNodeVisual::Delete()
+void AniNodeVisual::DeleteAniNode()
 {
-	std::vector<AniTreeArowVisual*>	temp = m_Arrows;
-
-	for (auto& it : temp)
-	{
-		it->Delete();
-	}
-
-	m_Panel->Delete();
-
 	m_DeleteAninodeFunc();
-	GameObject::Delete();
 }
 
-void AniNodeVisual::VisualClear()
+void AniNodeVisual::SetRenderValue(AniTree::AniNode* node, std::function<void()> excuteFunc, std::function<void()> deleteFunc)
 {
-	for (auto& it : m_Arrows)
+	if (!m_IsActive)
 	{
-		it->VisualClear();
+		SetActive(true, true);
 	}
 
-	m_Panel->Delete();
-	GameObject::Delete();
-}
+	m_CurrAniNode = node;
+	node->SetPos(m_Panel->GetPos());
 
-void AniNodeVisual::DeleteArrow(const AniNodeVisual* to)
-{
-	for (auto& it : m_Arrows)
+	m_PanelCol->ClearFunc();
+	if (excuteFunc)
 	{
-		if (it->GetToNodeV() == to)
-		{
-			it->Delete();
-			break;
-		}
+		m_PanelCol->AddFunc(excuteFunc);
 	}
-}
 
-void AniNodeVisual::ArrowVisualDeleted(AniTreeArowVisual* arrow)
-{
-	for (auto iter = m_Arrows.begin(); iter != m_Arrows.end(); iter++)
-	{
-		if (*iter == arrow)
-		{
-			m_Arrows.erase(iter);
-			break;
-		}
-	}
-}
+	m_DeleteAninodeFunc = deleteFunc;
 
-void AniNodeVisual::SetPos(physx::PxVec2 pos)
-{
-	m_Panel->SetPos(pos);
-}
-
-void AniNodeVisual::SetTargetAninode(AniNode* node)
-{
-	m_TargetAniNode = node;
-
-	m_Panel->SetSize(physx::PxVec2(100, 60));
-	m_Panel->SetPos({ 300,300 });
-
-#pragma region AddPanel
-	{
-		const int ElementSize = 15;
-		m_Panel->DeleteAllComs();
-
-		auto closeButton = m_Panel->CreateComponenet<UIButton>(true);
-		closeButton->AddFunc(std::bind(&AniNodeVisual::Delete, this));
-		closeButton->SetTexture(InputTN::Get("AniNodeVisualPanel_Delete"), { 10,10 });
-		m_Panel->AddUICom(closeButton);
-
-		auto roofControlButton = m_Panel->CreateComponenet<UIButton>(true);
-		roofControlButton->OnlyFontMode();
-		roofControlButton->SetTextHeight(ElementSize);
-		roofControlButton->SetText(L"AniRoof:" + std::wstring(m_TargetAniNode->IsRoofAni() ? L"true" : L"false"));
-		roofControlButton->AddFunc(std::bind(&AniNodeVisual::ChangeAniRoof, this, m_TargetAniNode, roofControlButton));
-		m_Panel->AddUICom(roofControlButton);
-
-		auto aniNameParam = m_Panel->CreateComponenet<UIParam>(true, UIParam::UIPARAMTYPE::MODIFIER);
-		aniNameParam->SetStringParam(L"Animation", m_CurrSkinAnimationNames, &m_CurrAniName);
-		aniNameParam->SetDirtyCall(std::bind(&AniNodeVisual::ChangedTargetAni, this));
-		aniNameParam->SetTextHeight(ElementSize);
-
-		m_Panel->AddUICom(aniNameParam);
-	}
-#pragma endregion
-}
-
-void AniNodeVisual::SetDeleteAniNodeFunc(std::function<void()> func)
-{
-	m_DeleteAninodeFunc = func;
+	m_RoofControlButton->ClearFunc();
+	m_RoofControlButton->SetText(L"AniRoof:" + std::wstring(node->IsRoofAni() ? L"true" : L"false"));
+	m_RoofControlButton->AddFunc(std::bind(&AniNodeVisual::ChangeAniRoof, this, node, m_RoofControlButton));
 }
 
 void AniNodeVisual::SetSkinAnimationInfoVectorPtr(const std::vector<std::string>* aniNames, const std::vector<double>* aniEnds)
@@ -157,95 +113,43 @@ const physx::PxVec2& AniNodeVisual::GetSize() const
 	return m_Panel->GetSize();
 }
 
-void AniNodeVisual::AddArrow(AniTreeArowVisual* arrow)
-{
-	m_Arrows.push_back(arrow);
-	m_TargetAniNode->AddArrow(arrow->GetToNodeV()->m_TargetAniNode);
-}
-
-void AniNodeVisual::AnimationTreeArrowCreator::WorkClear()
-{
-	if (m_CurrArrow)
-	{
-		m_CurrArrow->Delete();
-		m_CurrArrow = nullptr;
-	}
-
-	m_CurrFrom = nullptr;
-}
-
-void AniNodeVisual::AnimationTreeArrowCreator::Update(float delta)
-{
-	if (m_CurrFrom)
-	{
-		if (GETMOUSE(m_CurrFrom->GetConstructor()))
-		{
-			assert(m_CurrArrow);
-			m_isNextClear = false;
-			m_CurrArrow->SetCurrMousePos(mouse->GetMousePos());
-		}
-		else
-		{
-			WorkClear();
-		}
-	}
-}
-
-void AniNodeVisual::AnimationTreeArrowCreator::Excute(AniNodeVisual* aniNode)
-{
-	if (!m_CurrFrom)
-	{
-		WorkStart();
-		m_CurrFrom = aniNode;
-
-		m_CurrArrow = m_CurrFrom->CreateComponenet<AniTreeArowVisual>(true);
-		m_CurrArrow->SetFromNode(m_CurrFrom);
-	}
-	else
-	{
-		if (m_CurrFrom != aniNode)
-		{
-			m_CurrArrow->SetToNode(aniNode);
-			m_CurrFrom->AddArrow(m_CurrArrow);
-		}
-		else
-		{
-			WorkClear();
-		}
-
-		m_CurrArrow = nullptr;
-		m_CurrFrom = nullptr;
-
-		WorkEnd();
-	}
-}
-
-void AniTreeArowVisual::Init()
+void AniArowVisual::Init()
 {
 	m_Transform = CreateComponenet<DOTransform>();
 	m_Renderer = CreateComponenet<DORenderer>();
+	m_UICollison = CreateComponenet<DOUICollision>();
 	m_Transform->SetPosZ(0.4f);
 }
 
-void AniTreeArowVisual::Update(float delta)
+void AniArowVisual::Update(float delta)
 {
+
+}
+
+void AniArowVisual::SetRenderValue(const physx::PxVec2& _from, const physx::PxVec2& _fromSize,
+	const physx::PxVec2& _to, const physx::PxVec2& _toSize, std::function<void()> excuteFunc, bool isMousePos)
+{
+	if (!m_IsActive)
+	{
+		SetActive(true, true);
+	}
+
+	m_IsIniting = isMousePos;
+
 	RenderInfo renderInfo(RENDER_2DPLANE);
-	physx::PxVec2 from = m_From->GetPos();
+	physx::PxVec2 from;
 	physx::PxVec2 to;
 	physx::PxVec2 directionVec;
 	physx::PxVec2 directionNormal;
 	physx::PxVec2 halfVec;
 
-	from += m_From->GetSize() / 2;
+	from += _fromSize / 2;
 
-	if (m_To)
+	to = _to;
+
+	if (!isMousePos)
 	{
-		to = m_To->GetPos();
-		to += m_To->GetSize() / 2;
-	}
-	else
-	{
-		to = m_MousePos;
+		to += _toSize / 2;
 	}
 
 	directionVec.x = (to.x - from.x);
@@ -254,7 +158,7 @@ void AniTreeArowVisual::Update(float delta)
 
 	{
 		physx::PxVec2 toToVec = directionVec;
-		physx::PxVec2 size = m_From->GetSize()/2;
+		physx::PxVec2 size = _fromSize / 2;
 
 		float vecYabs = abs(toToVec.y);
 
@@ -274,10 +178,10 @@ void AniTreeArowVisual::Update(float delta)
 		from.y += toToVec.y;
 	}
 
-	if (m_To)
+	if (!isMousePos)
 	{
 		physx::PxVec2 toFromVec = -directionVec;
-		physx::PxVec2 size = m_To->GetSize()/2;
+		physx::PxVec2 size = _toSize / 2;
 
 		float vecYabs = abs(toFromVec.y);
 
@@ -313,78 +217,15 @@ void AniTreeArowVisual::Update(float delta)
 	if (m_UICollison)
 	{
 		m_UICollison->SetSize({ halfLength ,10.0f });
+		m_UICollison->ClearFunc();
+
+		if (excuteFunc)
+		{
+			m_UICollison->AddFunc(excuteFunc);
+		}
 	}
 
 	m_Renderer->SetRenderInfo(renderInfo);
-}
-
-void AniTreeArowVisual::Delete()
-{
-	if (m_From)
-	{
-		if (m_To)
-		{
-			m_From->GetNode()->DeleteArrow(m_To->GetNode());
-			m_To = nullptr;
-		}
-
-		m_From->ArrowVisualDeleted(this);
-		m_From = nullptr;
-	}
-
-	GameObject::Delete();
-}
-
-void AniTreeArowVisual::VisualClear()
-{
-	GameObject::Delete();
-}
-
-void AniTreeArowVisual::SetToNode(AniNodeVisual* to)
-{
-	if (m_From != to)
-	{
-		m_To = to;
-		m_UICollison = CreateComponenet<DOUICollision>();
-		m_UICollison->AddFunc(
-			std::bind(&AniTreeArowVisual::AniTreeArrowArttributeEditer::SetArrowVisual,
-				&s_ArrowArttributeEditer, this));
-	}
-}
-
-void AniTreeArowVisual::AniTreeArrowArttributeEditer::SetArrowVisual(AniTreeArowVisual* arrow)
-{
-	if (arrow)
-	{
-		if (arrow->m_To)
-		{
-			WorkStart();
-
-			WorkClear();
-
-			m_CurrArrow = arrow;
-			CreateAttributePanel();
-		}
-	}
-}
-
-
-void AniTreeArowVisual::AniTreeArrowArttributeEditer::WorkClear()
-{
-	if (m_AttributePanel)
-	{
-		m_AttributePanel->UIOff();
-	}
-
-	m_CurrArrow = nullptr;
-}
-
-void AniTreeArowVisual::AniTreeArrowArttributeEditer::Update(float delta)
-{
-	if (!m_CurrArrow)
-	{
-		WorkEnd();
-	}
 }
 
 void AniTreeArowVisual::AniTreeArrowArttributeEditer::CreateAttributePanel()
@@ -406,9 +247,9 @@ void AniTreeArowVisual::AniTreeArrowArttributeEditer::CreateAttributePanel()
 		{static_cast<int>(AniTree::TRIGGER_TYPE::TRIGGER_TYPE_GRATER), L"TRIGGER_TYPE_GRATER" },
 		{static_cast<int>(AniTree::TRIGGER_TYPE::TRIGGER_TYPE_LESS), L"TRIGGER_TYPE_LESS" },
 		{static_cast<int>(AniTree::TRIGGER_TYPE::TRIGGER_TYPE_SAME), L"TRIGGER_TYPE_SAME" },
-		{static_cast<int>(AniTree::TRIGGER_TYPE::TRIGGER_TYPE_GRATER | TRIGGER_TYPE_OFF_AFTER_CHECK), L"TRIGGER_TYPE_GRATER_OFF" },
-		{static_cast<int>(AniTree::TRIGGER_TYPE::TRIGGER_TYPE_LESS | TRIGGER_TYPE_OFF_AFTER_CHECK), L"TRIGGER_TYPE_LESS_OFF" },
-		{static_cast<int>(AniTree::TRIGGER_TYPE::TRIGGER_TYPE_SAME | TRIGGER_TYPE_OFF_AFTER_CHECK), L"TRIGGER_TYPE_SAME_OFF" },
+		{static_cast<int>(AniTree::TRIGGER_TYPE::TRIGGER_TYPE_GRATER | TRIGGER_TYPE_DATA_ZEROSET_AFTER_CHECK), L"TRIGGER_TYPE_GRATER_OFF" },
+		{static_cast<int>(AniTree::TRIGGER_TYPE::TRIGGER_TYPE_LESS | TRIGGER_TYPE_DATA_ZEROSET_AFTER_CHECK), L"TRIGGER_TYPE_LESS_OFF" },
+		{static_cast<int>(AniTree::TRIGGER_TYPE::TRIGGER_TYPE_SAME | TRIGGER_TYPE_DATA_ZEROSET_AFTER_CHECK), L"TRIGGER_TYPE_SAME_OFF" },
 	};
 
 	const static std::vector<ENUM_ELEMENT> dataTypeNames =
@@ -543,12 +384,6 @@ void VisualizedAniTreeCreator::SelectSkinnedData(const std::string& name)
 {
 	if (m_CurrTree)
 	{
-		for (auto& it : m_AniNodeVs)
-		{
-			it->GetNode()->SetAniName("", 0);
-			it->AniNameReset();
-		}
-
 		m_AniEndTimes.clear();
 
 		m_CurrSkin = m_Animator->GetSkinnedData(name);
@@ -559,7 +394,7 @@ void VisualizedAniTreeCreator::SelectSkinnedData(const std::string& name)
 			m_AniEndTimes.push_back(m_CurrSkin->GetClipEndTime(it));
 		}
 
-		GetComponent<DORenderMesh>()->SelectMesh(CGH::SKINNED_MESH,name);
+		GetComponent<DORenderMesh>()->SelectMesh(CGH::SKINNED_MESH, name);
 		m_Animator->SelectSkin(name);
 
 		m_CurrTree->SetCurrMeshName(name);
@@ -631,60 +466,107 @@ void VisualizedAniTreeCreator::Init()
 
 void VisualizedAniTreeCreator::Update(float delta)
 {
+	if (PUSHEDESC)
+	{
+		CancleExcute();
+	}
 
+	if (m_CurrTree)
+	{
+		m_NodePosDatas.clear();
+		std::vector<AniTree::AniNode>& nodes = m_CurrTree->GetNodes();
+		std::vector<AniTree::AniArrow>& arrows = m_CurrTree->GetArrows();
+
+		for (size_t i = m_AniNodeVs.size(); i < nodes.size(); i++)
+		{
+			auto newNodeVs = CreateComponenet<AniNodeVisual>(true);
+			newNodeVs->SetSkinAnimationInfoVectorPtr(&m_AniNames, &m_AniEndTimes);
+			m_AniNodeVs.push_back(newNodeVs);
+		}
+
+		for (size_t i = m_AniArowVs.size(); i < arrows.size(); i++)
+		{
+			auto newArrowVs = CreateComponenet<AniArowVisual>(true);
+			m_AniArowVs.push_back(newArrowVs);
+		}
+
+		for (size_t i = nodes.size(); i < m_AniNodeVs.size(); i++)
+		{
+			m_AniNodeVs[i]->SetActive(false, true);
+		}
+
+		for (size_t i = arrows.size(); i < m_AniArowVs.size(); i++)
+		{
+			m_AniArowVs[i]->SetActive(false, true);
+		}
+
+		NodePosData nodePosDataTemp;
+
+		for (size_t i = 0; i < nodes.size(); i++)
+		{
+			m_AniNodeVs[i]->SetRenderValue(&nodes[i],
+				std::bind(&VisualizedAniTreeCreator::AniNodeExcute, this, nodes[i]),
+				std::bind(&AniTree::AnimationTree::DeleteNode, m_CurrTree, nodes[i].m_NodeName));
+			nodePosDataTemp.pos = m_AniNodeVs[i]->GetPos();
+			nodePosDataTemp.size = m_AniNodeVs[i]->GetSize();
+			m_NodePosDatas.insert({ nodes[i].m_NodeName, nodePosDataTemp });
+		}
+
+		for (size_t i = 0; i < arrows.size(); i++)
+		{
+			const NodePosData& from = m_NodePosDatas.find(arrows[i].nodeName)->second;
+
+			bool isIniting = m_CurrInitingArrowIndex == i;
+			if (!isIniting)
+			{
+				const NodePosData& to = m_NodePosDatas.find(arrows[i].targetNodeName)->second;
+				m_AniArowVs[i]->SetRenderValue(from.pos, from.size, to.pos, to.size, , isIniting);
+			}
+			else
+			{
+				m_AniArowVs[i]->SetRenderValue(from.pos, from.size, m_CurrMousePos, {}, nullptr, isIniting);
+			}
+		}
+	}
 }
 
 void VisualizedAniTreeCreator::AddNode()
 {
 	if (m_CurrTree)
 	{
-		if (auto targetNode = m_CurrTree->AddAniNode())
-		{
-			auto newNode = CreateComponenet<AniNodeVisual>(true);
-			newNode->SetSkinAnimationInfoVectorPtr(&m_AniNames, &m_AniEndTimes);
-
-			newNode->SetTargetAninode(targetNode);
-			newNode->SetDeleteAniNodeFunc(std::bind(&VisualizedAniTreeCreator::DeleteNode, this, newNode));
-
-			m_AniNodeVs.push_back(newNode);
-		}
+		m_CurrTree->AddAniNode();
 	}
 }
 
-void VisualizedAniTreeCreator::AddNodeVs(AniTree::AniNode* node)
+void VisualizedAniTreeCreator::AniNodeExcute(const AniTree::AniNode& node)
 {
-	if (m_CurrTree)
+	std::vector<AniTree::AniArrow>& arrows = m_CurrTree->GetArrows();
+
+	if (m_CurrInitingArrowIndex > -1)
 	{
-		if (node)
-		{
-			auto newNode = CreateComponenet<AniNodeVisual>(true);
-			newNode->SetSkinAnimationInfoVectorPtr(&m_AniNames, &m_AniEndTimes);
+		arrows[m_CurrInitingArrowIndex].targetNodeName = node.m_NodeName;
+		m_CurrInitingArrowIndex = -1;
+	}
+	else
+	{
+		AniTree::AniArrow arrowTemp;
+		m_CurrInitingArrowIndex = CGH::SizeTTransINT(arrows.size());
 
-			newNode->SetTargetAninode(node);
-			newNode->SetDeleteAniNodeFunc(std::bind(&VisualizedAniTreeCreator::DeleteNode, this, newNode));
-
-			m_AniNodeVs.push_back(newNode);
-		}
+		arrowTemp.nodeName = node.m_NodeName;
+		arrows.push_back(arrowTemp);
 	}
 }
 
-void VisualizedAniTreeCreator::DeleteNode(AniNodeVisual* node)
+void VisualizedAniTreeCreator::CancleExcute()
 {
-	for (auto& it : m_AniNodeVs)
+	if (m_CurrInitingArrowIndex > -1)
 	{
-		it->DeleteArrow(node);
-	}
+		std::vector<AniTree::AniArrow>& arrows = m_CurrTree->GetArrows();
+		arrows.pop_back();
+		assert(arrows.size() == m_CurrInitingArrowIndex);
 
-	for (auto iter = m_AniNodeVs.begin(); iter != m_AniNodeVs.end(); iter++)
-	{
-		if ((*iter) == node)
-		{
-			m_AniNodeVs.erase(iter);
-			break;
-		}
+		m_CurrInitingArrowIndex = -1;
 	}
-
-	m_CurrTree->DeleteNode(node->GetNode());
 }
 
 void VisualizedAniTreeCreator::SetAnimationTreeListsParamToPanel(int posX, int posY, UIPanel* workPanel)
@@ -706,9 +588,9 @@ void VisualizedAniTreeCreator::SelectNullTree()
 	m_CurrTree = m_NullTree.get();
 	m_Animator->SetAnimationTree(m_CurrTree);
 	m_Renderer->SetActive(false);
-	
+
 	m_CurrTreeName.clear();
-	
+
 	for (auto& it : m_AniNodeVs)
 	{
 		it->VisualClear();
@@ -746,7 +628,7 @@ void VisualizedAniTreeCreator::SelectNullTree()
 
 		for (auto& it : arrows)
 		{
-			auto currVsArrow = vsNodes[i]->CreateComponenet<AniTreeArowVisual>(true);
+			auto currVsArrow = vsNodes[i]->CreateComponenet<AniArowVisual>(true);
 			currVsArrow->SetFromNode(vsNodes[i]);
 
 			bool isNotHadTo = true;
@@ -796,7 +678,7 @@ void VisualizedAniTreeCreator::ChangedTree()
 
 		if (meshName.size())
 		{
-			GetComponent<DORenderMesh>()->SelectMesh(CGH::SKINNED_MESH,meshName);
+			GetComponent<DORenderMesh>()->SelectMesh(CGH::SKINNED_MESH, meshName);
 		}
 
 		unsigned int numNodes = m_CurrTree->GetNumNodes();
@@ -816,7 +698,7 @@ void VisualizedAniTreeCreator::ChangedTree()
 
 			for (auto& it : arrows)
 			{
-				auto currVsArrow = vsNodes[i]->CreateComponenet<AniTreeArowVisual>(true);
+				auto currVsArrow = vsNodes[i]->CreateComponenet<AniArowVisual>(true);
 				currVsArrow->SetFromNode(vsNodes[i]);
 
 				bool isNotHadTo = true;
