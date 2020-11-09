@@ -267,7 +267,7 @@ void DX12PSOController::AddShader(const std::string& shaderName, DX12_SHADER_TYP
 
 	UINT compileFlags = 0;
 #if defined(DEBUG) || defined(_DEBUG)  
-	//compileFlags = D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
+	compileFlags = D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
 #endif
 
 	HRESULT hr = S_OK;

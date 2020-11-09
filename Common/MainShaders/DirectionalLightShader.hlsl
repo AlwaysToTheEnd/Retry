@@ -64,6 +64,11 @@ float3 CalcDirectional(float3 position, SurfaceData surface, float3 color, float
 
 float4 PS(DLightGSOut In) : SV_Target
 {
+    if (gDepthTexture.Load(float3(In.Position.xy,0)).x > 0.999f)
+    {
+        clip(-1);
+    }
+    
     SurfaceData gbd = UnpackGBufferL(In.Position.xy);
     LightData light = gLightDatas[In.Index];
     light.Dir = normalize(light.Dir);
@@ -72,6 +77,6 @@ float4 PS(DLightGSOut In) : SV_Target
     
     finalColor = (gbd.Color * gAmbientLight).rgb;
     finalColor += CalcDirectional(position, gbd, light.Color.rgb, light.Dir.xyz);
-
+    
     return float4(finalColor, 1);
 }

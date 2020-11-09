@@ -100,11 +100,6 @@ void DX12SwapChain::CreateSwapChain(HWND handle, ID3D12CommandQueue* queue, DXGI
 		IID_PPV_ARGS(m_SRVHeap.GetAddressOf())));
 }
 
-void DX12SwapChain::ClearDepth(ID3D12GraphicsCommandList* cmd)
-{
-	cmd->ClearDepthStencilView(GetDSV(), D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
-}
-
 void DX12SwapChain::ReSize(ID3D12GraphicsCommandList* cmd, unsigned int x, unsigned int y)
 {
 	assert(m_SwapChain);
@@ -119,6 +114,9 @@ void DX12SwapChain::ReSize(ID3D12GraphicsCommandList* cmd, unsigned int x, unsig
 
 	cmd->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_Resources[GBUFFER_RESOURCE_DS].Get(),
 		D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_DEPTH_WRITE));
+
+	//cmd->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_UIDepthStencil.Get(),
+	//	D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_DEPTH_WRITE));
 }
 
 void DX12SwapChain::GbufferSetting(ID3D12GraphicsCommandList* cmd)
@@ -137,13 +135,13 @@ void DX12SwapChain::GbufferSetting(ID3D12GraphicsCommandList* cmd)
 		objectID
 	};
 
-	cmd->OMSetRenderTargets(_countof(renderTargetHandles), renderTargetHandles, false, &depthStencil);
-
 	cmd->ClearRenderTargetView(color, m_Zero, 0, nullptr);
 	cmd->ClearRenderTargetView(normal, m_Zero, 0, nullptr);
 	cmd->ClearRenderTargetView(specular, m_Zero, 0, nullptr);
 	cmd->ClearRenderTargetView(objectID, m_Zero, 0, nullptr);
 	cmd->ClearDepthStencilView(depthStencil, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
+
+	cmd->OMSetRenderTargets(_countof(renderTargetHandles), renderTargetHandles, false, &depthStencil);
 }
 
 void DX12SwapChain::PresentRenderTargetSetting(ID3D12GraphicsCommandList* cmd, const float clearColor[4])
@@ -158,13 +156,15 @@ void DX12SwapChain::PresentRenderTargetSetting(ID3D12GraphicsCommandList* cmd, c
 	cmd->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_Resources[GBUFFER_RESOURCE_PRESENT + m_CurrBackBufferIndex].Get(),
 		D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
 
-	cmd->OMSetRenderTargets(_countof(renderTargetHandles), renderTargetHandles, true, nullptr);
 	cmd->ClearRenderTargetView(present, clearColor, 0, nullptr);
+	cmd->OMSetRenderTargets(_countof(renderTargetHandles), renderTargetHandles, true, nullptr);
 }
 
 void DX12SwapChain::UIRenderTargetSetting(ID3D12GraphicsCommandList* cmd)
 {
-	auto depthStencil = GetDSV();
+	auto UIdepthStencil = GetDSV();
+	//UIdepthStencil.ptr += m_DSVDescriptorSize;
+
 	auto present = CurrRTV(GBUFFER_RESOURCE_PRESENT);
 	auto objectID = CurrRTV(GBUFFER_RESOURCE_OBJECTID);
 
@@ -174,7 +174,9 @@ void DX12SwapChain::UIRenderTargetSetting(ID3D12GraphicsCommandList* cmd)
 		objectID
 	};
 
-	cmd->OMSetRenderTargets(_countof(renderTargetHandles), renderTargetHandles, false, &depthStencil);
+	//cmd->ClearDepthStencilView(UIdepthStencil, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
+
+	cmd->OMSetRenderTargets(_countof(renderTargetHandles), renderTargetHandles, false, &UIdepthStencil);
 }
 
 void DX12SwapChain::RenderEnd(ID3D12GraphicsCommandList* cmd)
@@ -359,6 +361,10 @@ void DX12SwapChain::CreateResources(unsigned int x, unsigned int y)
 	ThrowIfFailed(m_Device->CreateCommittedResource(
 		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT), D3D12_HEAP_FLAG_NONE, &dsDesc,
 		D3D12_RESOURCE_STATE_COMMON, &clearValue, IID_PPV_ARGS(m_Resources[GBUFFER_RESOURCE_DS].GetAddressOf())));
+
+	//ThrowIfFailed(m_Device->CreateCommittedResource(
+	//	&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT), D3D12_HEAP_FLAG_NONE, &dsDesc,
+	//	D3D12_RESOURCE_STATE_COMMON, &clearValue, IID_PPV_ARGS(m_UIDepthStencil.GetAddressOf())));
 }
 
 
@@ -406,6 +412,9 @@ void DX12SwapChain::CreateResourceViews()
 
 	m_Device->CreateDepthStencilView(m_Resources[GBUFFER_RESOURCE_DS].Get(), &dsvDesc, dsvHandle);
 	dsvHandle.Offset(1, m_DSVDescriptorSize);
+
+	//m_Device->CreateDepthStencilView(m_UIDepthStencil.Get(), &dsvDesc, dsvHandle);
+	//dsvHandle.Offset(1, m_DSVDescriptorSize);
 
 	//Fill srvHeap.
 	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};

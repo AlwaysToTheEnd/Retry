@@ -49,8 +49,8 @@ namespace AniTree
 	{
 		TO_ANI_ARROW_TYPE			type = TO_ANI_NODE_TYPE_ONE_OK;
 		bool						aniEndIsChange = false;
-		std::string					nodeName;
-		std::string					targetNodeName;
+		unsigned int				nodeID = 0;
+		unsigned int				targetNodeID = 0;
 		std::vector<TriggerData>	triggers;
 	};
 
@@ -58,37 +58,54 @@ namespace AniTree
 	{
 	public:
 		AniNode()
+			: m_Pos(0, 0)
+			, m_AniEndTime(0)
+			, m_CurrTime(0)
+			, m_RoofAni(false)
+			, m_NodeID(0)
+		{
+		}
+
+		AniNode(unsigned int nodeID)
 			: m_Pos(0,0)
 			, m_AniEndTime(0)
 			, m_CurrTime(0)
 			, m_RoofAni(false)
+			, m_NodeID(nodeID)
 		{
-
 		}
 
-		std::string Update(float deltaTime, std::vector<AniArrow>& arrows);
+		AniNode& operator=(const AniNode& rhs)
+		{
+			memcpy(this, &rhs, sizeof(AniNode));
+			m_TargetAniName = rhs.m_TargetAniName;
 
-		const std::string& GetAniName() const;
+			return *this;
+		}
+
+		unsigned int Update(float deltaTime, std::vector<AniArrow>& arrows);
+
+		const std::string&	GetAniName() const;
+		double				GetCurrTime() const { return m_CurrTime; }
+		double				GetEndTime() const { return m_AniEndTime; }
+		physx::PxVec2		GetPos() const { return m_Pos; }
+		unsigned int		GetNodeID() const { return m_NodeID; }
+		bool				IsRoofAni() const { return m_RoofAni; }
+
 		void SetAniName(const std::string& name, double aniEndTime);
-		double GetCurrTime() const { return m_CurrTime; }
-		double GetEndTime() const { return m_AniEndTime; }
-
-		bool IsRoofAni() const { return m_RoofAni; }
 		void SetRoofAni(bool value) { m_RoofAni = value; }
-
 		void SetPos(physx::PxVec2 pos) { m_Pos = pos; }
-		physx::PxVec2 GetPos() { return m_Pos; }
 
 	private:
 		bool CheckArrowTrigger(const AniArrow& arrow, std::vector<TriggerData>& triggers,
 			double currTick, double aniEndTick);
 
-	public:
+	private:
 		physx::PxVec2			m_Pos;
 		double					m_AniEndTime;
 		double					m_CurrTime;
 		std::string				m_TargetAniName;
-		std::string				m_NodeName;
+		unsigned int			m_NodeID;
 
 		bool					m_RoofAni;
 	};
@@ -100,9 +117,14 @@ namespace AniTree
 	public:
 		AnimationTree()
 			: m_CurrAniNodeIndex(0)
+			, m_AddedNodeID(1)
 		{
 		}
 
+		~AnimationTree()
+		{
+
+		}
 		bool Update(float deltaTime);
 
 		void SaveTree(const std::wstring& fileFath);
@@ -118,7 +140,8 @@ namespace AniTree
 		
 		void AddAniNode();
 		void AddArrow(const AniArrow& arrow) { m_Arrows.push_back(arrow); }
-		void DeleteNode(const std::string& node);
+		void DeleteNode(const AniNode* node);
+		void DeleteArrow(const AniArrow* arrow);
 
 		void SetCurrSkinName(const std::string& name) { m_CurrSkinName = name; }
 		void SetCurrMeshName(const std::string& name) { m_CurrMeshName = name; }
@@ -126,11 +149,12 @@ namespace AniTree
 	private:
 		bool CheckArrowTrigger(AniArrow& arrow, std::vector<TriggerData>& triggers, 
 			double currTick, double aniEndTick);
-		int GetIndex(const std::string& nodeName);
+		int GetIndex(unsigned int nodeID);
 		void TriggerReset();
 
 	private:
 		unsigned int			m_CurrAniNodeIndex;
+		unsigned int			m_AddedNodeID;
 		std::string				m_CurrSkinName;
 		std::string				m_CurrMeshName;
 		std::vector<AniNode>	m_AniNodes;

@@ -31,12 +31,9 @@ void AniNodeVisual::Init()
 		m_RoofControlButton->SetTextHeight(ElementSize);
 		m_Panel->AddUICom(m_RoofControlButton);
 
-		auto aniNameParam = m_Panel->CreateComponenet<UIParam>(true, UIParam::UIPARAMTYPE::MODIFIER);
-		aniNameParam->SetStringParam(L"Animation", m_CurrSkinAnimationNames, &m_CurrAniName);
-		aniNameParam->SetDirtyCall(std::bind(&AniNodeVisual::ChangedTargetAni, this));
-		aniNameParam->SetTextHeight(ElementSize);
-		m_Panel->AddUICom(aniNameParam);
-
+		m_AniNameParam = m_Panel->CreateComponenet<UIParam>(true, UIParam::UIPARAMTYPE::MODIFIER);
+		m_AniNameParam->SetTextHeight(ElementSize);
+		m_Panel->AddUICom(m_AniNameParam);
 	}
 #pragma endregion
 }
@@ -99,13 +96,14 @@ void AniNodeVisual::SetSkinAnimationInfoVectorPtr(const std::vector<std::string>
 {
 	m_CurrSkinAnimationNames = aniNames;
 	m_CurrSkinAnimationEndTick = aniEnds;
+
+	m_AniNameParam->SetStringParam(L"Animation", m_CurrSkinAnimationNames, &m_CurrAniName);
+	m_AniNameParam->SetDirtyCall(std::bind(&AniNodeVisual::ChangedTargetAni, this));
 }
 
 physx::PxVec2 AniNodeVisual::GetPos() const
 {
-	auto p = m_Panel->GetComponent<DOTransform>()->GetTransform().p;
-
-	return { p.x, p.y };
+	return m_Panel->GetPos();
 }
 
 const physx::PxVec2& AniNodeVisual::GetSize() const
@@ -143,6 +141,7 @@ void AniArowVisual::SetRenderValue(const physx::PxVec2& _from, const physx::PxVe
 	physx::PxVec2 directionNormal;
 	physx::PxVec2 halfVec;
 
+	from = _from;
 	from += _fromSize / 2;
 
 	to = _to;
@@ -228,155 +227,14 @@ void AniArowVisual::SetRenderValue(const physx::PxVec2& _from, const physx::PxVe
 	m_Renderer->SetRenderInfo(renderInfo);
 }
 
-void AniTreeArowVisual::AniTreeArrowArttributeEditer::CreateAttributePanel()
-{
-	m_CurrArrow->m_From->GetNode()->GetArrows(m_Arrows, m_CurrArrow->m_To->GetNode());
-
-	if (m_AttributePanel == nullptr)
-	{
-		m_AttributePanel = m_CurrArrow->CreateComponenet<UIPanel>(false);
-
-		m_AttributePanel->SetPos(physx::PxVec2(GETAPP->GetClientSize().x - 230, 200));
-	}
-
-	m_AttributePanel->DeleteAllComs();
-	m_AttributePanel->UIOn();
-
-	const static std::vector<ENUM_ELEMENT> triggerTypeNames =
-	{
-		{static_cast<int>(AniTree::TRIGGER_TYPE::TRIGGER_TYPE_GRATER), L"TRIGGER_TYPE_GRATER" },
-		{static_cast<int>(AniTree::TRIGGER_TYPE::TRIGGER_TYPE_LESS), L"TRIGGER_TYPE_LESS" },
-		{static_cast<int>(AniTree::TRIGGER_TYPE::TRIGGER_TYPE_SAME), L"TRIGGER_TYPE_SAME" },
-		{static_cast<int>(AniTree::TRIGGER_TYPE::TRIGGER_TYPE_GRATER | TRIGGER_TYPE_DATA_ZEROSET_AFTER_CHECK), L"TRIGGER_TYPE_GRATER_OFF" },
-		{static_cast<int>(AniTree::TRIGGER_TYPE::TRIGGER_TYPE_LESS | TRIGGER_TYPE_DATA_ZEROSET_AFTER_CHECK), L"TRIGGER_TYPE_LESS_OFF" },
-		{static_cast<int>(AniTree::TRIGGER_TYPE::TRIGGER_TYPE_SAME | TRIGGER_TYPE_DATA_ZEROSET_AFTER_CHECK), L"TRIGGER_TYPE_SAME_OFF" },
-	};
-
-	const static std::vector<ENUM_ELEMENT> dataTypeNames =
-	{
-		{static_cast<int>(CGH::DATA_TYPE::TYPE_BOOL), L"TYPE_BOOL" },
-		{static_cast<int>(CGH::DATA_TYPE::TYPE_FLOAT), L"TYPE_FLOAT" },
-		{static_cast<int>(CGH::DATA_TYPE::TYPE_INT), L"TYPE_INT" },
-		{static_cast<int>(CGH::DATA_TYPE::TYPE_UINT), L"TYPE_UINT" },
-	};
-
-	const static std::vector<ENUM_ELEMENT> arrowTypeNames =
-	{
-		{static_cast<int>(AniTree::TO_ANI_ARROW_TYPE::TO_ANI_NODE_TYPE_ALL_OK), L"ALL_OK" },
-		{static_cast<int>(AniTree::TO_ANI_ARROW_TYPE::TO_ANI_NODE_TYPE_ONE_OK), L"ONE_OK" },
-	};
-
-	for (auto& it : m_Arrows)
-	{
-		auto endIsParam = m_AttributePanel->CreateComponenet<UIParam>(true, UIParam::UIPARAMTYPE::MODIFIER);
-		endIsParam->SetTargetParam(L"AniEndIsChange", &it.aniEndIsChange);
-		endIsParam->SetTextHeight(m_FontSize);
-		m_AttributePanel->AddUICom(endIsParam);
-
-		auto arrowTypeParam = m_AttributePanel->CreateComponenet<UIParam>(true, UIParam::UIPARAMTYPE::MODIFIER);
-		arrowTypeParam->SetEnumParam(L"ArrowType", &arrowTypeNames, reinterpret_cast<int*>(&it.type));
-		arrowTypeParam->SetTextHeight(m_FontSize);
-		m_AttributePanel->AddUICom(arrowTypeParam);
-
-		for (auto& it2 : it.trigger)
-		{
-			auto funcParam = m_AttributePanel->CreateComponenet<UIParam>(true, UIParam::UIPARAMTYPE::MODIFIER);
-			funcParam->SetTextHeight(m_FontSize);
-			funcParam->SetEnumParam(L"Func", &triggerTypeNames, reinterpret_cast<int*>(&it2.m_TriggerType));
-
-			m_AttributePanel->AddUICom(funcParam);
-
-			auto triggerType = m_AttributePanel->CreateComponenet<UIParam>(true, UIParam::UIPARAMTYPE::MODIFIER);
-			triggerType->SetTextHeight(m_FontSize);
-			triggerType->SetEnumParam(L"DataType", &dataTypeNames, reinterpret_cast<int*>(&it2.m_Standard.type));
-			m_AttributePanel->AddUICom(triggerType);
-
-			auto triggerParam = m_AttributePanel->CreateComponenet<UIParam>(true, UIParam::UIPARAMTYPE::MODIFIER);
-			triggerParam->SetTextHeight(m_FontSize);
-
-			switch (it2.m_Standard.type)
-			{
-			case CGH::DATA_TYPE::TYPE_BOOL:
-				triggerParam->SetTargetParam(L"BOOL", &it2.m_Standard._b);
-				break;
-			case CGH::DATA_TYPE::TYPE_FLOAT:
-				triggerParam->SetTargetParam(L"FLOAT", &it2.m_Standard._f);
-				break;
-			case CGH::DATA_TYPE::TYPE_INT:
-				triggerParam->SetTargetParam(L"INT", &it2.m_Standard._i);
-				break;
-			case CGH::DATA_TYPE::TYPE_UINT:
-				triggerParam->SetTargetParam(L"UINT", &it2.m_Standard._u);
-				break;
-			default:
-				break;
-			}
-
-			triggerParam->GetComponent<DOUICollision>()->AddFunc(std::bind(
-				&AniTreeArowVisual::AniTreeArrowArttributeEditer::ChangeType, this, triggerParam, &it2.m_Standard));
-
-			m_AttributePanel->AddUICom(triggerParam);
-		}
-	}
-
-	auto addButton = m_AttributePanel->CreateComponenet<UIButton>(true);
-	addButton->SetTexture(
-		InputTN::Get("AniTreeArrowArttributePanel_AddButton"),
-		{ 10,5 });
-	addButton->AddFunc(std::bind(&AniTreeArowVisual::AniTreeArrowArttributeEditer::AddParam, this));
-
-	m_AttributePanel->AddUICom(addButton);
-
-	auto deleteButton = m_AttributePanel->CreateComponenet<UIButton>(true);
-	deleteButton->SetTexture(
-		InputTN::Get("AniTreeArrowArttributePanel_DeleteButton"),
-		{ 10,5 });
-	deleteButton->AddFunc([this]()
-		{
-			m_CurrArrow->Delete();
-			this->WorkClear();
-		});
-
-	m_AttributePanel->AddUICom(deleteButton);
-}
-
-void AniTreeArowVisual::AniTreeArrowArttributeEditer::AddParam()
-{
-	if (m_Arrows.front().trigger.size() < 10)
-	{
-		CGH::UnionData test;
-		test.type = CGH::DATA_TYPE::TYPE_INT;
-		test._i = 0;
-		m_Arrows.front().trigger.emplace_back(TRIGGER_TYPE::TRIGGER_TYPE_SAME, test);
-
-		CreateAttributePanel();
-	}
-}
-
-void AniTreeArowVisual::AniTreeArrowArttributeEditer::ChangeType(UIParam* target, CGH::UnionData* data)
-{
-	switch (data->type)
-	{
-	case CGH::DATA_TYPE::TYPE_BOOL:
-		target->SetTargetParam(L"BOOL", &data->_b);
-		break;
-	case CGH::DATA_TYPE::TYPE_FLOAT:
-		target->SetTargetParam(L"FLOAT", &data->_f);
-		break;
-	case CGH::DATA_TYPE::TYPE_INT:
-		target->SetTargetParam(L"INT", &data->_i);
-		break;
-	case CGH::DATA_TYPE::TYPE_UINT:
-		target->SetTargetParam(L"UINT", &data->_u);
-		break;
-	default:
-		break;
-	}
-}
-
 VisualizedAniTreeCreator::~VisualizedAniTreeCreator()
 {
 
+}
+
+void VisualizedAniTreeCreator::Delete()
+{
+	
 }
 
 //////////////
@@ -506,24 +364,34 @@ void VisualizedAniTreeCreator::Update(float delta)
 		{
 			m_AniNodeVs[i]->SetRenderValue(&nodes[i],
 				std::bind(&VisualizedAniTreeCreator::AniNodeExcute, this, nodes[i]),
-				std::bind(&AniTree::AnimationTree::DeleteNode, m_CurrTree, nodes[i].m_NodeName));
+				std::bind(&AniTree::AnimationTree::DeleteNode, m_CurrTree, &nodes[i]));
 			nodePosDataTemp.pos = m_AniNodeVs[i]->GetPos();
 			nodePosDataTemp.size = m_AniNodeVs[i]->GetSize();
-			m_NodePosDatas.insert({ nodes[i].m_NodeName, nodePosDataTemp });
+			m_NodePosDatas.insert({ nodes[i].GetNodeID(), nodePosDataTemp });
 		}
 
 		for (size_t i = 0; i < arrows.size(); i++)
 		{
-			const NodePosData& from = m_NodePosDatas.find(arrows[i].nodeName)->second;
+			const NodePosData& from = m_NodePosDatas.find(arrows[i].nodeID)->second;
 
 			bool isIniting = m_CurrInitingArrowIndex == i;
 			if (!isIniting)
 			{
-				const NodePosData& to = m_NodePosDatas.find(arrows[i].targetNodeName)->second;
-				m_AniArowVs[i]->SetRenderValue(from.pos, from.size, to.pos, to.size, , isIniting);
+				const NodePosData& to = m_NodePosDatas.find(arrows[i].targetNodeID)->second;
+				m_AniArowVs[i]->SetRenderValue(from.pos, from.size, to.pos, to.size, 
+					std::bind(&VisualizedAniTreeCreator::SetAniArrowAttributePanel, this, &arrows[i]), isIniting);
 			}
 			else
 			{
+				if (GETMOUSE(this))
+				{
+					m_CurrMousePos = mouse->GetMousePos();
+				}
+				else
+				{
+					CancleExcute();
+				}
+
 				m_AniArowVs[i]->SetRenderValue(from.pos, from.size, m_CurrMousePos, {}, nullptr, isIniting);
 			}
 		}
@@ -544,7 +412,13 @@ void VisualizedAniTreeCreator::AniNodeExcute(const AniTree::AniNode& node)
 
 	if (m_CurrInitingArrowIndex > -1)
 	{
-		arrows[m_CurrInitingArrowIndex].targetNodeName = node.m_NodeName;
+		if(arrows[m_CurrInitingArrowIndex].nodeID == node.GetNodeID())
+		{
+			CancleExcute();
+			return;
+		}
+
+		arrows[m_CurrInitingArrowIndex].targetNodeID = node.GetNodeID();
 		m_CurrInitingArrowIndex = -1;
 	}
 	else
@@ -552,7 +426,7 @@ void VisualizedAniTreeCreator::AniNodeExcute(const AniTree::AniNode& node)
 		AniTree::AniArrow arrowTemp;
 		m_CurrInitingArrowIndex = CGH::SizeTTransINT(arrows.size());
 
-		arrowTemp.nodeName = node.m_NodeName;
+		arrowTemp.nodeID = node.GetNodeID();
 		arrows.push_back(arrowTemp);
 	}
 }
@@ -564,7 +438,6 @@ void VisualizedAniTreeCreator::CancleExcute()
 		std::vector<AniTree::AniArrow>& arrows = m_CurrTree->GetArrows();
 		arrows.pop_back();
 		assert(arrows.size() == m_CurrInitingArrowIndex);
-
 		m_CurrInitingArrowIndex = -1;
 	}
 }
@@ -583,6 +456,153 @@ void VisualizedAniTreeCreator::SetAnimationTreeListsParamToPanel(int posX, int p
 	}
 }
 
+void VisualizedAniTreeCreator::SetAniArrowAttributePanel(AniTree::AniArrow* arrow)
+{
+	if (m_ArrowAttributePanel == nullptr)
+	{
+		m_ArrowAttributePanel = CreateComponenet<UIPanel>(false);
+
+		m_ArrowAttributePanel->SetPos(physx::PxVec2(GETAPP->GetClientSize().x - 230, 200));
+	}
+
+	m_ArrowAttributePanel->DeleteAllComs();
+	m_ArrowAttributePanel->UIOn();
+
+	const int fontSize = 15;
+
+	const static std::vector<ENUM_ELEMENT> triggerTypeNames =
+	{
+		{static_cast<int>(AniTree::TRIGGER_TYPE::TRIGGER_TYPE_GRATER), L"TRIGGER_TYPE_GRATER" },
+		{static_cast<int>(AniTree::TRIGGER_TYPE::TRIGGER_TYPE_LESS), L"TRIGGER_TYPE_LESS" },
+		{static_cast<int>(AniTree::TRIGGER_TYPE::TRIGGER_TYPE_SAME), L"TRIGGER_TYPE_SAME" },
+		{static_cast<int>(AniTree::TRIGGER_TYPE::TRIGGER_TYPE_GRATER | TRIGGER_TYPE_DATA_ZEROSET_AFTER_CHECK), L"TRIGGER_TYPE_GRATER_OFF" },
+		{static_cast<int>(AniTree::TRIGGER_TYPE::TRIGGER_TYPE_LESS | TRIGGER_TYPE_DATA_ZEROSET_AFTER_CHECK), L"TRIGGER_TYPE_LESS_OFF" },
+		{static_cast<int>(AniTree::TRIGGER_TYPE::TRIGGER_TYPE_SAME | TRIGGER_TYPE_DATA_ZEROSET_AFTER_CHECK), L"TRIGGER_TYPE_SAME_OFF" },
+	};
+
+	const static std::vector<ENUM_ELEMENT> dataTypeNames =
+	{
+		{static_cast<int>(CGH::DATA_TYPE::TYPE_BOOL), L"TYPE_BOOL" },
+		{static_cast<int>(CGH::DATA_TYPE::TYPE_FLOAT), L"TYPE_FLOAT" },
+		{static_cast<int>(CGH::DATA_TYPE::TYPE_INT), L"TYPE_INT" },
+		{static_cast<int>(CGH::DATA_TYPE::TYPE_UINT), L"TYPE_UINT" },
+	};
+
+	const static std::vector<ENUM_ELEMENT> arrowTypeNames =
+	{
+		{static_cast<int>(AniTree::TO_ANI_ARROW_TYPE::TO_ANI_NODE_TYPE_ALL_OK), L"ALL_OK" },
+		{static_cast<int>(AniTree::TO_ANI_ARROW_TYPE::TO_ANI_NODE_TYPE_ONE_OK), L"ONE_OK" },
+	};
+
+	auto endIsParam = m_ArrowAttributePanel->CreateComponenet<UIParam>(true, UIParam::UIPARAMTYPE::MODIFIER);
+	endIsParam->SetTargetParam(L"AniEndIsChange", &arrow->aniEndIsChange);
+	endIsParam->SetTextHeight(fontSize);
+	m_ArrowAttributePanel->AddUICom(endIsParam);
+
+	auto arrowTypeParam = m_ArrowAttributePanel->CreateComponenet<UIParam>(true, UIParam::UIPARAMTYPE::MODIFIER);
+	arrowTypeParam->SetEnumParam(L"ArrowType", &arrowTypeNames, reinterpret_cast<int*>(&arrow->type));
+	arrowTypeParam->SetTextHeight(fontSize);
+	m_ArrowAttributePanel->AddUICom(arrowTypeParam);
+
+	for (auto& it : arrow->triggers)
+	{
+		auto funcParam = m_ArrowAttributePanel->CreateComponenet<UIParam>(true, UIParam::UIPARAMTYPE::MODIFIER);
+		funcParam->SetTextHeight(fontSize);
+		funcParam->SetEnumParam(L"Func", &triggerTypeNames, reinterpret_cast<int*>(&it.m_TriggerType));
+
+		m_ArrowAttributePanel->AddUICom(funcParam);
+
+		auto triggerType = m_ArrowAttributePanel->CreateComponenet<UIParam>(true, UIParam::UIPARAMTYPE::MODIFIER);
+		triggerType->SetTextHeight(fontSize);
+		triggerType->SetEnumParam(L"DataType", &dataTypeNames, reinterpret_cast<int*>(&it.m_Standard.type));
+		m_ArrowAttributePanel->AddUICom(triggerType);
+
+		auto triggerParam = m_ArrowAttributePanel->CreateComponenet<UIParam>(true, UIParam::UIPARAMTYPE::MODIFIER);
+		triggerParam->SetTextHeight(fontSize);
+
+		switch (it.m_Standard.type)
+		{
+		case CGH::DATA_TYPE::TYPE_BOOL:
+			triggerParam->SetTargetParam(L"BOOL", &it.m_Standard._b);
+			break;
+		case CGH::DATA_TYPE::TYPE_FLOAT:
+			triggerParam->SetTargetParam(L"FLOAT", &it.m_Standard._f);
+			break;
+		case CGH::DATA_TYPE::TYPE_INT:
+			triggerParam->SetTargetParam(L"INT", &it.m_Standard._i);
+			break;
+		case CGH::DATA_TYPE::TYPE_UINT:
+			triggerParam->SetTargetParam(L"UINT", &it.m_Standard._u);
+			break;
+		default:
+			break;
+		}
+
+		triggerParam->GetComponent<DOUICollision>()->AddFunc(std::bind(
+			&VisualizedAniTreeCreator::ChangeType, this, triggerParam, &it.m_Standard));
+
+		m_ArrowAttributePanel->AddUICom(triggerParam);
+	}
+
+	auto addButton = m_ArrowAttributePanel->CreateComponenet<UIButton>(true);
+	addButton->SetTexture(
+		InputTN::Get("AniTreeArrowArttributePanel_AddButton"),
+		{ 10,5 });
+	addButton->AddFunc(std::bind(&VisualizedAniTreeCreator::AddParam, this, arrow));
+
+	m_ArrowAttributePanel->AddUICom(addButton);
+
+	auto deleteButton = m_ArrowAttributePanel->CreateComponenet<UIButton>(true);
+	deleteButton->SetTexture(
+		InputTN::Get("AniTreeArrowArttributePanel_DeleteButton"),
+		{ 10,5 });
+	deleteButton->AddFunc(std::bind(&VisualizedAniTreeCreator::DeleteArrow, this, arrow));
+
+	m_ArrowAttributePanel->AddUICom(deleteButton);
+}
+
+void VisualizedAniTreeCreator::ChangeType(UIParam* target, CGH::UnionData* data)
+{
+	switch (data->type)
+	{
+	case CGH::DATA_TYPE::TYPE_BOOL:
+		target->SetTargetParam(L"BOOL", &data->_b);
+		break;
+	case CGH::DATA_TYPE::TYPE_FLOAT:
+		target->SetTargetParam(L"FLOAT", &data->_f);
+		break;
+	case CGH::DATA_TYPE::TYPE_INT:
+		target->SetTargetParam(L"INT", &data->_i);
+		break;
+	case CGH::DATA_TYPE::TYPE_UINT:
+		target->SetTargetParam(L"UINT", &data->_u);
+		break;
+	default:
+		break;
+	}
+}
+
+void VisualizedAniTreeCreator::AddParam(AniTree::AniArrow* arrow)
+{
+	if (arrow->triggers.size() < 10)
+	{
+		CGH::UnionData test;
+		test.type = CGH::DATA_TYPE::TYPE_INT;
+		test._i = 0;
+		arrow->triggers.emplace_back(TRIGGER_TYPE::TRIGGER_TYPE_SAME, test);
+
+		SetAniArrowAttributePanel(arrow);
+	}
+}
+
+void VisualizedAniTreeCreator::DeleteArrow(AniTree::AniArrow* arrow)
+{
+	if (m_CurrTree)
+	{
+		m_CurrTree->DeleteArrow(arrow);
+	}
+}
+
 void VisualizedAniTreeCreator::SelectNullTree()
 {
 	m_CurrTree = m_NullTree.get();
@@ -590,13 +610,6 @@ void VisualizedAniTreeCreator::SelectNullTree()
 	m_Renderer->SetActive(false);
 
 	m_CurrTreeName.clear();
-
-	for (auto& it : m_AniNodeVs)
-	{
-		it->VisualClear();
-	}
-
-	m_AniNodeVs.clear();
 
 	std::string skinName = m_CurrTree->GetCurrSkinName();
 	std::string meshName = m_CurrTree->GetCurrMeshName();
@@ -610,45 +623,6 @@ void VisualizedAniTreeCreator::SelectNullTree()
 	{
 		GetComponent<DORenderMesh>()->SelectMesh(CGH::SKINNED_MESH, meshName);
 	}
-
-	unsigned int numNodes = m_CurrTree->GetNumNodes();
-
-	for (unsigned int i = 0; i < numNodes; i++)
-	{
-		AddNodeVs(m_CurrTree->GetNode(i));
-	}
-
-	std::vector<AniNodeVisual*> vsNodes(m_AniNodeVs.begin(), m_AniNodeVs.end());
-
-	for (unsigned int i = 0; i < numNodes; i++)
-	{
-		auto currNode = vsNodes[i]->GetNode();
-		auto arrows = currNode->GetArrows();
-		vsNodes[i]->SetPos(currNode->GetPos());
-
-		for (auto& it : arrows)
-		{
-			auto currVsArrow = vsNodes[i]->CreateComponenet<AniArowVisual>(true);
-			currVsArrow->SetFromNode(vsNodes[i]);
-
-			bool isNotHadTo = true;
-			for (auto& it2 : vsNodes)
-			{
-				if (it2->GetNode() == it.targetNode)
-				{
-					currVsArrow->SetToNode(it2);
-					vsNodes[i]->AddArrow(currVsArrow);
-					isNotHadTo = false;
-					break;
-				}
-			}
-
-			if (isNotHadTo)
-			{
-				currVsArrow->Delete();
-			}
-		}
-	}
 }
 
 void VisualizedAniTreeCreator::ChangedTree()
@@ -659,13 +633,6 @@ void VisualizedAniTreeCreator::ChangedTree()
 
 	if (m_CurrTree != tree && tree)
 	{
-		for (auto& it : m_AniNodeVs)
-		{
-			it->VisualClear();
-		}
-
-		m_AniNodeVs.clear();
-
 		m_CurrTree = tree;
 
 		std::string skinName = m_CurrTree->GetCurrSkinName();
@@ -679,45 +646,6 @@ void VisualizedAniTreeCreator::ChangedTree()
 		if (meshName.size())
 		{
 			GetComponent<DORenderMesh>()->SelectMesh(CGH::SKINNED_MESH, meshName);
-		}
-
-		unsigned int numNodes = m_CurrTree->GetNumNodes();
-
-		for (unsigned int i = 0; i < numNodes; i++)
-		{
-			AddNodeVs(m_CurrTree->GetNode(i));
-		}
-
-		std::vector<AniNodeVisual*> vsNodes(m_AniNodeVs.begin(), m_AniNodeVs.end());
-
-		for (unsigned int i = 0; i < numNodes; i++)
-		{
-			auto currNode = vsNodes[i]->GetNode();
-			auto arrows = currNode->GetArrows();
-			vsNodes[i]->SetPos(currNode->GetPos());
-
-			for (auto& it : arrows)
-			{
-				auto currVsArrow = vsNodes[i]->CreateComponenet<AniArowVisual>(true);
-				currVsArrow->SetFromNode(vsNodes[i]);
-
-				bool isNotHadTo = true;
-				for (auto& it2 : vsNodes)
-				{
-					if (it2->GetNode() == it.targetNode)
-					{
-						currVsArrow->SetToNode(it2);
-						vsNodes[i]->AddArrow(currVsArrow);
-						isNotHadTo = false;
-						break;
-					}
-				}
-
-				if (isNotHadTo)
-				{
-					currVsArrow->Delete();
-				}
-			}
 		}
 	}
 }

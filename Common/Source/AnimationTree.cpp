@@ -4,9 +4,9 @@
 using namespace AniTree;
 using namespace std;
 
-std::string AniTree::AniNode::Update(float deltaTime, std::vector<AniArrow>& arrows)
+unsigned int AniTree::AniNode::Update(float deltaTime, std::vector<AniArrow>& arrows)
 {
-	std::string result;
+	unsigned int result = 0;
 
 	m_CurrTime += deltaTime;
 
@@ -17,12 +17,12 @@ std::string AniTree::AniNode::Update(float deltaTime, std::vector<AniArrow>& arr
 
 	for (auto& it : arrows)
 	{
-		if (it.nodeName == m_NodeName)
+		if (it.nodeID == m_NodeID)
 		{
 			if (CheckArrowTrigger(it, it.triggers, m_CurrTime, m_AniEndTime))
 			{
 				m_CurrTime = 0;
-				result = it.targetNodeName;
+				result = it.targetNodeID;
 				break;
 			}
 		}
@@ -45,20 +45,20 @@ void AniTree::AniNode::SetAniName(const std::string& name, double aniEndTime)
 
 std::ostream& AniTree::operator<<(std::ostream& os, const AniNode& node)
 {
-	if (node.m_TargetAniName.size())
+	if (node.GetNodeID())
 	{
-		os << node.m_TargetAniName << endl;
+		//os << node.m_TargetAniName << endl;
 	}
 	else
 	{
 		os << "#none#" << endl;
 	}
 
-	os << node.m_Pos.x << endl;
-	os << node.m_Pos.y << endl;
+	//os << node.m_Pos.x << endl;
+	//os << node.m_Pos.y << endl;
 
-	os << node.m_AniEndTime << endl;
-	os << node.m_RoofAni << endl;
+	//os << node.m_AniEndTime << endl;
+	//os << node.m_RoofAni << endl;
 
 	/*os << node.m_Arrows.size() << endl;
 
@@ -154,9 +154,9 @@ bool AniTree::AnimationTree::Update(float deltaTime)
 {
 	if (m_AniNodes.size())
 	{
-		std::string result = m_AniNodes[m_CurrAniNodeIndex].Update(deltaTime, m_Arrows);
+		unsigned int result = m_AniNodes[m_CurrAniNodeIndex].Update(deltaTime, m_Arrows);
 
-		if (result.length())
+		if (result)
 		{
 			int index = GetIndex(result);
 			assert(index != -1);
@@ -343,17 +343,31 @@ double AniTree::AnimationTree::GetCurrAnimationTime() const
 
 void AniTree::AnimationTree::AddAniNode()
 {
-	m_AniNodes.emplace_back();
+	m_AniNodes.emplace_back(m_AddedNodeID);
+	m_AddedNodeID++;
 }
 
-void AniTree::AnimationTree::DeleteNode(const std::string& node)
+void AniTree::AnimationTree::DeleteNode(const AniNode* node)
 {
-	for (auto iter = m_AniNodes.begin(); iter != m_AniNodes.end(); iter++)
+	for (size_t i = 0; i < m_AniNodes.size(); i++)
 	{
-		if (node == (*iter).m_NodeName)
+		if (node == &m_AniNodes[i])
 		{
-			m_AniNodes.erase(iter);
-			m_CurrAniNodeIndex = 0;
+			m_AniNodes[i] = m_AniNodes.back();
+			m_AniNodes.pop_back();
+			break;
+		}
+	}
+}
+
+void AniTree::AnimationTree::DeleteArrow(const AniArrow* arrow)
+{
+	for (size_t i = 0; i < m_Arrows.size(); i++)
+	{
+		if (arrow == &m_Arrows[i])
+		{
+			m_Arrows[i] = m_Arrows.back();
+			m_AniNodes.pop_back();
 			break;
 		}
 	}
@@ -415,14 +429,14 @@ bool AniTree::AnimationTree::CheckArrowTrigger(AniArrow& arrow, std::vector<Trig
 	}
 }
 
-int AniTree::AnimationTree::GetIndex(const std::string& nodeName)
+int AniTree::AnimationTree::GetIndex(unsigned int nodeID)
 {
 	int result = -1;
 
 	int currIndex = 0;
 	for (auto& it : m_AniNodes)
 	{
-		if (it.m_NodeName == nodeName)
+		if (it.GetNodeID() == nodeID)
 		{
 			result = currIndex;
 			break;

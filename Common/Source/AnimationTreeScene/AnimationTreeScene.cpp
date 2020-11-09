@@ -6,11 +6,7 @@
 void AniTreeScene::Init()
 {
 	CreateGameObject<VisualizedAniTreeCreator>();
-	CreateGameObject<TestObject>();
-
-	auto DLight = CreateGameObject<GameLight>();
-
-	DLight->SetDirectionalLight({ 1,1,1 }, { 0,-1,0 });
+	CreateGameObject<GameLight>()->SetDirectionalLight({ 1,1,1 }, { 0,-1,0 });
 }
 
 bool AniTreeScene::Update(const DirectX::Mouse::ButtonStateTracker& mouse, float delta)

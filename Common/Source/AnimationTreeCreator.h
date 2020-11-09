@@ -30,6 +30,7 @@ public:
 		, m_CurrAniNode(nullptr)
 		, m_RoofControlButton(nullptr)
 		, m_PanelCol(nullptr)
+		, m_AniNameParam(nullptr)
 	{
 
 	}
@@ -57,8 +58,9 @@ private:
 	std::string								m_CurrAniName;
 	std::vector<AniArowVisual*>				m_Arrows;
 	UIPanel*								m_Panel;
-	DOUICollision*							m_PanelCol;
 	UIButton*								m_RoofControlButton;
+	UIParam*								m_AniNameParam;
+	DOUICollision*							m_PanelCol;
 	std::function<void()>					m_DeleteAninodeFunc;
 };
 
@@ -105,12 +107,14 @@ public:
 		, m_AniTreeParam(nullptr)
 		, m_CurrSkin(nullptr)
 		, m_WorkPanel(nullptr)
+		, m_ArrowAttributePanel(nullptr)
 		, m_Animator(nullptr)
 		, m_CurrInitingArrowIndex(-1)
 	{
 
 	}
 	virtual ~VisualizedAniTreeCreator();
+	virtual void Delete() override;
 	
 	void SelectSkinnedData(const std::string& name);
 
@@ -123,15 +127,20 @@ private:
 	void CancleExcute();
 	
 	void SetAnimationTreeListsParamToPanel(int posX, int posY, UIPanel* workPanel);
+	void SetAniArrowAttributePanel(AniTree::AniArrow* arrow);
+	void ChangeType(UIParam* target, CGH::UnionData* data);
+	void AddParam(AniTree::AniArrow* arrow);
+	void DeleteArrow(AniTree::AniArrow* arrow);
 
 	void SelectNullTree();
 	void ChangedTree();
 	void SaveTree();
 
 private:
-	std::unique_ptr< AniTree::AnimationTree>		m_NullTree;
+	std::unique_ptr<AniTree::AnimationTree>			m_NullTree;
 	AniTree::AnimationTree*							m_CurrTree;
 	UIPanel*										m_WorkPanel;
+	UIPanel*										m_ArrowAttributePanel;
 	UIParam*										m_AniTreeParam;
 	DOAnimator*										m_Animator;
 	DORenderer*										m_Renderer;
@@ -148,7 +157,7 @@ private:
 	std::vector<AniNodeVisual*>						m_AniNodeVs;
 	std::vector<AniArowVisual*>						m_AniArowVs;
 
-	std::unordered_map<std::string, NodePosData>	m_NodePosDatas;
+	std::unordered_map<unsigned int, NodePosData>	m_NodePosDatas;
 
 	int												m_CurrInitingArrowIndex;
 	physx::PxVec2									m_CurrMousePos;

@@ -40,7 +40,7 @@ private:
 private:
 	std::string												m_SceneName;
 	IGraphicDevice*											m_GraphicDevice;
-	PhysX4_1*											m_PhysicsDevice;
+	PhysX4_1*												m_PhysicsDevice;
 	std::vector<std::unique_ptr<GameObject>>				m_Objects;
 	size_t													m_NumNullptr;
 	std::unordered_map<std::string, DeviceObjectUpdater>	m_ComUpdater;

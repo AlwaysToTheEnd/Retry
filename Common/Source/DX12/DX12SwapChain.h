@@ -29,7 +29,6 @@ public:
 	void CreateSwapChain(HWND handle, ID3D12CommandQueue* queue, DXGI_FORMAT renderTarget,
 						 unsigned int x, unsigned int y, unsigned int numSwapChain);
 	
-	void ClearDepth(ID3D12GraphicsCommandList* cmd);
 	void ReSize(ID3D12GraphicsCommandList* cmd, unsigned int x, unsigned int y);
 	void GbufferSetting(ID3D12GraphicsCommandList* cmd);
 	void PresentRenderTargetSetting(ID3D12GraphicsCommandList* cmd, const float clearColor[4]);
@@ -68,6 +67,7 @@ private:
 	Microsoft::WRL::ComPtr<IDXGISwapChain>					m_SwapChain;
 
 	std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>>		m_Resources;
+	//Microsoft::WRL::ComPtr<ID3D12Resource>					m_UIDepthStencil;
 
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>			m_RTVHeap;
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>			m_DSVHeap;

@@ -110,12 +110,13 @@ void CreateUI(UIVertexIn vin, inout TriangleStream<POINTVertexOut> output)
     vertices[2].posH = float4(vin.size.x, vin.size.y, 0.0f, 1.0f);
     vertices[3].posH = float4(vin.size.x, -vin.size.y, 0.0f, 1.0f);
 
+    vin.pos.xy += vin.size / 2;
 	[unroll(4)]
     for (int i = 0; i < 4; i++)
     {
         vertices[i].texIndex = vin.textureIndex;
         vertices[i].objectID = vin.objectID;
-        vertices[i].posH = mul(vertices[i].posH, float4(vin.pos, 1));
+        vertices[i].posH = vertices[i].posH + float4(vin.pos, 0);
         vertices[i].posH = mul(vertices[i].posH, gOrthoMatrix);
     }
 
