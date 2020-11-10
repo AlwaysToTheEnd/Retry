@@ -77,6 +77,7 @@ void AniNodeVisual::SetRenderValue(AniTree::AniNode* node, std::function<void()>
 	}
 
 	m_CurrAniNode = node;
+	m_CurrAniName = node->GetAniName();
 	node->SetPos(m_Panel->GetPos());
 
 	m_PanelCol->ClearFunc();
@@ -109,6 +110,11 @@ physx::PxVec2 AniNodeVisual::GetPos() const
 const physx::PxVec2& AniNodeVisual::GetSize() const
 {
 	return m_Panel->GetSize();
+}
+
+void AniNodeVisual::SetPos(const physx::PxVec2& pos)
+{
+	m_Panel->SetPos(pos);
 }
 
 void AniArowVisual::Init()
@@ -234,7 +240,7 @@ VisualizedAniTreeCreator::~VisualizedAniTreeCreator()
 
 void VisualizedAniTreeCreator::Delete()
 {
-	
+
 }
 
 //////////////
@@ -273,6 +279,7 @@ void VisualizedAniTreeCreator::Init()
 	m_Renderer->SetRenderInfo(RenderInfo(RENDER_SKIN));
 
 	m_WorkPanel->SetPos({ 50,50 });
+	m_WorkPanel->SetName(L"TreeCreatorPanel");
 
 	m_Animator->GetAnimationTreeNames(m_TreeNames);
 	m_Animator->GetSkinNames(m_SkinNames);
@@ -327,6 +334,7 @@ void VisualizedAniTreeCreator::Update(float delta)
 	if (PUSHEDESC)
 	{
 		CancleExcute();
+		m_ArrowAttributePanel->UIOff();
 	}
 
 	if (m_CurrTree)
@@ -364,7 +372,7 @@ void VisualizedAniTreeCreator::Update(float delta)
 		{
 			m_AniNodeVs[i]->SetRenderValue(&nodes[i],
 				std::bind(&VisualizedAniTreeCreator::AniNodeExcute, this, nodes[i]),
-				std::bind(&AniTree::AnimationTree::DeleteNode, m_CurrTree, &nodes[i]));
+				std::bind(&VisualizedAniTreeCreator::DeleteNode, this, &nodes[i]));
 			nodePosDataTemp.pos = m_AniNodeVs[i]->GetPos();
 			nodePosDataTemp.size = m_AniNodeVs[i]->GetSize();
 			m_NodePosDatas.insert({ nodes[i].GetNodeID(), nodePosDataTemp });
@@ -378,7 +386,7 @@ void VisualizedAniTreeCreator::Update(float delta)
 			if (!isIniting)
 			{
 				const NodePosData& to = m_NodePosDatas.find(arrows[i].targetNodeID)->second;
-				m_AniArowVs[i]->SetRenderValue(from.pos, from.size, to.pos, to.size, 
+				m_AniArowVs[i]->SetRenderValue(from.pos, from.size, to.pos, to.size,
 					std::bind(&VisualizedAniTreeCreator::SetAniArrowAttributePanel, this, &arrows[i]), isIniting);
 			}
 			else
@@ -412,7 +420,7 @@ void VisualizedAniTreeCreator::AniNodeExcute(const AniTree::AniNode& node)
 
 	if (m_CurrInitingArrowIndex > -1)
 	{
-		if(arrows[m_CurrInitingArrowIndex].nodeID == node.GetNodeID())
+		if (arrows[m_CurrInitingArrowIndex].nodeID == node.GetNodeID())
 		{
 			CancleExcute();
 			return;
@@ -467,6 +475,7 @@ void VisualizedAniTreeCreator::SetAniArrowAttributePanel(AniTree::AniArrow* arro
 
 	m_ArrowAttributePanel->DeleteAllComs();
 	m_ArrowAttributePanel->UIOn();
+	m_ArrowAttributePanel->SetSize({});
 
 	const int fontSize = 15;
 
@@ -557,7 +566,6 @@ void VisualizedAniTreeCreator::SetAniArrowAttributePanel(AniTree::AniArrow* arro
 		InputTN::Get("AniTreeArrowArttributePanel_DeleteButton"),
 		{ 10,5 });
 	deleteButton->AddFunc(std::bind(&VisualizedAniTreeCreator::DeleteArrow, this, arrow));
-
 	m_ArrowAttributePanel->AddUICom(deleteButton);
 }
 
@@ -586,12 +594,12 @@ void VisualizedAniTreeCreator::AddParam(AniTree::AniArrow* arrow)
 {
 	if (arrow->triggers.size() < 10)
 	{
-		CGH::UnionData test;
-		test.type = CGH::DATA_TYPE::TYPE_INT;
-		test._i = 0;
-		arrow->triggers.emplace_back(TRIGGER_TYPE::TRIGGER_TYPE_SAME, test);
+		CGH::UnionData data;
+		data.type = CGH::DATA_TYPE::TYPE_INT;
+		data._i = 0;
 
-		SetAniArrowAttributePanel(arrow);
+		AniTree::TriggerData temp(TRIGGER_TYPE::TRIGGER_TYPE_SAME, data);
+		arrow->triggers.push_back(temp);
 	}
 }
 
@@ -600,6 +608,18 @@ void VisualizedAniTreeCreator::DeleteArrow(AniTree::AniArrow* arrow)
 	if (m_CurrTree)
 	{
 		m_CurrTree->DeleteArrow(arrow);
+	}
+}
+
+void VisualizedAniTreeCreator::DeleteNode(AniTree::AniNode* node)
+{
+	m_CurrTree->DeleteNode(node);
+
+	std::vector<AniTree::AniNode>& nodes = m_CurrTree->GetNodes();
+
+	for (size_t i = 0; i < nodes.size(); i++)
+	{
+		m_AniNodeVs[i]->SetPos(nodes[i].GetPos());
 	}
 }
 

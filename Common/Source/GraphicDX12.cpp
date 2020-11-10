@@ -753,21 +753,22 @@ void GraphicDX12::BuildDrawSets()
 	m_SkinnedMeshDrawSet = std::make_unique<DX12DrawSetSkinnedMesh>(1, m_PSOCon.get(),
 		m_TextureBuffers[L"MESH"].get(), rtv, DXGI_FORMAT_D24_UNORM_S8_UINT, *m_SkinnedMeshSet);
 
+	m_PointBaseDrawSet = std::make_unique<DX12DrawSetPointBase>(1, m_PSOCon.get(),
+		m_TextureBuffers[L"BASE"].get(), rtv, DXGI_FORMAT_D24_UNORM_S8_UINT);
+
 	m_HeightFieldMeshDrawSet = std::make_unique<DX12DrawSetHeightField>(1, m_PSOCon.get(),
 		m_TextureBuffers[L"HEIGHT"].get(), rtv, DXGI_FORMAT_D24_UNORM_S8_UINT, *m_HeightFieldMeshSet);
 
-	m_PointBaseDrawSet = std::make_unique<DX12DrawSetPointBase>(1, m_PSOCon.get(),
-		m_TextureBuffers[L"BASE"].get(), rtv, DXGI_FORMAT_D24_UNORM_S8_UINT);
+	m_Swap->GetRenderUIFormat(rtv);
+
+	m_UIDrawSet = std::make_unique<DX12DrawSetUI>(1, m_PSOCon.get(),
+		m_TextureBuffers[L"UI"].get(), rtv, DXGI_FORMAT_D24_UNORM_S8_UINT);
 
 	m_Swap->GetRenderTargetFormat(rtv);
 
 	m_LightDrawSet = std::make_unique<DX12DrawSetLight>(1, m_PSOCon.get(),
 		m_TextureBuffers[L"BASE"].get(), rtv, DXGI_FORMAT_D24_UNORM_S8_UINT);
 
-	m_Swap->GetRenderUIFormat(rtv);
-
-	m_UIDrawSet = std::make_unique<DX12DrawSetUI>(1, m_PSOCon.get(),
-		m_TextureBuffers[L"UI"].get(), rtv, DXGI_FORMAT_D24_UNORM_S8_UINT);
 
 	m_NormalMeshDrawSet->Init(m_D3dDevice.Get());
 	m_SkinnedMeshDrawSet->Init(m_D3dDevice.Get());

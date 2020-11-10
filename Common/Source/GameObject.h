@@ -39,7 +39,8 @@ public:
 	void										SetParent(GameObject* parent);
 	virtual void								SetActive(bool value, bool components = false);
 
-	bool										Is(const char* hashName) const { return m_TypeName == hashName; }
+	template<typename T> bool					Is() const { return m_TypeName == typeid(T).name(); }
+	template<typename T> T*						Get() { assert(Is<T>()); return static_cast<T*>(this); }
 	virtual bool								IsObjectType(GAMEOBJECT_TYPE type) const { return false; }
 	bool										GetActive() const { return m_IsActive; }
 	const char*									GetTypeName() const { return m_TypeName; }
@@ -104,7 +105,7 @@ inline T* GameObject::GetComponent()
 
 	for (auto& it : m_Components)
 	{
-		if (it->Is(typeid(T).name()))
+		if (it->Is<T>())
 		{
 			component = static_cast<T*>(it);
 			break;
@@ -121,7 +122,7 @@ inline std::vector<T*> GameObject::GetComponents()
 
 	for (size_t i = 0; i < m_Components.size(); i++)
 	{
-		if (m_Components[i]->Is(typeid(T).name()))
+		if (m_Components[i]->Is<T>())
 		{
 			result.push_back(static_cast<T*>(m_Components[i]));
 		}

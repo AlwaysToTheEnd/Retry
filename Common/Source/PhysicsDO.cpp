@@ -82,7 +82,7 @@ void DORigidDynamic::AddFunc(std::function<void()> func)
 
 bool DORigidDynamic::AttachCollisionMesh(PhyscisObject* mesh)
 {
-	if (!mesh->Is(typeid(DOCollsionMesh).name()))
+	if (!mesh->Is<DOCollsionMesh>())
 	{
 		return false;
 	}
@@ -105,7 +105,7 @@ bool DORigidDynamic::AttachCollisionMesh(PhyscisObject* mesh)
 
 bool DORigidDynamic::DetachCollisionMesh(PhyscisObject* mesh)
 {
-	if (!mesh->Is(typeid(DOCollsionMesh).name()))
+	if (!mesh->Is<DOCollsionMesh>())
 	{
 		return false;
 	}
@@ -161,7 +161,7 @@ void DORigidStatic::SetPos(const physx::PxTransform& pos)
 
 bool DORigidStatic::AttachCollisionMesh(PhyscisObject* mesh)
 {
-	if (!mesh->Is(typeid(DOCollsionMesh).name()))
+	if (!mesh->Is<DOCollsionMesh>())
 	{
 		return false;
 	}
@@ -178,7 +178,7 @@ bool DORigidStatic::AttachCollisionMesh(PhyscisObject* mesh)
 
 bool DORigidStatic::DetachCollisionMesh(PhyscisObject* mesh)
 {
-	if (!mesh->Is(typeid(DOCollsionMesh).name()))
+	if (!mesh->Is<DOCollsionMesh>())
 	{
 		return false;
 	}

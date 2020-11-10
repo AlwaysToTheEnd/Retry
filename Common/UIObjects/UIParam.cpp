@@ -21,7 +21,7 @@ void UIParam::AddUIParam(UIParam* param)
 {
 	if (param)
 	{
-		if (param->m_Parent->Is(typeid(UIPanel).name()))
+		if (param->m_Parent->Is<UIPanel>())
 		{
 			reinterpret_cast<UIPanel*>(param->m_Parent)->PopUICom(param);
 		}

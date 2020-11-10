@@ -48,9 +48,9 @@ void UIPanel::AddUICom(UIObject* ui)
 		m_UIComs.push_back(ui);
 		ui->SetParent(this);
 
-		if (ui->Is(typeid(UIPanel).name()))
+		if (ui->Is<UIPanel>())
 		{
-			reinterpret_cast<UIPanel*>(ui)->ThisPanalIsStatic();
+			ui->Get<UIPanel>()->ThisPanalIsStatic();
 		}
 	}
 }

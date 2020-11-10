@@ -135,13 +135,14 @@ void DX12SwapChain::GbufferSetting(ID3D12GraphicsCommandList* cmd)
 		objectID
 	};
 
+	cmd->ClearDepthStencilView(depthStencil, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
+
+	cmd->OMSetRenderTargets(_countof(renderTargetHandles), renderTargetHandles, false, &depthStencil);
+
 	cmd->ClearRenderTargetView(color, m_Zero, 0, nullptr);
 	cmd->ClearRenderTargetView(normal, m_Zero, 0, nullptr);
 	cmd->ClearRenderTargetView(specular, m_Zero, 0, nullptr);
 	cmd->ClearRenderTargetView(objectID, m_Zero, 0, nullptr);
-	cmd->ClearDepthStencilView(depthStencil, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
-
-	cmd->OMSetRenderTargets(_countof(renderTargetHandles), renderTargetHandles, false, &depthStencil);
 }
 
 void DX12SwapChain::PresentRenderTargetSetting(ID3D12GraphicsCommandList* cmd, const float clearColor[4])
@@ -156,8 +157,9 @@ void DX12SwapChain::PresentRenderTargetSetting(ID3D12GraphicsCommandList* cmd, c
 	cmd->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_Resources[GBUFFER_RESOURCE_PRESENT + m_CurrBackBufferIndex].Get(),
 		D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
 
+	cmd->OMSetRenderTargets(_countof(renderTargetHandles), renderTargetHandles, false, nullptr);
+
 	cmd->ClearRenderTargetView(present, clearColor, 0, nullptr);
-	cmd->OMSetRenderTargets(_countof(renderTargetHandles), renderTargetHandles, true, nullptr);
 }
 
 void DX12SwapChain::UIRenderTargetSetting(ID3D12GraphicsCommandList* cmd)

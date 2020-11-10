@@ -79,8 +79,6 @@ void CreatePanel(UIVertexIn vin, inout TriangleStream<POINTVertexOut> output)
         vertices[j].posH = mul(vertices[j].posH, gOrthoMatrix);
     }
     
-    //vertices[4].color.a = vertices[4].color.a / 2;
-    
     output.Append(vertices[0]);
     output.Append(vertices[1]);
     output.Append(vertices[2]);
@@ -155,9 +153,9 @@ void GS(point UIVertexIn input[1], inout TriangleStream<POINTVertexOut> output)
     }
 }
 
-PointPSOut PS(POINTVertexOut pin)
+UIPSOut PS(POINTVertexOut pin)
 {
-    PointPSOut result;
+    UIPSOut result;
     result.color = float4(0, 0, 0, 0);
     result.objectID = pin.objectID;
 

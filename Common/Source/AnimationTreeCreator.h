@@ -44,6 +44,8 @@ public:
 	physx::PxVec2			GetPos() const;
 	const physx::PxVec2&	GetSize() const;
 
+	void					SetPos(const physx::PxVec2& pos);
+
 private:
 	virtual void Init() override;
 	virtual void Update(float delta) override;
@@ -131,6 +133,7 @@ private:
 	void ChangeType(UIParam* target, CGH::UnionData* data);
 	void AddParam(AniTree::AniArrow* arrow);
 	void DeleteArrow(AniTree::AniArrow* arrow);
+	void DeleteNode(AniTree::AniNode* node);
 
 	void SelectNullTree();
 	void ChangedTree();

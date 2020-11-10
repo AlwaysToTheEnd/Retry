@@ -60,5 +60,11 @@ struct PSOut
 struct PointPSOut
 {
     float4 color : SV_Target0;
+    int objectID : SV_Target3;
+};
+
+struct UIPSOut
+{
+    float4 color : SV_Target0;
     int objectID : SV_Target1;
 };

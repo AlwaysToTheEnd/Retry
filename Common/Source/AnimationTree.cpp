@@ -353,8 +353,11 @@ void AniTree::AnimationTree::DeleteNode(const AniNode* node)
 	{
 		if (node == &m_AniNodes[i])
 		{
+			DeleteArrow(m_AniNodes[i].GetNodeID());
+
 			m_AniNodes[i] = m_AniNodes.back();
 			m_AniNodes.pop_back();
+			m_CurrAniNodeIndex = 0;
 			break;
 		}
 	}
@@ -367,8 +370,21 @@ void AniTree::AnimationTree::DeleteArrow(const AniArrow* arrow)
 		if (arrow == &m_Arrows[i])
 		{
 			m_Arrows[i] = m_Arrows.back();
-			m_AniNodes.pop_back();
+			m_Arrows.pop_back();
 			break;
+		}
+	}
+}
+
+void AniTree::AnimationTree::DeleteArrow(unsigned int nodeID)
+{
+	for (size_t i = 0; i < m_Arrows.size(); i++)
+	{
+		if (nodeID == m_Arrows[i].nodeID || nodeID == m_Arrows[i].targetNodeID)
+		{
+			m_Arrows[i] = m_Arrows.back();
+			m_Arrows.pop_back();
+			i--;
 		}
 	}
 }
@@ -457,7 +473,7 @@ AniTree::TriggerData::TriggerData(TRIGGER_TYPE type, CGH::UnionData standard)
 	:m_TriggerType(type)
 	, m_Standard(standard)
 {
-	m_Trigger._i = 0;
+	ZeroMemory(&m_Trigger, sizeof(CGH::UnionData));
 }
 
 int AniTree::TriggerData::IsTriggerOK()

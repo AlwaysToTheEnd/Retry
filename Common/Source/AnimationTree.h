@@ -47,6 +47,11 @@ namespace AniTree
 
 	struct AniArrow
 	{
+		AniArrow()
+		{
+			triggers.reserve(16);
+		}
+
 		TO_ANI_ARROW_TYPE			type = TO_ANI_NODE_TYPE_ONE_OK;
 		bool						aniEndIsChange = false;
 		unsigned int				nodeID = 0;
@@ -75,10 +80,19 @@ namespace AniTree
 		{
 		}
 
+		virtual ~AniNode()
+		{
+
+		}
+
 		AniNode& operator=(const AniNode& rhs)
 		{
-			memcpy(this, &rhs, sizeof(AniNode));
+			m_Pos = rhs.m_Pos;
+			m_AniEndTime = rhs.m_AniEndTime;
+			m_CurrTime = rhs.m_CurrTime;
 			m_TargetAniName = rhs.m_TargetAniName;
+			m_NodeID = rhs.m_NodeID;
+			m_RoofAni = rhs.m_RoofAni;
 
 			return *this;
 		}
@@ -106,7 +120,6 @@ namespace AniTree
 		double					m_CurrTime;
 		std::string				m_TargetAniName;
 		unsigned int			m_NodeID;
-
 		bool					m_RoofAni;
 	};
 
@@ -142,6 +155,7 @@ namespace AniTree
 		void AddArrow(const AniArrow& arrow) { m_Arrows.push_back(arrow); }
 		void DeleteNode(const AniNode* node);
 		void DeleteArrow(const AniArrow* arrow);
+		void DeleteArrow(unsigned int nodeID);
 
 		void SetCurrSkinName(const std::string& name) { m_CurrSkinName = name; }
 		void SetCurrMeshName(const std::string& name) { m_CurrMeshName = name; }
