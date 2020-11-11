@@ -7,7 +7,7 @@ void HeightMapCreateScene::Init()
 	CreateGameObject<GameCreator>();
 }
 
-bool HeightMapCreateScene::Update(const DirectX::Mouse::ButtonStateTracker& mouse, float delta)
+void HeightMapCreateScene::Update(const DirectX::Mouse::ButtonStateTracker& mouse, float delta)
 {
-	return CGHScene::Update(mouse, delta);
+	CGHScene::Update(mouse, delta);
 }

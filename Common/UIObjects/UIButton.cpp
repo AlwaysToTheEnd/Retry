@@ -6,7 +6,6 @@ void UIButton::Init()
 {
 	m_Trans = CreateComponenet<DOTransform>();
 	m_Font = CreateComponenet<DOFont>();
-	m_UICollision = CreateComponenet<DOUICollision>();
 
 	m_Font->SetFont(RenderFont::fontNames.front());
 }
@@ -24,8 +23,6 @@ void UIButton::Update(float delta)
 	{
 
 	}
-
-	SetUICollisionSize(m_UICollision);
 }
 
 void UIButton::SetPos(const physx::PxVec3& pos)
@@ -82,19 +79,26 @@ void UIButton::SetSize(const physx::PxVec2& size)
 
 	RenderInfo& info = m_Render->GetRenderInfo();
 	info.uiInfo.size = m_Size;
-
-	if (m_UICollision)
-	{
-		SetUICollisionSize(m_UICollision);
-	}
 }
 
-void UIButton::AddFunc(std::function<void()> func)
+void UIButton::AddFunc(std::function<void()> func, DirectX::Mouse::ButtonStateTracker::ButtonState state)
 {
-	m_UICollision->AddFunc(func);
+	if (m_Render && !m_isOnlyFontMode)
+	{
+		m_Render->AddPixelFunc(func, state, DirectX::MOUSEBUTTONINDEX::LEFTBUTTON);
+	}
+	else
+	{
+		m_Font->AddPixelFunc(func, state, DirectX::MOUSEBUTTONINDEX::LEFTBUTTON);
+	}
 }
 
 void UIButton::ClearFunc()
 {
-	m_UICollision->ClearFunc();
+	if (m_Render)
+	{
+		m_Render->ClearPixelFunc();
+	}
+
+	m_Font->ClearPixelFunc();
 }

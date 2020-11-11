@@ -10,7 +10,6 @@ GameObject::GameObject(CGHScene& scene, GameObject* parent, const char* typeName
 	, m_Parent(parent)
 	, m_TypeName(typeName)
 	, m_IsActive(true)
-	, m_State(CLICKEDSTATE::NONE)
 {
 	
 }

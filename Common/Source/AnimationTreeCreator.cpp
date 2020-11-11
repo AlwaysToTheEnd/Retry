@@ -11,7 +11,6 @@ using namespace AniTree;
 void AniNodeVisual::Init()
 {
 	m_Panel = CreateComponenet<UIPanel>(true);
-	m_PanelCol = m_Panel->GetComponent<DOUICollision>();
 
 	m_Panel->SetSize(physx::PxVec2(100, 60));
 	m_Panel->SetPos({ 300,300 });
@@ -22,7 +21,8 @@ void AniNodeVisual::Init()
 		m_Panel->DeleteAllComs();
 
 		auto closeButton = m_Panel->CreateComponenet<UIButton>(true);
-		closeButton->AddFunc(std::bind(&AniNodeVisual::DeleteAniNode, this));
+		closeButton->AddFunc(std::bind(&AniNodeVisual::DeleteAniNode, this), 
+			DirectX::Mouse::ButtonStateTracker::RELEASED);
 		closeButton->SetTexture(InputTN::Get("AniNodeVisualPanel_Delete"), { 10,10 });
 		m_Panel->AddUICom(closeButton);
 
@@ -80,17 +80,12 @@ void AniNodeVisual::SetRenderValue(AniTree::AniNode* node, std::function<void()>
 	m_CurrAniName = node->GetAniName();
 	node->SetPos(m_Panel->GetPos());
 
-	m_PanelCol->ClearFunc();
-	if (excuteFunc)
-	{
-		m_PanelCol->AddFunc(excuteFunc);
-	}
-
 	m_DeleteAninodeFunc = deleteFunc;
 
 	m_RoofControlButton->ClearFunc();
 	m_RoofControlButton->SetText(L"AniRoof:" + std::wstring(node->IsRoofAni() ? L"true" : L"false"));
-	m_RoofControlButton->AddFunc(std::bind(&AniNodeVisual::ChangeAniRoof, this, node, m_RoofControlButton));
+	m_RoofControlButton->AddFunc(std::bind(&AniNodeVisual::ChangeAniRoof, this, node, 
+		m_RoofControlButton), DirectX::Mouse::ButtonStateTracker::RELEASED);
 }
 
 void AniNodeVisual::SetSkinAnimationInfoVectorPtr(const std::vector<std::string>* aniNames, const std::vector<double>* aniEnds)
@@ -121,7 +116,6 @@ void AniArowVisual::Init()
 {
 	m_Transform = CreateComponenet<DOTransform>();
 	m_Renderer = CreateComponenet<DORenderer>();
-	m_UICollison = CreateComponenet<DOUICollision>();
 	m_Transform->SetPosZ(0.4f);
 }
 
@@ -219,17 +213,6 @@ void AniArowVisual::SetRenderValue(const physx::PxVec2& _from, const physx::PxVe
 	renderInfo.point.size.x = halfLength;
 	renderInfo.point.size.y = 10;
 
-	if (m_UICollison)
-	{
-		m_UICollison->SetSize({ halfLength ,10.0f });
-		m_UICollison->ClearFunc();
-
-		if (excuteFunc)
-		{
-			m_UICollison->AddFunc(excuteFunc);
-		}
-	}
-
 	m_Renderer->SetRenderInfo(renderInfo);
 }
 
@@ -290,7 +273,8 @@ void VisualizedAniTreeCreator::Init()
 	nullTreeButton->SetText(L"AddNullTree");
 	nullTreeButton->OnlyFontMode();
 	nullTreeButton->SetTextHeight(15);
-	nullTreeButton->AddFunc(std::bind(&VisualizedAniTreeCreator::SelectNullTree, this));
+	nullTreeButton->AddFunc(std::bind(&VisualizedAniTreeCreator::SelectNullTree, this), 
+		DirectX::Mouse::ButtonStateTracker::RELEASED);
 	m_WorkPanel->AddUICom(nullTreeButton);
 	posY += 20;
 
@@ -301,7 +285,8 @@ void VisualizedAniTreeCreator::Init()
 	button->SetText(L"AddNode");
 	button->OnlyFontMode();
 	button->SetTextHeight(15);
-	button->AddFunc(std::bind(&VisualizedAniTreeCreator::AddNode, this));
+	button->AddFunc(std::bind(&VisualizedAniTreeCreator::AddNode, this),
+		DirectX::Mouse::ButtonStateTracker::RELEASED);
 	m_WorkPanel->AddUICom(button);
 	posY += 20;
 
@@ -314,7 +299,8 @@ void VisualizedAniTreeCreator::Init()
 		skinbutton->SetText(skinName);
 		skinbutton->OnlyFontMode();
 		skinbutton->SetTextHeight(15);
-		skinbutton->AddFunc(std::bind(&VisualizedAniTreeCreator::SelectSkinnedData, this, it));
+		skinbutton->AddFunc(std::bind(&VisualizedAniTreeCreator::SelectSkinnedData, this, it),
+			DirectX::Mouse::ButtonStateTracker::RELEASED);
 		m_WorkPanel->AddUICom(skinbutton);
 		posY += 20;
 	}
@@ -323,7 +309,8 @@ void VisualizedAniTreeCreator::Init()
 	testbutton->SetText(L"SaveButton");
 	testbutton->OnlyFontMode();
 	testbutton->SetTextHeight(15);
-	testbutton->AddFunc(std::bind(&VisualizedAniTreeCreator::SaveTree, this));
+	testbutton->AddFunc(std::bind(&VisualizedAniTreeCreator::SaveTree, this),
+		DirectX::Mouse::ButtonStateTracker::RELEASED);
 	m_WorkPanel->AddUICom(testbutton);
 
 	m_Renderer->SetActive(false);
@@ -335,6 +322,11 @@ void VisualizedAniTreeCreator::Update(float delta)
 	{
 		CancleExcute();
 		m_ArrowAttributePanel->UIOff();
+	}
+
+	if (m_NextTimeCancle)
+	{
+		CancleExcute();
 	}
 
 	if (m_CurrTree)
@@ -391,14 +383,8 @@ void VisualizedAniTreeCreator::Update(float delta)
 			}
 			else
 			{
-				if (GETMOUSE(this))
-				{
-					m_CurrMousePos = mouse->GetMousePos();
-				}
-				else
-				{
-					CancleExcute();
-				}
+				m_NextTimeCancle = GETAPP->IsMouseButtonClicked(DirectX::MOUSEBUTTONINDEX::LEFTBUTTON);
+				m_CurrMousePos = GETMOUSEPOS;
 
 				m_AniArowVs[i]->SetRenderValue(from.pos, from.size, m_CurrMousePos, {}, nullptr, isIniting);
 			}
@@ -448,6 +434,8 @@ void VisualizedAniTreeCreator::CancleExcute()
 		assert(arrows.size() == m_CurrInitingArrowIndex);
 		m_CurrInitingArrowIndex = -1;
 	}
+
+	m_NextTimeCancle = false;
 }
 
 void VisualizedAniTreeCreator::SetAnimationTreeListsParamToPanel(int posX, int posY, UIPanel* workPanel)
@@ -547,8 +535,8 @@ void VisualizedAniTreeCreator::SetAniArrowAttributePanel(AniTree::AniArrow* arro
 			break;
 		}
 
-		triggerParam->GetComponent<DOUICollision>()->AddFunc(std::bind(
-			&VisualizedAniTreeCreator::ChangeType, this, triggerParam, &it.m_Standard));
+		/*triggerParam->GetComponent<DOPixelCollision>()->AddFunc(std::bind(
+			&VisualizedAniTreeCreator::ChangeType, this, triggerParam, &it.m_Standard));*/
 
 		m_ArrowAttributePanel->AddUICom(triggerParam);
 	}
@@ -557,7 +545,8 @@ void VisualizedAniTreeCreator::SetAniArrowAttributePanel(AniTree::AniArrow* arro
 	addButton->SetTexture(
 		InputTN::Get("AniTreeArrowArttributePanel_AddButton"),
 		{ 10,5 });
-	addButton->AddFunc(std::bind(&VisualizedAniTreeCreator::AddParam, this, arrow));
+	addButton->AddFunc(std::bind(&VisualizedAniTreeCreator::AddParam, this, arrow), 
+		DirectX::Mouse::ButtonStateTracker::RELEASED);
 
 	m_ArrowAttributePanel->AddUICom(addButton);
 
@@ -565,7 +554,8 @@ void VisualizedAniTreeCreator::SetAniArrowAttributePanel(AniTree::AniArrow* arro
 	deleteButton->SetTexture(
 		InputTN::Get("AniTreeArrowArttributePanel_DeleteButton"),
 		{ 10,5 });
-	deleteButton->AddFunc(std::bind(&VisualizedAniTreeCreator::DeleteArrow, this, arrow));
+	deleteButton->AddFunc(std::bind(&VisualizedAniTreeCreator::DeleteArrow, this, arrow),
+		DirectX::Mouse::ButtonStateTracker::RELEASED);
 	m_ArrowAttributePanel->AddUICom(deleteButton);
 }
 

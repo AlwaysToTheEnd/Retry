@@ -117,9 +117,6 @@
     <ClCompile Include="..\Common\UIObjects\UIButton.cpp">
       <Filter>Common\UIObjects</Filter>
     </ClCompile>
-    <ClCompile Include="..\Common\UIObjects\UIParam.cpp">
-      <Filter>Common\UIObjects</Filter>
-    </ClCompile>
     <ClCompile Include="..\Common\Source\StaticObject.cpp">
       <Filter>Common\CodeResources\BaseClass</Filter>
     </ClCompile>
@@ -224,6 +221,9 @@
     </ClCompile>
     <ClCompile Include="..\Common\Source\MeshReplacer.cpp">
       <Filter>Common\CodeResources\MeshReplacer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\UIObjects\UIParam.cpp">
+      <Filter>Common\UIObjects</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -3,7 +3,7 @@
 
 DeviceObject::DeviceObject(CGHScene& scene, GameObject* parent, const char* typeName)
 	: GameObject(scene, parent, typeName)
-	, m_ID(-1)
+	, m_DeviceOBID(-1)
 {
 
 }

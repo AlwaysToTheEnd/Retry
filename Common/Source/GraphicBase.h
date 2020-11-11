@@ -78,7 +78,7 @@ struct RenderInfo
 		, world(physx::PxIdentity)
 		, scale(1,1,1)
 		, boundSphereRad(1.0f)
-		, objectID(-1)
+		, pixelColID(-1)
 	{
 		lightInfo = {};
 	}
@@ -89,7 +89,7 @@ struct RenderInfo
 		type = src.type;
 		world = src.world;
 		scale = src.scale;
-		objectID = src.objectID;
+		pixelColID = src.pixelColID;
 		boundSphereRad = src.boundSphereRad;
 		meshOrTextureName = src.meshOrTextureName;
 	}
@@ -105,7 +105,7 @@ struct RenderInfo
 		type = src.type;
 		world = src.world;
 		scale = src.scale;
-		objectID = src.objectID;
+		pixelColID = src.pixelColID;
 		boundSphereRad = src.boundSphereRad;
 		meshOrTextureName = src.meshOrTextureName;
 
@@ -116,7 +116,7 @@ struct RenderInfo
 	physx::PxMat44	world;
 	physx::PxVec3	scale;
 	float			boundSphereRad;
-	int				objectID;
+	int				pixelColID;
 	std::string		meshOrTextureName;
 
 	union
@@ -145,6 +145,7 @@ struct RenderFont
 	std::wstring		printString;
 	float				rotation = 0;
 	int					fontHeight = -1;
+	int					pixelColID = -1;
 	physx::PxVec2		benchmark;
 	physx::PxVec3		pos = { 0, 0, 0 };
 	physx::PxVec4		color = { 0,0,0,1 };

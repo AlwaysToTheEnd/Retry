@@ -9,7 +9,7 @@ void AniTreeScene::Init()
 	CreateGameObject<GameLight>()->SetDirectionalLight({ 1,1,1 }, { 0,-1,0 });
 }
 
-bool AniTreeScene::Update(const DirectX::Mouse::ButtonStateTracker& mouse, float delta)
+void AniTreeScene::Update(const DirectX::Mouse::ButtonStateTracker& mouse, float delta)
 {
-	return CGHScene::Update(mouse, delta);
+	CGHScene::Update(mouse, delta);
 }

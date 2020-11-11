@@ -8,9 +8,10 @@
 #include "GameTimer.h"
 
 #define GETAPP D3DApp::GetApp()
-#define GETKEY(T) const DirectX::Keyboard::KeyboardStateTracker* keyboard = (D3DApp::GetApp()->GetKeyBoard(T))
+#define GETMOUSEPOS D3DApp::GetApp()->GetMousePos()
+#define GETMOUSEMOUVEDVALUE D3DApp::GetApp()->GetMouseMovedValue()
+#define GETKEY D3DApp::GetApp()->GetKeyBoard()
 #define PUSHEDESC D3DApp::GetApp()->IsPushedESC()
-#define GETMOUSE(T) const DirectX::Mouse::ButtonStateTracker* mouse = (D3DApp::GetApp()->GetMouse(T))
 #define HOLDCANCLE(T) D3DApp::GetApp()->InputDeviceHoldCancle(T)
 #define DEFAULTWINDOWSIZE 900
 
@@ -51,14 +52,14 @@ public:
 	bool			Initialize();
 	int				Run();
 
-	void											InputDeviceHoldRequest(const GameObject* const caller);
-	void											InputDeviceHoldCancle(const GameObject* const caller);
-	const DirectX::Keyboard::KeyboardStateTracker*	GetKeyBoard(const GameObject* const caller);
-	const DirectX::Mouse::ButtonStateTracker*		GetMouse(const GameObject* const caller);
+	const DirectX::Keyboard::KeyboardStateTracker&	GetKeyBoard();
 	bool											IsPushedESC() { return m_IsPushedESC; }
 
 	void											GetMouseRay(physx::PxVec3& origin, physx::PxVec3& ray) const { origin = m_RayOrigin; ray = m_Ray; }
+	bool											IsMouseButtonClickedAndNotThisObject(DirectX::MOUSEBUTTONINDEX buttonIndex, int id);
+	bool											IsMouseButtonClicked(DirectX::MOUSEBUTTONINDEX buttonIndex);
 	physx::PxVec2									GetMousePos() const { return m_Camera.GetMousePos(); }
+	physx::PxVec2									GetMouseMovedValue() const { return m_MouseMovedValue; }
 	physx::PxVec2									GetClientSize() const { return m_GDevice->GetClientSize(); }
 	float											GetDeltaTime() const { return m_Timer.DeltaTime(); }
 
@@ -80,6 +81,7 @@ private:
 	void CameraMove();
 	void BaseUpdate();
 	void CalculateFrame();
+	void UpdatePixelFuncFromMouse();
 
 protected:
 	static D3DApp*							m_App;
@@ -88,14 +90,17 @@ protected:
 
 	DirectX::Mouse							m_Mouse;
 	DirectX::Mouse::ButtonStateTracker		m_MouseTracker;
+	physx::PxVec2							m_MousePrevPos;
+	physx::PxVec2							m_MouseMovedValue;
+	int										m_PrevPixelFuncIndex;
 
 	bool									m_IsPushedESC;
 	DirectX::Keyboard						m_Keyboard;
 	DirectX::Keyboard::KeyboardStateTracker	m_KeyboardTracker;
-	const GameObject*						m_CurrInputDeviceHoldObject;
 
 	physx::PxVec3							m_RayOrigin;
 	physx::PxVec3							m_Ray;
+	std::vector<int>						m_PixelFuncMap;
 
 	HINSTANCE	m_hAppInst = nullptr;
 	HWND		m_hMainWnd = nullptr;

@@ -209,6 +209,36 @@ bool DOAnimator::SelectAnimation(const std::string& name)
 	return false;
 }
 
+void DORenderer::DoFuncFromMouse(DirectX::Mouse::ButtonStateTracker::ButtonState state, DirectX::MOUSEBUTTONINDEX index)
+{
+	if (m_Funcs)
+	{
+		auto& indices = m_Funcs->buttonIndices;
+		auto& states = m_Funcs->states;
+
+		for (size_t i = 0; i < m_Funcs->funcs.size(); i++)
+		{
+			if (indices[i] == index && states[i] == state)
+			{
+				m_Funcs->funcs[i]();
+			}
+		}
+	}
+}
+
+void DORenderer::AddPixelFunc(std::function<void()> func,
+	DirectX::Mouse::ButtonStateTracker::ButtonState state, DirectX::MOUSEBUTTONINDEX index)
+{
+	if (m_Funcs==nullptr)
+	{
+		m_Funcs = std::make_unique<RenderFuncFromMouse>();
+	}
+	
+	m_Funcs->funcs.push_back(func);
+	m_Funcs->states.push_back(state);
+	m_Funcs->buttonIndices.push_back(index);
+}
+
 void DORenderer::Update(float delta)
 {
 	auto comTransform = m_Parent->GetComponent<DOTransform>();
@@ -242,6 +272,7 @@ void DORenderer::Update(float delta)
 		break;
 	}
 
+	m_RenderInfo.pixelColID = GetDeviceOBID();
 	m_ReservedRenderObjects->push_back(m_RenderInfo);
 }
 
@@ -251,8 +282,6 @@ void DORenderer::Init(PhysX4_1*, IGraphicDevice* graphicDevice)
 	{
 		m_ReservedRenderObjects = graphicDevice->GetReservedRenderInfoVector();
 	}
-
-	m_RenderInfo.objectID = GetID();
 }
 
 void DORenderer::RenderMesh()
@@ -275,9 +304,37 @@ void DORenderer::RenderMesh()
 	}
 }
 
+void DOFont::DoFuncFromMouse(DirectX::Mouse::ButtonStateTracker::ButtonState state, DirectX::MOUSEBUTTONINDEX index)
+{
+	if (m_Funcs)
+	{
+		auto& indices = m_Funcs->buttonIndices;
+		auto& states = m_Funcs->states;
+
+		for (size_t i = 0; i < m_Funcs->funcs.size(); i++)
+		{
+			if (indices[i] == index && states[i] == state)
+			{
+				m_Funcs->funcs[i]();
+			}
+		}
+	}
+}
+
+void DOFont::AddPixelFunc(std::function<void()> func, DirectX::Mouse::ButtonStateTracker::ButtonState state, DirectX::MOUSEBUTTONINDEX index)
+{
+	if (m_Funcs == nullptr)
+	{
+		m_Funcs = std::make_unique<RenderFuncFromMouse>();
+	}
+
+	m_Funcs->funcs.push_back(func);
+	m_Funcs->states.push_back(state);
+	m_Funcs->buttonIndices.push_back(index);
+}
+
 void DOFont::Update(float delta)
 {
-	//#TODO
 	if (m_Text.size())
 	{
 		RenderFont addedFont(m_FontName, m_Text);
@@ -286,6 +343,7 @@ void DOFont::Update(float delta)
 		addedFont.color = m_Color;
 		addedFont.drawSize = &m_DrawSize;
 		addedFont.benchmark = m_Benchmark;
+		addedFont.pixelColID = FONTRENDERERID(GetDeviceOBID());
 
 		m_ReservedRenderFonts->push_back(addedFont);
 	}

@@ -15,8 +15,8 @@ public:
 
 	virtual void	Delete() override;
 
-	void			SetID(unsigned int id) { m_ID = id; }
-	int				GetID() const { return m_ID; }
+	void			SetDeviceOBID(unsigned int id) { m_DeviceOBID = id; }
+	int				GetDeviceOBID() const { return m_DeviceOBID; }
 	virtual bool	IsObjectType(GAMEOBJECT_TYPE type) const override { return type & DEVICE_OBJECT; }
 	virtual void	Init(PhysX4_1* physxDevice, IGraphicDevice* graphicDevice) = 0;
 
@@ -25,5 +25,5 @@ protected:
 	void			Init() {}
 
 private:
-	int				m_ID;
+	int				m_DeviceOBID;
 };

@@ -10,7 +10,6 @@ void UIPanel::Init()
 {
 	m_Trans = CreateComponenet<DOTransform>();
 	m_Font = CreateComponenet<DOFont>();
-	m_UICollision = CreateComponenet<DOUICollision>();
 	m_Render = CreateComponenet<DORenderer>();
 
 	m_Trans->SetPosZ(0.8f);
@@ -20,6 +19,9 @@ void UIPanel::Init()
 	render.type = RENDER_UI;
 	render.uiInfo.uiType = UIPANEL;
 	render.uiInfo.color = { 0.2f, 0.2f, 0.2f, 0.7f };
+
+	m_Render->AddPixelFunc(std::bind(&UIPanelController::SortPanels, &s_PanelController, this),
+		DirectX::Mouse::ButtonStateTracker::PRESSED, DirectX::MOUSEBUTTONINDEX::LEFTBUTTON);
 }
 
 void UIPanel::Delete()
@@ -47,11 +49,6 @@ void UIPanel::AddUICom(UIObject* ui)
 	{
 		m_UIComs.push_back(ui);
 		ui->SetParent(this);
-
-		if (ui->Is<UIPanel>())
-		{
-			ui->Get<UIPanel>()->ThisPanalIsStatic();
-		}
 	}
 }
 
@@ -85,6 +82,12 @@ physx::PxVec2 UIPanel::GetPos()
 	return { m_Trans->GetTransform().p.x,m_Trans->GetTransform().p.y };
 }
 
+void UIPanel::SetMovedPanel()
+{
+	m_Render->AddPixelFunc(std::bind(&UIPanelController::MovePanel, &s_PanelController, this),
+		DirectX::Mouse::ButtonStateTracker::HELD, DirectX::MOUSEBUTTONINDEX::LEFTBUTTON);
+}
+
 void UIPanel::SetBackGroundColor(const physx::PxVec4& color)
 {
 	RenderInfo& info = m_Render->GetRenderInfo();
@@ -98,11 +101,6 @@ void UIPanel::SetSize(const physx::PxVec2& size)
 
 	RenderInfo& info = m_Render->GetRenderInfo();
 	info.uiInfo.size = m_Size;
-
-	if (m_UICollision)
-	{
-		SetUICollisionSize(m_UICollision);
-	}
 }
 
 void UIPanel::SetName(const std::wstring& name)
@@ -121,15 +119,6 @@ void UIPanel::SetPos(const physx::PxVec3& pos)
 	m_Trans->SetPosX(pos.x - m_Size.x * m_BenchUV.x);
 	m_Trans->SetPosY(pos.y - m_Size.y * m_BenchUV.y);
 	m_Trans->SetPosZ(pos.z);
-}
-
-void UIPanel::ThisPanalIsStatic()
-{
-	if (m_UICollision)
-	{
-		ExceptComponent(m_UICollision);
-		m_UICollision = nullptr;
-	}
 }
 
 void UIPanel::Update(float delta)
@@ -192,69 +181,6 @@ void UIPanel::UIPanelController::DeletedPanel(UIPanel* panel)
 	}
 }
 
-void UIPanel::UIPanelController::Update(float delta)
-{
-	if (m_CurrPanel)
-	{
-		if (GETMOUSE(m_CurrPanel->GetConstructor()))
-		{
-			auto mouseState = mouse->GetLastState();
-			physx::PxVec2 mousePos = physx::PxVec2(static_cast<float>(mouseState.x), static_cast<float>(mouseState.y));
-			m_PressedTime += delta;
-
-			auto state = m_CurrPanel->GetClickedState();
-			switch (state)
-			{
-			case GameObject::CLICKEDSTATE::HELD:
-			{
-				physx::PxVec2 moveValue = mousePos - m_PrevMousePos;
-				m_CurrPanel->GetComponent<DOTransform>()->AddVector({ static_cast<float>(moveValue.x),static_cast<float>(moveValue.y),0.0f });
-				m_PrevMousePos = mousePos;
-			}
-			break;
-			case GameObject::CLICKEDSTATE::NONE:
-			case GameObject::CLICKEDSTATE::MOUSEOVER:
-			case GameObject::CLICKEDSTATE::RELEASED:
-				WorkClear();
-				break;
-			default:
-				break;
-			}
-
-			if (mouse->leftButton == MOUSEState::RELEASED)
-			{
-				if (m_PressedTime > 0.1f)
-				{
-					HOLDCANCLE(m_CurrPanel->GetConstructor());
-				}
-
-				WorkClear();
-			}
-		}
-	}
-	else
-	{
-		for (auto& it : m_Panels)
-		{
-			if (it->GetClickedState() == GameObject::CLICKEDSTATE::PRESSED)
-			{
-				if (GETMOUSE(it->GetConstructor()))
-				{
-					auto mouseState = mouse->GetLastState();
-					physx::PxVec2 mousePos = physx::PxVec2(static_cast<float>(mouseState.x), static_cast<float>(mouseState.y));
-
-					m_PrevMousePos = mousePos;
-					m_PressedTime = 0;
-					m_CurrPanel = it;
-					SortPanels(it);
-				}
-
-				break;
-			}
-		}
-	}
-}
-
 void UIPanel::UIPanelController::SortPanels(UIPanel* currPanel)
 {
 	bool isChanged = false;
@@ -280,14 +206,15 @@ void UIPanel::UIPanelController::SortPanels(UIPanel* currPanel)
 			it->GetComponent<DOTransform>()->SetPosZ(posZ);
 		}
 	}
+
+	m_CurrPanel = currPanel;
 }
 
-void UIPanel::UIPanelController::WorkClear()
+void UIPanel::UIPanelController::MovePanel(UIPanel* currPanel)
 {
-	if (m_CurrPanel)
+	if (currPanel == m_CurrPanel)
 	{
-		m_CurrPanel = nullptr;
+		physx::PxVec2 movedValue = GETMOUSEMOUVEDVALUE;
+		currPanel->SetPos(currPanel->GetPos() + movedValue);
 	}
-
-	m_PressedTime = 0;
 }

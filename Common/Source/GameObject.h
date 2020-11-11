@@ -35,7 +35,6 @@ public:
 
 	template<typename T, typename ...Types> T*	CreateComponenet(bool dependent, Types... args);
 	template<typename T> T*						CreateComponenet();
-	void										SetClickedState(CLICKEDSTATE state) { m_State = state; }
 	void										SetParent(GameObject* parent);
 	virtual void								SetActive(bool value, bool components = false);
 
@@ -44,7 +43,6 @@ public:
 	virtual bool								IsObjectType(GAMEOBJECT_TYPE type) const { return false; }
 	bool										GetActive() const { return m_IsActive; }
 	const char*									GetTypeName() const { return m_TypeName; }
-	CLICKEDSTATE								GetClickedState() const { return m_State; }
 	const GameObject* const						GetConstructor() const;
 	template<typename T> T*						GetComponent();
 	template<typename T> std::vector<T*>		GetComponents();
@@ -63,7 +61,6 @@ protected:
 	const char*					m_TypeName;
 
 	bool						m_IsActive;
-	CLICKEDSTATE				m_State;
 	std::vector<GameObject*>	m_Components;
 };
 

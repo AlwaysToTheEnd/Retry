@@ -87,7 +87,7 @@ void DX12DrawSetNormalMesh::ReserveRender(const RenderInfo& info)
 	data.world = info.world;
 	data.scale = info.scale;
 	data.boundSphereRad = info.boundSphereRad;
-	data.objectID = info.objectID;
+	data.objectID = info.pixelColID;
 
 	for (auto& it : mesh.subs)
 	{

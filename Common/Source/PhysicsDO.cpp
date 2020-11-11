@@ -213,24 +213,6 @@ void DORigidStatic::Init(PhysX4_1* physxDevice, IGraphicDevice*)
 	physxDevice->GetScene(m_Scene)->addActor(*m_RigidBody);
 }
 
-void DOUICollision::Update(float delta)
-{
-	auto transform = m_Parent->GetComponent<DOTransform>();
-
-	if (transform)
-	{
-		physx::PxTransform wPos = transform->GetTransform();
-		wPos.p.x += m_Offset.x;
-		wPos.p.y += m_Offset.y;
-		m_ReservedUICol->push_back(UICollisions(m_Parent, wPos, m_Size, m_VoidFuncs));
-	}
-}
-
-void DOUICollision::Init(PhysX4_1* physxDevice, IGraphicDevice*)
-{
-	m_ReservedUICol = physxDevice->GetReservedUICollisionVector(m_Scene);
-}
-
 physx::PxMat44 DOTransform::GetRTMatrix() const
 {
 	return physx::PxMat44(m_Transform);

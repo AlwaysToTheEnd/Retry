@@ -16,6 +16,8 @@ DX12SwapChain::DX12SwapChain()
 	, m_SRVDescriptorSize(0)
 	, m_SpecPowBufferFormat(DXGI_FORMAT_UNKNOWN)
 	, m_ObjectIDFormat(DXGI_FORMAT_UNKNOWN)
+	, m_ClientWidth(0)
+	, m_ClientHeight(0)
 {
 }
 
@@ -109,6 +111,8 @@ void DX12SwapChain::ReSize(ID3D12GraphicsCommandList* cmd, unsigned int x, unsig
 		m_Resources[i] = nullptr;
 	}
 
+	m_PixelFuncReadBack = nullptr;
+
 	CreateResources(x, y);
 	CreateResourceViews();
 
@@ -142,7 +146,7 @@ void DX12SwapChain::GbufferSetting(ID3D12GraphicsCommandList* cmd)
 	cmd->ClearRenderTargetView(color, m_Zero, 0, nullptr);
 	cmd->ClearRenderTargetView(normal, m_Zero, 0, nullptr);
 	cmd->ClearRenderTargetView(specular, m_Zero, 0, nullptr);
-	cmd->ClearRenderTargetView(objectID, m_Zero, 0, nullptr);
+	cmd->ClearRenderTargetView(objectID, m_MinorIntiger, 0, nullptr);
 }
 
 void DX12SwapChain::PresentRenderTargetSetting(ID3D12GraphicsCommandList* cmd, const float clearColor[4])
@@ -154,7 +158,7 @@ void DX12SwapChain::PresentRenderTargetSetting(ID3D12GraphicsCommandList* cmd, c
 		present,
 	};
 
-	cmd->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_Resources[GBUFFER_RESOURCE_PRESENT + m_CurrBackBufferIndex].Get(),
+	cmd->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_Resources[GBUFFER_RESOURCE_PRESENT + static_cast<size_t>(m_CurrBackBufferIndex)].Get(),
 		D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
 
 	cmd->OMSetRenderTargets(_countof(renderTargetHandles), renderTargetHandles, false, nullptr);
@@ -183,8 +187,37 @@ void DX12SwapChain::UIRenderTargetSetting(ID3D12GraphicsCommandList* cmd)
 
 void DX12SwapChain::RenderEnd(ID3D12GraphicsCommandList* cmd)
 {
-	cmd->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_Resources[GBUFFER_RESOURCE_PRESENT + m_CurrBackBufferIndex].Get(),
-		D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
+	CD3DX12_RESOURCE_BARRIER barriers[3] = {};
+	barriers[0] = CD3DX12_RESOURCE_BARRIER::Transition(m_Resources[GBUFFER_RESOURCE_PRESENT + static_cast<size_t>(m_CurrBackBufferIndex)].Get(),
+		D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
+	barriers[1] = CD3DX12_RESOURCE_BARRIER::Transition(m_Resources[GBUFFER_RESOURCE_OBJECTID].Get(),
+		D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COPY_SOURCE);
+	barriers[2] = CD3DX12_RESOURCE_BARRIER::Transition(m_Resources[GBUFFER_RESOURCE_OBJECTID].Get(),
+		D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET);
+
+	cmd->ResourceBarrier(2, barriers);
+
+	D3D12_TEXTURE_COPY_LOCATION src = {};
+	src.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
+	src.pResource = m_Resources[GBUFFER_RESOURCE_OBJECTID].Get();
+	src.SubresourceIndex = 0;
+
+	D3D12_TEXTURE_COPY_LOCATION dst = {};
+	D3D12_PLACED_SUBRESOURCE_FOOTPRINT dstFoot = {};
+	dst.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
+	dst.pResource = m_PixelFuncReadBack.Get();
+	
+	dstFoot.Offset = 0;
+	dstFoot.Footprint.Format = m_ObjectIDFormat;
+	dstFoot.Footprint.Depth = 1;
+	dstFoot.Footprint.Width = m_ClientWidth;
+	dstFoot.Footprint.Height = m_ClientHeight;
+	dstFoot.Footprint.RowPitch = m_PixelFuncReadBackRowPitch;
+
+	dst.PlacedFootprint = dstFoot;
+	
+	cmd->CopyTextureRegion(&dst, 0, 0, 0, &src, nullptr);
+	cmd->ResourceBarrier(1, &barriers[2]);
 }
 
 void DX12SwapChain::Present()
@@ -213,6 +246,22 @@ void DX12SwapChain::GetRenderGBufferFormat(std::vector<DXGI_FORMAT>& out)
 	out.push_back(m_NormalBufferFormat);
 	out.push_back(m_SpecPowBufferFormat);
 	out.push_back(m_ObjectIDFormat);
+}
+
+void DX12SwapChain::GetPixelFuncMap(std::vector<int>& out)
+{
+	BYTE* readBackData = nullptr;
+	out.resize(static_cast<size_t>(m_ClientHeight) * m_ClientWidth);
+
+	ThrowIfFailed(m_PixelFuncReadBack->Map(0, nullptr, reinterpret_cast<void**>(&readBackData)));
+
+	for (size_t i = 0; i < m_ClientHeight; i++)
+	{
+		memcpy(&out[m_ClientWidth * i], readBackData, sizeof(int)* m_ClientWidth);
+		readBackData += m_PixelFuncReadBackRowPitch;
+	}
+
+	m_PixelFuncReadBack->Unmap(0, nullptr);
 }
 
 ID3D12Resource* DX12SwapChain::GetObjectIDTexture()
@@ -259,6 +308,9 @@ D3D12_GPU_DESCRIPTOR_HANDLE DX12SwapChain::GetSRVsGPU() const
 
 void DX12SwapChain::CreateResources(unsigned int x, unsigned int y)
 {
+	m_ClientHeight = y;
+	m_ClientWidth = x;
+
 	ThrowIfFailed(m_SwapChain->ResizeBuffers(m_NumSwapBuffer,
 		x, y, m_PresentBufferFormat, DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH));
 	m_CurrBackBufferIndex = 0;
@@ -324,6 +376,21 @@ void DX12SwapChain::CreateResources(unsigned int x, unsigned int y)
 	dsDesc.SampleDesc.Count = 1;
 	dsDesc.SampleDesc.Quality = 0;
 
+	m_PixelFuncReadBackRowPitch = (static_cast<UINT64>(x) * sizeof(int) + 255) & ~255;
+
+	D3D12_RESOURCE_DESC texFuncDesc = {};
+	texFuncDesc.Alignment = 0;
+	texFuncDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
+	texFuncDesc.Format = DXGI_FORMAT_UNKNOWN;
+	texFuncDesc.DepthOrArraySize = 1;
+	texFuncDesc.MipLevels = 1;
+	texFuncDesc.Width = m_PixelFuncReadBackRowPitch * y;
+	texFuncDesc.Height = 1;
+	texFuncDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
+	texFuncDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
+	texFuncDesc.SampleDesc.Count = 1;
+	texFuncDesc.SampleDesc.Quality = 0;
+
 	for (size_t i = 0; i < m_NumSwapBuffer; i++)
 	{
 		ThrowIfFailed(m_SwapChain->GetBuffer(CGH::SizeTTransUINT(i), IID_PPV_ARGS(m_Resources[GBUFFER_RESOURCE_PRESENT + i].GetAddressOf())));
@@ -351,6 +418,7 @@ void DX12SwapChain::CreateResources(unsigned int x, unsigned int y)
 		D3D12_RESOURCE_STATE_RENDER_TARGET, &clearValue, IID_PPV_ARGS(m_Resources[GBUFFER_RESOURCE_SPECPOWER].GetAddressOf())));
 
 	clearValue.Format = objectIDDesc.Format;
+	memcpy(clearValue.Color, m_MinorIntiger, sizeof(m_MinorIntiger));
 
 	ThrowIfFailed(m_Device->CreateCommittedResource(
 		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT), D3D12_HEAP_FLAG_NONE, &objectIDDesc,
@@ -367,6 +435,10 @@ void DX12SwapChain::CreateResources(unsigned int x, unsigned int y)
 	//ThrowIfFailed(m_Device->CreateCommittedResource(
 	//	&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT), D3D12_HEAP_FLAG_NONE, &dsDesc,
 	//	D3D12_RESOURCE_STATE_COMMON, &clearValue, IID_PPV_ARGS(m_UIDepthStencil.GetAddressOf())));
+
+	ThrowIfFailed(m_Device->CreateCommittedResource(
+		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_READBACK), D3D12_HEAP_FLAG_NONE, &texFuncDesc,
+		D3D12_RESOURCE_STATE_COPY_DEST, nullptr, IID_PPV_ARGS(m_PixelFuncReadBack.GetAddressOf())));
 }
 
 

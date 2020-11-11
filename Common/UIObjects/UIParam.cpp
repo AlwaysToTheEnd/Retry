@@ -9,11 +9,7 @@ UIParam::ParamController UIParam::s_ParamController;
 
 void UIParam::Delete()
 {
-	if (m_Selected)
-	{
-		s_ParamController.WorkClear();
-	}
-
+	s_ParamController.WorkClear();
 	GameObject::Delete();
 }
 
@@ -76,8 +72,8 @@ void UIParam::Init()
 
 	if (m_Type == UIPARAMTYPE::MODIFIER)
 	{
-		m_UICollision = CreateComponenet<DOUICollision>();
-		m_UICollision->AddFunc(std::bind(&UIParam::SetUIParamToController, this));
+		m_Font->AddPixelFunc(std::bind(&ParamController::SetUIParam, &s_ParamController, this),
+			DirectX::Mouse::ButtonStateTracker::RELEASED, DirectX::MOUSEBUTTONINDEX::LEFTBUTTON);
 	}
 }
 
@@ -104,9 +100,8 @@ void UIParam::Update(float delta)
 		case UIParam::UIPARAMTYPE::MODIFIER:
 		{
 			m_Size = m_Font->m_DrawSize;
-			SetUICollisionSize(m_UICollision);
 
-			if (!m_Selected)
+			if (!s_ParamController.IsSelected(this))
 			{
 				text += GetDataString();
 				m_Font->m_Color = { 1,1,1,1 };
@@ -145,9 +140,9 @@ void UIParam::Update(float delta)
 	m_Size.y = pos.y - topY + m_Font->m_FontHeight;
 }
 
-void UIParam::SetUIParamToController()
+int UIParam::GetPixelFuncID()
 {
-	s_ParamController.SetUIParam(this);
+	return FONTRENDERERID(m_Font->GetDeviceOBID());
 }
 
 std::wstring UIParam::GetDataString()
@@ -177,7 +172,7 @@ std::wstring UIParam::GetDataString()
 			break;
 		}
 	}
-		break;
+	break;
 	case UIParam::UICONTROLTYPE::ENUM_DATA:
 	{
 		int paramValue = *reinterpret_cast<int*>(m_ParamPtr);
@@ -200,13 +195,13 @@ std::wstring UIParam::GetDataString()
 			result = element.elementName + L"(" + std::to_wstring(element.value) + L")";
 		}
 	}
-		break;
+	break;
 	case UIParam::UICONTROLTYPE::STRING_DATA:
 	{
 		std::string* targetString = reinterpret_cast<std::string*>(m_ParamPtr);
 		result.insert(result.end(), targetString->begin(), targetString->end());
 	}
-		break;
+	break;
 	default:
 		break;
 	}
@@ -216,64 +211,51 @@ std::wstring UIParam::GetDataString()
 
 void UIParam::ParamController::Update(float delta)
 {
-	if (m_CurrParam)
+	if (m_NextTimeClose)
 	{
-		if (GETKEY(m_CurrParam->GetConstructor()))
+		WorkClear();
+		WorkEnd();
+	}
+	else if (m_CurrParam)
+	{
+		m_NextTimeClose = GETAPP->IsMouseButtonClickedAndNotThisObject(DirectX::MOUSEBUTTONINDEX::LEFTBUTTON, 
+			m_CurrParam->GetPixelFuncID());
+
+		auto& keyboard = GETKEY;
+
+		if (keyboard.IsKeyPressed(KEYState::Enter))
 		{
-			m_CurrParam->Selected(true);
-
-			if (m_CurrParam->m_EnumElementInfo)
+			Excute();
+			return;
+		}
+		else if (keyboard.IsKeyPressed(KEYState::Back))
+		{
+			if (m_InputData.size())
 			{
-
-			}
-			else
-			{
-				if (keyboard->IsKeyPressed(KEYState::Enter))
-				{
-					Excute();
-					WorkClear();
-					WorkEnd();
-					return;
-				}
-				else if (keyboard->IsKeyPressed(KEYState::Back))
-				{
-					if (m_InputData.size())
-					{
-						m_InputData.pop_back();
-					}
-				}
-				else if (keyboard->IsKeyPressed(KEYState::OemMinus))
-				{
-					if (m_InputData.size() == 0)
-					{
-						m_InputData += '-';
-					}
-				}
-				else if (keyboard->IsKeyPressed(KEYState::OemPeriod))
-				{
-					m_InputData += '.';
-				}
-				else
-				{
-					for (auto key = KEYState::D0; key <= KEYState::D9; key = static_cast<KEYState>(key + 1))
-					{
-						if (keyboard->IsKeyPressed(key))
-						{
-							m_InputData += ('0' + key - KEYState::D0);
-							break;
-						}
-					}
-				}
+				m_InputData.pop_back();
 			}
 		}
-		else if(GETKEY(m_EnumSelectPanel->GetConstructor()))
+		else if (keyboard.IsKeyPressed(KEYState::OemMinus))
 		{
+			if (m_InputData.size() == 0)
+			{
+				m_InputData += '-';
+			}
+		}
+		else if (keyboard.IsKeyPressed(KEYState::OemPeriod))
+		{
+			m_InputData += '.';
 		}
 		else
 		{
-			WorkClear();
-			WorkEnd();
-			return;
+			for (auto key = KEYState::D0; key <= KEYState::D9; key = static_cast<KEYState>(key + 1))
+			{
+				if (keyboard.IsKeyPressed(key))
+				{
+					m_InputData += ('0' + key - KEYState::D0);
+					break;
+				}
+			}
 		}
 
 		m_CurrParam->m_Font->m_Text.clear();
@@ -281,15 +263,13 @@ void UIParam::ParamController::Update(float delta)
 	}
 }
 
-
-
 void UIParam::ParamController::WorkClear()
 {
 	m_InputData.clear();
+	m_NextTimeClose = false;
 
 	if (m_CurrParam)
 	{
-		m_CurrParam->Selected(false);
 		m_CurrParam = nullptr;
 	}
 
@@ -326,33 +306,31 @@ void UIParam::ParamController::Excute()
 			m_CurrParam->m_DirtyCall();
 		}
 	}
+
+	WorkClear();
+	WorkEnd();
 }
 
 void UIParam::ParamController::SetUIParam(UIParam* uiParam)
 {
 	WorkStart();
+	WorkClear();
 
-	if (uiParam && m_CurrParam != uiParam)
+	m_CurrParam = uiParam;
+
+	if (m_CurrParam->m_ParamPtr)
 	{
-		if (uiParam->m_ParamPtr)
+		switch (m_CurrParam->m_ControlType)
 		{
-			if (m_CurrParam)
-			{
-				WorkClear();
-			}
-
-			m_CurrParam = uiParam;
-			m_CurrParam->Selected(true);
-			m_InputData.clear();
-
-			switch (m_CurrParam->m_ControlType)
-			{
-			case UIParam::UICONTROLTYPE::ENUM_DATA:
-			case UIParam::UICONTROLTYPE::STRING_DATA:
-				CreateSubPanel(m_CurrParam);
+		case UIParam::UICONTROLTYPE::ENUM_DATA:
+		case UIParam::UICONTROLTYPE::STRING_DATA:
+			CreateSubPanel(m_CurrParam);
 			break;
-			}
 		}
+	}
+	else
+	{
+		m_CurrParam = nullptr;
 	}
 }
 
@@ -379,11 +357,12 @@ void UIParam::ParamController::CreateSubPanel(UIParam* param)
 			button->SetText(it.elementName);
 			button->SetTextHeight(10);
 			button->OnlyFontMode();
-			button->AddFunc(std::bind(&UIParam::ParamController::SetEnumData, this, it.value));
+			button->AddFunc(std::bind(&UIParam::ParamController::SetEnumData, this, it.value),
+				DirectX::Mouse::ButtonStateTracker::ButtonState::RELEASED);
 
 			if (param->m_DirtyCall)
 			{
-				button->AddFunc(param->m_DirtyCall);
+				button->AddFunc(param->m_DirtyCall, DirectX::Mouse::ButtonStateTracker::ButtonState::RELEASED);
 			}
 
 			m_EnumSelectPanel->AddUICom(button);
@@ -400,11 +379,12 @@ void UIParam::ParamController::CreateSubPanel(UIParam* param)
 			button->SetText(temp);
 			button->SetTextHeight(15);
 			button->OnlyFontMode();
-			button->AddFunc(std::bind(&UIParam::ParamController::SetStringData, this, it));
+			button->AddFunc(std::bind(&UIParam::ParamController::SetStringData, this, it),
+				DirectX::Mouse::ButtonStateTracker::ButtonState::RELEASED);
 
 			if (param->m_DirtyCall)
 			{
-				button->AddFunc(param->m_DirtyCall);
+				button->AddFunc(param->m_DirtyCall, DirectX::Mouse::ButtonStateTracker::ButtonState::RELEASED);
 			}
 
 			m_EnumSelectPanel->AddUICom(button);

@@ -699,6 +699,11 @@ void GraphicDX12::Update(const CGHScene& scene, float delta)
 	m_SkinnedMeshDrawSet->UpdateAniBoneCB(m_ReservedAniBones);
 }
 
+void GraphicDX12::PixelFuncMapUpdate(std::vector<int>& pixelMap)
+{
+	m_Swap->GetPixelFuncMap(pixelMap);
+}
+
 void GraphicDX12::Draw()
 {
 	auto cmdListAlloc = m_CmdListAllocs[m_CurrFrame].Get();

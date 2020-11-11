@@ -77,7 +77,7 @@ void DX12DrawSetUI::ReserveRender(const RenderInfo& info)
 	temp.uiType = info.uiInfo.uiType;
 	temp.size = info.uiInfo.size;
 	temp.pos = info.world.getPosition();
-	temp.objectID = info.objectID;
+	temp.objectID = info.pixelColID;
 
 	if (info.meshOrTextureName.size())
 	{

@@ -107,37 +107,6 @@ private:
 	physx::PxRigidStatic* m_RigidBody;
 };
 
-class DOUICollision :public DeviceObject
-{
-public:
-	DOUICollision(CGHScene& scene, GameObject* parent, const char* typeName)
-		: DeviceObject(scene, parent, typeName)
-		, m_ReservedUICol(nullptr)
-		, m_Size(1,1)
-		, m_Offset(0,0)
-	{
-	}
-	virtual ~DOUICollision() = default;
-
-	const physx::PxVec2&	GetSize() const { return m_Size; }
-
-	void					SetSize(const physx::PxVec2& halfSize) { m_Size = halfSize; }
-	void					SetOffset(const physx::PxVec2& offset) { m_Offset = offset; }
-	void					AddFunc(std::function<void()> func) { m_VoidFuncs.push_back(func); }
-	void					ClearFunc() { m_VoidFuncs.clear(); }
-
-private:
-	virtual void	Update(float delta) override;
-	virtual void	Init(PhysX4_1* physxDevice, IGraphicDevice*);
-
-private:
-	std::vector<UICollisions>* 				m_ReservedUICol;
-
-	physx::PxVec2							m_Size;
-	physx::PxVec2							m_Offset;
-	std::vector<std::function<void()>>		m_VoidFuncs;
-};
-
 class DOTransform :public DeviceObject
 {
 public:

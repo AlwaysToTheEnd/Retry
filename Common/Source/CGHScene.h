@@ -13,6 +13,8 @@ class IGraphicDevice;
 class PhysX4_1;
 class GameObject;
 
+#define FONTRENDERERID(T) -(T+2)
+
 class CGHScene
 {
 	friend class GameObject;
@@ -23,7 +25,8 @@ public:
 	virtual ~CGHScene();
 	
 	virtual void		Init() = 0;
-	virtual bool		Update(const DirectX::Mouse::ButtonStateTracker& mouse, float delta);
+	virtual void		Update(const DirectX::Mouse::ButtonStateTracker& mouse, float delta);
+	virtual void		PixelFuncDo(int id, const DirectX::Mouse::ButtonStateTracker& mouseTracker);
 	void				DeleteAllObjects() { m_Objects.clear(); m_NumNullptr=0; }
 	void				DeleteGameObject(GameObject* object);
 

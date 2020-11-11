@@ -39,6 +39,7 @@ public:
 	void GetRenderTargetFormat(std::vector<DXGI_FORMAT>& out);
 	void GetRenderUIFormat(std::vector<DXGI_FORMAT>& out);
 	void GetRenderGBufferFormat(std::vector<DXGI_FORMAT>& out);
+	void GetPixelFuncMap(std::vector<int>& out);
 	ID3D12Resource* GetObjectIDTexture();
 
 	ID3D12DescriptorHeap*		GetSrvHeap() { return m_SRVHeap.Get(); }
@@ -62,15 +63,20 @@ private:
 	unsigned int											m_RTVDescriptorSize;
 	unsigned int											m_DSVDescriptorSize;
 	unsigned int											m_SRVDescriptorSize;
+	unsigned int											m_ClientWidth;
+	unsigned int											m_ClientHeight;
 
 	Microsoft::WRL::ComPtr<IDXGIFactory4>					m_DxgiFactory;
 	Microsoft::WRL::ComPtr<IDXGISwapChain>					m_SwapChain;
 
 	std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>>		m_Resources;
 	//Microsoft::WRL::ComPtr<ID3D12Resource>					m_UIDepthStencil;
+	Microsoft::WRL::ComPtr<ID3D12Resource>					m_PixelFuncReadBack;
+	UINT64													m_PixelFuncReadBackRowPitch;
 
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>			m_RTVHeap;
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>			m_DSVHeap;
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>			m_SRVHeap;
 	float													m_Zero[4] = {0,0,0,1.0f};
+	float													m_MinorIntiger[4] = {-1.0f, -1.0f, -1.0f, -1.0f };
 };

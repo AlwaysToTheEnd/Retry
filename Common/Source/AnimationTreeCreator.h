@@ -11,7 +11,6 @@ class UIParam;
 class UIButton;
 class AniArowVisual;
 class DORenderer;
-class DOUICollision;
 class DOTransform;
 
 namespace Ani
@@ -29,7 +28,6 @@ public:
 		, m_Panel(nullptr)
 		, m_CurrAniNode(nullptr)
 		, m_RoofControlButton(nullptr)
-		, m_PanelCol(nullptr)
 		, m_AniNameParam(nullptr)
 	{
 
@@ -62,7 +60,6 @@ private:
 	UIPanel*								m_Panel;
 	UIButton*								m_RoofControlButton;
 	UIParam*								m_AniNameParam;
-	DOUICollision*							m_PanelCol;
 	std::function<void()>					m_DeleteAninodeFunc;
 };
 
@@ -73,7 +70,6 @@ public:
 		: GameObject(scene, parent, typeName)
 		, m_IsIniting(false)
 		, m_Transform(nullptr)
-		, m_UICollison(nullptr)
 		, m_Renderer(nullptr)
 	{
 
@@ -90,7 +86,6 @@ private:
 private:
 	bool				m_IsIniting;
 	DOTransform*		m_Transform;
-	DOUICollision*		m_UICollison;
 	DORenderer*			m_Renderer;
 };
 
@@ -112,6 +107,7 @@ public:
 		, m_ArrowAttributePanel(nullptr)
 		, m_Animator(nullptr)
 		, m_CurrInitingArrowIndex(-1)
+		, m_NextTimeCancle(false)
 	{
 
 	}
@@ -164,4 +160,5 @@ private:
 
 	int												m_CurrInitingArrowIndex;
 	physx::PxVec2									m_CurrMousePos;
+	bool											m_NextTimeCancle;
 };

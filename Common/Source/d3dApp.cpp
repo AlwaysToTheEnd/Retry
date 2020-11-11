@@ -17,55 +17,66 @@ D3DApp* D3DApp::GetApp()
 	return m_App;
 }
 
-const DirectX::Keyboard::KeyboardStateTracker* D3DApp::GetKeyBoard(const GameObject* const caller)
+const DirectX::Keyboard::KeyboardStateTracker& D3DApp::GetKeyBoard()
 {
-	const DirectX::Keyboard::KeyboardStateTracker* result = nullptr;
+	return m_KeyboardTracker;
+}
 
-	if (caller && caller == m_CurrInputDeviceHoldObject)
+bool D3DApp::IsMouseButtonClickedAndNotThisObject(DirectX::MOUSEBUTTONINDEX buttonIndex, int id)
+{
+	bool result = false;
+
+	switch (buttonIndex)
 	{
-		result = &m_KeyboardTracker;
+	case DirectX::MOUSEBUTTONINDEX::LEFTBUTTON:
+		result = m_MouseTracker.leftButton == DirectX::Mouse::ButtonStateTracker::PRESSED;
+		break;
+	case DirectX::MOUSEBUTTONINDEX::MIDDLEBUTTON:
+		result = m_MouseTracker.middleButton == DirectX::Mouse::ButtonStateTracker::PRESSED;
+		break;
+	case DirectX::MOUSEBUTTONINDEX::RIGHTBUTTON:
+		result = m_MouseTracker.rightButton == DirectX::Mouse::ButtonStateTracker::PRESSED;
+		break;
+	default:
+		break;
+	}
+
+	if (result)
+	{
+		result = m_PrevPixelFuncIndex != id;
 	}
 
 	return result;
 }
 
-const DirectX::Mouse::ButtonStateTracker* D3DApp::GetMouse(const GameObject* const caller)
+bool D3DApp::IsMouseButtonClicked(DirectX::MOUSEBUTTONINDEX buttonIndex)
 {
-	const DirectX::Mouse::ButtonStateTracker* result = nullptr;
+	bool result = false;
 
-	if (caller && caller == m_CurrInputDeviceHoldObject)
+	switch (buttonIndex)
 	{
-		result = &m_MouseTracker;
+	case DirectX::MOUSEBUTTONINDEX::LEFTBUTTON:
+		result = m_MouseTracker.leftButton == DirectX::Mouse::ButtonStateTracker::RELEASED;
+		break;
+	case DirectX::MOUSEBUTTONINDEX::MIDDLEBUTTON:
+		result = m_MouseTracker.middleButton == DirectX::Mouse::ButtonStateTracker::RELEASED;
+		break;
+	case DirectX::MOUSEBUTTONINDEX::RIGHTBUTTON:
+		result = m_MouseTracker.rightButton == DirectX::Mouse::ButtonStateTracker::RELEASED;
+		break;
+	default:
+		break;
 	}
 
 	return result;
-}
-
-void D3DApp::InputDeviceHoldRequest(const GameObject* const caller)
-{
-	if (caller)
-	{
-		m_CurrInputDeviceHoldObject = caller;
-	}
-}
-
-void D3DApp::InputDeviceHoldCancle(const GameObject* const caller)
-{
-	if (caller)
-	{
-		if (m_CurrInputDeviceHoldObject == caller)
-		{
-			m_CurrInputDeviceHoldObject = nullptr;
-		}
-	}
 }
 
 D3DApp::D3DApp(HINSTANCE hInstance)
 	: m_hAppInst(hInstance)
 	, m_CurrScene(nullptr)
-	, m_CurrInputDeviceHoldObject(nullptr)
 	, m_PXDevice(nullptr)
 	, m_IsPushedESC(false)
+	, m_PrevPixelFuncIndex(-1)
 {
 	assert(m_App == nullptr);
 	m_App = this;
@@ -86,32 +97,31 @@ void D3DApp::CreatePhysxDevice()
 
 void D3DApp::CameraMove()
 {
-	if (m_CurrInputDeviceHoldObject == nullptr)
+	float baseSpeed = 20.0f;
+	if (m_KeyboardTracker.lastState.LeftShift)
 	{
-		float baseSpeed = 20.0f;
-		if (m_KeyboardTracker.lastState.LeftShift)
-		{
-			baseSpeed *= 5;
-		}
-
-		if (m_KeyboardTracker.lastState.W)
-		{
-			m_Camera.MoveCamera(cCamera::CAMERA_MOVE_DIR::DIR_FRONT, m_Timer.DeltaTime()* baseSpeed);
-		}
-		else if (m_KeyboardTracker.lastState.S)
-		{
-			m_Camera.MoveCamera(cCamera::CAMERA_MOVE_DIR::DIR_BACK, m_Timer.DeltaTime()* baseSpeed);
-		}
-
-		if (m_KeyboardTracker.lastState.D)
-		{
-			m_Camera.MoveCamera(cCamera::CAMERA_MOVE_DIR::DIR_RIGHT, m_Timer.DeltaTime()* baseSpeed);
-		}
-		else if (m_KeyboardTracker.lastState.A)
-		{
-			m_Camera.MoveCamera(cCamera::CAMERA_MOVE_DIR::DIR_LEFT, m_Timer.DeltaTime()* baseSpeed);
-		}
+		baseSpeed *= 5;
 	}
+
+	if (m_KeyboardTracker.lastState.W)
+	{
+		m_Camera.MoveCamera(cCamera::CAMERA_MOVE_DIR::DIR_FRONT, m_Timer.DeltaTime() * baseSpeed);
+	}
+	else if (m_KeyboardTracker.lastState.S)
+	{
+		m_Camera.MoveCamera(cCamera::CAMERA_MOVE_DIR::DIR_BACK, m_Timer.DeltaTime() * baseSpeed);
+	}
+
+	if (m_KeyboardTracker.lastState.D)
+	{
+		m_Camera.MoveCamera(cCamera::CAMERA_MOVE_DIR::DIR_RIGHT, m_Timer.DeltaTime() * baseSpeed);
+	}
+	else if (m_KeyboardTracker.lastState.A)
+	{
+		m_Camera.MoveCamera(cCamera::CAMERA_MOVE_DIR::DIR_LEFT, m_Timer.DeltaTime() * baseSpeed);
+	}
+
+	m_Camera.Update();
 }
 
 void D3DApp::BaseUpdate()
@@ -119,14 +129,13 @@ void D3DApp::BaseUpdate()
 	m_MouseTracker.Update(m_Mouse.GetState());
 	m_KeyboardTracker.Update(m_Keyboard.GetState());
 	CameraMove();
-	m_Camera.Update();
 
-	m_IsPushedESC = false;
-	if (m_KeyboardTracker.IsKeyPressed(KEYState::Escape))
+	m_MouseMovedValue = m_MouseTracker.GetMousePos() - m_MousePrevPos;
+	m_MousePrevPos = m_MouseTracker.GetMousePos();
+
+	if (m_IsPushedESC = m_KeyboardTracker.IsKeyPressed(KEYState::Escape))
 	{
 		StaticGameObjectController::WorkALLEnd();
-		m_CurrInputDeviceHoldObject = nullptr;
-		m_IsPushedESC = true;
 	}
 
 	StaticGameObjectController::StaticsUpdate(m_Timer.DeltaTime());
@@ -134,11 +143,7 @@ void D3DApp::BaseUpdate()
 
 	if (m_CurrScene)
 	{
-		if (!m_CurrScene->Update(m_MouseTracker, m_Timer.DeltaTime()))
-		{
-			m_CurrInputDeviceHoldObject = nullptr;
-			StaticGameObjectController::WorkAllClear();
-		}
+		m_CurrScene->Update(m_MouseTracker, m_Timer.DeltaTime());
 	}
 
 	m_GDevice->GetWorldRay(m_RayOrigin, m_Ray);
@@ -153,7 +158,7 @@ void D3DApp::CalculateFrame()
 
 	if ((m_Timer.TotalTime() - timeElapsed) >= 1.0f)
 	{
-		float fps = (float)frameCnt; 
+		float fps = (float)frameCnt;
 		float mspf = 1000.0f / fps;
 
 		wstring fpsStr = to_wstring(fps);
@@ -168,6 +173,16 @@ void D3DApp::CalculateFrame()
 		frameCnt = 0;
 		timeElapsed += 1.0f;
 	}
+}
+
+void D3DApp::UpdatePixelFuncFromMouse()
+{
+	auto mousePos = m_MouseTracker.GetMousePos();
+	auto clientSize = m_GDevice->GetClientSize();
+	int currID = m_PixelFuncMap[mousePos.x + (mousePos.y * clientSize.x)];
+	m_PrevPixelFuncIndex = currID;
+
+	m_CurrScene->PixelFuncDo(currID, m_MouseTracker);
 }
 
 int D3DApp::Run()
@@ -193,6 +208,9 @@ int D3DApp::Run()
 				BaseUpdate();
 
 				m_GDevice->Draw();
+				m_GDevice->PixelFuncMapUpdate(m_PixelFuncMap);
+				UpdatePixelFuncFromMouse();
+
 				m_GDevice->ReservedWorksClear();
 			}
 			else
@@ -215,8 +233,8 @@ bool D3DApp::Initialize()
 	if (!m_GDevice->Init(m_hMainWnd, DEFAULTWINDOWSIZE, DEFAULTWINDOWSIZE)) return false;
 	if (!m_PXDevice->Init(m_GDevice->GetDevicePtr())) return false;
 
-	m_GDevice->ReadyWorks(	m_TargetTextureFolders, m_TargetMeshFolders,
-							m_TargetFontFolders, m_TargetAniTreeFolder);
+	m_GDevice->ReadyWorks(m_TargetTextureFolders, m_TargetMeshFolders,
+		m_TargetFontFolders, m_TargetAniTreeFolder);
 
 	LoadObjectsFromFile();
 	InitObjects();
@@ -224,7 +242,6 @@ bool D3DApp::Initialize()
 	m_Timer.Start();
 	return true;
 }
-
 
 LRESULT D3DApp::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {

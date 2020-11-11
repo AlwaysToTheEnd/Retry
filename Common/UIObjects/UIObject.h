@@ -1,7 +1,6 @@
 #pragma once
 #include "GameObject.h"
-
-class DOUICollision;
+#include "Mouse.h"
 
 class UIObject :public GameObject
 {
@@ -32,7 +31,6 @@ public:
 
 protected:
 	virtual void	SetActive(bool value, bool components = false) override { GameObject::SetActive(value, components); }
-	void			SetUICollisionSize(DOUICollision* uiCol);
 
 protected:
 	physx::PxVec2 m_Size;

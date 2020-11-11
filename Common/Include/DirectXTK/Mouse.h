@@ -25,6 +25,13 @@ namespace ABI { namespace Windows { namespace UI { namespace Core { struct ICore
 
 namespace DirectX
 {
+    enum class MOUSEBUTTONINDEX
+    {
+        LEFTBUTTON,
+        MIDDLEBUTTON,
+        RIGHTBUTTON,
+    };
+
     class Mouse
     {
     public:

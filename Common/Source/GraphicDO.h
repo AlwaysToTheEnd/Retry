@@ -3,6 +3,7 @@
 #include "GraphicBase.h"
 #include "AnimationStructs.h"
 #include "AnimationTree.h"
+#include "Mouse.h"
 
 struct RenderFont;
 
@@ -90,19 +91,33 @@ private:
 	int										m_BoneMatStoredIndex;
 };
 
+struct RenderFuncFromMouse
+{
+	std::vector<std::function<void()>>								funcs;
+	std::vector<DirectX::Mouse::ButtonStateTracker::ButtonState>	states;
+	std::vector<DirectX::MOUSEBUTTONINDEX>							buttonIndices;
+};
+
 class DORenderer :public DeviceObject
 {
 public:
 	DORenderer(CGHScene& scene, GameObject* parent, const char* typeName)
 		: DeviceObject(scene, parent, typeName)
 		, m_RenderInfo(RENDER_NONE)
+		, m_IsPixelFuncRenderer(false)
 	{
 	}
 	virtual ~DORenderer() = default;
 
-	void				SetRenderInfo(const RenderInfo& info) { m_RenderInfo = info; m_RenderInfo.objectID = GetID(); }
-	
-	RenderInfo&			GetRenderInfo() { return m_RenderInfo; }
+	void		DoFuncFromMouse(DirectX::Mouse::ButtonStateTracker::ButtonState state, DirectX::MOUSEBUTTONINDEX index);
+
+	void		SetRenderInfo(const RenderInfo& info) { m_RenderInfo = info; }
+	void		SetPixelFuncRenderer(bool value) { m_IsPixelFuncRenderer = value; }
+	void		AddPixelFunc(std::function<void()> func, 
+				DirectX::Mouse::ButtonStateTracker::ButtonState state, DirectX::MOUSEBUTTONINDEX index);
+
+	void		ClearPixelFunc() { m_Funcs = nullptr; }
+	RenderInfo&	GetRenderInfo() { return m_RenderInfo; }
 
 private:
 	virtual void Update(float delta) override;
@@ -112,8 +127,10 @@ private:
 	void		 RenderMesh();
 
 private:
-	static std::vector<RenderInfo>* m_ReservedRenderObjects;
-	RenderInfo						m_RenderInfo;
+	static std::vector<RenderInfo>*			m_ReservedRenderObjects;
+	std::unique_ptr<RenderFuncFromMouse>	m_Funcs;
+	bool									m_IsPixelFuncRenderer;
+	RenderInfo								m_RenderInfo;
 };
 
 class DOFont :public DeviceObject
@@ -130,8 +147,14 @@ public:
 	}
 	virtual ~DOFont() = default;
 
-	void			SetFont(std::wstring fontName) { m_FontName = fontName; }
-	void			SetBenchmark(const physx::PxVec2& uv) { m_Benchmark = uv; }
+	void	DoFuncFromMouse(DirectX::Mouse::ButtonStateTracker::ButtonState state, DirectX::MOUSEBUTTONINDEX index);
+
+	void	SetFont(std::wstring fontName) { m_FontName = fontName; }
+	void	SetBenchmark(const physx::PxVec2& uv) { m_Benchmark = uv; }
+	void	AddPixelFunc(std::function<void()> func,
+			DirectX::Mouse::ButtonStateTracker::ButtonState state, DirectX::MOUSEBUTTONINDEX index);
+
+	void	ClearPixelFunc() { m_Funcs = nullptr; }
 
 private:
 	virtual void Update(float delta) override;
@@ -145,7 +168,8 @@ public:
 	std::wstring		m_Text;
 
 private:
-	static std::vector<RenderFont>*	m_ReservedRenderFonts;
-	physx::PxVec2					m_Benchmark;
-	std::wstring					m_FontName;
+	static std::vector<RenderFont>*			m_ReservedRenderFonts;
+	std::unique_ptr<RenderFuncFromMouse>	m_Funcs;
+	physx::PxVec2							m_Benchmark;
+	std::wstring							m_FontName;
 };

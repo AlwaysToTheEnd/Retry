@@ -22,47 +22,13 @@ CGHScene::~CGHScene()
 
 }
 
-bool CGHScene::Update(const DirectX::Mouse::ButtonStateTracker& mouse, float delta)
+void CGHScene::Update(const DirectX::Mouse::ButtonStateTracker& mouse, float delta)
 {
-	bool result = true;
-
 	size_t numObjects = m_Objects.size() - m_NumNullptr;
 	for (size_t i = 0; i < numObjects; i++)
 	{
 		m_Objects[i]->Update(delta);
 	}
-
-	for (size_t i = 0; i < numObjects; i++)
-	{
-		m_Objects[i]->SetClickedState(GameObject::CLICKEDSTATE::NONE);
-	}
-
-	GetComponentUpdater(typeid(DOUICollision).name()).Update(delta);
-	physx::PxVec3 rayOrigin;
-	physx::PxVec3 ray;
-	GETAPP->GetMouseRay(rayOrigin, ray);
-
-	if (mouse.leftButton == MOUSEState::UP)
-	{
-		m_PhysicsDevice->ExcuteFuncOfClickedObject(*this, rayOrigin.x, rayOrigin.y, rayOrigin.z,
-			ray.x, ray.y, ray.z, m_RayDistance, GameObject::CLICKEDSTATE::MOUSEOVER);
-	}
-	else if (mouse.leftButton == MOUSEState::PRESSED)
-	{
-		result = m_PhysicsDevice->ExcuteFuncOfClickedObject(*this, rayOrigin.x, rayOrigin.y, rayOrigin.z,
-			ray.x, ray.y, ray.z, m_RayDistance, GameObject::CLICKEDSTATE::PRESSED);
-	}
-	else if (mouse.leftButton == MOUSEState::HELD)
-	{
-		m_PhysicsDevice->ExcuteFuncOfClickedObject(*this, rayOrigin.x, rayOrigin.y, rayOrigin.z,
-			ray.x, ray.y, ray.z, m_RayDistance, GameObject::CLICKEDSTATE::HELD);
-	}
-	else if (mouse.leftButton == MOUSEState::RELEASED)
-	{
-		result = m_PhysicsDevice->ExcuteFuncOfClickedObject(*this, rayOrigin.x, rayOrigin.y, rayOrigin.z,
-			ray.x, ray.y, ray.z, m_RayDistance, GameObject::CLICKEDSTATE::RELEASED);
-	}
-
 
 	m_PhysicsDevice->Update(*this);
 	GetComponentUpdater(typeid(DORigidStatic).name()).Update(delta);
@@ -73,8 +39,24 @@ bool CGHScene::Update(const DirectX::Mouse::ButtonStateTracker& mouse, float del
 	GetComponentUpdater(typeid(DOFont).name()).Update(delta);
 
 	m_GraphicDevice->Update(*this, delta);
+}
 
-	return result;
+void CGHScene::PixelFuncDo(int id, const DirectX::Mouse::ButtonStateTracker& mouseTracker)
+{
+	if (id > -1)
+	{
+		auto renderer = GetComponentUpdater(typeid(DORenderer).name()).GetData(id)->Get<DORenderer>();
+		renderer->DoFuncFromMouse(mouseTracker.leftButton, DirectX::MOUSEBUTTONINDEX::LEFTBUTTON);
+		renderer->DoFuncFromMouse(mouseTracker.middleButton, DirectX::MOUSEBUTTONINDEX::MIDDLEBUTTON);
+		renderer->DoFuncFromMouse(mouseTracker.rightButton, DirectX::MOUSEBUTTONINDEX::RIGHTBUTTON);
+	}
+	else if (id < -1)
+	{
+		auto renderer = GetComponentUpdater(typeid(DOFont).name()).GetData(FONTRENDERERID(id))->Get<DOFont>();
+		renderer->DoFuncFromMouse(mouseTracker.leftButton, DirectX::MOUSEBUTTONINDEX::LEFTBUTTON);
+		renderer->DoFuncFromMouse(mouseTracker.middleButton, DirectX::MOUSEBUTTONINDEX::MIDDLEBUTTON);
+		renderer->DoFuncFromMouse(mouseTracker.rightButton, DirectX::MOUSEBUTTONINDEX::RIGHTBUTTON);
+	}
 }
 
 DeviceObjectUpdater& CGHScene::GetComponentUpdater(const char* typeName)
@@ -85,23 +67,23 @@ DeviceObjectUpdater& CGHScene::GetComponentUpdater(const char* typeName)
 void CGHScene::UnRegisterDeviceObject(DeviceObject* gameObject)
 {
 	assert(gameObject);
-	assert(gameObject->GetID() != -1);
+	assert(gameObject->GetDeviceOBID() != -1);
 
 	auto& comUpdater = GetComponentUpdater(gameObject->GetTypeName());
 
 	m_GraphicDevice->UnRegisterDeviceObject(*this, gameObject);
 	m_PhysicsDevice->UnRegisterDeviceObject(*this, gameObject);
 
-	comUpdater.SignalDeleted(gameObject->GetID());
+	comUpdater.SignalDeleted(gameObject->GetDeviceOBID());
 }
 
 void CGHScene::RegisterDeviceObject(DeviceObject* gameObject)
 {
 	assert(gameObject);
-	assert(gameObject->GetID() == -1);
+	assert(gameObject->GetDeviceOBID() == -1);
 
 	auto& comUpdater = GetComponentUpdater(gameObject->GetTypeName());
-	gameObject->SetID(comUpdater.GetNextID());
+	gameObject->SetDeviceOBID(comUpdater.GetNextID());
 
 	m_GraphicDevice->RegisterDeviceObject(*this, gameObject);
 	m_PhysicsDevice->RegisterDeviceObject(*this, gameObject);
@@ -143,7 +125,6 @@ void CGHScene::AddGameObject(GameObject* object)
 	{
 		if (m_NumNullptr)
 		{
-
 			m_Objects[m_Objects.size() - m_NumNullptr] = std::unique_ptr<GameObject>(object);
 			m_NumNullptr--;
 		}

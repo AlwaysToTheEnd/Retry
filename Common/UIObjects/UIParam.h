@@ -7,7 +7,6 @@
 #include <memory>
 
 class DOFont;
-class DOUICollision;
 class DOTransform;
 class UIPanel;
 
@@ -35,11 +34,15 @@ private:
 			: StaticGameObjectController(false)
 			, m_CurrParam(nullptr)
 			, m_EnumSelectPanel(nullptr)
+			, m_NextTimeClose(false)
 		{
 		}
 		virtual ~ParamController() = default;
 
 		void SetUIParam(UIParam* uiParam);
+
+		bool IsSelected(UIParam* uiParam) { return m_CurrParam == uiParam; }
+
 		virtual void WorkClear() override;
 
 	private:
@@ -50,6 +53,7 @@ private:
 		void Excute();
 
 	private:
+		bool			m_NextTimeClose;
 		std::string		m_InputData;
 		UIParam*		m_CurrParam;
 		UIPanel*		m_EnumSelectPanel;
@@ -63,10 +67,8 @@ public:
 		, m_ControlType(UICONTROLTYPE::ORIGIN_DATA)
 		, m_Font(nullptr)
 		, m_Trans(nullptr)
-		, m_UICollision(nullptr)
 		, m_ParamPtr(nullptr)
 		, m_DataType(CGH::DATA_TYPE::TYPE_INT)
-		, m_Selected(false)
 		, m_EnumElementInfo(nullptr)
 		, m_Strings(nullptr)
 	{
@@ -85,9 +87,8 @@ public:
 private:
 	virtual void	Init() override;
 	virtual void	Update(float delta) override;
-	void			SetUIParamToController();
-	void			Selected(bool value) { m_Selected = value; }
 
+	int									GetPixelFuncID();
 	std::wstring						GetDataString();
 	template<typename T> std::wstring	GetStringFromValue();
 
@@ -98,10 +99,8 @@ private:
 	std::wstring		m_ParamName;
 	DOTransform*		m_Trans;
 	DOFont*				m_Font;
-	DOUICollision*		m_UICollision;
 	void*				m_ParamPtr;
 	CGH::DATA_TYPE		m_DataType;
-	bool				m_Selected;
 
 	const std::vector<ENUM_ELEMENT>*	m_EnumElementInfo;
 	const std::vector<std::string>*		m_Strings;

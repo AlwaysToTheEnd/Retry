@@ -13,28 +13,24 @@ protected:
 		UIPanelController()
 			: StaticGameObjectController(true)
 			, m_CurrPanel(nullptr)
-			, m_PressedTime(0)
-			, m_PrevMousePos(0,0)
 		{
 
 		}
 		virtual ~UIPanelController() = default;
 
+		void			SortPanels(UIPanel* currPanel);
+		void			MovePanel(UIPanel* currPanel);
 		void			AddPanel(UIPanel* panel);
 		void			DeletedPanel(UIPanel* panel);
 
-		virtual void	WorkClear() override;
+		virtual void	WorkClear() override {};
 
 	private:
-		virtual void	Update(float delta) override;
-
-		void			SortPanels(UIPanel* currPanel);
+		virtual void	Update(float delta) override {};
 
 	private:
-		UIPanel*			m_CurrPanel;
 		std::list<UIPanel*>	m_Panels;
-		physx::PxVec2		m_PrevMousePos;
-		float				m_PressedTime;
+		UIPanel*			m_CurrPanel;
 
 	} s_PanelController;
 
@@ -44,7 +40,6 @@ public:
 		, m_Trans(nullptr)
 		, m_Font(nullptr)
 		, m_Render(nullptr)
-		, m_UICollision(nullptr)
 	{
 		s_PanelController.AddPanel(this);
 	}
@@ -59,13 +54,12 @@ public:
 	physx::PxVec2	GetPos();
 	unsigned int	GetNumAddedComs() { return CGH::SizeTTransUINT(m_UIComs.size()); }
 
+	void			SetMovedPanel();
 	void			SetBackGroundColor(const physx::PxVec4& color);
 	void			SetSize(const physx::PxVec2& size);
 	void			SetName(const std::wstring& name);
 	void			SetPos(const physx::PxVec2& pos);
 	virtual void	SetPos(const physx::PxVec3& pos) override;
-
-	void			ThisPanalIsStatic();
 
 protected:
 	virtual void Init() override;
@@ -75,7 +69,6 @@ protected:
 	DOTransform*			m_Trans;
 	DOFont*					m_Font;
 	DORenderer*				m_Render;
-	DOUICollision*			m_UICollision;
 
 	std::vector<UIObject*>	m_UIComs;
 };

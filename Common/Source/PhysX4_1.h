@@ -8,7 +8,6 @@
 struct PhysxSceneObject
 {
 	Px1RefPtr<physx::PxScene>	scene;
-	std::vector<UICollisions>	reservedToCheckUIs;
 };
 
 class CGHScene;
@@ -83,8 +82,6 @@ private:
 	bool Init(void* graphicDevicePtr);
 	void Update(const CGHScene& scene);
 	void CreateScene(const CGHScene& scene);
-	bool ExcuteFuncOfClickedObject(CGHScene& scene, float origin_x, float origin_y, float origin_z,
-		float ray_x, float ray_y, float ray_z, float dist, GameObject::CLICKEDSTATE state);
 
 	virtual void RegisterDeviceObject(CGHScene& scene, DeviceObject* gameObject) override;
 	virtual void UnRegisterDeviceObject(CGHScene& scene, DeviceObject* gameObject) override;
@@ -92,15 +89,11 @@ private:
 public:
 	const physx::PxVec3&		GetPickingPos() const { return m_PickingPos; }
 
-	std::vector<UICollisions>*	GetReservedUICollisionVector(CGHScene& scene);
 	physx::PxScene*				GetScene(CGHScene& scene);
 	physx::PxCooking*			GetCooking() { return m_Cooking.Get(); }
 	physx::PxPhysics*			GetPhysics() { return m_Physics.Get(); }
 	physx::PxFoundation*		GetFoundation() { return m_Foundation.Get(); }
 	physx::PxMaterial*			GetBaseMaterial() { return m_Material.Get(); }
-
-private:
-	bool CheckUIClicked(std::vector<UICollisions>& collisions, GameObject::CLICKEDSTATE state);
 
 private:
 	physx::PxFilterFlags ScissorFilter(physx::PxFilterObjectAttributes attributes0, physx::PxFilterData filterData0,
