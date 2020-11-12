@@ -214,6 +214,11 @@
       <FileType>Document</FileType>
     </None>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Common\MainShaders\FontPixelShader.hlsl">
+      <FileType>Document</FileType>
+    </None>
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{F14586BC-B3EC-474A-87B1-9BAB6E37BA3B}</ProjectGuid>

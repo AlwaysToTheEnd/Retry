@@ -64,7 +64,7 @@ float3 CalcDirectional(float3 position, SurfaceData surface, float3 color, float
 
 float4 PS(DLightGSOut In) : SV_Target
 {
-    if (gDepthTexture.Load(float3(In.Position.xy,0)).x > 0.999f)
+    if (gDepthTexture.Load(float3(In.Position.xy, 0)).x == 1.0f)
     {
         clip(-1);
     }

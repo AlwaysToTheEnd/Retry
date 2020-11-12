@@ -9,12 +9,22 @@
 #include <GraphicsMemory.h>
 #include <CommonStates.h>
 #include "GraphicBase.h"
+#include "DX12UploadBuffer.h"
 
 using Microsoft::WRL::ComPtr;
 
 
 class DX12FontManager
 {
+	enum ROOTSIGNATURE
+	{
+		ROOT_TEXTURE_SRV,
+		ROOT_CBBUFFER_CB,
+		ROOT_TEXTURE_SAMPLER,
+		ROOT_OBJECTID_CB,
+		ROOT_COUNT,
+	};
+
 public:
 	DX12FontManager() = default;
 	virtual ~DX12FontManager() =default;
@@ -34,7 +44,10 @@ private:
 	std::unique_ptr<DirectX::SpriteBatch>		m_SpriteBatch;
 	std::unique_ptr<DirectX::GraphicsMemory>	m_Memory;
 	std::unique_ptr<DirectX::CommonStates>		m_States;
+	ComPtr<ID3DBlob>							m_PixelShader;
+	ComPtr<ID3D12RootSignature>					m_RootSignature;
 
+	std::unique_ptr<DX12UploadBuffer<int>>		m_ObjectIDUploadBuffer;
 	std::vector<DirectX::SpriteFont>			m_Fonts;
 	std::vector<std::wstring>					m_FontNames;
 };

@@ -70,7 +70,7 @@ private:
 	Microsoft::WRL::ComPtr<IDXGISwapChain>					m_SwapChain;
 
 	std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>>		m_Resources;
-	//Microsoft::WRL::ComPtr<ID3D12Resource>					m_UIDepthStencil;
+	Microsoft::WRL::ComPtr<ID3D12Resource>					m_UIDepthStencil;
 	Microsoft::WRL::ComPtr<ID3D12Resource>					m_PixelFuncReadBack;
 	UINT64													m_PixelFuncReadBackRowPitch;
 

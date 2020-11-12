@@ -142,7 +142,7 @@ void UIParam::Update(float delta)
 
 int UIParam::GetPixelFuncID()
 {
-	return FONTRENDERERID(m_Font->GetDeviceOBID());
+	return m_Font->GetFontRenderID();
 }
 
 std::wstring UIParam::GetDataString()

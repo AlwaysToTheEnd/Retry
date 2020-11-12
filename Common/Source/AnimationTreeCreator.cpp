@@ -36,6 +36,8 @@ void AniNodeVisual::Init()
 		m_Panel->AddUICom(m_AniNameParam);
 	}
 #pragma endregion
+
+	m_Panel->SetMovedPanel();
 }
 
 void AniNodeVisual::Update(float delta)
@@ -459,6 +461,7 @@ void VisualizedAniTreeCreator::SetAniArrowAttributePanel(AniTree::AniArrow* arro
 		m_ArrowAttributePanel = CreateComponenet<UIPanel>(false);
 
 		m_ArrowAttributePanel->SetPos(physx::PxVec2(GETAPP->GetClientSize().x - 230, 200));
+		m_ArrowAttributePanel->SetMovedPanel();
 	}
 
 	m_ArrowAttributePanel->DeleteAllComs();

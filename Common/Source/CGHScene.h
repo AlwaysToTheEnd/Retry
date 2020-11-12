@@ -13,8 +13,6 @@ class IGraphicDevice;
 class PhysX4_1;
 class GameObject;
 
-#define FONTRENDERERID(T) -(T+2)
-
 class CGHScene
 {
 	friend class GameObject;

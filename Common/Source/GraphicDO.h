@@ -6,6 +6,7 @@
 #include "Mouse.h"
 
 struct RenderFont;
+#define FONTRENDERERID(T) -(T+2)
 
 namespace AniTree
 {
@@ -154,6 +155,7 @@ public:
 	void	AddPixelFunc(std::function<void()> func,
 			DirectX::Mouse::ButtonStateTracker::ButtonState state, DirectX::MOUSEBUTTONINDEX index);
 
+	int		GetFontRenderID() { return FONTRENDERERID(GetDeviceOBID()); }
 	void	ClearPixelFunc() { m_Funcs = nullptr; }
 
 private:
