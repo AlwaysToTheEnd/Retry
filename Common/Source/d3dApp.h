@@ -12,7 +12,6 @@
 #define GETMOUSEMOUVEDVALUE D3DApp::GetApp()->GetMouseMovedValue()
 #define GETKEY D3DApp::GetApp()->GetKeyBoard()
 #define PUSHEDESC D3DApp::GetApp()->IsPushedESC()
-#define HOLDCANCLE(T) D3DApp::GetApp()->InputDeviceHoldCancle(T)
 #define DEFAULTWINDOWSIZE 900
 
 typedef DirectX::Keyboard::Keys KEYState;
@@ -60,6 +59,7 @@ public:
 	bool											IsMouseButtonClicked(DirectX::MOUSEBUTTONINDEX buttonIndex);
 	physx::PxVec2									GetMousePos() const { return m_Camera.GetMousePos(); }
 	physx::PxVec2									GetMouseMovedValue() const { return m_MouseMovedValue; }
+	float											GetMouseHeldTime(DirectX::MOUSEBUTTONINDEX buttonIndex) const { return m_MouseHeldTime[static_cast<UINT>(buttonIndex)]; }
 	physx::PxVec2									GetClientSize() const { return m_GDevice->GetClientSize(); }
 	float											GetDeltaTime() const { return m_Timer.DeltaTime(); }
 
@@ -82,6 +82,7 @@ private:
 	void BaseUpdate();
 	void CalculateFrame();
 	void UpdatePixelFuncFromMouse();
+	void UpdateMouseBaseClick(float delta);
 
 protected:
 	static D3DApp*							m_App;
@@ -92,6 +93,7 @@ protected:
 	DirectX::Mouse::ButtonStateTracker		m_MouseTracker;
 	physx::PxVec2							m_MousePrevPos;
 	physx::PxVec2							m_MouseMovedValue;
+	float									m_MouseHeldTime[static_cast<UINT>(DirectX::MOUSEBUTTONINDEX::COUNT)];
 	int										m_PrevPixelFuncIndex;
 
 	bool									m_IsPushedESC;

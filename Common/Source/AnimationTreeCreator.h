@@ -35,6 +35,7 @@ public:
 	virtual ~AniNodeVisual() = default;
 
 	void DeleteAniNode();
+	void Excute();
 	void SetRenderValue(AniTree::AniNode* node, std::function<void()> excuteFunc, std::function<void()> deleteFunc);
 
 	void SetSkinAnimationInfoVectorPtr(const std::vector<std::string>* aniNames, const std::vector<double>* aniEnds);
@@ -61,6 +62,7 @@ private:
 	UIButton*								m_RoofControlButton;
 	UIParam*								m_AniNameParam;
 	std::function<void()>					m_DeleteAninodeFunc;
+	std::function<void()>					m_ExcuteFunc;
 };
 
 class AniArowVisual :public GameObject
@@ -76,6 +78,7 @@ public:
 	}
 	virtual ~AniArowVisual() = default;
 
+	void Excute();
 	void SetRenderValue(const physx::PxVec2& _from, const physx::PxVec2& _fromSize,
 		const physx::PxVec2& _to, const physx::PxVec2& _toSize, std::function<void()> excuteFunc, bool isMousePos);
 
@@ -84,9 +87,10 @@ private:
 	virtual void Update(float delta) override;
 
 private:
-	bool				m_IsIniting;
-	DOTransform*		m_Transform;
-	DORenderer*			m_Renderer;
+	bool					m_IsIniting;
+	DOTransform*			m_Transform;
+	DORenderer*				m_Renderer;
+	std::function<void()>	m_ExcuteFunc;
 };
 
 class VisualizedAniTreeCreator :public GameObject

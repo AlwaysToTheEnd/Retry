@@ -341,6 +341,22 @@ double AniTree::AnimationTree::GetCurrAnimationTime() const
 	return result;
 }
 
+bool AniTree::AnimationTree::AlreadyHasArrow(unsigned int fromNodeID, unsigned int toNodeID)
+{
+	bool result = false;
+
+	for (auto& it : m_Arrows)
+	{
+		if (fromNodeID == it.nodeID && toNodeID == it.targetNodeID)
+		{
+			result = true;
+			break;
+		}
+	}
+
+	return result;
+}
+
 void AniTree::AnimationTree::AddAniNode()
 {
 	m_AniNodes.emplace_back(m_AddedNodeID);
@@ -386,6 +402,19 @@ void AniTree::AnimationTree::DeleteArrow(unsigned int nodeID)
 			m_Arrows.pop_back();
 			i--;
 		}
+	}
+}
+
+void AniTree::AnimationTree::SetCurrSkinName(const std::string& name)
+{
+	if (m_CurrSkinName != name)
+	{
+		for (auto& it : m_AniNodes)
+		{
+			it.SetAniName("", 0);
+		}
+
+		m_CurrSkinName = name;
 	}
 }
 

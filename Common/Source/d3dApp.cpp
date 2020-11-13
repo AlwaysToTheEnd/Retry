@@ -29,13 +29,13 @@ bool D3DApp::IsMouseButtonClickedAndNotThisObject(DirectX::MOUSEBUTTONINDEX butt
 	switch (buttonIndex)
 	{
 	case DirectX::MOUSEBUTTONINDEX::LEFTBUTTON:
-		result = m_MouseTracker.leftButton == DirectX::Mouse::ButtonStateTracker::PRESSED;
+		result = m_MouseTracker.leftButton == DirectX::Mouse::ButtonStateTracker::RELEASED;
 		break;
 	case DirectX::MOUSEBUTTONINDEX::MIDDLEBUTTON:
-		result = m_MouseTracker.middleButton == DirectX::Mouse::ButtonStateTracker::PRESSED;
+		result = m_MouseTracker.middleButton == DirectX::Mouse::ButtonStateTracker::RELEASED;
 		break;
 	case DirectX::MOUSEBUTTONINDEX::RIGHTBUTTON:
-		result = m_MouseTracker.rightButton == DirectX::Mouse::ButtonStateTracker::PRESSED;
+		result = m_MouseTracker.rightButton == DirectX::Mouse::ButtonStateTracker::RELEASED;
 		break;
 	default:
 		break;
@@ -77,6 +77,7 @@ D3DApp::D3DApp(HINSTANCE hInstance)
 	, m_PXDevice(nullptr)
 	, m_IsPushedESC(false)
 	, m_PrevPixelFuncIndex(-1)
+	, m_MouseHeldTime{}
 {
 	assert(m_App == nullptr);
 	m_App = this;
@@ -126,24 +127,18 @@ void D3DApp::CameraMove()
 
 void D3DApp::BaseUpdate()
 {
+	float deltaTime = m_Timer.DeltaTime();
 	m_MouseTracker.Update(m_Mouse.GetState());
 	m_KeyboardTracker.Update(m_Keyboard.GetState());
 	CameraMove();
+	UpdateMouseBaseClick(deltaTime);
 
-	m_MouseMovedValue = m_MouseTracker.GetMousePos() - m_MousePrevPos;
-	m_MousePrevPos = m_MouseTracker.GetMousePos();
-
-	if (m_IsPushedESC = m_KeyboardTracker.IsKeyPressed(KEYState::Escape))
-	{
-		StaticGameObjectController::WorkALLEnd();
-	}
-
-	StaticGameObjectController::StaticsUpdate(m_Timer.DeltaTime());
-	Update(m_Timer.DeltaTime());
+	StaticGameObjectController::StaticsUpdate(deltaTime);
+	Update(deltaTime);
 
 	if (m_CurrScene)
 	{
-		m_CurrScene->Update(m_MouseTracker, m_Timer.DeltaTime());
+		m_CurrScene->Update(m_MouseTracker, deltaTime);
 	}
 
 	m_GDevice->GetWorldRay(m_RayOrigin, m_Ray);
@@ -179,10 +174,55 @@ void D3DApp::UpdatePixelFuncFromMouse()
 {
 	auto mousePos = m_MouseTracker.GetMousePos();
 	auto clientSize = m_GDevice->GetClientSize();
-	int currID = m_PixelFuncMap[mousePos.x + (mousePos.y * clientSize.x)];
+	int currID = m_PixelFuncMap[(mousePos.y * clientSize.x) + mousePos.x];
 	m_PrevPixelFuncIndex = currID;
 
 	m_CurrScene->PixelFuncDo(currID, m_MouseTracker);
+}
+
+void D3DApp::UpdateMouseBaseClick(float delta)
+{
+	m_MouseMovedValue = m_MouseTracker.GetMousePos() - m_MousePrevPos;
+	m_MousePrevPos = m_MouseTracker.GetMousePos();
+
+	if (m_IsPushedESC = m_KeyboardTracker.IsKeyPressed(KEYState::Escape))
+	{
+		StaticGameObjectController::WorkALLEnd();
+	}
+
+	for (DirectX::MOUSEBUTTONINDEX i = DirectX::MOUSEBUTTONINDEX::LEFTBUTTON; i < DirectX::MOUSEBUTTONINDEX::COUNT; )
+	{
+		UINT index = static_cast<UINT>(i);
+		DirectX::Mouse::ButtonStateTracker::ButtonState* buttonState = nullptr;
+
+		switch (i)
+		{
+		case DirectX::MOUSEBUTTONINDEX::LEFTBUTTON:
+			buttonState = &m_MouseTracker.leftButton;
+			break;
+		case DirectX::MOUSEBUTTONINDEX::MIDDLEBUTTON:
+			buttonState = &m_MouseTracker.middleButton;
+			break;
+		case DirectX::MOUSEBUTTONINDEX::RIGHTBUTTON:
+			buttonState = &m_MouseTracker.rightButton;
+			break;
+		default:
+			assert(false);
+			break;
+		}
+
+		switch (*buttonState)
+		{
+		case DirectX::Mouse::ButtonStateTracker::UP:
+			m_MouseHeldTime[index] = 0;
+			break;
+		case DirectX::Mouse::ButtonStateTracker::HELD:
+			m_MouseHeldTime[index] += delta;
+			break;
+		}
+
+		i = static_cast<DirectX::MOUSEBUTTONINDEX>(index + 1);
+	}
 }
 
 int D3DApp::Run()

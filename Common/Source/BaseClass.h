@@ -54,6 +54,12 @@ namespace CGH
 
 		}client;
 
+		struct InOutOption
+		{
+			float nonClickedHeldTime = 0.15f;
+
+		}inOut;
+
 		struct UIOption
 		{
 			physx::PxVec4	panelTitleColor = { 0.1f, 0.1f, 0.1f, 1.0f };

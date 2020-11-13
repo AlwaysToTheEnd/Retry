@@ -30,6 +30,7 @@ namespace DirectX
         LEFTBUTTON,
         MIDDLEBUTTON,
         RIGHTBUTTON,
+        COUNT
     };
 
     class Mouse

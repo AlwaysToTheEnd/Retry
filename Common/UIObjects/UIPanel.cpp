@@ -52,6 +52,11 @@ void UIPanel::AddUICom(UIObject* ui)
 	}
 }
 
+void UIPanel::AddPixelFunc(std::function<void()> func, DirectX::Mouse::ButtonStateTracker::ButtonState state, DirectX::MOUSEBUTTONINDEX index)
+{
+	m_Render->AddPixelFunc(func, state, index);
+}
+
 void UIPanel::DeleteAllComs()
 {
 	auto UIComs = m_UIComs;

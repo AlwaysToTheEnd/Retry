@@ -33,7 +33,7 @@ void DX12PSOController::InitBase_Raster_Blend_Depth()
 	
 	baseBlendDesc.RenderTarget[0] = baseBlendTargetDesc;
 	
-	baseBlendDesc.AlphaToCoverageEnable = false;
+	baseBlendDesc.AlphaToCoverageEnable = true;
 	baseBlendDesc.IndependentBlendEnable = true;
 	AddBlend(baseAttributeName, baseBlendDesc);
 

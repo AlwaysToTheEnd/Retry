@@ -21,9 +21,10 @@ void AniNodeVisual::Init()
 		m_Panel->DeleteAllComs();
 
 		auto closeButton = m_Panel->CreateComponenet<UIButton>(true);
-		closeButton->AddFunc(std::bind(&AniNodeVisual::DeleteAniNode, this), 
-			DirectX::Mouse::ButtonStateTracker::RELEASED);
 		closeButton->SetTexture(InputTN::Get("AniNodeVisualPanel_Delete"), { 10,10 });
+		closeButton->AddFunc(std::bind(&AniNodeVisual::DeleteAniNode, this),
+			DirectX::Mouse::ButtonStateTracker::RELEASED);
+
 		m_Panel->AddUICom(closeButton);
 
 		m_RoofControlButton = m_Panel->CreateComponenet<UIButton>(true);
@@ -37,6 +38,8 @@ void AniNodeVisual::Init()
 	}
 #pragma endregion
 
+	m_Panel->AddPixelFunc(std::bind(&AniNodeVisual::Excute, this),
+		DirectX::Mouse::ButtonStateTracker::RELEASED, DirectX::MOUSEBUTTONINDEX::LEFTBUTTON);
 	m_Panel->SetMovedPanel();
 }
 
@@ -68,7 +71,21 @@ void AniNodeVisual::ChangedTargetAni()
 
 void AniNodeVisual::DeleteAniNode()
 {
-	m_DeleteAninodeFunc();
+	if (m_DeleteAninodeFunc)
+	{
+		m_DeleteAninodeFunc();
+	}
+}
+
+void AniNodeVisual::Excute()
+{
+	if (m_ExcuteFunc)
+	{
+		if (GETAPP->GetMouseHeldTime(DirectX::MOUSEBUTTONINDEX::LEFTBUTTON) < CGH::GO.inOut.nonClickedHeldTime)
+		{
+			m_ExcuteFunc();
+		}
+	}
 }
 
 void AniNodeVisual::SetRenderValue(AniTree::AniNode* node, std::function<void()> excuteFunc, std::function<void()> deleteFunc)
@@ -83,6 +100,7 @@ void AniNodeVisual::SetRenderValue(AniTree::AniNode* node, std::function<void()>
 	node->SetPos(m_Panel->GetPos());
 
 	m_DeleteAninodeFunc = deleteFunc;
+	m_ExcuteFunc = excuteFunc;
 
 	m_RoofControlButton->ClearFunc();
 	m_RoofControlButton->SetText(L"AniRoof:" + std::wstring(node->IsRoofAni() ? L"true" : L"false"));
@@ -119,6 +137,9 @@ void AniArowVisual::Init()
 	m_Transform = CreateComponenet<DOTransform>();
 	m_Renderer = CreateComponenet<DORenderer>();
 	m_Transform->SetPosZ(0.4f);
+
+	m_Renderer->AddPixelFunc(std::bind(&AniArowVisual::Excute, this),
+		DirectX::Mouse::ButtonStateTracker::ButtonState::RELEASED, DirectX::MOUSEBUTTONINDEX::LEFTBUTTON);
 }
 
 void AniArowVisual::Update(float delta)
@@ -126,9 +147,19 @@ void AniArowVisual::Update(float delta)
 
 }
 
+void AniArowVisual::Excute()
+{
+	if (m_ExcuteFunc && !m_IsIniting)
+	{
+		m_ExcuteFunc();
+	}
+}
+
 void AniArowVisual::SetRenderValue(const physx::PxVec2& _from, const physx::PxVec2& _fromSize,
 	const physx::PxVec2& _to, const physx::PxVec2& _toSize, std::function<void()> excuteFunc, bool isMousePos)
 {
+	m_ExcuteFunc = excuteFunc;
+
 	if (!m_IsActive)
 	{
 		SetActive(true, true);
@@ -408,7 +439,8 @@ void VisualizedAniTreeCreator::AniNodeExcute(const AniTree::AniNode& node)
 
 	if (m_CurrInitingArrowIndex > -1)
 	{
-		if (arrows[m_CurrInitingArrowIndex].nodeID == node.GetNodeID())
+		if (arrows[m_CurrInitingArrowIndex].nodeID == node.GetNodeID() ||
+			m_CurrTree->AlreadyHasArrow(arrows[m_CurrInitingArrowIndex].nodeID, node.GetNodeID()))
 		{
 			CancleExcute();
 			return;
@@ -601,6 +633,7 @@ void VisualizedAniTreeCreator::DeleteArrow(AniTree::AniArrow* arrow)
 	if (m_CurrTree)
 	{
 		m_CurrTree->DeleteArrow(arrow);
+		m_ArrowAttributePanel->UIOff();
 	}
 }
 

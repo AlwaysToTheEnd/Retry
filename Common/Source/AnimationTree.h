@@ -150,6 +150,7 @@ namespace AniTree
 		std::string						GetCurrAnimationName() const;
 		const std::string&				GetCurrSkinName() const { return m_CurrSkinName; }
 		const std::string&				GetCurrMeshName() const { return m_CurrMeshName; }
+		bool							AlreadyHasArrow(unsigned int fromNodeID, unsigned int toNodeID);
 		
 		void AddAniNode();
 		void AddArrow(const AniArrow& arrow) { m_Arrows.push_back(arrow); }
@@ -157,7 +158,7 @@ namespace AniTree
 		void DeleteArrow(const AniArrow* arrow);
 		void DeleteArrow(unsigned int nodeID);
 
-		void SetCurrSkinName(const std::string& name) { m_CurrSkinName = name; }
+		void SetCurrSkinName(const std::string& name);
 		void SetCurrMeshName(const std::string& name) { m_CurrMeshName = name; }
 
 	private:

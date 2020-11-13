@@ -50,6 +50,8 @@ public:
 	void			PopUICom(const UIObject* uiCom);
 
 	void			AddUICom(UIObject* ui);
+	void			AddPixelFunc(std::function<void()> func,
+					DirectX::Mouse::ButtonStateTracker::ButtonState state, DirectX::MOUSEBUTTONINDEX index);
 
 	physx::PxVec2	GetPos();
 	unsigned int	GetNumAddedComs() { return CGH::SizeTTransUINT(m_UIComs.size()); }

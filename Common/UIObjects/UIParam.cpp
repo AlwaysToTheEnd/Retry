@@ -346,6 +346,7 @@ void UIParam::ParamController::CreateSubPanel(UIParam* param)
 	m_EnumSelectPanel->UIOn();
 	m_EnumSelectPanel->SetPos(GETAPP->GetMousePos());
 	m_EnumSelectPanel->GetComponent<DOTransform>()->SetPosZ(0.1f);
+	m_EnumSelectPanel->SetSize({});
 
 	switch (param->m_ControlType)
 	{

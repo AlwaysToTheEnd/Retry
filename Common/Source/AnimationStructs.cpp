@@ -122,7 +122,6 @@ void Ani::SkinnedData::CalLocalTransformFromAnimation(const std::string& clipNam
 		XMMATRIX mat = XMMatrixIdentity();
 		XMVECTOR zero = XMVectorSet(0, 0, 0, 1);
 
-
 		if (it.posKeys.size())
 		{
 			XMVECTOR s =  GetAnimationKeyOnTick(reinterpret_cast<const std::vector<TimeValue<DirectX::XMFLOAT3>>&>(it.scaleKeys), tickPerTime);
@@ -145,7 +144,6 @@ void Ani::SkinnedData::CalLocalTransformFromAnimation(const std::string& clipNam
 
 DirectX::XMVECTOR XM_CALLCONV Ani::SkinnedData::GetAnimationKeyOnTick(const std::vector<TimeValue<DirectX::XMFLOAT3>>& values, double timePos) const
 {
-
 	DirectX::XMVECTOR result = DirectX::XMVectorSet(0, 0, 0, 1);
 
 	if (timePos <= values.front().time)
