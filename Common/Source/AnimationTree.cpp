@@ -43,56 +43,22 @@ void AniTree::AniNode::SetAniName(const std::string& name, double aniEndTime)
 	m_CurrTime = 0;
 }
 
-std::ostream& AniTree::operator<<(std::ostream& os, const AniNode& node)
+void AniTree::AniNode::SaveXML(XmlElement* element)
 {
-	if (node.GetNodeID())
-	{
-		//os << node.m_TargetAniName << endl;
-	}
-	else
-	{
-		os << "#none#" << endl;
-	}
+	element->SetAttribute(GET_NAME(m_NodeID), m_NodeID);
+	element->SetAttribute(GET_NAME(m_TargetAniName), m_TargetAniName.c_str());
+	element->SetAttribute(GET_NAME(m_RoofAni), m_RoofAni);
+	element->SetAttribute(GET_NAME(m_Pos.x), m_Pos.x);
+	element->SetAttribute(GET_NAME(m_Pos.y), m_Pos.y);
+}
 
-	//os << node.m_Pos.x << endl;
-	//os << node.m_Pos.y << endl;
-
-	//os << node.m_AniEndTime << endl;
-	//os << node.m_RoofAni << endl;
-
-	/*os << node.m_Arrows.size() << endl;
-
-	for (auto& it : node.m_Arrows)
-	{
-		os << it.aniEndIsChange << endl;
-		os << it.targetNode->m_IndexFunc() << endl;
-		os << it.type << endl;
-		os << it.triggers.size() << endl << endl;
-
-		for (auto& trigger : it.triggers)
-		{
-			os << trigger.m_TriggerType << endl;
-			os << static_cast<int>(trigger.m_Standard.type) << endl;
-
-			switch (trigger.m_Standard.type)
-			{
-			case CGH::DATA_TYPE::TYPE_BOOL:
-				os << trigger.m_Standard._b << endl;
-				break;
-			case CGH::DATA_TYPE::TYPE_FLOAT:
-				os << trigger.m_Standard._f << endl;
-				break;
-			case CGH::DATA_TYPE::TYPE_INT:
-				os << trigger.m_Standard._i << endl;
-				break;
-			case CGH::DATA_TYPE::TYPE_UINT:
-				os << trigger.m_Standard._u << endl;
-				break;
-			}
-		}
-	}*/
-
-	return os;
+void AniTree::AniNode::LoadXML(XmlElement* element)
+{
+	m_NodeID = element->UnsignedAttribute(GET_NAME(m_NodeID));
+	m_TargetAniName = element->Attribute(GET_NAME(m_TargetAniName));
+	m_RoofAni = element->BoolAttribute(GET_NAME(m_RoofAni));
+	m_Pos.x = element->FloatAttribute(GET_NAME(m_Pos.x));
+	m_Pos.y = element->FloatAttribute(GET_NAME(m_Pos.y));
 }
 
 bool AniTree::AniNode::CheckArrowTrigger(const AniArrow& arrow, std::vector<TriggerData>& triggers, double currTick, double aniEndTick)
@@ -173,150 +139,80 @@ bool AniTree::AnimationTree::Update(float deltaTime)
 
 void AniTree::AnimationTree::SaveTree(const std::wstring& fileFath)
 {
-	ofstream save(fileFath.c_str());
+	XmlDocument* document = new XmlDocument;
 
-	if (save.bad())
-	{
-		save.close();
-		return;
-	}
+	Xml::XMLNode* node = document->NewElement("AnimationTree");
+	XmlElement* list = nullptr;
+	XmlElement* element = nullptr;
+	document->InsertFirstChild(node);
 
-	save.clear();
+	list = document->NewElement("MainData");
+	list->SetAttribute(GET_NAME(m_AddedNodeID), m_AddedNodeID);
+	list->SetAttribute(GET_NAME(m_CurrSkinName), m_CurrSkinName.c_str());
+	list->SetAttribute(GET_NAME(m_CurrMeshName), m_CurrMeshName.c_str());
+	node->InsertEndChild(list);
 
-	if (m_CurrSkinName.size())
-	{
-		save << m_CurrSkinName << endl;
-	}
-	else
-	{
-		save << "#none#" << endl;
-	}
-
-	if (m_CurrMeshName.size())
-	{
-		save << m_CurrMeshName << endl;
-	}
-	else
-	{
-		save << "#none#" << endl;
-	}
-
-	save << m_AniNodes.size();
-	save << endl;
+	list = document->NewElement("AniNodes");
+	list->SetAttribute("NodeNum", CGH::SizeTTransUINT(m_AniNodes.size()));
 
 	for (auto& it : m_AniNodes)
 	{
-		save << it;
+		element = document->NewElement("AniNode");
+		it.SaveXML(element);
+		list->InsertEndChild(element);
 	}
+	node->InsertEndChild(list);
+	
+	list = document->NewElement("AniArrows");
+	list->SetAttribute("ArrowNum", CGH::SizeTTransUINT(m_Arrows.size()));
 
-	save.close();
+	for (auto& it : m_Arrows)
+	{
+		element = document->NewElement("AniArrow");
+		it.SaveXML(element, document);
+		list->InsertEndChild(element);
+	}
+	node->InsertEndChild(list);
+
+	Xml::XMLError error = document->SaveFile(std::string(fileFath.begin(), fileFath.end()).c_str());
+	assert(error == Xml::XML_SUCCESS);
+
+	delete document;
 }
 
 void AniTree::AnimationTree::LoadTree(const std::wstring& fileFath)
 {
-	ifstream load(fileFath.c_str());
+	XmlDocument* document = new XmlDocument;
+	document->LoadFile(std::string(fileFath.begin(), fileFath.end()).c_str());
+	assert(!document->Error());
 
-	if (load.bad())
+	XmlElement* list = nullptr;
+	XmlElement* element = nullptr;
+
+	list = document->FirstChildElement("AnimationTree");
+	list = list->FirstChildElement("MainData");
+	
+	m_AddedNodeID = list->UnsignedAttribute(GET_NAME(m_AddedNodeID));
+	m_CurrSkinName = list->Attribute(GET_NAME(m_CurrSkinName));
+	m_CurrMeshName = list->Attribute(GET_NAME(m_CurrMeshName));
+
+	list = list->NextSiblingElement("AniNodes");
+	
+	for (element = list->FirstChildElement("AniNode"); element != nullptr; element = element->NextSiblingElement("AniNode"))
 	{
-		load.close();
-		return;
+		m_AniNodes.emplace_back();
+		m_AniNodes.back().LoadXML(element);
 	}
 
-	load >> m_CurrSkinName;
-	load >> m_CurrMeshName;
+	list = list->NextSiblingElement("AniArrows");
 
-	if (m_CurrSkinName == "#none#")
+	for (element = list->FirstChildElement("AniArrow"); element != nullptr; element = element->NextSiblingElement("AniArrow"))
 	{
-		m_CurrSkinName.clear();
+		m_Arrows.emplace_back();
+		m_Arrows.back().LoadXML(element);
 	}
 
-	if (m_CurrMeshName == "#none#")
-	{
-		m_CurrMeshName.clear();
-	}
-
-	size_t numAniNodes = 0;
-	load >> numAniNodes;
-
-	for (size_t i = 0; i < numAniNodes; i++)
-	{
-		AddAniNode();
-	}
-
-	for (size_t i = 0; i < numAniNodes; i++)
-	{
-		string name;
-		physx::PxVec2 pos;
-		unsigned int time = 0;
-		bool isRoofAni = false;
-		size_t numArrows = 0;
-
-		load >> name;
-		load >> pos.x;
-		load >> pos.y;
-		load >> time;
-		load >> isRoofAni;
-		load >> numArrows;
-
-		if (name != "#none#")
-		{
-			m_AniNodes[i].SetAniName(name, time);
-		}
-
-		m_AniNodes[i].SetPos(pos);
-		m_AniNodes[i].SetRoofAni(isRoofAni);
-
-		for (size_t j = 0; j < numArrows; j++)
-		{
-			bool isAniEndChange = false;
-			int targetNodeIndex = -1;
-			int arrowType = TO_ANI_NODE_TYPE_ONE_OK;
-			size_t numTriggers = 0;
-
-			load >> isAniEndChange;
-			load >> targetNodeIndex;
-			load >> arrowType;
-			load >> numTriggers;
-
-			/*AniNode* toNode = m_AniNodes[targetNodeIndex].get();
-			auto currArrow = m_AniNodes[i].AddArrow(toNode);
-			currArrow->aniEndIsChange = isAniEndChange;
-			currArrow->type = TO_ANI_ARROW_TYPE(arrowType);
-			currArrow->triggers.reserve(numTriggers);
-
-			for (size_t z = 0; z < numTriggers; z++)
-			{
-				int triggerType = 0;
-				int dataType = 0;
-
-				load >> triggerType;
-				load >> dataType;
-
-				CGH::UnionData standard;
-				standard.type = static_cast<CGH::DATA_TYPE>(dataType);
-
-				switch (standard.type)
-				{
-				case CGH::DATA_TYPE::TYPE_BOOL:
-					load >> standard._b;
-					break;
-				case CGH::DATA_TYPE::TYPE_FLOAT:
-					load >> standard._f;
-					break;
-				case CGH::DATA_TYPE::TYPE_INT:
-					load >> standard._i;
-					break;
-				case CGH::DATA_TYPE::TYPE_UINT:
-					load >> standard._u;
-					break;
-				}
-
-				currArrow->triggers.emplace_back(TRIGGER_TYPE(triggerType), standard);
-			}*/
-		}
-	}
-
-	load.close();
+	delete document;
 }
 
 std::string AniTree::AnimationTree::GetCurrAnimationName() const
@@ -539,6 +435,50 @@ int AniTree::TriggerData::IsTriggerOK()
 	return result;
 }
 
+void AniTree::TriggerData::SaveXML(XmlElement* element)
+{
+	element->SetAttribute(GET_NAME(m_TriggerType), m_TriggerType);
+	element->SetAttribute(GET_NAME(m_Standard.type), static_cast<int>(m_Standard.type));
+
+	switch (m_Standard.type)
+	{
+	case CGH::DATA_TYPE::TYPE_BOOL:
+		element->SetAttribute(GET_NAME(m_Standard._b), m_Standard._b);
+		break;
+	case CGH::DATA_TYPE::TYPE_FLOAT:
+		element->SetAttribute(GET_NAME(m_Standard._f), m_Standard._f);
+		break;
+	case CGH::DATA_TYPE::TYPE_INT:
+		element->SetAttribute(GET_NAME(m_Standard._i), m_Standard._i);
+		break;
+	case CGH::DATA_TYPE::TYPE_UINT:
+		element->SetAttribute(GET_NAME(m_Standard._u), m_Standard._u);
+		break;
+	}
+}
+
+void AniTree::TriggerData::LoadXML(XmlElement* element)
+{
+	m_TriggerType = static_cast<AniTree::TRIGGER_TYPE>(element->IntAttribute(GET_NAME(m_TriggerType)));
+	m_Standard.type = static_cast<CGH::DATA_TYPE>(element->IntAttribute(GET_NAME(m_Standard.type)));
+
+	switch (m_Standard.type)
+	{
+	case CGH::DATA_TYPE::TYPE_BOOL:
+		m_Standard._b= element->BoolAttribute(GET_NAME(m_Standard._b));
+		break;
+	case CGH::DATA_TYPE::TYPE_FLOAT:
+		m_Standard._f = element->FloatAttribute(GET_NAME(m_Standard._f));
+		break;
+	case CGH::DATA_TYPE::TYPE_INT:
+		m_Standard._i = element->IntAttribute(GET_NAME(m_Standard._i));
+		break;
+	case CGH::DATA_TYPE::TYPE_UINT:
+		m_Standard._u = element->UnsignedAttribute(GET_NAME(m_Standard._u));
+		break;
+	}
+}
+
 TRIGGER_TYPE AniTree::TriggerData::GetTriggerFuncType() const
 {
 	unsigned int currTrigger = m_TriggerType;
@@ -558,5 +498,35 @@ void AniTree::AnimationTree::TriggerReset()
 				it2.m_Trigger._i = 0;
 			}
 		}
+	}
+}
+
+void AniTree::AniArrow::SaveXML(XmlElement* element, Xml::XMLDocument* document)
+{
+	element->SetAttribute(GET_NAME(type), type);
+	element->SetAttribute(GET_NAME(aniEndIsChange), aniEndIsChange);
+	element->SetAttribute(GET_NAME(nodeID), nodeID);
+	element->SetAttribute(GET_NAME(targetNodeID), targetNodeID);
+
+	for (auto& it : triggers)
+	{
+		XmlElement* newElement = document->NewElement("Trigger");
+
+		it.SaveXML(newElement);
+		element->InsertEndChild(newElement);
+	}
+}
+
+void AniTree::AniArrow::LoadXML(XmlElement* element)
+{
+	type = static_cast<TO_ANI_ARROW_TYPE>(element->UnsignedAttribute(GET_NAME(type)));
+	aniEndIsChange = element->BoolAttribute(GET_NAME(aniEndIsChange));
+	nodeID = element->UnsignedAttribute(GET_NAME(nodeID));
+	targetNodeID = element->UnsignedAttribute(GET_NAME(targetNodeID));
+
+	for (XmlElement* trigger = element->FirstChildElement("Trigger"); trigger != nullptr; trigger = trigger->NextSiblingElement("Trigger"))
+	{
+		triggers.emplace_back();
+		triggers.back().LoadXML(element);
 	}
 }

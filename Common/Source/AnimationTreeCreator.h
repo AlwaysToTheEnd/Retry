@@ -109,6 +109,7 @@ public:
 		, m_CurrSkin(nullptr)
 		, m_WorkPanel(nullptr)
 		, m_ArrowAttributePanel(nullptr)
+		, m_Renderer(nullptr)
 		, m_Animator(nullptr)
 		, m_CurrInitingArrowIndex(-1)
 		, m_NextTimeCancle(false)

@@ -18,6 +18,7 @@ DX12SwapChain::DX12SwapChain()
 	, m_ObjectIDFormat(DXGI_FORMAT_UNKNOWN)
 	, m_ClientWidth(0)
 	, m_ClientHeight(0)
+	, m_PixelFuncReadBackRowPitch(0)
 {
 }
 

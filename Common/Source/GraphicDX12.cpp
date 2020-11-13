@@ -634,7 +634,7 @@ void GraphicDX12::LoadAniTreeFromFolder(const std::wstring& targetFolder)
 		std::wstring wfileName = GetFileNameFromPath(it, extension);
 		std::string fileName(wfileName.begin(), wfileName.end());
 
-		if (extension == L"anitree")
+		if (extension == L"Xml")
 		{
 			if (m_AniTreeDatas.find(fileName) == m_AniTreeDatas.end())
 			{

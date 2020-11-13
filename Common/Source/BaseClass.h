@@ -6,6 +6,8 @@
 #include <intsafe.h>
 #include "InputTextureNameList.h" 
 
+#define GET_NAME(n) #n
+
 struct ENUM_ELEMENT
 {
 	int value = 0;

@@ -709,7 +709,7 @@ void VisualizedAniTreeCreator::SaveTree()
 	{
 		COMDLG_FILTERSPEC const rgSaveTypes[] =
 		{
-			{ L"AniTree Files", L"*.aniTree" },
+			{ L"Xml Files", L"*.Xml" },
 			{ L"All Files", L"*.*" },
 		};
 
@@ -756,7 +756,7 @@ void VisualizedAniTreeCreator::SaveTree()
 				{
 					ThrowIfFailed(psi->GetDisplayName(SIGDN_NORMALDISPLAY, &fileName));
 					std::wstring wFileName(fileName);
-					filePath += L"\\" + wFileName;
+					filePath += L"\\" + wFileName+L".Xml";
 
 					if (m_CurrTree)
 					{

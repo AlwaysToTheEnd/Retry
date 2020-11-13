@@ -1,0 +1,10 @@
+<AnimationTree>
+    <MainData m_AddedNodeID="3" m_CurrSkinName="" m_CurrMeshName=""/>
+    <AniNodes NodeNum="2">
+        <AniNode m_NodeID="1" m_TargetAniName="" m_RoofAni="false" m_Pos.x="115" m_Pos.y="310"/>
+        <AniNode m_NodeID="2" m_TargetAniName="" m_RoofAni="false" m_Pos.x="438" m_Pos.y="281"/>
+    </AniNodes>
+    <AniArrows ArrowNum="1">
+        <AniArrow type="0" aniEndIsChange="true" nodeID="1" targetNodeID="2"/>
+    </AniArrows>
+</AnimationTree>

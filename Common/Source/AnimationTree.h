@@ -6,6 +6,7 @@
 #include <fstream>
 #include <functional>
 #include "BaseClass.h"
+#include "Xml/Xml.h"
 
 namespace AniTree
 {
@@ -27,6 +28,9 @@ namespace AniTree
 		TriggerData();
 		TriggerData(TRIGGER_TYPE type, CGH::UnionData standard);
 		int IsTriggerOK();
+
+		void SaveXML(XmlElement* element);
+		void LoadXML(XmlElement* element);
 
 	private:
 		template<typename T> bool CheckData(TRIGGER_TYPE triggerTYPE, T a, T b);
@@ -51,6 +55,9 @@ namespace AniTree
 		{
 			triggers.reserve(16);
 		}
+
+		void SaveXML(XmlElement* element, Xml::XMLDocument* document);
+		void LoadXML(XmlElement* element);
 
 		TO_ANI_ARROW_TYPE			type = TO_ANI_NODE_TYPE_ONE_OK;
 		bool						aniEndIsChange = false;
@@ -110,6 +117,9 @@ namespace AniTree
 		void SetRoofAni(bool value) { m_RoofAni = value; }
 		void SetPos(physx::PxVec2 pos) { m_Pos = pos; }
 
+		void SaveXML(XmlElement* element);
+		void LoadXML(XmlElement* element);
+
 	private:
 		bool CheckArrowTrigger(const AniArrow& arrow, std::vector<TriggerData>& triggers,
 			double currTick, double aniEndTick);
@@ -122,8 +132,6 @@ namespace AniTree
 		unsigned int			m_NodeID;
 		bool					m_RoofAni;
 	};
-
-	std::ostream& operator <<(std::ostream& os, const AniNode& node);
 
 	class AnimationTree final
 	{
