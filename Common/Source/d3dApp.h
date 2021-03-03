@@ -102,7 +102,6 @@ protected:
 
 	physx::PxVec3							m_RayOrigin;
 	physx::PxVec3							m_Ray;
-	std::vector<int>						m_PixelFuncMap;
 
 	HINSTANCE	m_hAppInst = nullptr;
 	HWND		m_hMainWnd = nullptr;

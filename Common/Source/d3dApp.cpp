@@ -173,8 +173,7 @@ void D3DApp::CalculateFrame()
 void D3DApp::UpdatePixelFuncFromMouse()
 {
 	auto mousePos = m_MouseTracker.GetMousePos();
-	auto clientSize = m_GDevice->GetClientSize();
-	int currID = m_PixelFuncMap[(mousePos.y * clientSize.x) + mousePos.x];
+	int currID = m_GDevice->GetPixelFuncID(mousePos);
 	m_PrevPixelFuncIndex = currID;
 
 	m_CurrScene->PixelFuncDo(currID, m_MouseTracker);
@@ -248,7 +247,6 @@ int D3DApp::Run()
 				BaseUpdate();
 
 				m_GDevice->Draw();
-				m_GDevice->PixelFuncMapUpdate(m_PixelFuncMap);
 				UpdatePixelFuncFromMouse();
 
 				m_GDevice->ReservedWorksClear();

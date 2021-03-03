@@ -699,9 +699,9 @@ void GraphicDX12::Update(const CGHScene& scene, float delta)
 	m_SkinnedMeshDrawSet->UpdateAniBoneCB(m_ReservedAniBones);
 }
 
-void GraphicDX12::PixelFuncMapUpdate(std::vector<int>& pixelMap)
+int GraphicDX12::GetPixelFuncID(const physx::PxVec2& clientPos)
 {
-	m_Swap->GetPixelFuncMap(pixelMap);
+	return m_Swap->GetPixelFuncMapData(clientPos.x, clientPos.y);
 }
 
 void GraphicDX12::Draw()

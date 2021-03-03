@@ -77,7 +77,7 @@ struct RenderInfo
 		: type(_type)
 		, world(physx::PxIdentity)
 		, scale(1,1,1)
-		, boundSphereRad(1.0f)
+		, cullingBoundSphereRad(0.0f)
 		, pixelColID(-1)
 	{
 		lightInfo = {};
@@ -90,7 +90,7 @@ struct RenderInfo
 		world = src.world;
 		scale = src.scale;
 		pixelColID = src.pixelColID;
-		boundSphereRad = src.boundSphereRad;
+		cullingBoundSphereRad = src.cullingBoundSphereRad;
 		meshOrTextureName = src.meshOrTextureName;
 	}
 
@@ -106,7 +106,7 @@ struct RenderInfo
 		world = src.world;
 		scale = src.scale;
 		pixelColID = src.pixelColID;
-		boundSphereRad = src.boundSphereRad;
+		cullingBoundSphereRad = src.cullingBoundSphereRad;
 		meshOrTextureName = src.meshOrTextureName;
 
 		return *this;
@@ -115,7 +115,7 @@ struct RenderInfo
 	RENDER_TYPE		type;
 	physx::PxMat44	world;
 	physx::PxVec3	scale;
-	float			boundSphereRad;
+	float			cullingBoundSphereRad;
 	int				pixelColID;
 	std::string		meshOrTextureName;
 

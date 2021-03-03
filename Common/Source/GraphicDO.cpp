@@ -321,7 +321,8 @@ void DOFont::DoFuncFromMouse(DirectX::Mouse::ButtonStateTracker::ButtonState sta
 	}
 }
 
-void DOFont::AddPixelFunc(std::function<void()> func, DirectX::Mouse::ButtonStateTracker::ButtonState state, DirectX::MOUSEBUTTONINDEX index)
+void DOFont::AddPixelFunc(std::function<void()> func, 
+	DirectX::Mouse::ButtonStateTracker::ButtonState state, DirectX::MOUSEBUTTONINDEX index)
 {
 	if (m_Funcs == nullptr)
 	{

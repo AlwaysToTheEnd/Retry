@@ -1,0 +1,10 @@
+<AnimationTree>
+    <MainData m_AddedNodeID="3" m_CurrSkinName="poporiClass03.X" m_CurrMeshName="poporiClass03.X"/>
+    <AniNodes NodeNum="2">
+        <AniNode m_NodeID="1" m_TargetAniName="Wait" m_RoofAni="true" m_Pos.x="501" m_Pos.y="346"/>
+        <AniNode m_NodeID="2" m_TargetAniName="Wait" m_RoofAni="false" m_Pos.x="206" m_Pos.y="370"/>
+    </AniNodes>
+    <AniArrows ArrowNum="1">
+        <AniArrow type="0" aniEndIsChange="true" nodeID="1" targetNodeID="2"/>
+    </AniArrows>
+</AnimationTree>

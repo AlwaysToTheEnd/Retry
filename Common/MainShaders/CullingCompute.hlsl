@@ -46,24 +46,32 @@ bool CheckCulling(uint index)
 {
     bool result = false;
     ObjectData data = cbv[index];
-    float4 posW = float4(data.World._41_42_43, 1);
     
-    if (type == 0)
+    if(data.BoundSphereRad==0.0f)
     {
-        float3 posV = mul(posW, viewMat).xyz;
-        result = CullingByFrustum(posV, data.BoundSphereRad);
+        result = true;
     }
-    else if (type == 1)
+    else
     {
-        result = CullingBySphere(posW.xyz, data.BoundSphereRad);
-    }
-    else if (type == 2)
-    {
-        result = CullingByBox(posW.xyz, data.BoundSphereRad);
-    }
-    else if (type == 3)
-    {
-        result = CullingByCon(posW.xyz, data.BoundSphereRad);
+        float4 posW = float4(data.World._41_42_43, 1);
+        
+        if (type == 0)
+        {
+            float3 posV = mul(posW, viewMat).xyz;
+            result = CullingByFrustum(posV, data.BoundSphereRad);
+        }
+        else if (type == 1)
+        {
+            result = CullingBySphere(posW.xyz, data.BoundSphereRad);
+        }
+        else if (type == 2)
+        {
+            result = CullingByBox(posW.xyz, data.BoundSphereRad);
+        }
+        else if (type == 3)
+        {
+            result = CullingByCon(posW.xyz, data.BoundSphereRad);
+        }
     }
     
     return result;

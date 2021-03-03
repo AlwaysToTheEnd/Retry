@@ -73,7 +73,7 @@ void DX12DrawSetHeightField::ReserveRender(const RenderInfo& info)
 
 	DX12ObjectConstants data;
 	data.world = info.world;
-	data.boundSphereRad = info.boundSphereRad;
+	data.boundSphereRad = info.cullingBoundSphereRad;
 	data.objectID = info.pixelColID;
 
 	assert(mesh.IsOneSub());

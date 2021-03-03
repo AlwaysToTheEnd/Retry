@@ -251,20 +251,19 @@ void DX12SwapChain::GetRenderGBufferFormat(std::vector<DXGI_FORMAT>& out)
 	out.push_back(m_ObjectIDFormat);
 }
 
-void DX12SwapChain::GetPixelFuncMap(std::vector<int>& out)
+int DX12SwapChain::GetPixelFuncMapData(UINT x, UINT y)
 {
+	int result = -1;
 	BYTE* readBackData = nullptr;
-	out.resize(static_cast<size_t>(m_ClientHeight) * m_ClientWidth);
 
 	ThrowIfFailed(m_PixelFuncReadBack->Map(0, nullptr, reinterpret_cast<void**>(&readBackData)));
 
-	for (size_t i = 0; i < m_ClientHeight; i++)
-	{
-		memcpy(&out[m_ClientWidth * i], readBackData, sizeof(int)* m_ClientWidth);
-		readBackData += m_PixelFuncReadBackRowPitch;
-	}
+	readBackData+= (x * sizeof(int)) + (y * m_PixelFuncReadBackRowPitch);
+	memcpy(&result, readBackData, sizeof(int));
 
 	m_PixelFuncReadBack->Unmap(0, nullptr);
+
+	return result;
 }
 
 ID3D12Resource* DX12SwapChain::GetObjectIDTexture()

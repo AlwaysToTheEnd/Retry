@@ -293,6 +293,7 @@ void VisualizedAniTreeCreator::Init()
 	m_NullTree = std::make_unique<AnimationTree>();
 
 	m_Renderer->SetRenderInfo(RenderInfo(RENDER_SKIN));
+	m_Renderer->GetRenderInfo().cullingBoundSphereRad = 30.0f;
 
 	m_WorkPanel->SetPos({ 50,50 });
 	m_WorkPanel->SetName(L"TreeCreatorPanel");
@@ -570,9 +571,6 @@ void VisualizedAniTreeCreator::SetAniArrowAttributePanel(AniTree::AniArrow* arro
 			break;
 		}
 
-		/*triggerParam->GetComponent<DOPixelCollision>()->AddFunc(std::bind(
-			&VisualizedAniTreeCreator::ChangeType, this, triggerParam, &it.m_Standard));*/
-
 		m_ArrowAttributePanel->AddUICom(triggerParam);
 	}
 
@@ -692,6 +690,20 @@ void VisualizedAniTreeCreator::ChangedTree()
 		if (meshName.size())
 		{
 			GetComponent<DORenderMesh>()->SelectMesh(CGH::SKINNED_MESH, meshName);
+		}
+
+		std::vector<AniTree::AniNode>& nodes = m_CurrTree->GetNodes();
+
+		for (size_t i = m_AniNodeVs.size(); i < nodes.size(); i++)
+		{
+			auto newNodeVs = CreateComponenet<AniNodeVisual>(true);
+			newNodeVs->SetSkinAnimationInfoVectorPtr(&m_AniNames, &m_AniEndTimes);
+			m_AniNodeVs.push_back(newNodeVs);
+		}
+
+		for (size_t i = 0; i < nodes.size(); i++)
+		{
+			m_AniNodeVs[i]->SetPos(nodes[i].GetPos());
 		}
 	}
 }

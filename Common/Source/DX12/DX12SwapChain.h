@@ -39,7 +39,7 @@ public:
 	void GetRenderTargetFormat(std::vector<DXGI_FORMAT>& out);
 	void GetRenderUIFormat(std::vector<DXGI_FORMAT>& out);
 	void GetRenderGBufferFormat(std::vector<DXGI_FORMAT>& out);
-	void GetPixelFuncMap(std::vector<int>& out);
+	int  GetPixelFuncMapData(UINT x, UINT y);
 	ID3D12Resource* GetObjectIDTexture();
 
 	ID3D12DescriptorHeap*		GetSrvHeap() { return m_SRVHeap.Get(); }

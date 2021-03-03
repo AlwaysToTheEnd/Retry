@@ -40,7 +40,7 @@ public:
 
 private:
 	virtual void	Update(const CGHScene& scene, float delta) override;
-	virtual void	PixelFuncMapUpdate(std::vector<int>& pixelMap) override;
+	virtual int		GetPixelFuncID(const physx::PxVec2& clientPos) override;
 	virtual void	Draw() override;
 	virtual bool	Init(HWND hWnd, UINT windowWidth, UINT windowHeight) override;
 	virtual void	OnResize() override;
