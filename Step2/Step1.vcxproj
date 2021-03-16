@@ -37,6 +37,7 @@
     <ClCompile Include="..\Common\Source\DX12\DX12FontMG.cpp" />
     <ClCompile Include="..\Common\Source\DX12\DX12SwapChain.cpp" />
     <ClCompile Include="..\Common\Source\DX12\DX12PSOController.cpp" />
+    <ClCompile Include="..\Common\Source\DXTKAudio.cpp" />
     <ClCompile Include="..\Common\Source\GameLight.cpp" />
     <ClCompile Include="..\Common\Source\GraphicBase.cpp" />
     <ClCompile Include="..\Common\Source\HeightMapCreateScene\HeightMapCreateScene.cpp" />
@@ -57,6 +58,7 @@
     <ClCompile Include="..\Common\Source\DeviceObject.cpp" />
     <ClCompile Include="..\Common\Source\InputTextureNameList.cpp" />
     <ClCompile Include="..\Common\Source\PhysX4_1.cpp" />
+    <ClCompile Include="..\Common\Source\SoundObject.cpp" />
     <ClCompile Include="..\Common\Source\StaticObject.cpp" />
     <ClCompile Include="..\Common\Source\Xml\Xml.cpp" />
     <ClCompile Include="..\Common\UIObjects\HeightMapControlPanel.cpp" />
@@ -92,10 +94,12 @@
     <ClInclude Include="..\Common\Source\DX12\DX12SwapChain.h" />
     <ClInclude Include="..\Common\Source\DX12\DX12UploadBuffer.h" />
     <ClInclude Include="..\Common\Source\DX12\DX12PSOController.h" />
+    <ClInclude Include="..\Common\Source\DXTKAudio.h" />
     <ClInclude Include="..\Common\Source\GameLight.h" />
     <ClInclude Include="..\Common\Source\GraphicBase.h" />
     <ClInclude Include="..\Common\Source\HeightMapCreateScene\HeightMapCreateScene.h" />
     <ClInclude Include="..\Common\Source\GameCreator.h" />
+    <ClInclude Include="..\Common\Source\ISoundDevice.h" />
     <ClInclude Include="..\Common\Source\MeshReplacer.h" />
     <ClInclude Include="..\Common\Source\PhysicsDO.h" />
     <ClInclude Include="..\Common\Source\cCamera.h" />
@@ -116,6 +120,7 @@
     <ClInclude Include="..\Common\Source\PhysX4_1.h" />
     <ClInclude Include="..\Common\Source\PhysXFunctionalObject.h" />
     <ClInclude Include="..\Common\Source\Px1RefPtr.h" />
+    <ClInclude Include="..\Common\Source\SoundObject.h" />
     <ClInclude Include="..\Common\Source\StaticObject.h" />
     <ClInclude Include="..\Common\Source\Vertex.h" />
     <ClInclude Include="..\Common\Source\Xml\Xml.h" />

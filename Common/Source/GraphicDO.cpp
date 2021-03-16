@@ -45,7 +45,7 @@ void DORenderMesh::ReComputeHeightField(physx::PxVec3 scale)
 	m_ReComputeHeightFieldFunc(m_CurrMeshName, scale);
 }
 
-void DORenderMesh::Init(PhysX4_1*, IGraphicDevice* graphicDevice)
+void DORenderMesh::Init(IGraphicDevice* graphicDevice, ISoundDevice* audioDevice, PhysX4_1*)
 {
 	if (m_Meshs[0] == nullptr)
 	{
@@ -83,7 +83,7 @@ void DOAnimator::Update(float delta)
 	}
 }
 
-void DOAnimator::Init(PhysX4_1*, IGraphicDevice* graphicDevice)
+void DOAnimator::Init(IGraphicDevice* graphicDevice, ISoundDevice* audioDevice, PhysX4_1*)
 {
 	if (m_ReservedAniBone == nullptr)
 	{
@@ -276,7 +276,7 @@ void DORenderer::Update(float delta)
 	m_ReservedRenderObjects->push_back(m_RenderInfo);
 }
 
-void DORenderer::Init(PhysX4_1*, IGraphicDevice* graphicDevice)
+void DORenderer::Init(IGraphicDevice* graphicDevice, ISoundDevice* audioDevice, PhysX4_1*)
 {
 	if (m_ReservedRenderObjects == nullptr)
 	{
@@ -350,7 +350,7 @@ void DOFont::Update(float delta)
 	}
 }
 
-void DOFont::Init(PhysX4_1*, IGraphicDevice* graphicDevice)
+void DOFont::Init(IGraphicDevice* graphicDevice, ISoundDevice* audioDevice, PhysX4_1*)
 {
 	if (m_ReservedRenderFonts == nullptr)
 	{

@@ -27,7 +27,7 @@ void Step2::Update(float delta)
 
 void Step2::SelectDevices()
 {
-	SelectDeviceByTemplate<UsingGraphicDevice>();
+	SelectGDeviceByTemplate<UsingGraphicDevice>();
 }
 
 void Step2::LoadObjectsFromFile()
@@ -37,7 +37,7 @@ void Step2::LoadObjectsFromFile()
 
 void Step2::InitObjects()
 {
-	 testScene = new AniTreeScene(m_GDevice.get(), m_PXDevice);
+	 testScene = new AniTreeScene(m_GDevice.get(), m_SDevice.get(), m_PXDevice);
 	 testScene->Init();
 	 SetCurrScene(testScene);
 }

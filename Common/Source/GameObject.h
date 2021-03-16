@@ -22,7 +22,6 @@ public:
 	{
 		DEVICE_OBJECT = 1,
 		PHYSICS_OBJECT= 1<<1,
-		GRAPHIC_OBJECT= 1<<2,
 	};
 
 	friend class CGHScene;

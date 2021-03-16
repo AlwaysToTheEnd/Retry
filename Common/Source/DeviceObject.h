@@ -4,6 +4,7 @@
 class GameObject;
 class DeviceObjectUpdater;
 class IGraphicDevice;
+class ISoundDevice;
 class PhysX4_1;
 
 class DeviceObject : public GameObject
@@ -18,7 +19,7 @@ public:
 	void			SetDeviceOBID(unsigned int id) { m_DeviceOBID = id; }
 	int				GetDeviceOBID() const { return m_DeviceOBID; }
 	virtual bool	IsObjectType(GAMEOBJECT_TYPE type) const override { return type & DEVICE_OBJECT; }
-	virtual void	Init(PhysX4_1* physxDevice, IGraphicDevice* graphicDevice) = 0;
+	virtual void	Init(IGraphicDevice* graphicDevice, ISoundDevice* soundDevice, PhysX4_1* physxDevice) = 0;
 
 protected:
 	virtual void	Update(float delta) = 0;

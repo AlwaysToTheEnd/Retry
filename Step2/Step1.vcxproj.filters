@@ -82,6 +82,9 @@
     <Filter Include="Common\DeviceInstance\DX12Supporters\DrawSets\Shader\Headers">
       <UniqueIdentifier>{1afad483-4c26-4b3d-903f-b5efe3e89795}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Common\DeviceInstance\DXTKAudio">
+      <UniqueIdentifier>{f783fae3-df79-4962-92bb-af6fa7530aad}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Step2.cpp">
@@ -224,6 +227,12 @@
     </ClCompile>
     <ClCompile Include="..\Common\UIObjects\UIParam.cpp">
       <Filter>Common\UIObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Source\DXTKAudio.cpp">
+      <Filter>Common\DeviceInstance\DXTKAudio</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Source\SoundObject.cpp">
+      <Filter>Common\CodeResources\DeviceObject</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -400,6 +409,15 @@
     </ClInclude>
     <ClInclude Include="..\Common\Source\MeshReplacer.h">
       <Filter>Common\CodeResources\MeshReplacer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\ISoundDevice.h">
+      <Filter>Common\DeviceInstance\_Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\DXTKAudio.h">
+      <Filter>Common\DeviceInstance\DXTKAudio</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Source\SoundObject.h">
+      <Filter>Common\CodeResources\DeviceObject</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

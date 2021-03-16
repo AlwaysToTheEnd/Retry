@@ -10,6 +10,7 @@
 #include "DeviceObject.h"
 
 class IGraphicDevice;
+class ISoundDevice;
 class PhysX4_1;
 class GameObject;
 
@@ -19,7 +20,7 @@ class CGHScene
 	friend class DeviceObject;
 	const float m_RayDistance = 1000.0f;
 public:
-	CGHScene(IGraphicDevice* graphicDevice, PhysX4_1* pxDevice, const std::string& name);
+	CGHScene(IGraphicDevice* graphicDevice, ISoundDevice* soundDevice, PhysX4_1* pxDevice, const std::string& name);
 	virtual ~CGHScene();
 	
 	virtual void		Init() = 0;
@@ -41,6 +42,7 @@ private:
 private:
 	std::string												m_SceneName;
 	IGraphicDevice*											m_GraphicDevice;
+	ISoundDevice*											m_SoundDevice;
 	PhysX4_1*												m_PhysicsDevice;
 	std::vector<std::unique_ptr<GameObject>>				m_Objects;
 	size_t													m_NumNullptr;

@@ -1,5 +1,6 @@
 #pragma once
 #include "IGraphicDevice.h"
+#include "ISoundDevice.h"
 #include "DeviceObject.h"
 #include "CGHScene.h"
 #include <Mouse.h>
@@ -37,7 +38,10 @@ public:
 	{
 		MainFolderFath + L"FontData"
 	};
-
+	std::vector<std::wstring>		m_TargetSoundFolders =
+	{
+		MainFolderFath + L"SoundData"
+	};
 	const std::wstring				m_TargetAniTreeFolder = MainFolderFath + L"AniTree";
 
 protected:
@@ -73,7 +77,7 @@ protected:
 	virtual void LoadObjectsFromFile() = 0;
 	virtual bool InitMainWindow();
 	
-	template<typename GraphicDeviceClass> void SelectDeviceByTemplate();
+	template<typename GraphicDeviceClass> void SelectGDeviceByTemplate();
 
 	void SetCurrScene(CGHScene* scene) { m_CurrScene = scene; }
 private:
@@ -111,6 +115,7 @@ protected:
 	bool		m_Maximized = false;
 
 	std::unique_ptr<IGraphicDevice>	m_GDevice;
+	std::unique_ptr<ISoundDevice>	m_SDevice;
 	PhysX4_1*						m_PXDevice;
 
 private:
@@ -119,7 +124,7 @@ private:
 };
 
 template<typename GraphicDeviceClass>
-inline void D3DApp::SelectDeviceByTemplate()
+inline void D3DApp::SelectGDeviceByTemplate()
 {
 	assert(!m_GDevice.get());
 	assert(!m_PXDevice);

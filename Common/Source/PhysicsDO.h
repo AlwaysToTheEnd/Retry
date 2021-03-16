@@ -40,7 +40,7 @@ public:
 
 private:
 	virtual void	Update(float delta) override {}
-	virtual void	Init(PhysX4_1* physxDevice, IGraphicDevice*) override;
+	virtual void	Init(IGraphicDevice*, ISoundDevice*, PhysX4_1* physxDevice) override;
 
 private:
 	physx::PxGeometryType::Enum	m_Type;
@@ -72,7 +72,7 @@ public:
 
 private:
 	virtual void	Update(float delta) override;
-	virtual void	Init(PhysX4_1* physxDevice, IGraphicDevice*) override;
+	virtual void	Init(IGraphicDevice*, ISoundDevice*, PhysX4_1* physxDevice) override;
 
 private:
 	physx::PxRigidDynamic*					m_RigidBody;
@@ -101,7 +101,7 @@ public:
 
 private:
 	virtual void	Update(float delta) override;
-	virtual void	Init(PhysX4_1* physxDevice, IGraphicDevice*) override;
+	virtual void	Init(IGraphicDevice*, ISoundDevice*, PhysX4_1* physxDevice) override;
 
 private:
 	physx::PxRigidStatic* m_RigidBody;
@@ -133,7 +133,7 @@ public:
 
 private:
 	virtual void Update(float delta) override {}
-	virtual void Init(PhysX4_1*, IGraphicDevice*) {};
+	virtual void Init(IGraphicDevice*, ISoundDevice*, PhysX4_1* physxDevice) override {};
 
 private:
 	physx::PxTransform	m_Transform;

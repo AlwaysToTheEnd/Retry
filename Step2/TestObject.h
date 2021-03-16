@@ -17,4 +17,6 @@ private:
 	virtual void Init() override;
 
 	void TestClickedFunc();
+
+private:
 };

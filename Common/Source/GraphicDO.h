@@ -34,7 +34,7 @@ public:
 
 private:
 	virtual void Update(float delta) override {}
-	virtual void Init(PhysX4_1*, IGraphicDevice* graphicDevice);
+	virtual void Init(IGraphicDevice* graphicDevice, ISoundDevice*, PhysX4_1*);
 
 private:
 	static const std::unordered_map<std::string, MeshObject>*		m_Meshs[CGH::MESH_TYPE_COUNT];
@@ -78,7 +78,7 @@ public:
 
 private:
 	virtual void Update(float delta) override;
-	virtual void Init(PhysX4_1*, IGraphicDevice* graphicDevice);
+	virtual void Init(IGraphicDevice* graphicDevice, ISoundDevice*, PhysX4_1*);
 
 private:
 	static const std::unordered_map<std::string, Ani::SkinnedData>*						m_SkinnedDatas;
@@ -122,7 +122,7 @@ public:
 
 private:
 	virtual void Update(float delta) override;
-	virtual void Init(PhysX4_1*, IGraphicDevice* graphicDevice);
+	virtual void Init(IGraphicDevice* graphicDevice, ISoundDevice*, PhysX4_1*);
 
 private:
 	void		 RenderMesh();
@@ -160,7 +160,7 @@ public:
 
 private:
 	virtual void Update(float delta) override;
-	virtual void Init(PhysX4_1*, IGraphicDevice* graphicDevice);
+	virtual void Init(IGraphicDevice* graphicDevice, ISoundDevice*, PhysX4_1*);
 
 public:
 	physx::PxVec4		m_Color;

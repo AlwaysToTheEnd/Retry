@@ -4,8 +4,8 @@
 class HeightMapCreateScene final :public CGHScene
 {
 public:
-	HeightMapCreateScene(IGraphicDevice* graphicDevice, PhysX4_1* pxDevice)
-		:CGHScene(graphicDevice, pxDevice, "HeightMapCreateScene")
+	HeightMapCreateScene(IGraphicDevice* graphicDevice, IAudioDevice* audioDevice, PhysX4_1* pxDevice)
+		:CGHScene(graphicDevice, audioDevice, pxDevice, "HeightMapCreateScene")
 	{ }
 
 	virtual void Init() override;

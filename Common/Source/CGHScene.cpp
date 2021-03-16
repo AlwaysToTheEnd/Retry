@@ -7,9 +7,10 @@
 #include "GraphicDO.h"
 
 
-CGHScene::CGHScene(IGraphicDevice* graphicDevice, PhysX4_1* pxDevice, const std::string& name)
+CGHScene::CGHScene(IGraphicDevice* graphicDevice, ISoundDevice* soundDevice, PhysX4_1* pxDevice, const std::string& name)
 	:m_GraphicDevice(graphicDevice)
 	, m_PhysicsDevice(pxDevice)
+	, m_SoundDevice(soundDevice)
 	, m_SceneName(name)
 	, m_NumNullptr(0)
 {
@@ -119,7 +120,7 @@ void CGHScene::AddGameObject(GameObject* object)
 		auto deviceOB = reinterpret_cast<DeviceObject*>(object);
 		RegisterDeviceObject(deviceOB);
 
-		deviceOB->Init(m_PhysicsDevice, m_GraphicDevice);
+		deviceOB->Init(m_GraphicDevice, m_SoundDevice, m_PhysicsDevice);
 	}
 	else
 	{

@@ -23,7 +23,7 @@ void DOCollsionMesh::SetLocalPos(const physx::PxTransform& localPos)
 	m_Shape->setLocalPose(localPos);
 }
 
-void DOCollsionMesh::Init(PhysX4_1* physxDevice, IGraphicDevice*)
+void DOCollsionMesh::Init(IGraphicDevice*, ISoundDevice*, PhysX4_1* physxDevice)
 {
 	auto Physx = physxDevice->GetPhysics();
 
@@ -132,7 +132,7 @@ void DORigidDynamic::Update(float delta)
 	}
 }
 
-void DORigidDynamic::Init(PhysX4_1* physxDevice, IGraphicDevice*)
+void DORigidDynamic::Init(IGraphicDevice*, ISoundDevice*, PhysX4_1* physxDevice)
 {
 	auto Physx = physxDevice->GetPhysics();
 
@@ -205,7 +205,7 @@ void DORigidStatic::Update(float delta)
 	}
 }
 
-void DORigidStatic::Init(PhysX4_1* physxDevice, IGraphicDevice*)
+void DORigidStatic::Init(IGraphicDevice*, ISoundDevice*, PhysX4_1* physxDevice)
 {
 	auto Physx = physxDevice->GetPhysics();
 

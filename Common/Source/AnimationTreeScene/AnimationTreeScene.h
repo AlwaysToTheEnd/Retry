@@ -4,8 +4,8 @@
 class AniTreeScene final :public CGHScene
 {
 public:
-	AniTreeScene(IGraphicDevice* graphicDevice, PhysX4_1* pxDevice)
-		:CGHScene(graphicDevice, pxDevice, "AnimationTreeScene")
+	AniTreeScene(IGraphicDevice* graphicDevice, IAudioDevice* audioDevice, PhysX4_1* pxDevice)
+		:CGHScene(graphicDevice, audioDevice, pxDevice, "AnimationTreeScene")
 	{ }
 
 	virtual void Init() override;

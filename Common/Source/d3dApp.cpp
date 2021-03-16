@@ -248,6 +248,8 @@ int D3DApp::Run()
 
 				m_GDevice->Draw();
 				UpdatePixelFuncFromMouse();
+				
+				m_SDevice->Update();
 
 				m_GDevice->ReservedWorksClear();
 			}
@@ -269,6 +271,7 @@ bool D3DApp::Initialize()
 	m_GDevice->SetCamera(&m_Camera);
 
 	if (!m_GDevice->Init(m_hMainWnd, DEFAULTWINDOWSIZE, DEFAULTWINDOWSIZE)) return false;
+	if (!m_SDevice->Init()) return false;
 	if (!m_PXDevice->Init(m_GDevice->GetDevicePtr())) return false;
 
 	m_GDevice->ReadyWorks(m_TargetTextureFolders, m_TargetMeshFolders,
