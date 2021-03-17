@@ -21,7 +21,7 @@ public:
 		, m_CurrMeshType(CGH::NORMAL_MESH)
 		, m_CurrMesh(nullptr)
 	{
-	
+		
 	}
 	virtual ~DORenderMesh() = default;
 
