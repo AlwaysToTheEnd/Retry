@@ -4,7 +4,7 @@
 class HeightMapCreateScene final :public CGHScene
 {
 public:
-	HeightMapCreateScene(IGraphicDevice* graphicDevice, IAudioDevice* audioDevice, PhysX4_1* pxDevice)
+	HeightMapCreateScene(IGraphicDevice* graphicDevice, ISoundDevice* audioDevice, PhysX4_1* pxDevice)
 		:CGHScene(graphicDevice, audioDevice, pxDevice, "HeightMapCreateScene")
 	{ }
 

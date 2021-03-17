@@ -80,8 +80,9 @@ protected:
 	template<typename GraphicDeviceClass> void SelectGDeviceByTemplate();
 
 	void SetCurrScene(CGHScene* scene) { m_CurrScene = scene; }
-private:
 	void CreatePhysxDevice();
+
+private:
 	void CameraMove();
 	void BaseUpdate();
 	void CalculateFrame();
@@ -132,6 +133,4 @@ inline void D3DApp::SelectGDeviceByTemplate()
 	GraphicDeviceClass* gdeviceInstance = new GraphicDeviceClass();
 	std::unique_ptr<IGraphicDevice> temp1(static_cast<IGraphicDevice*>(gdeviceInstance));
 	m_GDevice = move(temp1);
-
-	CreatePhysxDevice();
 }

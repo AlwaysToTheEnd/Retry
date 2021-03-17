@@ -231,7 +231,7 @@
     <ClCompile Include="..\Common\Source\DXTKAudio.cpp">
       <Filter>Common\DeviceInstance\DXTKAudio</Filter>
     </ClCompile>
-    <ClCompile Include="..\Common\Source\SoundObject.cpp">
+    <ClCompile Include="..\Common\Source\SoundDO.cpp">
       <Filter>Common\CodeResources\DeviceObject</Filter>
     </ClCompile>
   </ItemGroup>
@@ -416,7 +416,7 @@
     <ClInclude Include="..\Common\Source\DXTKAudio.h">
       <Filter>Common\DeviceInstance\DXTKAudio</Filter>
     </ClInclude>
-    <ClInclude Include="..\Common\Source\SoundObject.h">
+    <ClInclude Include="..\Common\Source\SoundDO.h">
       <Filter>Common\CodeResources\DeviceObject</Filter>
     </ClInclude>
   </ItemGroup>

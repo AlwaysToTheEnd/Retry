@@ -58,7 +58,7 @@
     <ClCompile Include="..\Common\Source\DeviceObject.cpp" />
     <ClCompile Include="..\Common\Source\InputTextureNameList.cpp" />
     <ClCompile Include="..\Common\Source\PhysX4_1.cpp" />
-    <ClCompile Include="..\Common\Source\SoundObject.cpp" />
+    <ClCompile Include="..\Common\Source\SoundDO.cpp" />
     <ClCompile Include="..\Common\Source\StaticObject.cpp" />
     <ClCompile Include="..\Common\Source\Xml\Xml.cpp" />
     <ClCompile Include="..\Common\UIObjects\HeightMapControlPanel.cpp" />
@@ -120,7 +120,7 @@
     <ClInclude Include="..\Common\Source\PhysX4_1.h" />
     <ClInclude Include="..\Common\Source\PhysXFunctionalObject.h" />
     <ClInclude Include="..\Common\Source\Px1RefPtr.h" />
-    <ClInclude Include="..\Common\Source\SoundObject.h" />
+    <ClInclude Include="..\Common\Source\SoundDO.h" />
     <ClInclude Include="..\Common\Source\StaticObject.h" />
     <ClInclude Include="..\Common\Source\Vertex.h" />
     <ClInclude Include="..\Common\Source\Xml\Xml.h" />

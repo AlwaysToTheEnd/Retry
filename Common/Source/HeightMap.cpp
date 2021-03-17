@@ -57,7 +57,7 @@ void HeightMap::ClearMapPickingWork()
 	m_MapPickingWorks.clear();
 }
 
-void HeightMap::Init(PhysX4_1* pxd, IGraphicDevice* gd)
+void HeightMap::Init(IGraphicDevice* graphicDevice, ISoundDevice* soundDevice, PhysX4_1* physxDevice)
 {
 	std::wstring extension;
 	m_fileName = GetFileNameFromPath(m_filePath, extension);
@@ -66,7 +66,7 @@ void HeightMap::Init(PhysX4_1* pxd, IGraphicDevice* gd)
 
 	if (m_GetPickingPosFunc == nullptr)
 	{
-		m_GetPickingPosFunc = std::bind(&PhysX4_1::GetPickingPos, pxd);
+		m_GetPickingPosFunc = std::bind(&PhysX4_1::GetPickingPos, physxDevice);
 	}
 
 	unsigned int fileSizeHight = 0;
@@ -74,8 +74,8 @@ void HeightMap::Init(PhysX4_1* pxd, IGraphicDevice* gd)
 	std::vector<int> datas;
 	std::vector<float> heights;
 	LoadRAWFile(m_filePath, fileSizeHight, fileSizeLow, datas);
-	CreateRigidStatic(pxd, fileSizeHight, fileSizeLow, datas, heights);
-	CreateRenderMesh(gd, fileSizeHight, fileSizeLow, heights);
+	CreateRigidStatic(physxDevice, fileSizeHight, fileSizeLow, datas, heights);
+	CreateRenderMesh(graphicDevice, fileSizeHight, fileSizeLow, heights);
 }
 
 void HeightMap::LoadRAWFile(const std::wstring& filePath, unsigned int& fileHeight, unsigned int& fileWidth, std::vector<int>& datas)

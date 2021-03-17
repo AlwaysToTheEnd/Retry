@@ -6,16 +6,13 @@
 
 using namespace DirectX;
 
-void DXTKAudio::PlaySoundFromStock(int id, const std::string& name, unsigned int time, bool loop)
+void DXTKAudio::PlaySoundFromStock(int id, const std::wstring& name, unsigned int time, bool loop)
 {
-	PlayedObjectRelease(id);
 
 }
 
 void DXTKAudio::PlaySoundFromPath(int id, const std::wstring& path, unsigned int time, bool loop)
 {
-	PlayedObjectRelease(id);
-
 	std::wstring extension;
 	std::wstring fileName = GetFileNameFromPath(path, extension);
 
@@ -28,11 +25,14 @@ void DXTKAudio::PlaySoundFromPath(int id, const std::wstring& path, unsigned int
 	{
 		auto soundEffect = std::make_unique<SoundEffect>(m_Engine.get(), path.c_str());
 		m_SoundEffects[path] = std::move(soundEffect);
-		std::string fileNametemp(fileName.begin(), fileName.end());
 		CGH::SoundInfo soundInfo;
 		soundInfo.filePath = path;
 		soundInfo.timeRate = m_SoundEffects[path]->GetSampleDurationMS();
-		m_StockedSoundList.insert({ fileNametemp ,soundInfo });
+
+		if (m_StockedSoundList.find(fileName) == m_StockedSoundList.end())
+		{
+			m_StockedSoundList[fileName] = soundInfo;
+		}
 	}
 
 	auto currSoundEffect = m_SoundEffects[path].get();
@@ -48,7 +48,19 @@ void DXTKAudio::SetSoundPosition(float x, float y, float z)
 
 }
 
-const std::map<std::string, CGH::SoundInfo>& DXTKAudio::GetStockedSoundList()
+void DXTKAudio::SetListener(float x, float y, float z)
+{
+}
+
+void DXTKAudio::AddEmitter()
+{
+}
+
+void DXTKAudio::ControlEmitter()
+{
+}
+
+const std::map<std::wstring, CGH::SoundInfo>& DXTKAudio::GetStockedSoundList()
 {
 	return m_StockedSoundList;
 }
@@ -110,34 +122,13 @@ void DXTKAudio::LoadStockedSounds()
 
 				if (CheckFileExtension(extension) == EXTENSIONTYPE::EXE_WAVE)
 				{
-					std::string fileNameTemp;
 					CGH::SoundInfo temp;
-
-					fileNameTemp.assign(fileName.begin(), fileName.end());
 					temp.filePath = it2;
-
-					m_StockedSoundList[fileNameTemp] = temp;
+					m_StockedSoundList.insert({ fileName, temp });
 				}
 			}
 
 			files.clear();
 		}
 	}
-}
-
-void DXTKAudio::PlayedObjectRelease(int id)
-{
-	auto result = m_Sounds.find(id);
-	
-	if (result != m_Sounds.end())
-	{
-		result->second.instance->Stop();
-		result->second.instance.~unique_ptr();
-	}
-	else
-	{
-		SoundInstanceByTime temp;
-		m_Sounds.emplace( id, temp );
-	}
-	
 }

@@ -39,7 +39,7 @@ public:
 
 private:
 	virtual void			Update(float delta) override {}
-	virtual void			Init(PhysX4_1* pdx, IGraphicDevice* gd) override;
+	virtual void			Init(IGraphicDevice* graphicDevice, ISoundDevice* soundDevice, PhysX4_1* physxDevice) override;
 	virtual void*			GetPxObject() override { return m_PxStatic; }
 
 private:

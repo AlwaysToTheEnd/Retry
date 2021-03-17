@@ -2,6 +2,7 @@
 #include <random>
 #include <DirectXColors.h>
 #include "PhysX4_1.h"
+#include "DXTKAudio.h"
 #include "PhysicsDO.h"
 #include "AnimationTreeScene/AnimationTreeScene.h"
 #include "HeightMapCreateScene/HeightMapCreateScene.h"
@@ -28,6 +29,8 @@ void Step2::Update(float delta)
 void Step2::SelectDevices()
 {
 	SelectGDeviceByTemplate<UsingGraphicDevice>();
+	CreatePhysxDevice();
+	m_SDevice = make_unique<DXTKAudio>();
 }
 
 void Step2::LoadObjectsFromFile()

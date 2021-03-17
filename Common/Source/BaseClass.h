@@ -36,6 +36,13 @@ namespace CGH
 		TYPE_UINT,
 	};
 
+	struct SoundInfo
+	{
+		size_t			timeRate = 0;
+		int				format = 0;
+		std::wstring	filePath;
+	};
+
 	struct UnionData
 	{
 		DATA_TYPE type;

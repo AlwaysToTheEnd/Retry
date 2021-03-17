@@ -4,7 +4,7 @@
 class AniTreeScene final :public CGHScene
 {
 public:
-	AniTreeScene(IGraphicDevice* graphicDevice, IAudioDevice* audioDevice, PhysX4_1* pxDevice)
+	AniTreeScene(IGraphicDevice* graphicDevice, ISoundDevice* audioDevice, PhysX4_1* pxDevice)
 		:CGHScene(graphicDevice, audioDevice, pxDevice, "AnimationTreeScene")
 	{ }
 

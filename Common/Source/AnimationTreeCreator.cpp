@@ -1,6 +1,7 @@
 #include "AnimationTreeCreator.h"
 #include "GraphicDO.h"
 #include "PhysicsDO.h"
+#include "SoundDO.h"
 #include "../UIObjects/UIPanel.h"
 #include "d3dApp.h"
 #include "InputTextureNameList.h"
@@ -649,6 +650,8 @@ void VisualizedAniTreeCreator::DeleteNode(AniTree::AniNode* node)
 
 void VisualizedAniTreeCreator::SelectNullTree()
 {
+	TestSoundPlay();
+
 	m_CurrTree = m_NullTree.get();
 	m_Animator->SetAnimationTree(m_CurrTree);
 	m_Renderer->SetActive(false);
@@ -795,4 +798,14 @@ void VisualizedAniTreeCreator::SaveTree()
 
 		pfsd->Release();
 	}
+}
+
+void VisualizedAniTreeCreator::TestSoundPlay()
+{
+	if(!m_Test)
+	{
+		m_Test = CreateComponenet<DOSound>();
+	}
+
+	m_Test->PlaySoundFromPath(L"./../common/SoundData/BGM/testSound.wav", 1, false);
 }

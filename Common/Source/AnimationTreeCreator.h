@@ -12,6 +12,7 @@ class UIButton;
 class AniArowVisual;
 class DORenderer;
 class DOTransform;
+class DOSound;
 
 namespace Ani
 {
@@ -113,6 +114,7 @@ public:
 		, m_Animator(nullptr)
 		, m_CurrInitingArrowIndex(-1)
 		, m_NextTimeCancle(false)
+		, m_Test(nullptr)
 	{
 
 	}
@@ -140,6 +142,8 @@ private:
 	void ChangedTree();
 	void SaveTree();
 
+	void TestSoundPlay(); //#TODO delete after testing.
+
 private:
 	std::unique_ptr<AniTree::AnimationTree>			m_NullTree;
 	AniTree::AnimationTree*							m_CurrTree;
@@ -166,4 +170,6 @@ private:
 	int												m_CurrInitingArrowIndex;
 	physx::PxVec2									m_CurrMousePos;
 	bool											m_NextTimeCancle;
+
+	DOSound*										m_Test;
 };
