@@ -11,23 +11,24 @@ class DOSound : public DeviceObject
 public:
 	DOSound(CGHScene& scene, GameObject* parent, const char* typeName)
 		: DeviceObject(scene, parent, typeName)
-		, m_SoundDevice(nullptr)
 		, m_IsLoop(false)
 	{
 
 	}
 	virtual	~DOSound() = default;
 
-	void	PlaySoundFromStock(std::wstring name, unsigned int time, bool loop);
-	void	PlaySoundFromPath(std::wstring path, unsigned int time, bool loop);
+	void	Play(float time, bool loop);
+	void	SelectSound(std::wstring nameORpath);
+	void	SetListener(bool value);
+	void	SetVolume(float vol);
 
 	const std::map<std::wstring, CGH::SoundInfo>& GetStockedSoundLists() const;
 
 private:
 	virtual void Init(IGraphicDevice*, ISoundDevice* SoundDevice, PhysX4_1*);
-	virtual void Update(float delta) {};
+	virtual void Update(float delta);
 
 private:
-	ISoundDevice*	m_SoundDevice;
-	bool			m_IsLoop;
+	static ISoundDevice*	m_SoundDevice;
+	bool					m_IsLoop;
 };

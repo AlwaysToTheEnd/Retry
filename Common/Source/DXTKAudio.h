@@ -17,20 +17,20 @@ private:
 
 		}
 
-		std::unique_ptr<DirectX::SoundEffectInstance> instance;
-		unsigned int time = 0;
+		std::unique_ptr<DirectX::SoundEffectInstance>	instance;
+		std::unique_ptr<DirectX::AudioEmitter>			emitter;
+		float											time = 0;
 	};
 
-public:
+public: 
 	DXTKAudio() = default;
 	virtual ~DXTKAudio() = default;
 
-	virtual	void PlaySoundFromStock(int id, const std::wstring& name, unsigned int time, bool loop) override;
-	virtual	void PlaySoundFromPath(int id, const std::wstring& path, unsigned int time, bool loop) override;
-	virtual void SetSoundPosition(float x, float y, float z) override;
-	virtual void SetListener(float x, float y, float z) override;
-	virtual void AddEmitter() override;
-	virtual void ControlEmitter() override;
+	virtual void SelectSound(int id, const std::wstring& fileName) override;
+	virtual	void Play(int id, unsigned int time, bool loop) override;
+	virtual void SetVolume(int id, float vol) override;
+	virtual void SetSoundPosition(int id, const physx::PxVec3& pos, const physx::PxVec3& up, float dt) override;
+	virtual void SetListener(const physx::PxVec3& pos, float distance) override;
 
 	virtual const std::map<std::wstring, CGH::SoundInfo>& GetStockedSoundList() override;
 
@@ -44,12 +44,13 @@ private:
 
 private:
 	void LoadStockedSounds(); //Only load filepath
+	void CreateSoundEffect(const std::wstring& filePath);
 
 private:
 	std::map<std::wstring, CGH::SoundInfo>							m_StockedSoundList;
 	std::map<std::wstring, std::unique_ptr<DirectX::SoundEffect>>	m_SoundEffects;
 	std::unique_ptr<DirectX::AudioEngine>							m_Engine;
-	std::unique_ptr<DirectX::WaveBank>								m_WaveBank;
+	std::unique_ptr<DirectX::AudioListener>							m_Listener;
 
 	std::map<int, SoundInstanceByTime>								m_Sounds;
 };

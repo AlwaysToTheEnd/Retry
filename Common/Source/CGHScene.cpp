@@ -5,6 +5,7 @@
 #include "GameObject.h"
 #include "PhysicsDO.h"
 #include "GraphicDO.h"
+#include "SoundDO.h"
 
 
 CGHScene::CGHScene(IGraphicDevice* graphicDevice, ISoundDevice* soundDevice, PhysX4_1* pxDevice, const std::string& name)
@@ -38,6 +39,7 @@ void CGHScene::Update(const DirectX::Mouse::ButtonStateTracker& mouse, float del
 	GetComponentUpdater(typeid(DOAnimator).name()).Update(delta);
 	GetComponentUpdater(typeid(DORenderer).name()).Update(delta);
 	GetComponentUpdater(typeid(DOFont).name()).Update(delta);
+	GetComponentUpdater(typeid(DOSound).name()).Update(delta);
 
 	m_GraphicDevice->Update(*this, delta);
 }

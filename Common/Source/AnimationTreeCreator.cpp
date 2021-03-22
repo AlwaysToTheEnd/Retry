@@ -805,7 +805,13 @@ void VisualizedAniTreeCreator::TestSoundPlay()
 	if(!m_Test)
 	{
 		m_Test = CreateComponenet<DOSound>();
+		m_Test->SelectSound(L"./../common/SoundData/test1.wav");
 	}
 
-	m_Test->PlaySoundFromPath(L"./../common/SoundData/BGM/testSound.wav", 1, false);
+	static float testfloat = 0.5f;
+
+	m_Test->SetVolume(testfloat);
+	m_Test->Play(5.0f, false);
+
+	testfloat -= 0.1f;
 }
