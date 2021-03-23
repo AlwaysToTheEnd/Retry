@@ -806,12 +806,17 @@ void VisualizedAniTreeCreator::TestSoundPlay()
 	{
 		m_Test = CreateComponenet<DOSound>();
 		m_Test->SelectSound(L"./../common/SoundData/test1.wav");
+
+		auto transformDO = GetComponent<DOTransform>();
+		transformDO->SetPosX(5);
 	}
 
 	static float testfloat = 0.5f;
 
+	auto transformDO = GetComponent<DOTransform>();
+	auto& transform = transformDO->GetTransform();
+	transformDO->SetPosX(-transform.p.x);
+
 	m_Test->SetVolume(testfloat);
 	m_Test->Play(5.0f, false);
-
-	testfloat -= 0.1f;
 }

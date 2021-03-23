@@ -67,16 +67,16 @@ void DXTKAudio::SetSoundPosition(int id, const physx::PxVec3& pos, const physx::
 		if (iter->second.emitter==nullptr)
 		{
 			iter->second.emitter = std::move(std::make_unique<DirectX::AudioEmitter>());
+		}
 
-			DirectX::XMVECTOR position = DirectX::XMVectorSet(pos.x, pos.y, pos.z, 0);
-			DirectX::XMVECTOR upDir = DirectX::XMVectorSet(up.x, up.y, up.z, 0);
+		DirectX::XMVECTOR position = DirectX::XMVectorSet(pos.x, pos.y, pos.z, 0);
+		DirectX::XMVECTOR upDir = DirectX::XMVectorSet(up.x, up.y, up.z, 0);
 
-			iter->second.emitter->Update(position, upDir, dt);
+		iter->second.emitter->Update(position, upDir, dt);
 
-			if(iter->second.instance)
-			{
-				iter->second.instance->Apply3D(*m_Listener, *iter->second.emitter);
-			}
+		if (iter->second.instance)
+		{
+			iter->second.instance->Apply3D(*m_Listener, *iter->second.emitter);
 		}
 	}
 	else
