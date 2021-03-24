@@ -158,7 +158,7 @@ void DXTKAudio::LoadStockedSounds()
 	{
 		for (auto& it : folders[i])
 		{
-			SearchAllFileFromFolder(targetSoundFolders[i] + L"//" + it, true, files);
+			SearchAllFileFromFolder(targetSoundFolders[i] + L"//" + it, false, files);
 
 			for (auto& it2 : files)
 			{

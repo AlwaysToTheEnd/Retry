@@ -407,7 +407,7 @@ void GraphicDX12::LoadTextureFromFolder(const std::vector<std::wstring>& targetT
 	{
 		for (auto& it : folders[i])
 		{
-			SearchAllFileFromFolder(targetTextureFolders[i] + L"//" + it, true, files);
+			SearchAllFileFromFolder(targetTextureFolders[i] + L"//" + it, false, files);
 			unordered_map<string, wstring> texturePaths;
 
 			for (auto& it2 : files)
